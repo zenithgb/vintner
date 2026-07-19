@@ -1,4 +1,4 @@
-package com.zach2110.vintner;
+package com.zenith.vintner;
 
 import net.fabricmc.api.ModInitializer;
 

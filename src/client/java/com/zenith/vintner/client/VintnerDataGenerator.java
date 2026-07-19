@@ -1,4 +1,4 @@
-package com.zach2110.vintner.client;
+package com.zenith.vintner.client;
 
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
