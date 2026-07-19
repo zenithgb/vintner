@@ -14,7 +14,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public final class TrellisBlock extends HorizontalDirectionalBlock {
+public class TrellisBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<TrellisBlock> CODEC = simpleCodec(TrellisBlock::new);
 
     private static final VoxelShape NORTH_SOUTH_SHAPE = Shapes.or(

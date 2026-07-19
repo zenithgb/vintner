@@ -1,6 +1,7 @@
 package com.zenith.vintner;
 
 import com.zenith.vintner.registry.ModBlocks;
+import com.zenith.vintner.registry.ModItems;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ public final class Vintner implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        ModItems.initialize();
         ModBlocks.initialize();
         LOGGER.info("Vintner initialized.");
     }

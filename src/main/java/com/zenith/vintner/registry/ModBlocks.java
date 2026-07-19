@@ -1,6 +1,7 @@
 package com.zenith.vintner.registry;
 
 import com.zenith.vintner.Vintner;
+import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.Registry;
@@ -26,6 +27,15 @@ public final class ModBlocks {
                     .sound(SoundType.WOOD)
                     .noOcclusion(),
             true
+    );
+
+    public static final Block GRAPEVINE = registerWithoutItem(
+            "grapevine",
+            GrapevineBlock::new,
+            BlockBehaviour.Properties.of()
+                    .strength(1.0F)
+                    .noOcclusion()
+                    .randomTicks()
     );
 
     private ModBlocks() {
@@ -61,6 +71,19 @@ public final class ModBlocks {
         }
 
         return Registry.register(BuiltInRegistries.BLOCK, blockKey, block);
+    }
+
+    private static Block registerWithoutItem(
+            String name,
+            java.util.function.Function<BlockBehaviour.Properties, Block> factory,
+            BlockBehaviour.Properties properties
+    ) {
+        Identifier id = Identifier.fromNamespaceAndPath(Vintner.MOD_ID, name);
+        ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK, id);
+
+        Block block = factory.apply(properties.setId(key));
+
+        return Registry.register(BuiltInRegistries.BLOCK, key, block);
     }
 
     public static void initialize() {

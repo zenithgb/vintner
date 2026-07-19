@@ -1,3 +1,5 @@
 {
-  "block.vintner.oak_trellis": "Oak Trellis"
+  "block.vintner.oak_trellis": "Oak Trellis",
+  "item.vintner.grapes": "Grapes",
+  "block.vintner.grapevine": "Grapevine"
 }
