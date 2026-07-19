@@ -1,6 +1,7 @@
 package com.zenith.vintner.registry;
 
 import com.zenith.vintner.Vintner;
+import com.zenith.vintner.block.TrellisBlock;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,10 +20,11 @@ import java.util.function.Function;
 public final class ModBlocks {
     public static final Block OAK_TRELLIS = register(
             "oak_trellis",
-            Block::new,
+            TrellisBlock::new,
             BlockBehaviour.Properties.of()
                     .strength(2.0F, 3.0F)
-                    .sound(SoundType.WOOD),
+                    .sound(SoundType.WOOD)
+                    .noOcclusion(),
             true
     );
 
