@@ -12,5 +12,11 @@
   "item.vintner.white_wine": "White Wine",
   "block.vintner.aging_barrel": "Aging Barrel",
   "item.vintner.aged_red_wine": "Aged Red Wine",
-  "item.vintner.aged_white_wine": "Aged White Wine"
+  "item.vintner.aged_white_wine": "Aged White Wine",
+  "wine_quality.vintner.common": "Common",
+  "wine_quality.vintner.fine": "Fine",
+  "wine_quality.vintner.exceptional": "Exceptional",
+  "tooltip.vintner.quality": "Quality: %s",
+  "tooltip.vintner.vintage": "Vintage: Year %s",
+  "item.vintner.wine_named": "%s %s — Year %s"
 }

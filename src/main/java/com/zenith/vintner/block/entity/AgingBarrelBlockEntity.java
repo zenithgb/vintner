@@ -3,6 +3,8 @@ package com.zenith.vintner.block.entity;
 import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.wine.WineMetadata;
+import com.zenith.vintner.wine.WineQuality;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -21,6 +23,8 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
     private int bottleCount;
     private int agingProgress;
     private boolean ready;
+    private int vintage = 1;
+    private WineQuality quality = WineQuality.COMMON;
 
     public AgingBarrelBlockEntity(
             BlockPos pos,
@@ -59,8 +63,17 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
             return false;
         }
 
-        return bottleCount < CAPACITY
-                && (wineType == 0 || wineType == offeredType);
+        if (bottleCount >= CAPACITY) {
+            return false;
+        }
+
+        if (wineType == 0) {
+            return true;
+        }
+
+        return wineType == offeredType
+                && vintage == WineMetadata.vintage(stack)
+                && quality == WineMetadata.quality(stack);
     }
 
     public boolean insertOne(ItemStack stack) {
@@ -70,9 +83,13 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
             return false;
         }
 
+        WineMetadata.ensureDefaults(stack);
+
         if (wineType == 0) {
             wineType = offeredType;
             agingProgress = 0;
+            vintage = WineMetadata.vintage(stack);
+            quality = WineMetadata.quality(stack);
         }
 
         bottleCount++;
@@ -93,6 +110,14 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                 ? ModItems.AGED_RED_WINE
                 : ModItems.AGED_WHITE_WINE;
 
+        ItemStack result = new ItemStack(agedWine);
+
+        WineMetadata.apply(
+                result,
+                vintage,
+                quality.improved()
+        );
+
         bottleCount--;
 
         if (bottleCount <= 0) {
@@ -100,7 +125,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         }
 
         markChangedAndSync();
-        return new ItemStack(agedWine);
+        return result;
     }
 
     public ItemStack getStoredContentsCopy() {
@@ -120,7 +145,18 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                     : ModItems.WHITE_WINE;
         }
 
-        return new ItemStack(storedItem, bottleCount);
+        ItemStack result = new ItemStack(
+                storedItem,
+                bottleCount
+        );
+
+        WineMetadata.apply(
+                result,
+                vintage,
+                ready ? quality.improved() : quality
+        );
+
+        return result;
     }
 
     private void resetBatch() {
@@ -128,6 +164,8 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         bottleCount = 0;
         agingProgress = 0;
         ready = false;
+        vintage = 1;
+        quality = WineQuality.COMMON;
     }
 
     private void markChangedAndSync() {
@@ -183,6 +221,13 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         bottleCount = input.getIntOr("BottleCount", 0);
         agingProgress = input.getIntOr("AgingProgress", 0);
         ready = input.getBooleanOr("Ready", false);
+        vintage = input.getIntOr("Vintage", 1);
+        quality = WineQuality.byId(
+                input.getIntOr(
+                        "Quality",
+                        WineQuality.COMMON.id()
+                )
+        );
     }
 
     @Override
@@ -193,5 +238,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         output.putInt("BottleCount", bottleCount);
         output.putInt("AgingProgress", agingProgress);
         output.putBoolean("Ready", ready);
+        output.putInt("Vintage", vintage);
+        output.putInt("Quality", quality.id());
     }
 }

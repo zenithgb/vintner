@@ -3,6 +3,8 @@ package com.zenith.vintner.block.entity;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.wine.WineMetadata;
+import com.zenith.vintner.wine.WineQuality;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -104,6 +106,20 @@ public final class FermentationBarrelBlockEntity
                 ? ModItems.RED_WINE
                 : ModItems.WHITE_WINE;
 
+        ItemStack result = new ItemStack(wine);
+
+        int vintage = level == null
+                ? 1
+                : WineMetadata.vintageFromGameTime(
+                        level.getGameTime()
+                );
+
+        WineMetadata.apply(
+                result,
+                vintage,
+                WineQuality.COMMON
+        );
+
         bottleCount--;
 
         if (bottleCount <= 0) {
@@ -111,7 +127,7 @@ public final class FermentationBarrelBlockEntity
         }
 
         markChangedAndSync();
-        return new ItemStack(wine);
+        return result;
     }
 
     public ItemStack getStoredContentsCopy() {
@@ -131,7 +147,26 @@ public final class FermentationBarrelBlockEntity
                     : ModItems.WHITE_MUST;
         }
 
-        return new ItemStack(storedItem, bottleCount);
+        ItemStack result = new ItemStack(
+                storedItem,
+                bottleCount
+        );
+
+        if (ready) {
+            int vintage = level == null
+                    ? 1
+                    : WineMetadata.vintageFromGameTime(
+                            level.getGameTime()
+                    );
+
+            WineMetadata.apply(
+                    result,
+                    vintage,
+                    WineQuality.COMMON
+            );
+        }
+
+        return result;
     }
 
     private void resetBatch() {

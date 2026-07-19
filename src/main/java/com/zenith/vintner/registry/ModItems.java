@@ -1,6 +1,7 @@
 package com.zenith.vintner.registry;
 
 import com.zenith.vintner.item.WineConsumables;
+import com.zenith.vintner.item.WineItem;
 import net.minecraft.core.component.DataComponents;
 import com.zenith.vintner.Vintner;
 import com.zenith.vintner.item.GrapeItem;
@@ -45,7 +46,7 @@ public final class ModItems {
 
     public static final Item RED_WINE = register(
             "red_wine",
-            properties -> new Item(
+            properties -> new WineItem(
                     properties
                             .stacksTo(16)
                             .component(
@@ -59,7 +60,7 @@ public final class ModItems {
 
     public static final Item WHITE_WINE = register(
             "white_wine",
-            properties -> new Item(
+            properties -> new WineItem(
                     properties
                             .stacksTo(16)
                             .component(
@@ -73,7 +74,7 @@ public final class ModItems {
 
     public static final Item AGED_RED_WINE = register(
             "aged_red_wine",
-            properties -> new Item(
+            properties -> new WineItem(
                     properties
                             .stacksTo(16)
                             .component(
@@ -87,7 +88,7 @@ public final class ModItems {
 
     public static final Item AGED_WHITE_WINE = register(
             "aged_white_wine",
-            properties -> new Item(
+            properties -> new WineItem(
                     properties
                             .stacksTo(16)
                             .component(
