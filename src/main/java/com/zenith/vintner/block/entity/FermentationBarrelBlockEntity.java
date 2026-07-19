@@ -1,0 +1,219 @@
+package com.zenith.vintner.block.entity;
+
+import com.zenith.vintner.block.FermentationBarrelBlock;
+import com.zenith.vintner.registry.ModBlockEntities;
+import com.zenith.vintner.registry.ModItems;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+
+public final class FermentationBarrelBlockEntity
+        extends BlockEntity {
+    public static final int CAPACITY = 4;
+
+    /*
+     * One minute keeps the foundation convenient to test.
+     * This can become configurable or recipe-dependent later.
+     */
+    public static final int FERMENTATION_TIME = 20 * 60;
+
+    private int batchType;
+    private int bottleCount;
+    private int fermentationProgress;
+    private boolean ready;
+
+    public FermentationBarrelBlockEntity(
+            BlockPos pos,
+            BlockState state
+    ) {
+        super(ModBlockEntities.FERMENTATION_BARREL, pos, state);
+    }
+
+    public static void serverTick(
+            net.minecraft.world.level.Level level,
+            BlockPos pos,
+            BlockState state,
+            FermentationBarrelBlockEntity barrel
+    ) {
+        if (barrel.batchType == 0
+                || barrel.bottleCount <= 0
+                || barrel.ready) {
+            return;
+        }
+
+        barrel.fermentationProgress++;
+
+        if (barrel.fermentationProgress
+                >= FERMENTATION_TIME) {
+            barrel.fermentationProgress =
+                    FERMENTATION_TIME;
+            barrel.ready = true;
+            barrel.markChangedAndSync();
+        } else if (barrel.fermentationProgress % 20 == 0) {
+            /*
+             * Persist periodic progress without forcing a visual
+             * block-state update every tick.
+             */
+            barrel.setChanged();
+        }
+    }
+
+    public boolean canInsert(ItemStack stack) {
+        int offeredType = getMustType(stack);
+
+        if (offeredType == 0 || ready) {
+            return false;
+        }
+
+        return bottleCount < CAPACITY
+                && (batchType == 0 || batchType == offeredType);
+    }
+
+    public boolean insertOne(ItemStack stack) {
+        int offeredType = getMustType(stack);
+
+        if (!canInsert(stack)) {
+            return false;
+        }
+
+        if (batchType == 0) {
+            batchType = offeredType;
+            fermentationProgress = 0;
+        }
+
+        bottleCount++;
+        markChangedAndSync();
+        return true;
+    }
+
+    public boolean isReady() {
+        return ready && bottleCount > 0;
+    }
+
+    public ItemStack takeOneWine() {
+        if (!isReady()) {
+            return ItemStack.EMPTY;
+        }
+
+        Item wine = batchType == 1
+                ? ModItems.RED_WINE
+                : ModItems.WHITE_WINE;
+
+        bottleCount--;
+
+        if (bottleCount <= 0) {
+            resetBatch();
+        }
+
+        markChangedAndSync();
+        return new ItemStack(wine);
+    }
+
+    public ItemStack getStoredContentsCopy() {
+        if (batchType == 0 || bottleCount <= 0) {
+            return ItemStack.EMPTY;
+        }
+
+        Item storedItem;
+
+        if (ready) {
+            storedItem = batchType == 1
+                    ? ModItems.RED_WINE
+                    : ModItems.WHITE_WINE;
+        } else {
+            storedItem = batchType == 1
+                    ? ModItems.RED_MUST
+                    : ModItems.WHITE_MUST;
+        }
+
+        return new ItemStack(storedItem, bottleCount);
+    }
+
+    private void resetBatch() {
+        batchType = 0;
+        bottleCount = 0;
+        fermentationProgress = 0;
+        ready = false;
+    }
+
+    private void markChangedAndSync() {
+        setChanged();
+        syncVisualState();
+    }
+
+    private void syncVisualState() {
+        if (level == null) {
+            return;
+        }
+
+        BlockState state = getBlockState();
+
+        if (!(state.getBlock()
+                instanceof FermentationBarrelBlock)) {
+            return;
+        }
+
+        int status = batchType == 0
+                ? 0
+                : ready ? 2 : 1;
+
+        BlockState updated = state
+                .setValue(
+                        FermentationBarrelBlock.STATUS,
+                        status
+                )
+                .setValue(
+                        FermentationBarrelBlock.WINE_TYPE,
+                        batchType
+                );
+
+        if (!updated.equals(state)) {
+            level.setBlock(
+                    worldPosition,
+                    updated,
+                    Block.UPDATE_CLIENTS
+            );
+        }
+    }
+
+    private static int getMustType(ItemStack stack) {
+        if (stack.is(ModItems.RED_MUST)) {
+            return 1;
+        }
+
+        if (stack.is(ModItems.WHITE_MUST)) {
+            return 2;
+        }
+
+        return 0;
+    }
+
+    @Override
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+
+        batchType = input.getIntOr("BatchType", 0);
+        bottleCount = input.getIntOr("BottleCount", 0);
+        fermentationProgress =
+                input.getIntOr("FermentationProgress", 0);
+        ready = input.getBooleanOr("Ready", false);
+    }
+
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+
+        output.putInt("BatchType", batchType);
+        output.putInt("BottleCount", bottleCount);
+        output.putInt(
+                "FermentationProgress",
+                fermentationProgress
+        );
+        output.putBoolean("Ready", ready);
+    }
+}

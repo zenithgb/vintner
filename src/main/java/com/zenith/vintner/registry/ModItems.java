@@ -40,6 +40,16 @@ public final class ModItems {
             Item::new
     );
 
+    public static final Item RED_WINE = register(
+            "red_wine",
+            Item::new
+    );
+
+    public static final Item WHITE_WINE = register(
+            "white_wine",
+            Item::new
+    );
+
     private ModItems() {
     }
 
@@ -78,6 +88,8 @@ public final class ModItems {
                     output.accept(WHITE_GRAPES);
                     output.accept(RED_MUST);
                     output.accept(WHITE_MUST);
+                    output.accept(RED_WINE);
+                    output.accept(WHITE_WINE);
                 });
     }
 }

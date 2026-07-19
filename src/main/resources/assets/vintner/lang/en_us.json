@@ -6,5 +6,8 @@
   "block.vintner.white_grapevine": "White Grapevine",
   "block.vintner.grape_press": "Grape Press",
   "item.vintner.red_must": "Red Grape Must",
-  "item.vintner.white_must": "White Grape Must"
+  "item.vintner.white_must": "White Grape Must",
+  "block.vintner.fermentation_barrel": "Fermentation Barrel",
+  "item.vintner.red_wine": "Red Wine",
+  "item.vintner.white_wine": "White Wine"
 }
