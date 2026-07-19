@@ -1,5 +1,6 @@
 package com.zenith.vintner;
 
+import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModItems;
 import net.fabricmc.api.ModInitializer;
@@ -14,6 +15,7 @@ public final class Vintner implements ModInitializer {
     public void onInitialize() {
         ModItems.initialize();
         ModBlocks.initialize();
+        ModBlockEntities.initialize();
         LOGGER.info("Vintner initialized.");
     }
 }

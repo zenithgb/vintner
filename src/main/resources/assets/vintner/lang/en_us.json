@@ -3,5 +3,8 @@
   "item.vintner.red_grapes": "Red Grapes",
   "item.vintner.white_grapes": "White Grapes",
   "block.vintner.red_grapevine": "Red Grapevine",
-  "block.vintner.white_grapevine": "White Grapevine"
+  "block.vintner.white_grapevine": "White Grapevine",
+  "block.vintner.grape_press": "Grape Press",
+  "item.vintner.red_must": "Red Grape Must",
+  "item.vintner.white_must": "White Grape Must"
 }

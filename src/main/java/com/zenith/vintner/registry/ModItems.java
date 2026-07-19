@@ -30,6 +30,16 @@ public final class ModItems {
             )
     );
 
+    public static final Item RED_MUST = register(
+            "red_must",
+            Item::new
+    );
+
+    public static final Item WHITE_MUST = register(
+            "white_must",
+            Item::new
+    );
+
     private ModItems() {
     }
 
@@ -66,6 +76,8 @@ public final class ModItems {
                 .register(output -> {
                     output.accept(RED_GRAPES);
                     output.accept(WHITE_GRAPES);
+                    output.accept(RED_MUST);
+                    output.accept(WHITE_MUST);
                 });
     }
 }

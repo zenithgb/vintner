@@ -1,0 +1,40 @@
+{
+  "textures": {
+    "contents": "minecraft:block/yellow_stained_glass",
+    "particle": "minecraft:block/yellow_stained_glass"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        3,
+        4
+      ],
+      "to": [
+        12,
+        5,
+        12
+      ],
+      "faces": {
+        "up": {
+          "texture": "#contents"
+        },
+        "down": {
+          "texture": "#contents"
+        },
+        "north": {
+          "texture": "#contents"
+        },
+        "south": {
+          "texture": "#contents"
+        },
+        "east": {
+          "texture": "#contents"
+        },
+        "west": {
+          "texture": "#contents"
+        }
+      }
+    }
+  ]
+}
