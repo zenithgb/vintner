@@ -1,6 +1,7 @@
 package com.zenith.vintner.registry;
 
 import com.zenith.vintner.Vintner;
+import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapePressBlock;
 import com.zenith.vintner.block.RedGrapevineBlock;
@@ -28,6 +29,14 @@ public final class ModBlocks {
                     .strength(1.5F)
                     .noOcclusion()
     );
+
+    public static final Block AGING_BARREL =
+            registerWithItem(
+                    "aging_barrel",
+                    AgingBarrelBlock::new,
+                    BlockBehaviour.Properties.of()
+                            .strength(2.5F)
+            );
 
     public static final Block FERMENTATION_BARREL =
             registerWithItem(
@@ -136,6 +145,7 @@ public final class ModBlocks {
                     output.accept(OAK_TRELLIS);
                     output.accept(GRAPE_PRESS);
                     output.accept(FERMENTATION_BARREL);
+                    output.accept(AGING_BARREL);
                 });
     }
 }

@@ -71,6 +71,34 @@ public final class ModItems {
             )
     );
 
+    public static final Item AGED_RED_WINE = register(
+            "aged_red_wine",
+            properties -> new Item(
+                    properties
+                            .stacksTo(16)
+                            .component(
+                                    DataComponents.CONSUMABLE,
+                                    WineConsumables.AGED_RED_WINE
+                            )
+                            .usingConvertsTo(Items.GLASS_BOTTLE)
+                            .useCooldown(18.0F)
+            )
+    );
+
+    public static final Item AGED_WHITE_WINE = register(
+            "aged_white_wine",
+            properties -> new Item(
+                    properties
+                            .stacksTo(16)
+                            .component(
+                                    DataComponents.CONSUMABLE,
+                                    WineConsumables.AGED_WHITE_WINE
+                            )
+                            .usingConvertsTo(Items.GLASS_BOTTLE)
+                            .useCooldown(18.0F)
+            )
+    );
+
     private ModItems() {
     }
 
@@ -111,6 +139,8 @@ public final class ModItems {
                     output.accept(WHITE_MUST);
                     output.accept(RED_WINE);
                     output.accept(WHITE_WINE);
+                    output.accept(AGED_RED_WINE);
+                    output.accept(AGED_WHITE_WINE);
                 });
     }
 }

@@ -9,5 +9,8 @@
   "item.vintner.white_must": "White Grape Must",
   "block.vintner.fermentation_barrel": "Fermentation Barrel",
   "item.vintner.red_wine": "Red Wine",
-  "item.vintner.white_wine": "White Wine"
+  "item.vintner.white_wine": "White Wine",
+  "block.vintner.aging_barrel": "Aging Barrel",
+  "item.vintner.aged_red_wine": "Aged Red Wine",
+  "item.vintner.aged_white_wine": "Aged White Wine"
 }

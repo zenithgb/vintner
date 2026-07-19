@@ -1,6 +1,7 @@
 package com.zenith.vintner.registry;
 
 import com.zenith.vintner.Vintner;
+import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -20,6 +21,20 @@ public final class ModBlockEntities {
                     FabricBlockEntityTypeBuilder.create(
                             GrapePressBlockEntity::new,
                             ModBlocks.GRAPE_PRESS
+                    ).build()
+            );
+
+    public static final BlockEntityType<
+            AgingBarrelBlockEntity
+            > AGING_BARREL = Registry.register(
+                    BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                    Identifier.fromNamespaceAndPath(
+                            Vintner.MOD_ID,
+                            "aging_barrel"
+                    ),
+                    FabricBlockEntityTypeBuilder.create(
+                            AgingBarrelBlockEntity::new,
+                            ModBlocks.AGING_BARREL
                     ).build()
             );
 

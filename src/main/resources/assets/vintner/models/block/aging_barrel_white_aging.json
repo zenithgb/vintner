@@ -1,0 +1,40 @@
+{
+  "textures": {
+    "indicator": "minecraft:block/yellow_wool",
+    "particle": "minecraft:block/yellow_wool"
+  },
+  "elements": [
+    {
+      "from": [
+        5.5,
+        16.01,
+        5.5
+      ],
+      "to": [
+        10.5,
+        16.75,
+        10.5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#indicator"
+        },
+        "down": {
+          "texture": "#indicator"
+        },
+        "north": {
+          "texture": "#indicator"
+        },
+        "south": {
+          "texture": "#indicator"
+        },
+        "east": {
+          "texture": "#indicator"
+        },
+        "west": {
+          "texture": "#indicator"
+        }
+      }
+    }
+  ]
+}
