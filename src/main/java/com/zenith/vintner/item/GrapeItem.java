@@ -33,6 +33,18 @@ public final class GrapeItem extends Item {
                     .setValue(
                             TrellisBlock.FACING,
                             clickedState.getValue(TrellisBlock.FACING)
+                    )
+                    .setValue(
+                            TrellisBlock.LEFT,
+                            clickedState.getValue(TrellisBlock.LEFT)
+                    )
+                    .setValue(
+                            TrellisBlock.RIGHT,
+                            clickedState.getValue(TrellisBlock.RIGHT)
+                    )
+                    .setValue(
+                            TrellisBlock.ISOLATED,
+                            clickedState.getValue(TrellisBlock.ISOLATED)
                     );
 
             serverLevel.setBlock(

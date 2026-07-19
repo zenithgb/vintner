@@ -42,6 +42,9 @@ public final class GrapevineBlock extends TrellisBlock implements BonemealableBl
         registerDefaultState(
                 stateDefinition.any()
                         .setValue(FACING, net.minecraft.core.Direction.NORTH)
+                        .setValue(LEFT, false)
+                        .setValue(RIGHT, false)
+                        .setValue(ISOLATED, false)
                         .setValue(AGE, 0)
         );
     }
@@ -183,6 +186,6 @@ public final class GrapevineBlock extends TrellisBlock implements BonemealableBl
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING, AGE);
+        builder.add(FACING, LEFT, RIGHT, ISOLATED, AGE);
     }
 }
