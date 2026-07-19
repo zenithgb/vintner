@@ -1,5 +1,7 @@
 package com.zenith.vintner.registry;
 
+import com.zenith.vintner.item.WineConsumables;
+import net.minecraft.core.component.DataComponents;
 import com.zenith.vintner.Vintner;
 import com.zenith.vintner.item.GrapeItem;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
@@ -10,6 +12,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 
 import java.util.function.Function;
 
@@ -42,12 +45,30 @@ public final class ModItems {
 
     public static final Item RED_WINE = register(
             "red_wine",
-            Item::new
+            properties -> new Item(
+                    properties
+                            .stacksTo(16)
+                            .component(
+                                    DataComponents.CONSUMABLE,
+                                    WineConsumables.RED_WINE
+                            )
+                            .usingConvertsTo(Items.GLASS_BOTTLE)
+                            .useCooldown(12.0F)
+            )
     );
 
     public static final Item WHITE_WINE = register(
             "white_wine",
-            Item::new
+            properties -> new Item(
+                    properties
+                            .stacksTo(16)
+                            .component(
+                                    DataComponents.CONSUMABLE,
+                                    WineConsumables.WHITE_WINE
+                            )
+                            .usingConvertsTo(Items.GLASS_BOTTLE)
+                            .useCooldown(12.0F)
+            )
     );
 
     private ModItems() {
