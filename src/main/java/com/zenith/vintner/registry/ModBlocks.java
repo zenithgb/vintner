@@ -1,8 +1,9 @@
 package com.zenith.vintner.registry;
 
 import com.zenith.vintner.Vintner;
-import com.zenith.vintner.block.GrapevineBlock;
+import com.zenith.vintner.block.RedGrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
+import com.zenith.vintner.block.WhiteGrapevineBlock;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -13,25 +14,31 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.function.Function;
 
 public final class ModBlocks {
-    public static final Block OAK_TRELLIS = register(
+    public static final Block OAK_TRELLIS = registerWithItem(
             "oak_trellis",
             TrellisBlock::new,
             BlockBehaviour.Properties.of()
-                    .strength(2.0F, 3.0F)
-                    .sound(SoundType.WOOD)
-                    .noOcclusion(),
-            true
+                    .strength(1.5F)
+                    .noOcclusion()
     );
 
-    public static final Block GRAPEVINE = registerWithoutItem(
-            "grapevine",
-            GrapevineBlock::new,
+    public static final Block RED_GRAPEVINE = registerWithoutItem(
+            "red_grapevine",
+            RedGrapevineBlock::new,
+            BlockBehaviour.Properties.of()
+                    .strength(1.0F)
+                    .noOcclusion()
+                    .randomTicks()
+    );
+
+    public static final Block WHITE_GRAPEVINE = registerWithoutItem(
+            "white_grapevine",
+            WhiteGrapevineBlock::new,
             BlockBehaviour.Properties.of()
                     .strength(1.0F)
                     .noOcclusion()
@@ -41,53 +48,73 @@ public final class ModBlocks {
     private ModBlocks() {
     }
 
-    private static Block register(
+    private static Block registerWithItem(
             String name,
             Function<BlockBehaviour.Properties, Block> factory,
-            BlockBehaviour.Properties properties,
-            boolean registerItem
+            BlockBehaviour.Properties properties
     ) {
-        ResourceKey<Block> blockKey = ResourceKey.create(
-                Registries.BLOCK,
-                Identifier.fromNamespaceAndPath(Vintner.MOD_ID, name)
-        );
-
-        Block block = factory.apply(properties.setId(blockKey));
-
-        if (registerItem) {
-            ResourceKey<Item> itemKey = ResourceKey.create(
-                    Registries.ITEM,
-                    Identifier.fromNamespaceAndPath(Vintner.MOD_ID, name)
-            );
-
-            BlockItem blockItem = new BlockItem(
-                    block,
-                    new Item.Properties()
-                            .setId(itemKey)
-                            .useBlockDescriptionPrefix()
-            );
-
-            Registry.register(BuiltInRegistries.ITEM, itemKey, blockItem);
-        }
-
-        return Registry.register(BuiltInRegistries.BLOCK, blockKey, block);
+        Block block = registerWithoutItem(name, factory, properties);
+        registerBlockItem(name, block);
+        return block;
     }
 
     private static Block registerWithoutItem(
             String name,
-            java.util.function.Function<BlockBehaviour.Properties, Block> factory,
+            Function<BlockBehaviour.Properties, Block> factory,
             BlockBehaviour.Properties properties
     ) {
-        Identifier id = Identifier.fromNamespaceAndPath(Vintner.MOD_ID, name);
-        ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK, id);
+        Identifier id = Identifier.fromNamespaceAndPath(
+                Vintner.MOD_ID,
+                name
+        );
+
+        ResourceKey<Block> key = ResourceKey.create(
+                Registries.BLOCK,
+                id
+        );
 
         Block block = factory.apply(properties.setId(key));
 
-        return Registry.register(BuiltInRegistries.BLOCK, key, block);
+        return Registry.register(
+                BuiltInRegistries.BLOCK,
+                key,
+                block
+        );
+    }
+
+    private static void registerBlockItem(
+            String name,
+            Block block
+    ) {
+        Identifier id = Identifier.fromNamespaceAndPath(
+                Vintner.MOD_ID,
+                name
+        );
+
+        ResourceKey<Item> key = ResourceKey.create(
+                Registries.ITEM,
+                id
+        );
+
+        Item item = new BlockItem(
+                block,
+                new Item.Properties()
+                        .setId(key)
+                        .useBlockDescriptionPrefix()
+        );
+
+        Registry.register(
+                BuiltInRegistries.ITEM,
+                key,
+                item
+        );
     }
 
     public static void initialize() {
-        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS)
-                .register(entries -> entries.accept(OAK_TRELLIS.asItem()));
+        CreativeModeTabEvents
+                .modifyOutputEvent(
+                        CreativeModeTabs.FUNCTIONAL_BLOCKS
+                )
+                .register(output -> output.accept(OAK_TRELLIS));
     }
 }

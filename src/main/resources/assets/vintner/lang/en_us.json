@@ -1,5 +1,7 @@
 {
   "block.vintner.oak_trellis": "Oak Trellis",
-  "item.vintner.grapes": "Grapes",
-  "block.vintner.grapevine": "Grapevine"
+  "item.vintner.red_grapes": "Red Grapes",
+  "item.vintner.white_grapes": "White Grapes",
+  "block.vintner.red_grapevine": "Red Grapevine",
+  "block.vintner.white_grapevine": "White Grapevine"
 }

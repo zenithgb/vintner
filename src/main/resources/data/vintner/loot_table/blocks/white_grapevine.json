@@ -20,7 +20,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "vintner:grapes",
+          "name": "vintner:white_grapes",
           "functions": [
             {
               "function": "minecraft:set_count",
@@ -36,7 +36,7 @@
       "conditions": [
         {
           "condition": "minecraft:block_state_property",
-          "block": "vintner:grapevine",
+          "block": "vintner:white_grapevine",
           "properties": {
             "age": "3"
           }
@@ -47,5 +47,5 @@
       ]
     }
   ],
-  "random_sequence": "vintner:blocks/grapevine"
+  "random_sequence": "vintner:blocks/white_grapevine"
 }

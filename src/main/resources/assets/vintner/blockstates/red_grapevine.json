@@ -118,7 +118,7 @@
         "age": "0"
       },
       "apply": {
-        "model": "vintner:block/grapevine_age_0"
+        "model": "vintner:block/red_grapevine_age_0"
       }
     },
     {
@@ -126,7 +126,7 @@
         "age": "1"
       },
       "apply": {
-        "model": "vintner:block/grapevine_age_1"
+        "model": "vintner:block/red_grapevine_age_1"
       }
     },
     {
@@ -134,7 +134,7 @@
         "age": "2"
       },
       "apply": {
-        "model": "vintner:block/grapevine_age_2"
+        "model": "vintner:block/red_grapevine_age_2"
       }
     },
     {
@@ -142,7 +142,7 @@
         "age": "3"
       },
       "apply": {
-        "model": "vintner:block/grapevine_age_3"
+        "model": "vintner:block/red_grapevine_age_3"
       }
     }
   ]

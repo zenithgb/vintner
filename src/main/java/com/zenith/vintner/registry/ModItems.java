@@ -11,10 +11,23 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 
+import java.util.function.Function;
+
 public final class ModItems {
-    public static final Item GRAPES = register(
-            "grapes",
-            properties -> new GrapeItem(properties)
+    public static final Item RED_GRAPES = register(
+            "red_grapes",
+            properties -> new GrapeItem(
+                    () -> ModBlocks.RED_GRAPEVINE,
+                    properties
+            )
+    );
+
+    public static final Item WHITE_GRAPES = register(
+            "white_grapes",
+            properties -> new GrapeItem(
+                    () -> ModBlocks.WHITE_GRAPEVINE,
+                    properties
+            )
     );
 
     private ModItems() {
@@ -22,19 +35,37 @@ public final class ModItems {
 
     private static Item register(
             String name,
-            java.util.function.Function<Item.Properties, Item> factory
+            Function<Item.Properties, Item> factory
     ) {
-        Identifier id = Identifier.fromNamespaceAndPath(Vintner.MOD_ID, name);
-        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        Identifier id = Identifier.fromNamespaceAndPath(
+                Vintner.MOD_ID,
+                name
+        );
 
-        Item item = factory.apply(new Item.Properties().setId(key));
+        ResourceKey<Item> key = ResourceKey.create(
+                Registries.ITEM,
+                id
+        );
 
-        return Registry.register(BuiltInRegistries.ITEM, key, item);
+        Item item = factory.apply(
+                new Item.Properties().setId(key)
+        );
+
+        return Registry.register(
+                BuiltInRegistries.ITEM,
+                key,
+                item
+        );
     }
 
     public static void initialize() {
         CreativeModeTabEvents
-                .modifyOutputEvent(CreativeModeTabs.FOOD_AND_DRINKS)
-                .register(output -> output.accept(GRAPES));
+                .modifyOutputEvent(
+                        CreativeModeTabs.FOOD_AND_DRINKS
+                )
+                .register(output -> {
+                    output.accept(RED_GRAPES);
+                    output.accept(WHITE_GRAPES);
+                });
     }
 }

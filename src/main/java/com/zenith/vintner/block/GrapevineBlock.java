@@ -1,14 +1,15 @@
 package com.zenith.vintner.block;
 
-import com.mojang.serialization.MapCodec;
-import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.vineyard.GrapeVariety;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -25,8 +26,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public final class GrapevineBlock extends TrellisBlock implements BonemealableBlock {
-    public static final MapCodec<GrapevineBlock> CODEC = simpleCodec(GrapevineBlock::new);
+public abstract class GrapevineBlock
+        extends TrellisBlock
+        implements BonemealableBlock {
 
     public static final int MAX_AGE = 3;
     public static final IntegerProperty AGE = BlockStateProperties.AGE_3;
@@ -37,11 +39,18 @@ public final class GrapevineBlock extends TrellisBlock implements BonemealableBl
     private static final VoxelShape EAST_WEST_SHAPE =
             Block.box(6.0, 0.0, 0.0, 10.0, 16.0, 16.0);
 
-    public GrapevineBlock(BlockBehaviour.Properties properties) {
+    private final GrapeVariety variety;
+
+    protected GrapevineBlock(
+            GrapeVariety variety,
+            BlockBehaviour.Properties properties
+    ) {
         super(properties);
+        this.variety = variety;
+
         registerDefaultState(
                 stateDefinition.any()
-                        .setValue(FACING, net.minecraft.core.Direction.NORTH)
+                        .setValue(FACING, Direction.NORTH)
                         .setValue(LEFT, false)
                         .setValue(RIGHT, false)
                         .setValue(ISOLATED, false)
@@ -49,9 +58,10 @@ public final class GrapevineBlock extends TrellisBlock implements BonemealableBl
         );
     }
 
-    @Override
-    public MapCodec<GrapevineBlock> codec() {
-        return CODEC;
+    protected abstract Item getGrapeItem();
+
+    public GrapeVariety getVariety() {
+        return variety;
     }
 
     @Override
@@ -61,8 +71,7 @@ public final class GrapevineBlock extends TrellisBlock implements BonemealableBl
             BlockPos pos,
             CollisionContext context
     ) {
-        return state.getValue(FACING).getAxis()
-                == net.minecraft.core.Direction.Axis.X
+        return state.getValue(FACING).getAxis() == Direction.Axis.X
                 ? EAST_WEST_SHAPE
                 : NORTH_SOUTH_SHAPE;
     }
@@ -82,15 +91,17 @@ public final class GrapevineBlock extends TrellisBlock implements BonemealableBl
         int age = state.getValue(AGE);
 
         if (age < MAX_AGE
-                && random.nextInt(5) == 0
+                && random.nextInt(
+                        variety.growthChanceDenominator()
+                ) == 0
                 && level.getRawBrightness(pos.above(), 0) >= 9) {
-            BlockState newState = state.setValue(AGE, age + 1);
+            BlockState grownState = state.setValue(AGE, age + 1);
 
-            level.setBlock(pos, newState, Block.UPDATE_CLIENTS);
+            level.setBlock(pos, grownState, Block.UPDATE_CLIENTS);
             level.gameEvent(
                     GameEvent.BLOCK_CHANGE,
                     pos,
-                    GameEvent.Context.of(newState)
+                    GameEvent.Context.of(grownState)
             );
         }
     }
@@ -104,16 +115,27 @@ public final class GrapevineBlock extends TrellisBlock implements BonemealableBl
             BlockHitResult hitResult
     ) {
         if (state.getValue(AGE) < MAX_AGE) {
-            return super.useWithoutItem(state, level, pos, player, hitResult);
+            return super.useWithoutItem(
+                    state,
+                    level,
+                    pos,
+                    player,
+                    hitResult
+            );
         }
 
         if (level instanceof ServerLevel serverLevel) {
-            int grapeCount = 2 + serverLevel.getRandom().nextInt(2);
+            int harvestRange = variety.maximumHarvest()
+                    - variety.minimumHarvest()
+                    + 1;
+
+            int grapeCount = variety.minimumHarvest()
+                    + serverLevel.getRandom().nextInt(harvestRange);
 
             Block.popResource(
                     serverLevel,
                     pos,
-                    new ItemStack(ModItems.GRAPES, grapeCount)
+                    new ItemStack(getGrapeItem(), grapeCount)
             );
 
             serverLevel.playSound(
@@ -122,11 +144,19 @@ public final class GrapevineBlock extends TrellisBlock implements BonemealableBl
                     SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES,
                     SoundSource.BLOCKS,
                     1.0F,
-                    0.8F + serverLevel.getRandom().nextFloat() * 0.4F
+                    0.8F
+                            + serverLevel.getRandom().nextFloat()
+                            * 0.4F
             );
 
             BlockState harvestedState = state.setValue(AGE, 1);
-            serverLevel.setBlock(pos, harvestedState, Block.UPDATE_CLIENTS);
+
+            serverLevel.setBlock(
+                    pos,
+                    harvestedState,
+                    Block.UPDATE_CLIENTS
+            );
+
             serverLevel.gameEvent(
                     GameEvent.BLOCK_CHANGE,
                     pos,
@@ -144,7 +174,7 @@ public final class GrapevineBlock extends TrellisBlock implements BonemealableBl
             BlockState state,
             boolean includeData
     ) {
-        return new ItemStack(ModItems.GRAPES);
+        return new ItemStack(getGrapeItem());
     }
 
     @Override
@@ -173,7 +203,10 @@ public final class GrapevineBlock extends TrellisBlock implements BonemealableBl
             BlockPos pos,
             BlockState state
     ) {
-        int newAge = Math.min(MAX_AGE, state.getValue(AGE) + 1);
+        int newAge = Math.min(
+                MAX_AGE,
+                state.getValue(AGE) + 1
+        );
 
         level.setBlock(
                 pos,

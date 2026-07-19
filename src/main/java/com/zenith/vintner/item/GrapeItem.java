@@ -1,7 +1,6 @@
 package com.zenith.vintner.item;
 
 import com.zenith.vintner.block.TrellisBlock;
-import com.zenith.vintner.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
@@ -9,12 +8,21 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
+import java.util.function.Supplier;
+
 public final class GrapeItem extends Item {
-    public GrapeItem(Properties properties) {
+    private final Supplier<Block> grapevineSupplier;
+
+    public GrapeItem(
+            Supplier<Block> grapevineSupplier,
+            Properties properties
+    ) {
         super(properties);
+        this.grapevineSupplier = grapevineSupplier;
     }
 
     @Override
@@ -23,12 +31,14 @@ public final class GrapeItem extends Item {
         BlockPos pos = context.getClickedPos();
         BlockState clickedState = level.getBlockState(pos);
 
-        if (!clickedState.is(ModBlocks.OAK_TRELLIS)) {
+        if (!(clickedState.getBlock() instanceof TrellisBlock)
+                || clickedState.getBlock()
+                instanceof com.zenith.vintner.block.GrapevineBlock) {
             return super.useOn(context);
         }
 
         if (level instanceof ServerLevel serverLevel) {
-            BlockState plantedState = ModBlocks.GRAPEVINE
+            BlockState plantedState = grapevineSupplier.get()
                     .defaultBlockState()
                     .setValue(
                             TrellisBlock.FACING,
@@ -50,18 +60,22 @@ public final class GrapeItem extends Item {
             serverLevel.setBlock(
                     pos,
                     plantedState,
-                    net.minecraft.world.level.block.Block.UPDATE_ALL
+                    Block.UPDATE_ALL
             );
 
             serverLevel.gameEvent(
                     GameEvent.BLOCK_CHANGE,
                     pos,
-                    GameEvent.Context.of(context.getPlayer(), plantedState)
+                    GameEvent.Context.of(
+                            context.getPlayer(),
+                            plantedState
+                    )
             );
 
             Player player = context.getPlayer();
 
-            if (player == null || !player.getAbilities().instabuild) {
+            if (player == null
+                    || !player.getAbilities().instabuild) {
                 context.getItemInHand().shrink(1);
             }
         }
