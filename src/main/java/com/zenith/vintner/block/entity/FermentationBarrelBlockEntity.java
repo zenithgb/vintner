@@ -28,6 +28,8 @@ public final class FermentationBarrelBlockEntity
     private int bottleCount;
     private int fermentationProgress;
     private boolean ready;
+    private int vintage = 1;
+    private WineQuality quality = WineQuality.COMMON;
 
     public FermentationBarrelBlockEntity(
             BlockPos pos,
@@ -72,8 +74,17 @@ public final class FermentationBarrelBlockEntity
             return false;
         }
 
-        return bottleCount < CAPACITY
-                && (batchType == 0 || batchType == offeredType);
+        if (bottleCount >= CAPACITY) {
+            return false;
+        }
+
+        if (batchType == 0) {
+            return true;
+        }
+
+        return batchType == offeredType
+                && vintage == WineMetadata.vintage(stack)
+                && quality == WineMetadata.quality(stack);
     }
 
     public boolean insertOne(ItemStack stack) {
@@ -83,9 +94,13 @@ public final class FermentationBarrelBlockEntity
             return false;
         }
 
+        WineMetadata.ensureDefaults(stack);
+
         if (batchType == 0) {
             batchType = offeredType;
             fermentationProgress = 0;
+            vintage = WineMetadata.vintage(stack);
+            quality = WineMetadata.quality(stack);
         }
 
         bottleCount++;
@@ -108,16 +123,10 @@ public final class FermentationBarrelBlockEntity
 
         ItemStack result = new ItemStack(wine);
 
-        int vintage = level == null
-                ? 1
-                : WineMetadata.vintageFromGameTime(
-                        level.getGameTime()
-                );
-
         WineMetadata.apply(
                 result,
                 vintage,
-                WineQuality.COMMON
+                quality
         );
 
         bottleCount--;
@@ -152,19 +161,11 @@ public final class FermentationBarrelBlockEntity
                 bottleCount
         );
 
-        if (ready) {
-            int vintage = level == null
-                    ? 1
-                    : WineMetadata.vintageFromGameTime(
-                            level.getGameTime()
-                    );
-
-            WineMetadata.apply(
-                    result,
-                    vintage,
-                    WineQuality.COMMON
-            );
-        }
+        WineMetadata.apply(
+                result,
+                vintage,
+                quality
+        );
 
         return result;
     }
@@ -174,6 +175,8 @@ public final class FermentationBarrelBlockEntity
         bottleCount = 0;
         fermentationProgress = 0;
         ready = false;
+        vintage = 1;
+        quality = WineQuality.COMMON;
     }
 
     private void markChangedAndSync() {
@@ -237,6 +240,13 @@ public final class FermentationBarrelBlockEntity
         fermentationProgress =
                 input.getIntOr("FermentationProgress", 0);
         ready = input.getBooleanOr("Ready", false);
+        vintage = input.getIntOr("Vintage", 1);
+        quality = WineQuality.byId(
+                input.getIntOr(
+                        "Quality",
+                        WineQuality.COMMON.id()
+                )
+        );
     }
 
     @Override
@@ -250,5 +260,7 @@ public final class FermentationBarrelBlockEntity
                 fermentationProgress
         );
         output.putBoolean("Ready", ready);
+        output.putInt("Vintage", vintage);
+        output.putInt("Quality", quality.id());
     }
 }

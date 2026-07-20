@@ -1,5 +1,7 @@
 package com.zenith.vintner.block.entity;
 
+import com.zenith.vintner.wine.WineMetadata;
+
 import com.zenith.vintner.block.GrapePressBlock;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
@@ -46,9 +48,16 @@ public final class GrapePressBlockEntity extends BlockEntity {
 
         ItemStack input = getInput();
 
-        return input.isEmpty()
-                || input.is(offered.getItem())
-                && input.getCount() < CAPACITY;
+        if (input.isEmpty()) {
+            return true;
+        }
+
+        return input.is(offered.getItem())
+                && input.getCount() < CAPACITY
+                && WineMetadata.matchesBatch(
+                        input,
+                        offered
+                );
     }
 
     public int insert(ItemStack offered, int requestedAmount) {
@@ -72,9 +81,14 @@ public final class GrapePressBlockEntity extends BlockEntity {
         }
 
         if (input.isEmpty()) {
+            WineMetadata.ensureDefaults(offered);
+
+            ItemStack insertedStack = offered.copy();
+            insertedStack.setCount(inserted);
+
             items.set(
                     INPUT_SLOT,
-                    new ItemStack(offered.getItem(), inserted)
+                    insertedStack
             );
         } else {
             input.grow(inserted);
@@ -99,9 +113,16 @@ public final class GrapePressBlockEntity extends BlockEntity {
 
         ItemStack output = getOutput();
 
-        return output.isEmpty()
-                || output.is(mustItem)
-                && output.getCount() < CAPACITY;
+        if (output.isEmpty()) {
+            return true;
+        }
+
+        return output.is(mustItem)
+                && output.getCount() < CAPACITY
+                && WineMetadata.matchesBatch(
+                        output,
+                        input
+                );
     }
 
     public boolean press() {
@@ -121,9 +142,17 @@ public final class GrapePressBlockEntity extends BlockEntity {
         ItemStack output = getOutput();
 
         if (output.isEmpty()) {
+            ItemStack must = new ItemStack(mustItem);
+
+            WineMetadata.apply(
+                    must,
+                    WineMetadata.vintage(input),
+                    WineMetadata.quality(input)
+            );
+
             items.set(
                     OUTPUT_SLOT,
-                    new ItemStack(mustItem)
+                    must
             );
         } else {
             output.grow(1);
@@ -146,6 +175,12 @@ public final class GrapePressBlockEntity extends BlockEntity {
 
         ItemStack bottledMust =
                 new ItemStack(output.getItem());
+
+        WineMetadata.apply(
+                bottledMust,
+                WineMetadata.vintage(output),
+                WineMetadata.quality(output)
+        );
 
         output.shrink(1);
 

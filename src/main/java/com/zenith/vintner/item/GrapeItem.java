@@ -1,17 +1,24 @@
 package com.zenith.vintner.item;
 
 import com.zenith.vintner.block.TrellisBlock;
+import com.zenith.vintner.wine.WineMetadata;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class GrapeItem extends Item {
@@ -81,5 +88,34 @@ public final class GrapeItem extends Item {
         }
 
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public void appendHoverText(
+            ItemStack stack,
+            TooltipContext context,
+            TooltipDisplay display,
+            Consumer<Component> tooltip,
+            TooltipFlag flag
+    ) {
+        super.appendHoverText(
+                stack,
+                context,
+                display,
+                tooltip,
+                flag
+        );
+
+        tooltip.accept(
+                WineMetadata.qualityTooltip(stack)
+                        .copy()
+                        .withStyle(ChatFormatting.GRAY)
+        );
+
+        tooltip.accept(
+                WineMetadata.vintageTooltip(stack)
+                        .copy()
+                        .withStyle(ChatFormatting.DARK_GRAY)
+        );
     }
 }

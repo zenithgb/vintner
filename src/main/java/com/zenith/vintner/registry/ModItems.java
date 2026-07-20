@@ -1,5 +1,7 @@
 package com.zenith.vintner.registry;
 
+import com.zenith.vintner.item.MustItem;
+
 import com.zenith.vintner.item.WineConsumables;
 import com.zenith.vintner.item.WineItem;
 import net.minecraft.core.component.DataComponents;
@@ -36,12 +38,12 @@ public final class ModItems {
 
     public static final Item RED_MUST = register(
             "red_must",
-            Item::new
+            MustItem::new
     );
 
     public static final Item WHITE_MUST = register(
             "white_must",
-            Item::new
+            MustItem::new
     );
 
     public static final Item RED_WINE = register(

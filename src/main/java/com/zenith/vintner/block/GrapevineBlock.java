@@ -1,6 +1,9 @@
 package com.zenith.vintner.block;
 
 import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.wine.GrapeQualityEvaluator;
+import com.zenith.vintner.wine.WineMetadata;
+import com.zenith.vintner.wine.WineQuality;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -132,10 +135,31 @@ public abstract class GrapevineBlock
             int grapeCount = variety.minimumHarvest()
                     + serverLevel.getRandom().nextInt(harvestRange);
 
+            ItemStack grapes = new ItemStack(
+                    getGrapeItem(),
+                    grapeCount
+            );
+
+            int vintage = WineMetadata.vintageFromGameTime(
+                    serverLevel.getGameTime()
+            );
+
+            WineQuality quality =
+                    GrapeQualityEvaluator.evaluate(
+                            serverLevel,
+                            pos
+                    );
+
+            WineMetadata.apply(
+                    grapes,
+                    vintage,
+                    quality
+            );
+
             Block.popResource(
                     serverLevel,
                     pos,
-                    new ItemStack(getGrapeItem(), grapeCount)
+                    grapes
             );
 
             serverLevel.playSound(
