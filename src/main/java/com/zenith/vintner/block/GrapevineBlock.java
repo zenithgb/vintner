@@ -4,7 +4,9 @@ import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.wine.GrapeQualityEvaluator;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineQuality;
+import com.zenith.vintner.wine.VineyardConditionReport;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -109,6 +111,22 @@ public abstract class GrapevineBlock
         }
     }
 
+    private static Component conditionText(
+            boolean favorable
+    ) {
+        return Component.translatable(
+                favorable
+                        ? "vineyard_condition.vintner.favorable"
+                        : "vineyard_condition.vintner.poor"
+        );
+    }
+
+    private static Component qualityText(
+            WineQuality quality
+    ) {
+        return quality.displayName();
+    }
+
     @Override
     protected InteractionResult useWithoutItem(
             BlockState state,
@@ -117,6 +135,34 @@ public abstract class GrapevineBlock
             Player player,
             BlockHitResult hitResult
     ) {
+        if (player.isShiftKeyDown()) {
+            if (!level.isClientSide()) {
+                VineyardConditionReport report =
+                        GrapeQualityEvaluator.inspect(
+                                level,
+                                pos
+                        );
+
+                player.sendSystemMessage(
+                        Component.translatable(
+                                "message.vintner.vineyard_conditions",
+                                conditionText(report.openSky()),
+                                conditionText(
+                                        report.suitableTemperature()
+                                ),
+                                conditionText(
+                                        report.precipitation()
+                                ),
+                                qualityText(
+                                        report.predictedQuality()
+                                )
+                        )
+                );
+            }
+
+            return InteractionResult.SUCCESS;
+        }
+
         if (state.getValue(AGE) < MAX_AGE) {
             return super.useWithoutItem(
                     state,

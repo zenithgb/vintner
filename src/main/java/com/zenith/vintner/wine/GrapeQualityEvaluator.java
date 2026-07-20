@@ -12,28 +12,52 @@ public final class GrapeQualityEvaluator {
             Level level,
             BlockPos vinePos
     ) {
+        return inspect(level, vinePos).predictedQuality();
+    }
+
+    public static VineyardConditionReport inspect(
+            Level level,
+            BlockPos vinePos
+    ) {
         Biome biome = level.getBiome(vinePos).value();
 
-        int score = 0;
-
-        if (level.canSeeSky(vinePos.above())) {
-            score++;
-        }
+        boolean openSky =
+                level.canSeeSky(vinePos.above());
 
         float temperature = biome.getBaseTemperature();
 
-        if (temperature >= 0.5F && temperature <= 1.25F) {
+        boolean suitableTemperature =
+                temperature >= 0.5F
+                        && temperature <= 1.25F;
+
+        boolean precipitation =
+                biome.hasPrecipitation();
+
+        int score = 0;
+
+        if (openSky) {
             score++;
         }
 
-        if (biome.hasPrecipitation()) {
+        if (suitableTemperature) {
             score++;
         }
 
-        return switch (score) {
+        if (precipitation) {
+            score++;
+        }
+
+        WineQuality predictedQuality = switch (score) {
             case 3 -> WineQuality.EXCEPTIONAL;
             case 2 -> WineQuality.FINE;
             default -> WineQuality.COMMON;
         };
+
+        return new VineyardConditionReport(
+                openSky,
+                suitableTemperature,
+                precipitation,
+                predictedQuality
+        );
     }
 }

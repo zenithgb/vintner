@@ -18,5 +18,8 @@
   "wine_quality.vintner.exceptional": "Exceptional",
   "tooltip.vintner.quality": "Quality: %s",
   "tooltip.vintner.vintage": "Vintage: Year %s",
-  "item.vintner.wine_named": "%s %s — Year %s"
+  "item.vintner.wine_named": "%s %s — Year %s",
+  "vineyard_condition.vintner.favorable": "Favorable",
+  "vineyard_condition.vintner.poor": "Poor",
+  "message.vintner.vineyard_conditions": "Sunlight: %s | Temperature: %s | Rainfall: %s | Predicted quality: %s"
 }
