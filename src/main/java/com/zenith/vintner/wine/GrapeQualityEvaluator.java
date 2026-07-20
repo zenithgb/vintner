@@ -1,5 +1,7 @@
 package com.zenith.vintner.wine;
 
+import com.zenith.vintner.registry.ModBlocks;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -33,6 +35,10 @@ public final class GrapeQualityEvaluator {
         boolean precipitation =
                 biome.hasPrecipitation();
 
+        boolean preparedSoil =
+                level.getBlockState(vinePos.below())
+                        .is(ModBlocks.VINEYARD_SOIL);
+
         int score = 0;
 
         if (openSky) {
@@ -47,9 +53,13 @@ public final class GrapeQualityEvaluator {
             score++;
         }
 
+        if (preparedSoil) {
+            score++;
+        }
+
         WineQuality predictedQuality = switch (score) {
-            case 3 -> WineQuality.EXCEPTIONAL;
-            case 2 -> WineQuality.FINE;
+            case 4 -> WineQuality.EXCEPTIONAL;
+            case 2, 3 -> WineQuality.FINE;
             default -> WineQuality.COMMON;
         };
 
@@ -57,6 +67,7 @@ public final class GrapeQualityEvaluator {
                 openSky,
                 suitableTemperature,
                 precipitation,
+                preparedSoil,
                 predictedQuality
         );
     }

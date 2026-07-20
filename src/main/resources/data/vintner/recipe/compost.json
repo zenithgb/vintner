@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "#minecraft:leaves",
+    "#minecraft:leaves",
+    "minecraft:dirt",
+    "minecraft:bone_meal"
+  ],
+  "result": {
+    "id": "vintner:compost",
+    "count": 2
+  }
+}

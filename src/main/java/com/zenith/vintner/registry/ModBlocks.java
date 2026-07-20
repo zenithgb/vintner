@@ -1,5 +1,7 @@
 package com.zenith.vintner.registry;
 
+import com.zenith.vintner.block.VineyardSoilBlock;
+
 import com.zenith.vintner.Vintner;
 import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
@@ -52,6 +54,14 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of()
                     .strength(2.5F)
     );
+
+    public static final Block VINEYARD_SOIL =
+            registerWithItem(
+                    "vineyard_soil",
+                    VineyardSoilBlock::new,
+                    BlockBehaviour.Properties.of()
+                            .strength(0.6F)
+            );
 
     public static final Block RED_GRAPEVINE = registerWithoutItem(
             "red_grapevine",

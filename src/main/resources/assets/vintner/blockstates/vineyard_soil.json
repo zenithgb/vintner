@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "vintner:block/vineyard_soil"
+    }
+  }
+}

@@ -21,5 +21,7 @@
   "item.vintner.wine_named": "%s %s — Year %s",
   "vineyard_condition.vintner.favorable": "Favorable",
   "vineyard_condition.vintner.poor": "Poor",
-  "message.vintner.vineyard_conditions": "Sunlight: %s | Temperature: %s | Rainfall: %s | Predicted quality: %s"
+  "message.vintner.vineyard_conditions": "Sunlight: %s | Temperature: %s | Rainfall: %s | Soil: %s | Predicted quality: %s",
+  "block.vintner.vineyard_soil": "Prepared Vineyard Soil",
+  "item.vintner.compost": "Compost"
 }

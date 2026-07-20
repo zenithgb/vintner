@@ -1,5 +1,6 @@
 package com.zenith.vintner.registry;
 
+import com.zenith.vintner.item.CompostItem;
 import com.zenith.vintner.item.MustItem;
 
 import com.zenith.vintner.item.WineConsumables;
@@ -20,6 +21,11 @@ import net.minecraft.world.item.Items;
 import java.util.function.Function;
 
 public final class ModItems {
+    public static final Item COMPOST = register(
+            "compost",
+            CompostItem::new
+    );
+
     public static final Item RED_GRAPES = register(
             "red_grapes",
             properties -> new GrapeItem(
