@@ -32,6 +32,24 @@ public enum WineQuality {
         ).withStyle(color);
     }
 
+    public float durationMultiplier() {
+        return switch (this) {
+            case COMMON -> 1.0F;
+            case FINE -> 1.25F;
+            case EXCEPTIONAL -> 1.5F;
+        };
+    }
+
+    public int signatureEffectAmplifier() {
+        return this == EXCEPTIONAL ? 1 : 0;
+    }
+
+    public Component effectBonus() {
+        return Component.translatable(
+                "wine_effect_bonus.vintner." + translationKey
+        ).withStyle(color);
+    }
+
     public WineQuality improved() {
         return switch (this) {
             case COMMON -> FINE;

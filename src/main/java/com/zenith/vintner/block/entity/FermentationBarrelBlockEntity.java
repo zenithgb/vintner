@@ -30,6 +30,7 @@ public final class FermentationBarrelBlockEntity
     private boolean ready;
     private int vintage = 1;
     private WineQuality quality = WineQuality.COMMON;
+    private int lastComparatorSignal = -1;
 
     public FermentationBarrelBlockEntity(
             BlockPos pos,
@@ -44,6 +45,8 @@ public final class FermentationBarrelBlockEntity
             BlockState state,
             FermentationBarrelBlockEntity barrel
     ) {
+        barrel.updateComparatorSignal();
+
         if (barrel.batchType == 0
                 || barrel.bottleCount <= 0
                 || barrel.ready) {
@@ -65,6 +68,8 @@ public final class FermentationBarrelBlockEntity
              */
             barrel.setChanged();
         }
+
+        barrel.updateComparatorSignal();
     }
 
     public boolean canInsert(ItemStack stack) {
@@ -110,6 +115,40 @@ public final class FermentationBarrelBlockEntity
 
     public boolean isReady() {
         return ready && bottleCount > 0;
+    }
+
+    public int getBatchType() {
+        return batchType;
+    }
+
+    public int getBottleCount() {
+        return bottleCount;
+    }
+
+    public int getProgressPercent() {
+        if (isReady()) {
+            return 100;
+        }
+
+        return Math.min(
+                100,
+                fermentationProgress * 100 / FERMENTATION_TIME
+        );
+    }
+
+    public int getComparatorSignal() {
+        if (batchType == 0 || bottleCount <= 0) {
+            return 0;
+        }
+
+        if (isReady()) {
+            return 15;
+        }
+
+        return 1 + Math.min(
+                13,
+                fermentationProgress * 14 / FERMENTATION_TIME
+        );
     }
 
     public ItemStack takeOneWine() {
@@ -182,6 +221,25 @@ public final class FermentationBarrelBlockEntity
     private void markChangedAndSync() {
         setChanged();
         syncVisualState();
+        updateComparatorSignal();
+    }
+
+    private void updateComparatorSignal() {
+        if (level == null || level.isClientSide()) {
+            return;
+        }
+
+        int signal = getComparatorSignal();
+
+        if (signal == lastComparatorSignal) {
+            return;
+        }
+
+        lastComparatorSignal = signal;
+        level.updateNeighbourForOutputSignal(
+                worldPosition,
+                getBlockState().getBlock()
+        );
     }
 
     private void syncVisualState() {

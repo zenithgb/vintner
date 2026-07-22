@@ -26,6 +26,19 @@ does not connect to its neighbours.
 Shift-use an established grapevine with an empty hand to inspect its vineyard
 conditions and predicted wine quality.
 
+Use the grape press, fermentation barrel, or aging barrel with an empty hand
+to inspect its contents and progress. Machine interactions also report full,
+incompatible, or unfinished batches in the action bar.
+
+Wine quality affects the finished drink. Fine wine effects last 25% longer;
+Exceptional wine effects last 50% longer and its signature effect is level II.
+Ageing improves the wine by one quality tier.
+
+All three winemaking machines support comparator output. The grape press
+reports its stored must level. Fermentation and aging barrels progress from
+signal strength 1 to 14 while working, output 15 when ready, and output 0 when
+empty.
+
 ## Development
 
 Build and verify the mod:

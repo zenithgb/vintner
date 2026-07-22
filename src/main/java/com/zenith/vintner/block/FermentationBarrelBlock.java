@@ -5,6 +5,7 @@ import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.wine.WinemakingFeedback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -147,18 +148,15 @@ public final class FermentationBarrelBlock
          * precise bottle count and performs the actual insertion.
          */
         if (!(level instanceof ServerLevel serverLevel)) {
-            boolean matchingType =
-                    state.getValue(WINE_TYPE) == 0
-                    || state.getValue(WINE_TYPE)
-                    == (heldStack.is(ModItems.RED_MUST) ? 1 : 2);
-
-            return state.getValue(STATUS) != 2 && matchingType
-                    ? InteractionResult.SUCCESS
-                    : InteractionResult.FAIL;
+            return InteractionResult.SUCCESS;
         }
 
         if (!barrel.insertOne(heldStack)) {
-            return InteractionResult.FAIL;
+            WinemakingFeedback.showFermentationInsertRejected(
+                    player,
+                    barrel
+            );
+            return InteractionResult.SUCCESS;
         }
 
         if (!player.getAbilities().instabuild) {
@@ -174,6 +172,8 @@ public final class FermentationBarrelBlock
                 0.9F
         );
 
+        WinemakingFeedback.showFermentationStatus(player, barrel);
+
         return InteractionResult.SUCCESS;
     }
 
@@ -186,9 +186,7 @@ public final class FermentationBarrelBlock
             BlockHitResult hitResult
     ) {
         if (!(level instanceof ServerLevel serverLevel)) {
-            return state.getValue(STATUS) == 2
-                    ? InteractionResult.SUCCESS
-                    : InteractionResult.PASS;
+            return InteractionResult.SUCCESS;
         }
 
         BlockEntity blockEntity = level.getBlockEntity(pos);
@@ -201,7 +199,11 @@ public final class FermentationBarrelBlock
         ItemStack wine = barrel.takeOneWine();
 
         if (wine.isEmpty()) {
-            return InteractionResult.PASS;
+            WinemakingFeedback.showFermentationStatus(
+                    player,
+                    barrel
+            );
+            return InteractionResult.SUCCESS;
         }
 
         if (!player.addItem(wine)) {
@@ -224,7 +226,29 @@ public final class FermentationBarrelBlock
                 1.0F
         );
 
+        WinemakingFeedback.showFermentationStatus(player, barrel);
+
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    protected boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getAnalogOutputSignal(
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Direction direction
+    ) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+
+        return blockEntity
+                instanceof FermentationBarrelBlockEntity barrel
+                ? barrel.getComparatorSignal()
+                : 0;
     }
 
     @Override

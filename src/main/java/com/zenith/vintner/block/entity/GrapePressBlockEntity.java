@@ -26,6 +26,8 @@ public final class GrapePressBlockEntity extends BlockEntity {
     private final NonNullList<ItemStack> items =
             NonNullList.withSize(2, ItemStack.EMPTY);
 
+    private int lastComparatorSignal = -1;
+
     public GrapePressBlockEntity(
             BlockPos pos,
             BlockState state
@@ -166,6 +168,16 @@ public final class GrapePressBlockEntity extends BlockEntity {
         return !getOutput().isEmpty();
     }
 
+    public int getComparatorSignal() {
+        int mustCount = getOutput().getCount();
+
+        if (mustCount <= 0) {
+            return 0;
+        }
+
+        return 1 + mustCount * 14 / CAPACITY;
+    }
+
     public ItemStack bottleOneMust() {
         ItemStack output = getOutput();
 
@@ -203,6 +215,26 @@ public final class GrapePressBlockEntity extends BlockEntity {
     private void markChangedAndSync() {
         setChanged();
         syncVisualState();
+
+        updateComparatorSignal();
+    }
+
+    private void updateComparatorSignal() {
+        if (level == null || level.isClientSide()) {
+            return;
+        }
+
+        int signal = getComparatorSignal();
+
+        if (signal == lastComparatorSignal) {
+            return;
+        }
+
+        lastComparatorSignal = signal;
+        level.updateNeighbourForOutputSignal(
+                worldPosition,
+                getBlockState().getBlock()
+        );
     }
 
     private void syncVisualState() {

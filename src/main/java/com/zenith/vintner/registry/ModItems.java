@@ -4,6 +4,7 @@ import com.zenith.vintner.item.CompostItem;
 import com.zenith.vintner.item.MustItem;
 
 import com.zenith.vintner.item.WineConsumables;
+import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.item.WineItem;
 import net.minecraft.core.component.DataComponents;
 import com.zenith.vintner.Vintner;
@@ -55,11 +56,12 @@ public final class ModItems {
     public static final Item RED_WINE = register(
             "red_wine",
             properties -> new WineItem(
+                    WineEffectProfile.RED,
                     properties
                             .stacksTo(16)
                             .component(
                                     DataComponents.CONSUMABLE,
-                                    WineConsumables.RED_WINE
+                                    WineConsumables.WINE
                             )
                             .usingConvertsTo(Items.GLASS_BOTTLE)
                             .useCooldown(12.0F)
@@ -69,11 +71,12 @@ public final class ModItems {
     public static final Item WHITE_WINE = register(
             "white_wine",
             properties -> new WineItem(
+                    WineEffectProfile.WHITE,
                     properties
                             .stacksTo(16)
                             .component(
                                     DataComponents.CONSUMABLE,
-                                    WineConsumables.WHITE_WINE
+                                    WineConsumables.WINE
                             )
                             .usingConvertsTo(Items.GLASS_BOTTLE)
                             .useCooldown(12.0F)
@@ -83,11 +86,12 @@ public final class ModItems {
     public static final Item AGED_RED_WINE = register(
             "aged_red_wine",
             properties -> new WineItem(
+                    WineEffectProfile.AGED_RED,
                     properties
                             .stacksTo(16)
                             .component(
                                     DataComponents.CONSUMABLE,
-                                    WineConsumables.AGED_RED_WINE
+                                    WineConsumables.WINE
                             )
                             .usingConvertsTo(Items.GLASS_BOTTLE)
                             .useCooldown(18.0F)
@@ -97,11 +101,12 @@ public final class ModItems {
     public static final Item AGED_WHITE_WINE = register(
             "aged_white_wine",
             properties -> new WineItem(
+                    WineEffectProfile.AGED_WHITE,
                     properties
                             .stacksTo(16)
                             .component(
                                     DataComponents.CONSUMABLE,
-                                    WineConsumables.AGED_WHITE_WINE
+                                    WineConsumables.WINE
                             )
                             .usingConvertsTo(Items.GLASS_BOTTLE)
                             .useCooldown(18.0F)

@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.wine.WinemakingFeedback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -112,17 +113,16 @@ public final class GrapePressBlock extends BaseEntityBlock {
         if (heldStack.is(Items.GLASS_BOTTLE)) {
             /*
              * The block entity inventory is authoritative on the
-             * server. The client uses OUTPUT_TYPE for prediction,
-             * because its block entity contents are not synchronized.
+             * server. Always accept the client interaction so the
+             * server can either bottle must or explain why it cannot.
              */
             if (!(level instanceof ServerLevel serverLevel)) {
-                return state.getValue(OUTPUT_TYPE) != 0
-                        ? InteractionResult.SUCCESS
-                        : InteractionResult.FAIL;
+                return InteractionResult.SUCCESS;
             }
 
             if (!press.hasMust()) {
-                return InteractionResult.FAIL;
+                WinemakingFeedback.showNoMust(player);
+                return InteractionResult.SUCCESS;
             }
 
             ItemStack bottledMust = press.bottleOneMust();
@@ -152,6 +152,8 @@ public final class GrapePressBlock extends BaseEntityBlock {
                     1.0F
             );
 
+            WinemakingFeedback.showPressStatus(player, press);
+
             return InteractionResult.SUCCESS;
         }
 
@@ -161,7 +163,14 @@ public final class GrapePressBlock extends BaseEntityBlock {
         }
 
         if (!press.canInsert(heldStack)) {
-            return InteractionResult.FAIL;
+            if (level instanceof ServerLevel) {
+                WinemakingFeedback.showPressInsertRejected(
+                        player,
+                        press
+                );
+            }
+
+            return InteractionResult.SUCCESS;
         }
 
         if (level instanceof ServerLevel serverLevel) {
@@ -180,6 +189,8 @@ public final class GrapePressBlock extends BaseEntityBlock {
                     0.8F,
                     0.9F
             );
+
+            WinemakingFeedback.showPressStatus(player, press);
         }
 
         return InteractionResult.SUCCESS;
@@ -193,6 +204,10 @@ public final class GrapePressBlock extends BaseEntityBlock {
             Player player,
             BlockHitResult hitResult
     ) {
+        if (level.isClientSide()) {
+            return InteractionResult.SUCCESS;
+        }
+
         BlockEntity blockEntity = level.getBlockEntity(pos);
 
         if (!(blockEntity instanceof GrapePressBlockEntity press)) {
@@ -200,7 +215,8 @@ public final class GrapePressBlock extends BaseEntityBlock {
         }
 
         if (!press.canPress()) {
-            return InteractionResult.PASS;
+            WinemakingFeedback.showPressRejected(player, press);
+            return InteractionResult.SUCCESS;
         }
 
         if (level instanceof ServerLevel serverLevel
@@ -220,9 +236,30 @@ public final class GrapePressBlock extends BaseEntityBlock {
                     1.0F,
                     0.7F
             );
+
+            WinemakingFeedback.showPressStatus(player, press);
         }
 
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    protected boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getAnalogOutputSignal(
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Direction direction
+    ) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+
+        return blockEntity instanceof GrapePressBlockEntity press
+                ? press.getComparatorSignal()
+                : 0;
     }
 
     @Override
