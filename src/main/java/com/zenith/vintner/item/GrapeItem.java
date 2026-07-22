@@ -52,12 +52,20 @@ public final class GrapeItem extends Item {
                             clickedState.getValue(TrellisBlock.FACING)
                     )
                     .setValue(
-                            TrellisBlock.LEFT,
-                            clickedState.getValue(TrellisBlock.LEFT)
+                            TrellisBlock.NORTH,
+                            clickedState.getValue(TrellisBlock.NORTH)
                     )
                     .setValue(
-                            TrellisBlock.RIGHT,
-                            clickedState.getValue(TrellisBlock.RIGHT)
+                            TrellisBlock.EAST,
+                            clickedState.getValue(TrellisBlock.EAST)
+                    )
+                    .setValue(
+                            TrellisBlock.SOUTH,
+                            clickedState.getValue(TrellisBlock.SOUTH)
+                    )
+                    .setValue(
+                            TrellisBlock.WEST,
+                            clickedState.getValue(TrellisBlock.WEST)
                     )
                     .setValue(
                             TrellisBlock.ISOLATED,

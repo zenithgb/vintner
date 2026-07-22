@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "SCS",
+    "S S"
+  ],
+  "key": {
+    "S": "minecraft:stick",
+    "C": "minecraft:iron_chain"
+  },
+  "result": {
+    "id": "vintner:oak_trellis",
+    "count": 2
+  }
+}

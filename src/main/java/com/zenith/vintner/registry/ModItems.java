@@ -139,6 +139,12 @@ public final class ModItems {
     public static void initialize() {
         CreativeModeTabEvents
                 .modifyOutputEvent(
+                        CreativeModeTabs.INGREDIENTS
+                )
+                .register(output -> output.accept(COMPOST));
+
+        CreativeModeTabEvents
+                .modifyOutputEvent(
                         CreativeModeTabs.FOOD_AND_DRINKS
                 )
                 .register(output -> {

@@ -1,10 +1,5 @@
 package com.zenith.vintner.block;
 
-import com.zenith.vintner.item.CompostItem;
-
-import com.zenith.vintner.registry.ModBlocks;
-import com.zenith.vintner.registry.ModItems;
-import net.minecraft.world.InteractionHand;
 import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.wine.GrapeQualityEvaluator;
 import com.zenith.vintner.wine.WineMetadata;
@@ -61,8 +56,10 @@ public abstract class GrapevineBlock
         registerDefaultState(
                 stateDefinition.any()
                         .setValue(FACING, Direction.NORTH)
-                        .setValue(LEFT, false)
-                        .setValue(RIGHT, false)
+                        .setValue(NORTH, RowConnection.NONE)
+                        .setValue(EAST, RowConnection.NONE)
+                        .setValue(SOUTH, RowConnection.NONE)
+                        .setValue(WEST, RowConnection.NONE)
                         .setValue(ISOLATED, false)
                         .setValue(AGE, 0)
         );
@@ -130,59 +127,6 @@ public abstract class GrapevineBlock
             WineQuality quality
     ) {
         return quality.displayName();
-    }
-
-    @Override
-    protected InteractionResult useItemOn(
-            ItemStack stack,
-            BlockState state,
-            Level level,
-            BlockPos pos,
-            Player player,
-            InteractionHand hand,
-            BlockHitResult hitResult
-    ) {
-        if (!player.isShiftKeyDown()
-                || !stack.is(ModItems.COMPOST)) {
-            return super.useItemOn(
-                    stack,
-                    state,
-                    level,
-                    pos,
-                    player,
-                    hand,
-                    hitResult
-            );
-        }
-
-        BlockPos soilPos = pos.below();
-        BlockState soilState = level.getBlockState(soilPos);
-
-        if (!CompostItem.isSuitableGround(soilState)) {
-            return InteractionResult.PASS;
-        }
-
-        if (!level.isClientSide()) {
-            level.setBlockAndUpdate(
-                    soilPos,
-                    ModBlocks.VINEYARD_SOIL.defaultBlockState()
-            );
-
-            level.playSound(
-                    null,
-                    soilPos,
-                    SoundEvents.HOE_TILL,
-                    SoundSource.BLOCKS,
-                    1.0F,
-                    0.9F
-            );
-
-            if (!player.getAbilities().instabuild) {
-                stack.shrink(1);
-            }
-        }
-
-        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -350,6 +294,14 @@ public abstract class GrapevineBlock
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING, LEFT, RIGHT, ISOLATED, AGE);
+        builder.add(
+                FACING,
+                NORTH,
+                EAST,
+                SOUTH,
+                WEST,
+                ISOLATED,
+                AGE
+        );
     }
 }

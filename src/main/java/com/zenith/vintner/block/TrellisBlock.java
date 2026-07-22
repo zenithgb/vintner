@@ -4,8 +4,14 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
@@ -14,27 +20,42 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TrellisBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<TrellisBlock> CODEC =
             simpleCodec(TrellisBlock::new);
 
-    public static final BooleanProperty LEFT =
-            BooleanProperty.create("left");
 
-    public static final BooleanProperty RIGHT =
-            BooleanProperty.create("right");
+
+    public static final EnumProperty<RowConnection> NORTH =
+            EnumProperty.create("north", RowConnection.class);
+
+    public static final EnumProperty<RowConnection> EAST =
+            EnumProperty.create("east", RowConnection.class);
+
+    public static final EnumProperty<RowConnection> SOUTH =
+            EnumProperty.create("south", RowConnection.class);
+
+    public static final EnumProperty<RowConnection> WEST =
+            EnumProperty.create("west", RowConnection.class);
 
     public static final BooleanProperty ISOLATED =
             BooleanProperty.create("isolated");
 
-    private static final VoxelShape NORTH_SOUTH_SHAPE =
-            Block.box(0.0, 0.0, 6.0, 16.0, 16.0, 10.0);
+    private static final VoxelShape POST_SHAPE =
+            Block.box(7.0, 0.0, 7.0, 9.0, 16.0, 9.0);
 
-    private static final VoxelShape EAST_WEST_SHAPE =
-            Block.box(6.0, 0.0, 0.0, 10.0, 16.0, 16.0);
+    private static final double[] WIRE_HEIGHTS = {
+            4.0,
+            7.0,
+            10.0,
+            13.0
+    };
 
     public TrellisBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -42,8 +63,10 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
         registerDefaultState(
                 stateDefinition.any()
                         .setValue(FACING, Direction.NORTH)
-                        .setValue(LEFT, false)
-                        .setValue(RIGHT, false)
+                        .setValue(NORTH, RowConnection.NONE)
+                        .setValue(EAST, RowConnection.NONE)
+                        .setValue(SOUTH, RowConnection.NONE)
+                        .setValue(WEST, RowConnection.NONE)
                         .setValue(ISOLATED, false)
         );
     }
@@ -62,32 +85,13 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
                 placementPos
         );
 
-        Direction facing;
+        Direction facing = verticalNeighbor != null
+                ? verticalNeighbor.getValue(FACING)
+                : context.getHorizontalDirection().getOpposite();
 
-        if (verticalNeighbor != null) {
-            facing = verticalNeighbor.getValue(FACING);
-        } else {
-            BlockState rowNeighbor = null;
-
-            if (!isManualPlacementOverride(context)) {
-                rowNeighbor = findCompatibleRowNeighbor(
-                        context,
-                        placementPos
-                );
-            }
-
-            facing = rowNeighbor != null
-                    ? rowNeighbor.getValue(FACING)
-                    : context.getHorizontalDirection().getOpposite();
-        }
-
-        boolean isolated;
-
-        if (verticalNeighbor != null) {
-            isolated = verticalNeighbor.getValue(ISOLATED);
-        } else {
-            isolated = isManualPlacementOverride(context);
-        }
+        boolean isolated = verticalNeighbor != null
+                ? verticalNeighbor.getValue(ISOLATED)
+                : isManualPlacementOverride(context);
 
         BlockState state = defaultBlockState()
                 .setValue(FACING, facing)
@@ -127,69 +131,85 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
         );
     }
 
-    protected static BlockState updateConnections(
+    private static BlockState updateConnections(
             BlockState state,
-            BlockGetter level,
+            LevelReader level,
             BlockPos pos
     ) {
-        Direction facing = state.getValue(FACING);
-        Direction leftDirection = getLeftDirection(facing);
-        Direction rightDirection = leftDirection.getOpposite();
+        if (state.getValue(ISOLATED)) {
+            return state
+                    .setValue(NORTH, RowConnection.NONE)
+                    .setValue(EAST, RowConnection.NONE)
+                    .setValue(SOUTH, RowConnection.NONE)
+                    .setValue(WEST, RowConnection.NONE);
+        }
 
         return state
                 .setValue(
-                        LEFT,
-                        connectsTo(
+                        NORTH,
+                        connectionToNeighbour(
                                 state,
-                                level.getBlockState(
-                                        pos.relative(leftDirection)
-                                ),
-                                leftDirection
+                                level,
+                                pos,
+                                Direction.NORTH
                         )
                 )
                 .setValue(
-                        RIGHT,
-                        connectsTo(
+                        EAST,
+                        connectionToNeighbour(
                                 state,
-                                level.getBlockState(
-                                        pos.relative(rightDirection)
-                                ),
-                                rightDirection
+                                level,
+                                pos,
+                                Direction.EAST
+                        )
+                )
+                .setValue(
+                        SOUTH,
+                        connectionToNeighbour(
+                                state,
+                                level,
+                                pos,
+                                Direction.SOUTH
+                        )
+                )
+                .setValue(
+                        WEST,
+                        connectionToNeighbour(
+                                state,
+                                level,
+                                pos,
+                                Direction.WEST
                         )
                 );
     }
 
-    private static boolean connectsTo(
+    private static RowConnection connectionToNeighbour(
             BlockState state,
-            BlockState neighbourState,
+            LevelReader level,
+            BlockPos pos,
             Direction direction
     ) {
-        if (!isTrellisState(neighbourState)) {
-            return false;
+        BlockPos neighbourPos = pos.relative(direction);
+
+        if (canConnectTo(
+                state,
+                level.getBlockState(neighbourPos)
+        )) {
+            return RowConnection.LEVEL;
         }
 
-        if (state.getValue(ISOLATED)
-                || neighbourState.getValue(ISOLATED)) {
-            return false;
-        }
 
-        Direction facing = state.getValue(FACING);
-        Direction neighbourFacing = neighbourState.getValue(FACING);
 
-        return direction.getAxis() != facing.getAxis()
-                && neighbourFacing.getAxis() == facing.getAxis();
+        return RowConnection.NONE;
     }
 
-    private static Direction getLeftDirection(Direction facing) {
-        return switch (facing) {
-            case NORTH -> Direction.WEST;
-            case SOUTH -> Direction.EAST;
-            case EAST -> Direction.NORTH;
-            case WEST -> Direction.SOUTH;
-            default -> throw new IllegalStateException(
-                    "Trellis facing must be horizontal: " + facing
-            );
-        };
+    private static boolean canConnectTo(
+            BlockState state,
+            BlockState neighbourState
+    ) {
+        return !state.getValue(ISOLATED)
+                && isTrellisState(neighbourState)
+                && !neighbourState.getValue(ISOLATED);
     }
 
     private static BlockState findVerticalTrellis(
@@ -213,50 +233,6 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
         return null;
     }
 
-    private static BlockState findCompatibleRowNeighbor(
-            BlockPlaceContext context,
-            BlockPos placementPos
-    ) {
-        Direction[] horizontalDirections = {
-                Direction.NORTH,
-                Direction.SOUTH,
-                Direction.EAST,
-                Direction.WEST
-        };
-
-        BlockState selectedState = null;
-        Direction.Axis selectedFacingAxis = null;
-
-        for (Direction direction : horizontalDirections) {
-            BlockState neighbourState = context.getLevel().getBlockState(
-                    placementPos.relative(direction)
-            );
-
-            if (!isTrellisState(neighbourState)) {
-                continue;
-            }
-
-            Direction neighbourFacing =
-                    neighbourState.getValue(FACING);
-
-            if (direction.getAxis() == neighbourFacing.getAxis()) {
-                continue;
-            }
-
-            if (selectedFacingAxis == null) {
-                selectedState = neighbourState;
-                selectedFacingAxis = neighbourFacing.getAxis();
-                continue;
-            }
-
-            if (selectedFacingAxis != neighbourFacing.getAxis()) {
-                return null;
-            }
-        }
-
-        return selectedState;
-    }
-
     protected static boolean isTrellisState(BlockState state) {
         return state.getBlock() instanceof TrellisBlock;
     }
@@ -269,22 +245,150 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
+    protected InteractionResult useItemOn(
+            ItemStack stack,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand,
+            BlockHitResult hitResult
+    ) {
+        InteractionResult result =
+                VineyardSoilInteraction.useOnSoilBelow(
+                        stack,
+                        level,
+                        pos,
+                        player
+                );
+
+        if (result.consumesAction()) {
+            return result;
+        }
+
+        return super.useItemOn(
+                stack,
+                state,
+                level,
+                pos,
+                player,
+                hand,
+                hitResult
+        );
+    }
+
+    @Override
     protected VoxelShape getShape(
             BlockState state,
             BlockGetter level,
             BlockPos pos,
             CollisionContext context
     ) {
-        return state.getValue(FACING).getAxis()
-                == Direction.Axis.X
-                ? EAST_WEST_SHAPE
-                : NORTH_SOUTH_SHAPE;
+        return createTrellisShape(state);
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        return createTrellisShape(state);
+    }
+
+    private static VoxelShape createTrellisShape(BlockState state) {
+        VoxelShape shape = POST_SHAPE;
+
+        if (state.getValue(NORTH) != RowConnection.NONE) {
+            shape = addWireShapes(shape, Direction.NORTH);
+        }
+
+        if (state.getValue(EAST) != RowConnection.NONE) {
+            shape = addWireShapes(shape, Direction.EAST);
+        }
+
+        if (state.getValue(SOUTH) != RowConnection.NONE) {
+            shape = addWireShapes(shape, Direction.SOUTH);
+        }
+
+        if (state.getValue(WEST) != RowConnection.NONE) {
+            shape = addWireShapes(shape, Direction.WEST);
+        }
+
+        return shape;
+    }
+
+    private static VoxelShape addWireShapes(
+            VoxelShape shape,
+            Direction direction
+    ) {
+        for (double y : WIRE_HEIGHTS) {
+            shape = Shapes.or(
+                    shape,
+                    createWireShape(direction, y)
+            );
+        }
+
+        return shape;
+    }
+
+    private static VoxelShape createWireShape(
+            Direction direction,
+            double y
+    ) {
+        return switch (direction) {
+            case WEST -> Block.box(
+                    0.0, y, 7.5,
+                    8.0, y + 1.0, 8.5
+            );
+            case EAST -> Block.box(
+                    8.0, y, 7.5,
+                    16.0, y + 1.0, 8.5
+            );
+            case NORTH -> Block.box(
+                    7.5, y, 0.0,
+                    8.5, y + 1.0, 8.0
+            );
+            case SOUTH -> Block.box(
+                    7.5, y, 8.0,
+                    8.5, y + 1.0, 16.0
+            );
+            default -> throw new IllegalStateException(
+                    "Trellis connection must be horizontal: "
+                            + direction
+            );
+        };
     }
 
     @Override
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING, LEFT, RIGHT, ISOLATED);
+        builder.add(
+                FACING,
+                NORTH,
+                EAST,
+                SOUTH,
+                WEST,
+                ISOLATED
+        );
     }
+
+    public enum RowConnection implements StringRepresentable {
+        NONE("none"),
+        LEVEL("level");
+
+        private final String serializedName;
+
+        RowConnection(String serializedName) {
+            this.serializedName = serializedName;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return serializedName;
+        }
+    }
+
 }

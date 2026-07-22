@@ -1,115 +1,42 @@
 {
   "multipart": [
     {
-      "when": {
-        "facing": "north"
-      },
       "apply": {
-        "model": "vintner:block/oak_trellis_rails"
+        "model": "vintner:block/trellis/trellis_single"
       }
     },
     {
       "when": {
-        "facing": "north",
-        "left": "false"
+        "east": "level"
       },
       "apply": {
-        "model": "vintner:block/oak_trellis_left_post"
+        "model": "vintner:block/trellis/wire_level"
       }
     },
     {
       "when": {
-        "facing": "north",
-        "right": "false"
+        "south": "level"
       },
       "apply": {
-        "model": "vintner:block/oak_trellis_right_post"
-      }
-    },
-    {
-      "when": {
-        "facing": "east"
-      },
-      "apply": {
-        "model": "vintner:block/oak_trellis_rails",
+        "model": "vintner:block/trellis/wire_level",
         "y": 90
       }
     },
     {
       "when": {
-        "facing": "east",
-        "left": "false"
+        "west": "level"
       },
       "apply": {
-        "model": "vintner:block/oak_trellis_left_post",
-        "y": 90
-      }
-    },
-    {
-      "when": {
-        "facing": "east",
-        "right": "false"
-      },
-      "apply": {
-        "model": "vintner:block/oak_trellis_right_post",
-        "y": 90
-      }
-    },
-    {
-      "when": {
-        "facing": "south"
-      },
-      "apply": {
-        "model": "vintner:block/oak_trellis_rails",
+        "model": "vintner:block/trellis/wire_level",
         "y": 180
       }
     },
     {
       "when": {
-        "facing": "south",
-        "left": "false"
+        "north": "level"
       },
       "apply": {
-        "model": "vintner:block/oak_trellis_left_post",
-        "y": 180
-      }
-    },
-    {
-      "when": {
-        "facing": "south",
-        "right": "false"
-      },
-      "apply": {
-        "model": "vintner:block/oak_trellis_right_post",
-        "y": 180
-      }
-    },
-    {
-      "when": {
-        "facing": "west"
-      },
-      "apply": {
-        "model": "vintner:block/oak_trellis_rails",
-        "y": 270
-      }
-    },
-    {
-      "when": {
-        "facing": "west",
-        "left": "false"
-      },
-      "apply": {
-        "model": "vintner:block/oak_trellis_left_post",
-        "y": 270
-      }
-    },
-    {
-      "when": {
-        "facing": "west",
-        "right": "false"
-      },
-      "apply": {
-        "model": "vintner:block/oak_trellis_right_post",
+        "model": "vintner:block/trellis/wire_level",
         "y": 270
       }
     },

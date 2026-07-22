@@ -149,6 +149,12 @@ public final class ModBlocks {
     public static void initialize() {
         CreativeModeTabEvents
                 .modifyOutputEvent(
+                        CreativeModeTabs.NATURAL_BLOCKS
+                )
+                .register(output -> output.accept(VINEYARD_SOIL));
+
+        CreativeModeTabEvents
+                .modifyOutputEvent(
                         CreativeModeTabs.FUNCTIONAL_BLOCKS
                 )
                 .register(output -> {
