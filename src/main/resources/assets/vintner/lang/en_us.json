@@ -23,5 +23,17 @@
   "vineyard_condition.vintner.poor": "Poor",
   "message.vintner.vineyard_conditions": "Sunlight: %s | Temperature: %s | Rainfall: %s | Soil: %s | Predicted quality: %s",
   "block.vintner.vineyard_soil": "Prepared Vineyard Soil",
-  "item.vintner.compost": "Compost"
+  "item.vintner.compost": "Compost",
+  "advancement.vintner.root.title": "A New Vintage",
+  "advancement.vintner.root.description": "Acquire red or white grapes and begin your vineyard",
+  "advancement.vintner.craft_trellis.title": "Lay the Groundwork",
+  "advancement.vintner.craft_trellis.description": "Craft an oak trellis for your first vine",
+  "advancement.vintner.plant_grapevine.title": "Put Down Roots",
+  "advancement.vintner.plant_grapevine.description": "Plant a grapevine on a trellis",
+  "advancement.vintner.press_must.title": "First Pressing",
+  "advancement.vintner.press_must.description": "Press grapes into fresh must",
+  "advancement.vintner.ferment_wine.title": "Worth the Wait",
+  "advancement.vintner.ferment_wine.description": "Ferment must into a bottle of wine",
+  "advancement.vintner.age_wine.title": "Cellar Master",
+  "advancement.vintner.age_wine.description": "Finish ageing a bottle of wine"
 }

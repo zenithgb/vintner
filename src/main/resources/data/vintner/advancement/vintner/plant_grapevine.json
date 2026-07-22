@@ -1,0 +1,29 @@
+{
+  "parent": "vintner:vintner/craft_trellis",
+  "criteria": {
+    "red_grapevine": {
+      "trigger": "minecraft:impossible"
+    },
+    "white_grapevine": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.plant_grapevine.description"
+    },
+    "icon": {
+      "id": "vintner:white_grapes"
+    },
+    "title": {
+      "translate": "advancement.vintner.plant_grapevine.title"
+    }
+  },
+  "requirements": [
+    [
+      "red_grapevine",
+      "white_grapevine"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

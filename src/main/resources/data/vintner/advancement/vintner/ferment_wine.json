@@ -1,0 +1,29 @@
+{
+  "parent": "vintner:vintner/press_must",
+  "criteria": {
+    "red_wine": {
+      "trigger": "minecraft:impossible"
+    },
+    "white_wine": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.ferment_wine.description"
+    },
+    "icon": {
+      "id": "vintner:red_wine"
+    },
+    "title": {
+      "translate": "advancement.vintner.ferment_wine.title"
+    }
+  },
+  "requirements": [
+    [
+      "red_wine",
+      "white_wine"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

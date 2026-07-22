@@ -1,0 +1,33 @@
+{
+  "parent": "vintner:vintner/ferment_wine",
+  "criteria": {
+    "aged_red_wine": {
+      "trigger": "minecraft:impossible"
+    },
+    "aged_white_wine": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.age_wine.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "vintner:aged_red_wine"
+    },
+    "title": {
+      "translate": "advancement.vintner.age_wine.title"
+    }
+  },
+  "requirements": [
+    [
+      "aged_red_wine",
+      "aged_white_wine"
+    ]
+  ],
+  "rewards": {
+    "experience": 50
+  },
+  "sends_telemetry_event": false
+}

@@ -1,0 +1,29 @@
+{
+  "parent": "vintner:vintner/plant_grapevine",
+  "criteria": {
+    "red_must": {
+      "trigger": "minecraft:impossible"
+    },
+    "white_must": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.press_must.description"
+    },
+    "icon": {
+      "id": "vintner:red_must"
+    },
+    "title": {
+      "translate": "advancement.vintner.press_must.title"
+    }
+  },
+  "requirements": [
+    [
+      "red_must",
+      "white_must"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

@@ -1,0 +1,41 @@
+{
+  "criteria": {
+    "red_grapes": {
+      "conditions": {
+        "item": {
+          "items": "vintner:red_grapes"
+        }
+      },
+      "trigger": "minecraft:villager_trade"
+    },
+    "white_grapes": {
+      "conditions": {
+        "item": {
+          "items": "vintner:white_grapes"
+        }
+      },
+      "trigger": "minecraft:villager_trade"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "background": "minecraft:gui/advancements/backgrounds/husbandry",
+    "description": {
+      "translate": "advancement.vintner.root.description"
+    },
+    "icon": {
+      "id": "vintner:red_grapes"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.vintner.root.title"
+    }
+  },
+  "requirements": [
+    [
+      "red_grapes",
+      "white_grapes"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

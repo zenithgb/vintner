@@ -1,11 +1,13 @@
 package com.zenith.vintner.block;
 
 import com.mojang.serialization.MapCodec;
+import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -203,6 +205,13 @@ public final class GrapePressBlock extends BaseEntityBlock {
 
         if (level instanceof ServerLevel serverLevel
                 && press.press()) {
+            if (player instanceof ServerPlayer serverPlayer) {
+                ModAdvancements.grantPressing(
+                        serverPlayer,
+                        press.getOutput()
+                );
+            }
+
             serverLevel.playSound(
                     null,
                     pos,

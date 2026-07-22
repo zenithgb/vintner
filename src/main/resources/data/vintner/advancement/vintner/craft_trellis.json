@@ -1,0 +1,28 @@
+{
+  "parent": "vintner:vintner/root",
+  "criteria": {
+    "crafted_trellis": {
+      "conditions": {
+        "recipe_id": "vintner:oak_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.craft_trellis.description"
+    },
+    "icon": {
+      "id": "vintner:oak_trellis"
+    },
+    "title": {
+      "translate": "advancement.vintner.craft_trellis.title"
+    }
+  },
+  "requirements": [
+    [
+      "crafted_trellis"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

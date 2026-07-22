@@ -1,11 +1,13 @@
 package com.zenith.vintner.item;
 
+import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.wine.WineMetadata;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -45,6 +47,7 @@ public final class GrapeItem extends Item {
         }
 
         if (level instanceof ServerLevel serverLevel) {
+            Player player = context.getPlayer();
             BlockState plantedState = grapevineSupplier.get()
                     .defaultBlockState()
                     .setValue(
@@ -87,7 +90,12 @@ public final class GrapeItem extends Item {
                     )
             );
 
-            Player player = context.getPlayer();
+            if (player instanceof ServerPlayer serverPlayer) {
+                ModAdvancements.grantPlanting(
+                        serverPlayer,
+                        grapevineSupplier.get()
+                );
+            }
 
             if (player == null
                     || !player.getAbilities().instabuild) {
