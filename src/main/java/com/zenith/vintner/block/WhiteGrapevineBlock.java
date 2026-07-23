@@ -23,4 +23,9 @@ public final class WhiteGrapevineBlock extends GrapevineBlock {
     protected Item getGrapeItem() {
         return ModItems.WHITE_GRAPES;
     }
+
+    @Override
+    protected Item getCuttingItem() {
+        return ModItems.WHITE_GRAPE_CUTTING;
+    }
 }

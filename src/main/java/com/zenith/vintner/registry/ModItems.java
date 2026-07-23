@@ -1,6 +1,7 @@
 package com.zenith.vintner.registry;
 
 import com.zenith.vintner.item.CompostItem;
+import com.zenith.vintner.item.GrapeCuttingItem;
 import com.zenith.vintner.item.MustItem;
 
 import com.zenith.vintner.item.WineConsumables;
@@ -29,15 +30,25 @@ public final class ModItems {
 
     public static final Item RED_GRAPES = register(
             "red_grapes",
-            properties -> new GrapeItem(
+            GrapeItem::new
+    );
+
+    public static final Item WHITE_GRAPES = register(
+            "white_grapes",
+            GrapeItem::new
+    );
+
+    public static final Item RED_GRAPE_CUTTING = register(
+            "red_grape_cutting",
+            properties -> new GrapeCuttingItem(
                     () -> ModBlocks.RED_GRAPEVINE,
                     properties
             )
     );
 
-    public static final Item WHITE_GRAPES = register(
-            "white_grapes",
-            properties -> new GrapeItem(
+    public static final Item WHITE_GRAPE_CUTTING = register(
+            "white_grape_cutting",
+            properties -> new GrapeCuttingItem(
                     () -> ModBlocks.WHITE_GRAPEVINE,
                     properties
             )
@@ -146,7 +157,11 @@ public final class ModItems {
                 .modifyOutputEvent(
                         CreativeModeTabs.INGREDIENTS
                 )
-                .register(output -> output.accept(COMPOST));
+                .register(output -> {
+                    output.accept(COMPOST);
+                    output.accept(RED_GRAPE_CUTTING);
+                    output.accept(WHITE_GRAPE_CUTTING);
+                });
 
         CreativeModeTabEvents
                 .modifyOutputEvent(

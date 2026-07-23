@@ -24,7 +24,7 @@ public final class GrapeQualityEvaluator {
         Biome biome = level.getBiome(vinePos).value();
 
         boolean openSky =
-                level.canSeeSky(vinePos.above());
+                level.canSeeSky(vinePos.above(2));
 
         float temperature = biome.getBaseTemperature();
 

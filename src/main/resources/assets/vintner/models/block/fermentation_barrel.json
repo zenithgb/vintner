@@ -1,8 +1,9 @@
 {
-  "parent": "minecraft:block/orientable",
+  "parent": "vintner:block/cask",
   "textures": {
-    "top": "minecraft:block/barrel_top",
-    "front": "minecraft:block/barrel_side",
-    "side": "minecraft:block/barrel_side"
+    "wood": "minecraft:block/oak_planks",
+    "end": "minecraft:block/oak_log_top",
+    "band": "minecraft:block/gray_concrete",
+    "particle": "minecraft:block/oak_planks"
   }
 }

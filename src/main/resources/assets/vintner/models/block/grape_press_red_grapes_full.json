@@ -1,7 +1,7 @@
 {
   "textures": {
-    "contents": "minecraft:block/red_wool",
-    "particle": "minecraft:block/red_wool"
+    "contents": "minecraft:block/red_concrete_powder",
+    "particle": "minecraft:block/red_concrete_powder"
   },
   "elements": [
     {

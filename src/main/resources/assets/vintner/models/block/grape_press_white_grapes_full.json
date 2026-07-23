@@ -1,7 +1,7 @@
 {
   "textures": {
-    "contents": "minecraft:block/yellow_wool",
-    "particle": "minecraft:block/yellow_wool"
+    "contents": "minecraft:block/yellow_concrete_powder",
+    "particle": "minecraft:block/yellow_concrete_powder"
   },
   "elements": [
     {

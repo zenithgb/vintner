@@ -19,6 +19,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.function.Function;
@@ -29,6 +30,7 @@ public final class ModBlocks {
             TrellisBlock::new,
             BlockBehaviour.Properties.of()
                     .strength(1.5F)
+                    .sound(SoundType.WOOD)
                     .noOcclusion()
     );
 
@@ -38,6 +40,8 @@ public final class ModBlocks {
                     AgingBarrelBlock::new,
                     BlockBehaviour.Properties.of()
                             .strength(2.5F)
+                            .sound(SoundType.WOOD)
+                            .noOcclusion()
             );
 
     public static final Block FERMENTATION_BARREL =
@@ -46,6 +50,8 @@ public final class ModBlocks {
                     FermentationBarrelBlock::new,
                     BlockBehaviour.Properties.of()
                             .strength(2.5F)
+                            .sound(SoundType.WOOD)
+                            .noOcclusion()
             );
 
     public static final Block GRAPE_PRESS = registerWithItem(
@@ -53,6 +59,8 @@ public final class ModBlocks {
             GrapePressBlock::new,
             BlockBehaviour.Properties.of()
                     .strength(2.5F)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion()
     );
 
     public static final Block VINEYARD_SOIL =
@@ -61,6 +69,7 @@ public final class ModBlocks {
                     VineyardSoilBlock::new,
                     BlockBehaviour.Properties.of()
                             .strength(0.6F)
+                            .sound(SoundType.ROOTED_DIRT)
             );
 
     public static final Block RED_GRAPEVINE = registerWithoutItem(
@@ -68,6 +77,7 @@ public final class ModBlocks {
             RedGrapevineBlock::new,
             BlockBehaviour.Properties.of()
                     .strength(1.0F)
+                    .sound(SoundType.VINE)
                     .noOcclusion()
                     .randomTicks()
     );
@@ -77,6 +87,7 @@ public final class ModBlocks {
             WhiteGrapevineBlock::new,
             BlockBehaviour.Properties.of()
                     .strength(1.0F)
+                    .sound(SoundType.VINE)
                     .noOcclusion()
                     .randomTicks()
     );

@@ -25,54 +25,78 @@
         "y": 270
       }
     },
-
     {
-      "when": {
-        "input_type": "1",
-        "input_level": "1"
-      },
+      "when": {"input_type": "1", "input_level": "1"},
       "apply": {
         "model": "vintner:block/grape_press_red_grapes_low"
       }
     },
     {
-      "when": {
-        "input_type": "1",
-        "input_level": "2"
-      },
+      "when": {"input_type": "1", "input_level": "2"},
       "apply": {
         "model": "vintner:block/grape_press_red_grapes_full"
       }
     },
     {
-      "when": {
-        "input_type": "2",
-        "input_level": "1"
-      },
+      "when": {"input_type": "2", "input_level": "1"},
       "apply": {
         "model": "vintner:block/grape_press_white_grapes_low"
       }
     },
     {
-      "when": {
-        "input_type": "2",
-        "input_level": "2"
-      },
+      "when": {"input_type": "2", "input_level": "2"},
       "apply": {
         "model": "vintner:block/grape_press_white_grapes_full"
       }
     },
-
     {
-      "when": {"output_type": "1"},
+      "when": {"facing": "north", "output_type": "1"},
+      "apply": {"model": "vintner:block/grape_press_red_must"}
+    },
+    {
+      "when": {"facing": "east", "output_type": "1"},
       "apply": {
-        "model": "vintner:block/grape_press_red_must"
+        "model": "vintner:block/grape_press_red_must",
+        "y": 90
       }
     },
     {
-      "when": {"output_type": "2"},
+      "when": {"facing": "south", "output_type": "1"},
       "apply": {
-        "model": "vintner:block/grape_press_white_must"
+        "model": "vintner:block/grape_press_red_must",
+        "y": 180
+      }
+    },
+    {
+      "when": {"facing": "west", "output_type": "1"},
+      "apply": {
+        "model": "vintner:block/grape_press_red_must",
+        "y": 270
+      }
+    },
+    {
+      "when": {"facing": "north", "output_type": "2"},
+      "apply": {"model": "vintner:block/grape_press_white_must"}
+    },
+    {
+      "when": {"facing": "east", "output_type": "2"},
+      "apply": {
+        "model": "vintner:block/grape_press_white_must",
+        "y": 90
+      }
+    },
+    {
+      "when": {"facing": "south", "output_type": "2"},
+      "apply": {
+        "model": "vintner:block/grape_press_white_must",
+        "y": 180
+      }
+    },
+    {
+      "when": {"facing": "west", "output_type": "2"},
+      "apply": {
+        "model": "vintner:block/grape_press_white_must",
+        "y": 270
       }
     }
   ]

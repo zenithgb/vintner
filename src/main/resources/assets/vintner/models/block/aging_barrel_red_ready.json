@@ -1,40 +1,6 @@
 {
+  "parent": "vintner:block/cask_bung",
   "textures": {
-    "indicator": "minecraft:block/red_concrete",
-    "particle": "minecraft:block/red_concrete"
-  },
-  "elements": [
-    {
-      "from": [
-        5.0,
-        16.01,
-        5.0
-      ],
-      "to": [
-        11.0,
-        16.95,
-        11.0
-      ],
-      "faces": {
-        "up": {
-          "texture": "#indicator"
-        },
-        "down": {
-          "texture": "#indicator"
-        },
-        "north": {
-          "texture": "#indicator"
-        },
-        "south": {
-          "texture": "#indicator"
-        },
-        "east": {
-          "texture": "#indicator"
-        },
-        "west": {
-          "texture": "#indicator"
-        }
-      }
-    }
-  ]
+    "indicator": "minecraft:block/redstone_block"
+  }
 }

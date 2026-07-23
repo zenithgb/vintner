@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.wine.WinemakingEffects;
 import com.zenith.vintner.wine.WinemakingFeedback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -235,6 +236,14 @@ public final class GrapePressBlock extends BaseEntityBlock {
                     SoundSource.BLOCKS,
                     1.0F,
                     0.7F
+            );
+
+            WinemakingEffects.press(
+                    serverLevel,
+                    pos,
+                    press.getOutput().is(ModItems.RED_MUST)
+                            ? ModItems.RED_GRAPES
+                            : ModItems.WHITE_GRAPES
             );
 
             WinemakingFeedback.showPressStatus(player, press);

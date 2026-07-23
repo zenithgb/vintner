@@ -38,7 +38,8 @@
           "condition": "minecraft:block_state_property",
           "block": "vintner:red_grapevine",
           "properties": {
-            "age": "3"
+            "age": "3",
+            "upper": "true"
           }
         },
         {

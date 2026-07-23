@@ -2,6 +2,8 @@ package com.zenith.vintner.registry;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -23,14 +25,45 @@ public final class ModTrades {
             if (entity instanceof WanderingTrader trader) {
                 addGrapeOfferIfMissing(
                         trader.getOffers(),
-                        ModItems.RED_GRAPES
+                        ModItems.RED_GRAPE_CUTTING
                 );
                 addGrapeOfferIfMissing(
                         trader.getOffers(),
-                        ModItems.WHITE_GRAPES
+                        ModItems.WHITE_GRAPE_CUTTING
                 );
+            } else if (entity instanceof Villager villager) {
+                addFarmerOffersIfApplicable(villager);
             }
         });
+
+        net.fabricmc.fabric.api.event.player.UseEntityCallback.EVENT
+                .register((player, level, hand, entity, hitResult) -> {
+                    if (!level.isClientSide()
+                            && entity instanceof Villager villager) {
+                        addFarmerOffersIfApplicable(villager);
+                    }
+
+                    return net.minecraft.world.InteractionResult.PASS;
+                });
+    }
+
+    private static void addFarmerOffersIfApplicable(
+            Villager villager
+    ) {
+        if (!villager.getVillagerData()
+                .profession()
+                .is(VillagerProfession.FARMER)) {
+            return;
+        }
+
+        addGrapeOfferIfMissing(
+                villager.getOffers(),
+                ModItems.RED_GRAPE_CUTTING
+        );
+        addGrapeOfferIfMissing(
+                villager.getOffers(),
+                ModItems.WHITE_GRAPE_CUTTING
+        );
     }
 
     private static void addGrapeOfferIfMissing(

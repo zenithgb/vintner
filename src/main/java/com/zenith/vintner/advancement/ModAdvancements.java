@@ -81,11 +81,19 @@ public final class ModAdvancements {
                         )
                 );
 
-        if (advancement != null) {
-            player.getAdvancements().award(
-                    advancement,
-                    criterion
-            );
+        if (advancement == null) {
+            return;
         }
+
+        if (player.getAdvancements()
+                .getOrStartProgress(advancement)
+                .isDone()) {
+            return;
+        }
+
+        player.getAdvancements().award(
+                advancement,
+                criterion
+        );
     }
 }

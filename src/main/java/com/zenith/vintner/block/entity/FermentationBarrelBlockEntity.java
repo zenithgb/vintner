@@ -3,9 +3,11 @@ package com.zenith.vintner.block.entity;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.wine.WinemakingEffects;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineQuality;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -55,12 +57,31 @@ public final class FermentationBarrelBlockEntity
 
         barrel.fermentationProgress++;
 
+        if (level instanceof ServerLevel serverLevel
+                && shouldEmit(
+                        barrel.fermentationProgress,
+                        pos,
+                        80
+                )) {
+            WinemakingEffects.fermentationActive(
+                    serverLevel,
+                    pos
+            );
+        }
+
         if (barrel.fermentationProgress
                 >= FERMENTATION_TIME) {
             barrel.fermentationProgress =
                     FERMENTATION_TIME;
             barrel.ready = true;
             barrel.markChangedAndSync();
+
+            if (level instanceof ServerLevel serverLevel) {
+                WinemakingEffects.fermentationComplete(
+                        serverLevel,
+                        pos
+                );
+            }
         } else if (barrel.fermentationProgress % 20 == 0) {
             /*
              * Persist periodic progress without forcing a visual
@@ -70,6 +91,21 @@ public final class FermentationBarrelBlockEntity
         }
 
         barrel.updateComparatorSignal();
+    }
+
+    private static boolean shouldEmit(
+            int progress,
+            BlockPos pos,
+            int interval
+    ) {
+        int phase = Math.floorMod(
+                pos.getX() * 31
+                        + pos.getY() * 17
+                        + pos.getZ(),
+                interval
+        );
+
+        return progress % interval == phase;
     }
 
     public boolean canInsert(ItemStack stack) {

@@ -1,10 +1,12 @@
 package com.zenith.vintner.block;
 
+import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.wine.GrapeQualityEvaluator;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineQuality;
 import com.zenith.vintner.wine.VineyardConditionReport;
+import com.zenith.vintner.wine.WinemakingEffects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.Direction;
@@ -13,18 +15,22 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
@@ -37,6 +43,8 @@ public abstract class GrapevineBlock
 
     public static final int MAX_AGE = 3;
     public static final IntegerProperty AGE = BlockStateProperties.AGE_3;
+    public static final BooleanProperty UPPER =
+            BooleanProperty.create("upper");
 
     private static final VoxelShape NORTH_SOUTH_SHAPE =
             Block.box(0.0, 0.0, 6.0, 16.0, 16.0, 10.0);
@@ -61,11 +69,14 @@ public abstract class GrapevineBlock
                         .setValue(SOUTH, RowConnection.NONE)
                         .setValue(WEST, RowConnection.NONE)
                         .setValue(ISOLATED, false)
+                        .setValue(UPPER, false)
                         .setValue(AGE, 0)
         );
     }
 
     protected abstract Item getGrapeItem();
+
+    protected abstract Item getCuttingItem();
 
     public GrapeVariety getVariety() {
         return variety;
@@ -84,8 +95,54 @@ public abstract class GrapevineBlock
     }
 
     @Override
+    protected BlockState updateShape(
+            BlockState state,
+            LevelReader level,
+            ScheduledTickAccess ticks,
+            BlockPos pos,
+            Direction directionToNeighbour,
+            BlockPos neighbourPos,
+            BlockState neighbourState,
+            RandomSource random
+    ) {
+        if (state.getValue(UPPER)
+                && directionToNeighbour == Direction.DOWN) {
+            if (isMatchingLower(neighbourState)
+                    && neighbourState.getValue(AGE) >= 2) {
+                state = state.setValue(
+                        AGE,
+                        neighbourState.getValue(AGE)
+                );
+            } else {
+                return copyTrellisProperties(
+                        state,
+                        ModBlocks.OAK_TRELLIS.defaultBlockState()
+                );
+            }
+        }
+
+        if (!state.getValue(UPPER)
+                && directionToNeighbour == Direction.UP
+                && state.getValue(AGE) >= 2
+                && !isMatchingUpper(neighbourState)) {
+            state = state.setValue(AGE, 1);
+        }
+
+        return super.updateShape(
+                state,
+                level,
+                ticks,
+                pos,
+                directionToNeighbour,
+                neighbourPos,
+                neighbourState,
+                random
+        );
+    }
+
+    @Override
     protected boolean isRandomlyTicking(BlockState state) {
-        return state.getValue(AGE) < MAX_AGE;
+        return !state.getValue(UPPER);
     }
 
     @Override
@@ -95,22 +152,182 @@ public abstract class GrapevineBlock
             BlockPos pos,
             RandomSource random
     ) {
+        if (state.getValue(UPPER)) {
+            return;
+        }
+
         int age = state.getValue(AGE);
+
+        if (age >= 2
+                && !isMatchingUpper(
+                        level.getBlockState(pos.above())
+                )) {
+            normalizeLinkedStructure(level, pos, state);
+            return;
+        }
 
         if (age < MAX_AGE
                 && random.nextInt(
                         variety.growthChanceDenominator()
                 ) == 0
-                && level.getRawBrightness(pos.above(), 0) >= 9) {
-            BlockState grownState = state.setValue(AGE, age + 1);
+                && level.getRawBrightness(pos.above(2), 0) >= 9) {
+            advanceGrowth(level, pos, state);
+        }
+    }
 
-            level.setBlock(pos, grownState, Block.UPDATE_CLIENTS);
+    private boolean advanceGrowth(
+            ServerLevel level,
+            BlockPos rootPos,
+            BlockState rootState
+    ) {
+        int age = rootState.getValue(AGE);
+
+        if (age == 0) {
+            BlockState grownState = rootState.setValue(AGE, 1);
+            level.setBlock(rootPos, grownState, Block.UPDATE_ALL);
             level.gameEvent(
                     GameEvent.BLOCK_CHANGE,
-                    pos,
+                    rootPos,
                     GameEvent.Context.of(grownState)
             );
+            return true;
         }
+
+        BlockPos upperPos = rootPos.above();
+        BlockState upperState = level.getBlockState(upperPos);
+
+        if (age >= 2 && !isMatchingUpper(upperState)) {
+            return normalizeLinkedStructure(
+                    level,
+                    rootPos,
+                    rootState
+            );
+        }
+
+        if (age == 1) {
+            if (!isAvailableUpperTrellis(upperState)
+                    && !isMatchingUpper(upperState)) {
+                return false;
+            }
+
+            setLinkedAge(
+                    level,
+                    rootPos,
+                    rootState,
+                    upperState,
+                    2
+            );
+            return true;
+        }
+
+        if (age == 2 && isMatchingUpper(upperState)) {
+            setLinkedAge(
+                    level,
+                    rootPos,
+                    rootState,
+                    upperState,
+                    3
+            );
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean normalizeLinkedStructure(
+            ServerLevel level,
+            BlockPos rootPos,
+            BlockState rootState
+    ) {
+        BlockPos upperPos = rootPos.above();
+        BlockState upperState = level.getBlockState(upperPos);
+
+        if (isMatchingUpper(upperState)) {
+            return false;
+        }
+
+        if (isAvailableUpperTrellis(upperState)) {
+            setLinkedAge(
+                    level,
+                    rootPos,
+                    rootState,
+                    upperState,
+                    rootState.getValue(AGE)
+            );
+            return true;
+        }
+
+        BlockState resetState = rootState.setValue(AGE, 1);
+        level.setBlock(rootPos, resetState, Block.UPDATE_ALL);
+        level.gameEvent(
+                GameEvent.BLOCK_CHANGE,
+                rootPos,
+                GameEvent.Context.of(resetState)
+        );
+        return true;
+    }
+
+    private void setLinkedAge(
+            ServerLevel level,
+            BlockPos rootPos,
+            BlockState rootState,
+            BlockState upperState,
+            int age
+    ) {
+        BlockState grownRoot = rootState
+                .setValue(UPPER, false)
+                .setValue(AGE, age);
+
+        BlockState grownUpper = isMatchingUpper(upperState)
+                ? upperState.setValue(AGE, age)
+                : copyTrellisProperties(
+                        upperState,
+                        defaultBlockState()
+                )
+                .setValue(UPPER, true)
+                .setValue(AGE, age);
+
+        level.setBlock(
+                rootPos.above(),
+                grownUpper,
+                Block.UPDATE_ALL
+        );
+        level.setBlock(rootPos, grownRoot, Block.UPDATE_ALL);
+        level.gameEvent(
+                GameEvent.BLOCK_CHANGE,
+                rootPos.above(),
+                GameEvent.Context.of(grownUpper)
+        );
+    }
+
+    private boolean isMatchingUpper(BlockState state) {
+        return state.getBlock() == this
+                && state.getValue(UPPER);
+    }
+
+    private boolean isMatchingLower(BlockState state) {
+        return state.getBlock() == this
+                && !state.getValue(UPPER);
+    }
+
+    private static boolean isAvailableUpperTrellis(
+            BlockState state
+    ) {
+        return state.getBlock() instanceof TrellisBlock
+                && !(state.getBlock() instanceof GrapevineBlock);
+    }
+
+    private static BlockState copyTrellisProperties(
+            BlockState source,
+            BlockState target
+    ) {
+        return target
+                .setValue(FACING, source.getValue(FACING))
+                .setValue(NORTH, source.getValue(NORTH))
+                .setValue(EAST, source.getValue(EAST))
+                .setValue(SOUTH, source.getValue(SOUTH))
+                .setValue(WEST, source.getValue(WEST))
+                .setValue(ISOLATED, source.getValue(ISOLATED));
     }
 
     private static Component conditionText(
@@ -130,6 +347,115 @@ public abstract class GrapevineBlock
     }
 
     @Override
+    protected InteractionResult useItemOn(
+            ItemStack stack,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand,
+            BlockHitResult hitResult
+    ) {
+        if (stack.is(Items.SHEARS)) {
+            InteractionResult pruning = tryPruneCutting(
+                    stack,
+                    state,
+                    level,
+                    pos,
+                    player,
+                    hand
+            );
+
+            if (pruning.consumesAction()) {
+                return pruning;
+            }
+        }
+
+        if (state.getValue(UPPER)) {
+            InteractionResult result =
+                    VineyardSoilInteraction.useOnSoilBelow(
+                            stack,
+                            level,
+                            pos.below(),
+                            player
+                    );
+
+            if (result.consumesAction()) {
+                return result;
+            }
+        }
+
+        return super.useItemOn(
+                stack,
+                state,
+                level,
+                pos,
+                player,
+                hand,
+                hitResult
+        );
+    }
+
+    private InteractionResult tryPruneCutting(
+            ItemStack shears,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand
+    ) {
+        BlockPos rootPos = state.getValue(UPPER)
+                ? pos.below()
+                : pos;
+        BlockState rootState = level.getBlockState(rootPos);
+        BlockState upperState = level.getBlockState(rootPos.above());
+
+        if (!isMatchingLower(rootState)
+                || rootState.getValue(AGE) < MAX_AGE
+                || !isMatchingUpper(upperState)
+                || upperState.getValue(AGE) < MAX_AGE) {
+            return InteractionResult.PASS;
+        }
+
+        if (level instanceof ServerLevel serverLevel) {
+            BlockState prunedRoot = rootState.setValue(AGE, 2);
+            BlockState prunedUpper = upperState.setValue(AGE, 2);
+
+            serverLevel.setBlock(
+                    rootPos,
+                    prunedRoot,
+                    Block.UPDATE_ALL
+            );
+            serverLevel.setBlock(
+                    rootPos.above(),
+                    prunedUpper,
+                    Block.UPDATE_ALL
+            );
+            Block.popResource(
+                    serverLevel,
+                    rootPos.above(),
+                    new ItemStack(getCuttingItem())
+            );
+            serverLevel.playSound(
+                    null,
+                    rootPos.above(),
+                    SoundEvents.SHEEP_SHEAR,
+                    SoundSource.BLOCKS,
+                    1.0F,
+                    1.1F
+            );
+            shears.hurtAndBreak(1, player, hand);
+            serverLevel.gameEvent(
+                    GameEvent.SHEAR,
+                    rootPos.above(),
+                    GameEvent.Context.of(player, prunedUpper)
+            );
+        }
+
+        return InteractionResult.SUCCESS;
+    }
+
+    @Override
     protected InteractionResult useWithoutItem(
             BlockState state,
             Level level,
@@ -137,12 +463,17 @@ public abstract class GrapevineBlock
             Player player,
             BlockHitResult hitResult
     ) {
+        BlockPos rootPos = state.getValue(UPPER)
+                ? pos.below()
+                : pos;
+        BlockState rootState = level.getBlockState(rootPos);
+
         if (player.isShiftKeyDown()) {
             if (!level.isClientSide()) {
                 VineyardConditionReport report =
                         GrapeQualityEvaluator.inspect(
                                 level,
-                                pos
+                                rootPos
                         );
 
                 player.sendSystemMessage(
@@ -168,7 +499,10 @@ public abstract class GrapevineBlock
             return InteractionResult.SUCCESS;
         }
 
-        if (state.getValue(AGE) < MAX_AGE) {
+        if (!state.getValue(UPPER)
+                || state.getValue(AGE) < MAX_AGE
+                || !isMatchingLower(rootState)
+                || rootState.getValue(AGE) < MAX_AGE) {
             return super.useWithoutItem(
                     state,
                     level,
@@ -198,7 +532,7 @@ public abstract class GrapevineBlock
             WineQuality quality =
                     GrapeQualityEvaluator.evaluate(
                             serverLevel,
-                            pos
+                            rootPos
                     );
 
             WineMetadata.apply(
@@ -224,18 +558,30 @@ public abstract class GrapevineBlock
                             * 0.4F
             );
 
-            BlockState harvestedState = state.setValue(AGE, 1);
+            WinemakingEffects.harvest(
+                    serverLevel,
+                    pos,
+                    getGrapeItem()
+            );
+
+            BlockState harvestedUpper = state.setValue(AGE, 2);
+            BlockState harvestedRoot = rootState.setValue(AGE, 2);
 
             serverLevel.setBlock(
+                    rootPos,
+                    harvestedRoot,
+                    Block.UPDATE_ALL
+            );
+            serverLevel.setBlock(
                     pos,
-                    harvestedState,
-                    Block.UPDATE_CLIENTS
+                    harvestedUpper,
+                    Block.UPDATE_ALL
             );
 
             serverLevel.gameEvent(
                     GameEvent.BLOCK_CHANGE,
                     pos,
-                    GameEvent.Context.of(player, harvestedState)
+                    GameEvent.Context.of(player, harvestedUpper)
             );
         }
 
@@ -249,7 +595,7 @@ public abstract class GrapevineBlock
             BlockState state,
             boolean includeData
     ) {
-        return new ItemStack(getGrapeItem());
+        return new ItemStack(getCuttingItem());
     }
 
     @Override
@@ -258,7 +604,28 @@ public abstract class GrapevineBlock
             BlockPos pos,
             BlockState state
     ) {
-        return state.getValue(AGE) < MAX_AGE;
+        BlockPos rootPos = state.getValue(UPPER)
+                ? pos.below()
+                : pos;
+        BlockState rootState = level.getBlockState(rootPos);
+
+        if (!isMatchingLower(rootState)
+                || rootState.getValue(AGE) >= MAX_AGE) {
+            return false;
+        }
+
+        int age = rootState.getValue(AGE);
+
+        if (age == 0) {
+            return true;
+        }
+
+        BlockState upperState = level.getBlockState(rootPos.above());
+
+        return age == 1
+                ? isAvailableUpperTrellis(upperState)
+                        || isMatchingUpper(upperState)
+                : isMatchingUpper(upperState);
     }
 
     @Override
@@ -268,7 +635,7 @@ public abstract class GrapevineBlock
             BlockPos pos,
             BlockState state
     ) {
-        return true;
+        return isValidBonemealTarget(level, pos, state);
     }
 
     @Override
@@ -278,16 +645,14 @@ public abstract class GrapevineBlock
             BlockPos pos,
             BlockState state
     ) {
-        int newAge = Math.min(
-                MAX_AGE,
-                state.getValue(AGE) + 1
-        );
+        BlockPos rootPos = state.getValue(UPPER)
+                ? pos.below()
+                : pos;
+        BlockState rootState = level.getBlockState(rootPos);
 
-        level.setBlock(
-                pos,
-                state.setValue(AGE, newAge),
-                Block.UPDATE_CLIENTS
-        );
+        if (isMatchingLower(rootState)) {
+            advanceGrowth(level, rootPos, rootState);
+        }
     }
 
     @Override
@@ -301,6 +666,7 @@ public abstract class GrapevineBlock
                 SOUTH,
                 WEST,
                 ISOLATED,
+                UPPER,
                 AGE
         );
     }

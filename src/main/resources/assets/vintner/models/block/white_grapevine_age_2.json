@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cross",
   "textures": {
-    "cross": "minecraft:block/sweet_berry_bush_stage2"
+    "cross": "vintner:block/white_grapevine_age_2"
   }
 }

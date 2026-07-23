@@ -1,20 +1,24 @@
 {
   "criteria": {
-    "red_grapes": {
+    "red_cutting": {
       "conditions": {
-        "item": {
-          "items": "vintner:red_grapes"
-        }
+        "items": [
+          {
+            "items": "vintner:red_grape_cutting"
+          }
+        ]
       },
-      "trigger": "minecraft:villager_trade"
+      "trigger": "minecraft:inventory_changed"
     },
-    "white_grapes": {
+    "white_cutting": {
       "conditions": {
-        "item": {
-          "items": "vintner:white_grapes"
-        }
+        "items": [
+          {
+            "items": "vintner:white_grape_cutting"
+          }
+        ]
       },
-      "trigger": "minecraft:villager_trade"
+      "trigger": "minecraft:inventory_changed"
     }
   },
   "display": {
@@ -24,7 +28,7 @@
       "translate": "advancement.vintner.root.description"
     },
     "icon": {
-      "id": "vintner:red_grapes"
+      "id": "vintner:red_grape_cutting"
     },
     "show_toast": true,
     "title": {
@@ -33,8 +37,8 @@
   },
   "requirements": [
     [
-      "red_grapes",
-      "white_grapes"
+      "red_cutting",
+      "white_cutting"
     ]
   ],
   "sends_telemetry_event": false

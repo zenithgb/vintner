@@ -3,9 +3,11 @@ package com.zenith.vintner.block.entity;
 import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.wine.WinemakingEffects;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineQuality;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -50,15 +52,49 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
 
         barrel.agingProgress++;
 
+        if (level instanceof ServerLevel serverLevel
+                && shouldEmit(
+                        barrel.agingProgress,
+                        pos,
+                        200
+                )) {
+            WinemakingEffects.agingActive(
+                    serverLevel,
+                    pos
+            );
+        }
+
         if (barrel.agingProgress >= AGING_TIME) {
             barrel.agingProgress = AGING_TIME;
             barrel.ready = true;
             barrel.markChangedAndSync();
+
+            if (level instanceof ServerLevel serverLevel) {
+                WinemakingEffects.agingComplete(
+                        serverLevel,
+                        pos
+                );
+            }
         } else if (barrel.agingProgress % 20 == 0) {
             barrel.setChanged();
         }
 
         barrel.updateComparatorSignal();
+    }
+
+    private static boolean shouldEmit(
+            int progress,
+            BlockPos pos,
+            int interval
+    ) {
+        int phase = Math.floorMod(
+                pos.getX() * 31
+                        + pos.getY() * 17
+                        + pos.getZ(),
+                interval
+        );
+
+        return progress % interval == phase;
     }
 
     public boolean canInsert(ItemStack stack) {

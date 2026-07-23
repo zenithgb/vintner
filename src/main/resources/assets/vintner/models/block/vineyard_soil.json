@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "minecraft:block/rooted_dirt"
+    "all": "vintner:block/vineyard_soil"
   }
 }

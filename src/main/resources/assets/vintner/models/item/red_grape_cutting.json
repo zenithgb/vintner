@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "vintner:block/red_grapevine_age_0"
+  }
+}

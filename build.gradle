@@ -17,6 +17,20 @@ repositories {
 loom {
 	splitEnvironmentSourceSets()
 
+	runs {
+		client {
+			programArgs "--username", "VintnerDev"
+		}
+
+		gameTest {
+			server()
+			name = "Vintner Game Tests"
+			runDir = "build/gametest-run"
+			vmArg "-Dfabric-api.gametest"
+			vmArg "-Dfabric-api.gametest.report-file=${file("build/test-results/gametest/TEST-vintner.xml")}"
+		}
+	}
+
 	mods {
 		"vintner" {
 			sourceSet sourceSets.main

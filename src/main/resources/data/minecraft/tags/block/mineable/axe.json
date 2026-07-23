@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "vintner:oak_trellis",
+    "vintner:grape_press",
+    "vintner:fermentation_barrel",
+    "vintner:aging_barrel"
+  ]
+}
