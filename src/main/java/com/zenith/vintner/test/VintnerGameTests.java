@@ -160,35 +160,140 @@ public final class VintnerGameTests {
         helper.succeedWhen(() -> {
             assertNoWireConnections(helper, FIRST);
             assertNoWireConnections(helper, UPPER);
+            helper.assertBlockProperty(
+                    FIRST,
+                    TrellisBlock.HAS_ABOVE,
+                    true
+            );
+            helper.assertBlockProperty(
+                    FIRST,
+                    TrellisBlock.HAS_BELOW,
+                    false
+            );
+            helper.assertBlockProperty(
+                    UPPER,
+                    TrellisBlock.HAS_ABOVE,
+                    false
+            );
+            helper.assertBlockProperty(
+                    UPPER,
+                    TrellisBlock.HAS_BELOW,
+                    true
+            );
         });
     }
 
     @GameTest(maxTicks = 40)
-    public void brokenUpperVineResetsLowerGrowth(
+    public void verticalTrellisStateUpdatesAfterUpperIsRemoved(
             GameTestHelper helper
     ) {
-        helper.setBlock(FIRST, matureLowerVine());
-        helper.setBlock(UPPER, matureUpperVine());
-        helper.destroyBlock(UPPER);
+        helper.setBlock(FIRST, ModBlocks.OAK_TRELLIS);
+        helper.setBlock(UPPER, ModBlocks.OAK_TRELLIS);
+
+        helper.runAfterDelay(1, () -> helper.destroyBlock(UPPER));
 
         helper.succeedWhen(() -> {
-            helper.assertBlockPresent(ModBlocks.RED_GRAPEVINE, FIRST);
-            helper.assertBlockProperty(FIRST, GrapevineBlock.UPPER, false);
-            helper.assertBlockProperty(FIRST, GrapevineBlock.AGE, 1);
+            helper.assertBlockPresent(ModBlocks.OAK_TRELLIS, FIRST);
+            helper.assertBlockProperty(
+                    FIRST,
+                    TrellisBlock.HAS_ABOVE,
+                    false
+            );
+            helper.assertBlockProperty(
+                    FIRST,
+                    TrellisBlock.HAS_BELOW,
+                    false
+            );
         });
     }
 
     @GameTest(maxTicks = 40)
-    public void brokenLowerVineRestoresUpperTrellis(
+    public void differentHeightColumnsDoNotPartiallyConnect(
             GameTestHelper helper
     ) {
+        helper.setBlock(FIRST, ModBlocks.OAK_TRELLIS);
+        helper.setBlock(UPPER, ModBlocks.OAK_TRELLIS);
+        helper.setBlock(EAST, ModBlocks.OAK_TRELLIS);
+
+        helper.succeedWhen(() -> {
+            helper.assertBlockProperty(
+                    FIRST,
+                    TrellisBlock.EAST,
+                    TrellisBlock.RowConnection.NONE
+            );
+            helper.assertBlockProperty(
+                    EAST,
+                    TrellisBlock.WEST,
+                    TrellisBlock.RowConnection.NONE
+            );
+        });
+    }
+
+    @GameTest(maxTicks = 40)
+    public void matchingTwoHighColumnsConnectAtBothLevels(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.OAK_TRELLIS);
+        helper.setBlock(UPPER, ModBlocks.OAK_TRELLIS);
+        helper.setBlock(EAST, ModBlocks.OAK_TRELLIS);
+        helper.setBlock(EAST.above(), ModBlocks.OAK_TRELLIS);
+
+        helper.succeedWhen(() -> {
+            helper.assertBlockProperty(
+                    FIRST,
+                    TrellisBlock.EAST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+            helper.assertBlockProperty(
+                    EAST,
+                    TrellisBlock.WEST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+            helper.assertBlockProperty(
+                    UPPER,
+                    TrellisBlock.EAST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+            helper.assertBlockProperty(
+                    EAST.above(),
+                    TrellisBlock.WEST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+        });
+    }
+
+    @GameTest(maxTicks = 40)
+    public void breakingUpperVineRestoresBothTrellises(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+
         helper.setBlock(FIRST, matureLowerVine());
         helper.setBlock(UPPER, matureUpperVine());
-        helper.destroyBlock(FIRST);
+        player.gameMode.destroyBlock(helper.absolutePos(UPPER));
 
-        helper.succeedWhen(() ->
-                helper.assertBlockPresent(ModBlocks.OAK_TRELLIS, UPPER)
-        );
+        helper.succeedWhen(() -> {
+            helper.assertBlockPresent(ModBlocks.OAK_TRELLIS, FIRST);
+            helper.assertBlockPresent(ModBlocks.OAK_TRELLIS, UPPER);
+        });
+    }
+
+    @GameTest(maxTicks = 40)
+    public void breakingLowerVineRestoresBothTrellises(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+
+        helper.setBlock(FIRST, matureLowerVine());
+        helper.setBlock(UPPER, matureUpperVine());
+        player.gameMode.destroyBlock(helper.absolutePos(FIRST));
+
+        helper.succeedWhen(() -> {
+            helper.assertBlockPresent(ModBlocks.OAK_TRELLIS, FIRST);
+            helper.assertBlockPresent(ModBlocks.OAK_TRELLIS, UPPER);
+        });
     }
 
     @GameTest(maxTicks = 40)

@@ -74,6 +74,14 @@ public final class GrapeCuttingItem extends Item {
                     .setValue(
                             TrellisBlock.ISOLATED,
                             trellisState.getValue(TrellisBlock.ISOLATED)
+                    )
+                    .setValue(
+                            TrellisBlock.HAS_ABOVE,
+                            trellisState.getValue(TrellisBlock.HAS_ABOVE)
+                    )
+                    .setValue(
+                            TrellisBlock.HAS_BELOW,
+                            trellisState.getValue(TrellisBlock.HAS_BELOW)
                     );
 
             serverLevel.setBlock(

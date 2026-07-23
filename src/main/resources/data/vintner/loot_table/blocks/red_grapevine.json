@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "vintner:oak_trellis"
+          "name": "vintner:red_grape_cutting"
         }
       ],
       "conditions": [
