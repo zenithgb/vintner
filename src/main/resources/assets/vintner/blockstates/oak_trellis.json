@@ -7,7 +7,8 @@
     },
     {
       "when": {
-        "east": "level"
+        "east": "level",
+        "has_above": "false"
       },
       "apply": {
         "model": "vintner:block/trellis/wire_level"
@@ -15,7 +16,8 @@
     },
     {
       "when": {
-        "south": "level"
+        "south": "level",
+        "has_above": "false"
       },
       "apply": {
         "model": "vintner:block/trellis/wire_level",
@@ -24,7 +26,8 @@
     },
     {
       "when": {
-        "west": "level"
+        "west": "level",
+        "has_above": "false"
       },
       "apply": {
         "model": "vintner:block/trellis/wire_level",
@@ -33,7 +36,8 @@
     },
     {
       "when": {
-        "north": "level"
+        "north": "level",
+        "has_above": "false"
       },
       "apply": {
         "model": "vintner:block/trellis/wire_level",
@@ -45,7 +49,8 @@
         "north": "none",
         "east": "none",
         "south": "none",
-        "west": "level"
+        "west": "level",
+        "has_below": "false"
       },
       "apply": {
         "model": "vintner:block/trellis/end_brace"
@@ -56,7 +61,8 @@
         "north": "level",
         "east": "none",
         "south": "none",
-        "west": "none"
+        "west": "none",
+        "has_below": "false"
       },
       "apply": {
         "model": "vintner:block/trellis/end_brace",
@@ -68,7 +74,8 @@
         "north": "none",
         "east": "level",
         "south": "none",
-        "west": "none"
+        "west": "none",
+        "has_below": "false"
       },
       "apply": {
         "model": "vintner:block/trellis/end_brace",
@@ -80,7 +87,8 @@
         "north": "none",
         "east": "none",
         "south": "level",
-        "west": "none"
+        "west": "none",
+        "has_below": "false"
       },
       "apply": {
         "model": "vintner:block/trellis/end_brace",

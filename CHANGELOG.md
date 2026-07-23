@@ -2,6 +2,17 @@
 
 All notable changes to Vintner are documented in this file.
 
+## [1.0.1] - 2026-07-23
+
+### Fixed
+
+- Two-block trellis rows now render wires and end braces only on the correct
+  level, without partial connections to one-block rows.
+- Grapevines now use compact selection outlines while retaining the trellis
+  structure for collision.
+- Breaking either half of a grapevine removes only the vine, restores the
+  supporting trellises, and drops the matching grape cutting.
+
 ## [1.0.0] - 2026-07-22
 
 ### Added

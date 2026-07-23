@@ -22,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
@@ -46,11 +47,14 @@ public abstract class GrapevineBlock
     public static final BooleanProperty UPPER =
             BooleanProperty.create("upper");
 
-    private static final VoxelShape NORTH_SOUTH_SHAPE =
-            Block.box(0.0, 0.0, 6.0, 16.0, 16.0, 10.0);
+    private static final VoxelShape YOUNG_VINE_SHAPE =
+            Block.box(5.0, 0.0, 5.0, 11.0, 12.0, 11.0);
 
-    private static final VoxelShape EAST_WEST_SHAPE =
-            Block.box(6.0, 0.0, 0.0, 10.0, 16.0, 16.0);
+    private static final VoxelShape LOWER_VINE_SHAPE =
+            Block.box(3.0, 0.0, 3.0, 13.0, 16.0, 13.0);
+
+    private static final VoxelShape UPPER_VINE_SHAPE =
+            Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
 
     private final GrapeVariety variety;
 
@@ -69,6 +73,8 @@ public abstract class GrapevineBlock
                         .setValue(SOUTH, RowConnection.NONE)
                         .setValue(WEST, RowConnection.NONE)
                         .setValue(ISOLATED, false)
+                        .setValue(HAS_ABOVE, false)
+                        .setValue(HAS_BELOW, false)
                         .setValue(UPPER, false)
                         .setValue(AGE, 0)
         );
@@ -89,9 +95,58 @@ public abstract class GrapevineBlock
             BlockPos pos,
             CollisionContext context
     ) {
-        return state.getValue(FACING).getAxis() == Direction.Axis.X
-                ? EAST_WEST_SHAPE
-                : NORTH_SOUTH_SHAPE;
+        if (state.getValue(UPPER)) {
+            return UPPER_VINE_SHAPE;
+        }
+
+        return state.getValue(AGE) == 0
+                ? YOUNG_VINE_SHAPE
+                : LOWER_VINE_SHAPE;
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        return super.getCollisionShape(
+                state,
+                level,
+                pos,
+                context
+        );
+    }
+
+    @Override
+    public void destroy(
+            LevelAccessor level,
+            BlockPos pos,
+            BlockState state
+    ) {
+        BlockPos rootPos = state.getValue(UPPER)
+                ? pos.below()
+                : pos;
+        BlockPos upperPos = rootPos.above();
+        BlockState rootState = state.getValue(UPPER)
+                ? level.getBlockState(rootPos)
+                : state;
+        BlockState upperState = state.getValue(UPPER)
+                ? state
+                : level.getBlockState(upperPos);
+
+        if (!state.getValue(UPPER)
+                || isMatchingLower(rootState)) {
+            restoreBareTrellis(level, rootPos, rootState);
+        }
+
+        if (state.getValue(UPPER)
+                || isTrellisState(upperState)) {
+            restoreBareTrellis(level, upperPos, upperState);
+        }
+
+        super.destroy(level, pos, state);
     }
 
     @Override
@@ -117,7 +172,7 @@ public abstract class GrapevineBlock
                 return copyTrellisProperties(
                         state,
                         ModBlocks.OAK_TRELLIS.defaultBlockState()
-                );
+                ).setValue(HAS_BELOW, false);
             }
         }
 
@@ -327,7 +382,34 @@ public abstract class GrapevineBlock
                 .setValue(EAST, source.getValue(EAST))
                 .setValue(SOUTH, source.getValue(SOUTH))
                 .setValue(WEST, source.getValue(WEST))
-                .setValue(ISOLATED, source.getValue(ISOLATED));
+                .setValue(ISOLATED, source.getValue(ISOLATED))
+                .setValue(HAS_ABOVE, source.getValue(HAS_ABOVE))
+                .setValue(HAS_BELOW, source.getValue(HAS_BELOW));
+    }
+
+    private static void restoreBareTrellis(
+            LevelAccessor level,
+            BlockPos pos,
+            BlockState source
+    ) {
+        BlockState restored = copyTrellisProperties(
+                source,
+                ModBlocks.OAK_TRELLIS.defaultBlockState()
+        )
+                .setValue(
+                        HAS_ABOVE,
+                        isTrellisState(
+                                level.getBlockState(pos.above())
+                        )
+                )
+                .setValue(
+                        HAS_BELOW,
+                        isTrellisState(
+                                level.getBlockState(pos.below())
+                        )
+                );
+
+        level.setBlock(pos, restored, Block.UPDATE_ALL);
     }
 
     private static Component conditionText(
@@ -666,6 +748,8 @@ public abstract class GrapevineBlock
                 SOUTH,
                 WEST,
                 ISOLATED,
+                HAS_ABOVE,
+                HAS_BELOW,
                 UPPER,
                 AGE
         );

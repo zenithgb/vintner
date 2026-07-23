@@ -47,6 +47,12 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
     public static final BooleanProperty ISOLATED =
             BooleanProperty.create("isolated");
 
+    public static final BooleanProperty HAS_ABOVE =
+            BooleanProperty.create("has_above");
+
+    public static final BooleanProperty HAS_BELOW =
+            BooleanProperty.create("has_below");
+
     private static final VoxelShape POST_SHAPE =
             Block.box(7.0, 0.0, 7.0, 9.0, 16.0, 9.0);
 
@@ -68,6 +74,8 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
                         .setValue(SOUTH, RowConnection.NONE)
                         .setValue(WEST, RowConnection.NONE)
                         .setValue(ISOLATED, false)
+                        .setValue(HAS_ABOVE, false)
+                        .setValue(HAS_BELOW, false)
         );
     }
 
@@ -95,7 +103,23 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
 
         BlockState state = defaultBlockState()
                 .setValue(FACING, facing)
-                .setValue(ISOLATED, isolated);
+                .setValue(ISOLATED, isolated)
+                .setValue(
+                        HAS_ABOVE,
+                        isTrellisState(
+                                context.getLevel().getBlockState(
+                                        placementPos.above()
+                                )
+                        )
+                )
+                .setValue(
+                        HAS_BELOW,
+                        isTrellisState(
+                                context.getLevel().getBlockState(
+                                        placementPos.below()
+                                )
+                        )
+                );
 
         return updateConnections(
                 state,
@@ -117,6 +141,28 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
     ) {
         if (directionToNeighbour.getAxis().isHorizontal()) {
             return updateConnections(state, level, pos);
+        }
+
+        if (directionToNeighbour == Direction.UP) {
+            return updateConnections(
+                    state.setValue(
+                            HAS_ABOVE,
+                            isTrellisState(neighbourState)
+                    ),
+                    level,
+                    pos
+            );
+        }
+
+        if (directionToNeighbour == Direction.DOWN) {
+            return updateConnections(
+                    state.setValue(
+                            HAS_BELOW,
+                            isTrellisState(neighbourState)
+                    ),
+                    level,
+                    pos
+            );
         }
 
         return super.updateShape(
@@ -209,7 +255,9 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
     ) {
         return !state.getValue(ISOLATED)
                 && isTrellisState(neighbourState)
-                && !neighbourState.getValue(ISOLATED);
+                && !neighbourState.getValue(ISOLATED)
+                && state.getValue(HAS_ABOVE)
+                == neighbourState.getValue(HAS_ABOVE);
     }
 
     private static BlockState findVerticalTrellis(
@@ -300,6 +348,12 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
     private static VoxelShape createTrellisShape(BlockState state) {
         VoxelShape shape = POST_SHAPE;
 
+        if (state.getValue(HAS_ABOVE)
+                || (state.getBlock() instanceof GrapevineBlock
+                && !state.getValue(GrapevineBlock.UPPER))) {
+            return shape;
+        }
+
         if (state.getValue(NORTH) != RowConnection.NONE) {
             shape = addWireShapes(shape, Direction.NORTH);
         }
@@ -371,7 +425,9 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
                 EAST,
                 SOUTH,
                 WEST,
-                ISOLATED
+                ISOLATED,
+                HAS_ABOVE,
+                HAS_BELOW
         );
     }
 
