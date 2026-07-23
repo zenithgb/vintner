@@ -5,18 +5,37 @@ cultivation, winemaking, ageing, and wine quality.
 
 ## Vineyard loop
 
-1. Buy starter red or white grapes from any wandering trader.
+1. Acquire a red or white grape cutting from a farmer, wandering trader, or
+   village house chest.
 2. Craft oak trellises from four sticks and one iron chain. The recipe produces
    two trellises.
-3. Place trellises beside one another to create fence-style wire connections.
-4. Use red or white grapes on a trellis to plant a grapevine.
-5. Shift-use compost on a trellis or grapevine to prepare suitable soil
+3. Build rows from two-block-high trellises. Adjacent trellises connect with
+   fence-style wires.
+4. Use the cutting on the lower trellis to plant a grapevine.
+5. Shift-use compost on a trellis or grapevine to prepare suitable ground
    directly beneath it.
-6. Grow and harvest grapes, press them into must, ferment the must, and age the
-   resulting wine.
+6. Let the vine grow into the upper trellis, then harvest its mature upper
+   canopy.
+7. Press the grapes into must, ferment the must, and age the resulting wine.
 
 The Vintner advancement tab follows this same progression from the first
-starter grapes through a finished aged bottle.
+cutting through a finished aged bottle.
+
+Harvested grapes are fruit, not planting material. Mature vines can be pruned
+with shears to produce renewable cuttings; pruning returns the vine to its
+previous growth stage so it can regrow.
+
+## Winemaking
+
+The grape press accepts one matching grape at a time and converts four grapes
+into one bottle of must. Use the press with an empty hand to press a complete
+batch, then use a glass bottle to collect the must.
+
+The fermentation barrel holds four matching bottles of must. Fermentation takes
+one minute; use an empty hand to inspect progress or collect finished wine.
+
+The aging barrel holds four matching bottles of wine. Aging takes ninety
+seconds, improves the wine by one quality tier, and produces aged wine.
 
 Trellises connect independently on all four horizontal faces. Vertically
 stacked trellises form separate same-height rows; they do not create diagonal
@@ -34,6 +53,12 @@ Wine quality affects the finished drink. Fine wine effects last 25% longer;
 Exceptional wine effects last 50% longer and its signature effect is level II.
 Ageing improves the wine by one quality tier.
 
+Starter cuttings remain renewable and accessible:
+
+- Farmers and wandering traders sell both varieties.
+- Village house chests have a chance to contain one variety.
+- Established mature vines can be pruned with shears.
+
 All three winemaking machines support comparator output. The grape press
 reports its stored must level. Fermentation and aging barrels progress from
 signal strength 1 to 14 while working, output 15 when ready, and output 0 when
@@ -45,6 +70,7 @@ Build and verify the mod:
 
 ```bash
 ./gradlew clean build
+./gradlew runGameTest
 ```
 
 Launch the development client:
@@ -55,6 +81,8 @@ Launch the development client:
 
 Editable trellis geometry lives in `blockbench/trellis/`. Runtime models live
 in `src/main/resources/assets/vintner/models/block/trellis/`.
+
+The distributable JAR is written to `build/libs/`.
 
 ## License
 
