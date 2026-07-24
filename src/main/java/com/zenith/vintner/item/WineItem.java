@@ -2,8 +2,10 @@ package com.zenith.vintner.item;
 
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineQuality;
+import com.zenith.vintner.wine.WineConsumptionManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -54,22 +56,9 @@ public final class WineItem extends Item {
         );
 
         tooltip.accept(
-                WineMetadata.qualityTooltip(stack)
+                effectProfile.conciseSummary()
                         .copy()
                         .withStyle(ChatFormatting.GRAY)
-        );
-
-        tooltip.accept(
-                WineMetadata.vintageTooltip(stack)
-                        .copy()
-                        .withStyle(ChatFormatting.DARK_GRAY)
-        );
-
-        tooltip.accept(
-                Component.translatable(
-                        "tooltip.vintner.effect_bonus",
-                        WineMetadata.quality(stack).effectBonus()
-                ).withStyle(ChatFormatting.GRAY)
         );
     }
 
@@ -86,8 +75,13 @@ public final class WineItem extends Item {
                 consumer
         );
 
-        if (!level.isClientSide()) {
-            effectProfile.apply(consumer, quality);
+        if (level instanceof ServerLevel serverLevel) {
+            WineConsumptionManager.consume(
+                    serverLevel,
+                    consumer,
+                    effectProfile,
+                    quality
+            );
         }
 
         return result;

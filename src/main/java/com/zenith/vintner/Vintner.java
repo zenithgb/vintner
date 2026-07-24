@@ -3,8 +3,10 @@ package com.zenith.vintner;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModCreativeTabs;
+import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.registry.ModLootTables;
+import com.zenith.vintner.registry.ModMobEffects;
 import com.zenith.vintner.registry.ModTrades;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
@@ -16,6 +18,8 @@ public final class Vintner implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        ModMobEffects.initialize();
+        ModAttachments.initialize();
         ModItems.initialize();
         ModBlocks.initialize();
         ModCreativeTabs.initialize();

@@ -63,5 +63,20 @@
   "advancement.vintner.ferment_wine.title": "Worth the Wait",
   "advancement.vintner.ferment_wine.description": "Ferment must into a bottle of wine",
   "advancement.vintner.age_wine.title": "Cellar Master",
-  "advancement.vintner.age_wine.description": "Finish ageing a bottle of wine"
+  "advancement.vintner.age_wine.description": "Finish ageing a bottle of wine",
+  "message.vintner.wine_diminishing": "The wine has less effect than the first glass.",
+  "message.vintner.wine_impaired": "You are beginning to feel unsteady.",
+  "message.vintner.wine_overindulged": "You have seriously overindulged.",
+  "tooltip.vintner.wine_benefit.red": "Steadier footing; less tiring combat",
+  "tooltip.vintner.wine_benefit.white": "Easier work; slower hunger drain",
+  "tooltip.vintner.wine_benefit.aged_red": "Much steadier footing; far less tiring combat",
+  "tooltip.vintner.wine_benefit.aged_white": "Much easier work; greatly reduced hunger drain",
+  "wine_profile.vintner.red": "Knockback resistance and reduced melee exhaustion",
+  "wine_profile.vintner.white": "Reduced hunger drain and faster mining",
+  "wine_profile.vintner.aged_red": "Greater knockback resistance and strongly reduced melee exhaustion",
+  "wine_profile.vintner.aged_white": "Greater hunger efficiency and faster mining",
+  "effect.vintner.red_wine_profile": "Red Wine Profile",
+  "effect.vintner.white_wine_profile": "White Wine Profile",
+  "effect.vintner.aged_red_wine_profile": "Aged Red Wine Profile",
+  "effect.vintner.aged_white_wine_profile": "Aged White Wine Profile"
 }

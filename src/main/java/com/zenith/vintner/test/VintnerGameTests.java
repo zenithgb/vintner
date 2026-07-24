@@ -7,15 +7,22 @@ import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
+import com.zenith.vintner.item.WineEffectProfile;
+import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.wine.WineConsumptionManager;
+import com.zenith.vintner.wine.WineConsumptionState;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineQuality;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -294,6 +301,326 @@ public final class VintnerGameTests {
             helper.assertBlockPresent(ModBlocks.OAK_TRELLIS, FIRST);
             helper.assertBlockPresent(ModBlocks.OAK_TRELLIS, UPPER);
         });
+    }
+
+    @GameTest(maxTicks = 40)
+    public void newWineProfileReplacesPreviousProfile(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.RED,
+                WineQuality.COMMON
+        );
+
+        helper.assertTrue(
+                WineEffectProfile.RED.isActive(player),
+                "The first wine profile should become active"
+        );
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.WHITE,
+                WineQuality.COMMON
+        );
+
+        helper.assertFalse(
+                WineEffectProfile.RED.isActive(player),
+                "A new wine must remove the previous Vintner profile"
+        );
+        helper.assertTrue(
+                WineEffectProfile.WHITE.isActive(player),
+                "The newly consumed wine profile should be active"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void drinkingWineItemUsesConsumptionSystem(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack wine = new ItemStack(ModItems.RED_WINE);
+
+        ItemStack result = wine.finishUsingItem(
+                helper.getLevel(),
+                player
+        );
+
+        helper.assertTrue(
+                result.is(Items.GLASS_BOTTLE),
+                "Drinking wine should return a glass bottle"
+        );
+        helper.assertTrue(
+                WineEffectProfile.RED.isActive(player),
+                "Drinking the item should activate its wine profile"
+        );
+        helper.assertValueEqual(
+                WineConsumptionManager.state(
+                        player,
+                        helper.getLevel().getGameTime()
+                ).drinks(),
+                1,
+                "Drinking the item should update consumption history"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineProfilesUseRoadmapBenefits(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+        double baseKnockbackResistance = player.getAttributeValue(
+                Attributes.KNOCKBACK_RESISTANCE
+        );
+        double baseBreakSpeed = player.getAttributeValue(
+                Attributes.BLOCK_BREAK_SPEED
+        );
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.RED,
+                WineQuality.COMMON
+        );
+
+        helper.assertTrue(
+                player.getAttributeValue(
+                        Attributes.KNOCKBACK_RESISTANCE
+                ) > baseKnockbackResistance,
+                "Red wine should increase knockback resistance"
+        );
+        helper.assertValueEqual(
+                WineConsumptionManager.adjustMeleeExhaustion(
+                        player,
+                        1.0F
+                ),
+                0.5F,
+                "Red wine should reduce melee exhaustion"
+        );
+        helper.assertValueEqual(
+                WineConsumptionManager.adjustGeneralExhaustion(
+                        player,
+                        1.0F
+                ),
+                1.0F,
+                "Red wine should not reduce unrelated exhaustion"
+        );
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.WHITE,
+                WineQuality.COMMON
+        );
+
+        helper.assertTrue(
+                player.getAttributeValue(
+                        Attributes.BLOCK_BREAK_SPEED
+                ) > baseBreakSpeed,
+                "White wine should increase block break speed"
+        );
+        helper.assertValueEqual(
+                player.getAttributeValue(
+                        Attributes.KNOCKBACK_RESISTANCE
+                ),
+                baseKnockbackResistance,
+                "Replacing red wine should remove its attribute bonus"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void whiteWineReducesHungerDrain(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+        player.getFoodData().setFoodLevel(20);
+        player.getFoodData().setSaturation(0.0F);
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.WHITE,
+                WineQuality.COMMON
+        );
+        player.causeFoodExhaustion(4.1F);
+        player.getFoodData().tick(player);
+
+        helper.assertValueEqual(
+                player.getFoodData().getFoodLevel(),
+                20,
+                "White wine should delay hunger loss from exhaustion"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void repeatedWineHasDiminishingBenefits(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+
+        var first = WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.RED,
+                WineQuality.COMMON
+        );
+        int firstDuration =
+                WineEffectProfile.RED.remainingDuration(player);
+
+        var second = WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.RED,
+                WineQuality.COMMON
+        );
+        int secondDuration =
+                WineEffectProfile.RED.remainingDuration(player);
+
+        var third = WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.RED,
+                WineQuality.COMMON
+        );
+        int thirdDuration =
+                WineEffectProfile.RED.remainingDuration(player);
+
+        helper.assertTrue(
+                first.benefitMultiplier()
+                        > second.benefitMultiplier()
+                        && second.benefitMultiplier()
+                        > third.benefitMultiplier(),
+                "Each repeated drink should reduce its benefit"
+        );
+        helper.assertTrue(
+                firstDuration > secondDuration
+                        && secondDuration > thirdDuration,
+                "Diminishing returns should shorten benefit duration"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void excessiveWineCausesTemporaryImpairment(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+
+        for (int drink = 0; drink < 3; drink++) {
+            WineConsumptionManager.consume(
+                    helper.getLevel(),
+                    player,
+                    WineEffectProfile.WHITE,
+                    WineQuality.COMMON
+            );
+        }
+
+        helper.assertTrue(
+                player.hasEffect(MobEffects.NAUSEA),
+                "The third drink should cause temporary nausea"
+        );
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.WHITE,
+                WineQuality.COMMON
+        );
+
+        helper.assertTrue(
+                player.hasEffect(MobEffects.SLOWNESS),
+                "Further drinking should cause temporary slowness"
+        );
+        helper.assertTrue(
+                player.hasEffect(MobEffects.WEAKNESS),
+                "Further drinking should cause temporary weakness"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineToleranceRecoversAfterWindow(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+        long gameTime = helper.getLevel().getGameTime();
+
+        ((AttachmentTarget) player).setAttached(
+                ModAttachments.WINE_CONSUMPTION,
+                new WineConsumptionState(4, gameTime - 1)
+        );
+
+        var result = WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.AGED_RED,
+                WineQuality.FINE
+        );
+
+        helper.assertValueEqual(
+                result.drinkCount(),
+                1,
+                "Expired consumption history should reset"
+        );
+        helper.assertFalse(
+                result.impaired(),
+                "The first drink after recovery should not impair"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void switchingWinePreservesUnrelatedEffects(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+
+        player.addEffect(
+                new net.minecraft.world.effect.MobEffectInstance(
+                        MobEffects.FIRE_RESISTANCE,
+                        20 * 60,
+                        0
+                )
+        );
+        player.addEffect(
+                new net.minecraft.world.effect.MobEffectInstance(
+                        MobEffects.REGENERATION,
+                        20 * 60,
+                        0
+                )
+        );
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.RED,
+                WineQuality.COMMON
+        );
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.WHITE,
+                WineQuality.COMMON
+        );
+
+        helper.assertTrue(
+                player.hasEffect(MobEffects.FIRE_RESISTANCE),
+                "Changing wine must not remove unrelated status effects"
+        );
+        helper.assertTrue(
+                player.hasEffect(MobEffects.REGENERATION),
+                "Wine profiles must not replace healing effects"
+        );
+        helper.succeed();
     }
 
     @GameTest(maxTicks = 40)
