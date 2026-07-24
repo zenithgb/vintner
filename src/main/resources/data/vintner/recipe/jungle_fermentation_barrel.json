@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "P P",
+    "PPP"
+  ],
+  "key": {
+    "P": "minecraft:jungle_planks"
+  },
+  "result": {
+    "id": "vintner:jungle_fermentation_barrel",
+    "count": 1
+  }
+}

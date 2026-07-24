@@ -9,6 +9,8 @@ import com.zenith.vintner.block.GrapePressBlock;
 import com.zenith.vintner.block.RedGrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.WhiteGrapevineBlock;
+import com.zenith.vintner.block.WoodVariant;
+import com.zenith.vintner.vineyard.GrapeVariety;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -22,46 +24,67 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.function.Function;
 
 public final class ModBlocks {
     public static final Block OAK_TRELLIS = registerWithItem(
             "oak_trellis",
-            TrellisBlock::new,
-            BlockBehaviour.Properties.of()
-                    .strength(1.5F)
-                    .sound(SoundType.WOOD)
-                    .noOcclusion()
+            properties -> new TrellisBlock(
+                    WoodVariant.OAK,
+                    properties
+            ),
+            trellisProperties()
     );
+
+    public static final Map<WoodVariant, Block> TRELLISES =
+            registerTrellises();
 
     public static final Block AGING_BARREL =
             registerWithItem(
                     "aging_barrel",
                     AgingBarrelBlock::new,
-                    BlockBehaviour.Properties.of()
-                            .strength(2.5F)
-                            .sound(SoundType.WOOD)
-                            .noOcclusion()
+                    machineProperties()
+            );
+
+    public static final Map<WoodVariant, Block> AGING_BARRELS =
+            registerMachineVariants(
+                    WoodVariant.DARK_OAK,
+                    AGING_BARREL,
+                    WoodVariant::agingBarrelId,
+                    AgingBarrelBlock::new
             );
 
     public static final Block FERMENTATION_BARREL =
             registerWithItem(
                     "fermentation_barrel",
                     FermentationBarrelBlock::new,
-                    BlockBehaviour.Properties.of()
-                            .strength(2.5F)
-                            .sound(SoundType.WOOD)
-                            .noOcclusion()
+                    machineProperties()
+            );
+
+    public static final Map<WoodVariant, Block>
+            FERMENTATION_BARRELS = registerMachineVariants(
+                    WoodVariant.OAK,
+                    FERMENTATION_BARREL,
+                    WoodVariant::fermentationBarrelId,
+                    FermentationBarrelBlock::new
             );
 
     public static final Block GRAPE_PRESS = registerWithItem(
             "grape_press",
             GrapePressBlock::new,
-            BlockBehaviour.Properties.of()
-                    .strength(2.5F)
-                    .sound(SoundType.WOOD)
-                    .noOcclusion()
+            machineProperties()
     );
+
+    public static final Map<WoodVariant, Block> GRAPE_PRESSES =
+            registerMachineVariants(
+                    WoodVariant.OAK,
+                    GRAPE_PRESS,
+                    WoodVariant::grapePressId,
+                    GrapePressBlock::new
+            );
 
     public static final Block VINEYARD_SOIL =
             registerWithItem(
@@ -74,25 +97,199 @@ public final class ModBlocks {
 
     public static final Block RED_GRAPEVINE = registerWithoutItem(
             "red_grapevine",
-            RedGrapevineBlock::new,
-            BlockBehaviour.Properties.of()
-                    .strength(1.0F)
-                    .sound(SoundType.VINE)
-                    .noOcclusion()
-                    .randomTicks()
+            properties -> new RedGrapevineBlock(
+                    WoodVariant.OAK,
+                    properties
+            ),
+            grapevineProperties()
     );
+
+    public static final Map<WoodVariant, Block> RED_GRAPEVINES =
+            registerGrapevines(true, RED_GRAPEVINE);
 
     public static final Block WHITE_GRAPEVINE = registerWithoutItem(
             "white_grapevine",
-            WhiteGrapevineBlock::new,
-            BlockBehaviour.Properties.of()
-                    .strength(1.0F)
-                    .sound(SoundType.VINE)
-                    .noOcclusion()
-                    .randomTicks()
+            properties -> new WhiteGrapevineBlock(
+                    WoodVariant.OAK,
+                    properties
+            ),
+            grapevineProperties()
     );
 
+    public static final Map<WoodVariant, Block> WHITE_GRAPEVINES =
+            registerGrapevines(false, WHITE_GRAPEVINE);
+
     private ModBlocks() {
+    }
+
+    public static Block trellis(WoodVariant woodVariant) {
+        return TRELLISES.get(woodVariant);
+    }
+
+    public static Block grapePress(WoodVariant woodVariant) {
+        return GRAPE_PRESSES.get(woodVariant);
+    }
+
+    public static Block fermentationBarrel(
+            WoodVariant woodVariant
+    ) {
+        return FERMENTATION_BARRELS.get(woodVariant);
+    }
+
+    public static Block agingBarrel(WoodVariant woodVariant) {
+        return AGING_BARRELS.get(woodVariant);
+    }
+
+    public static Block redGrapevine(WoodVariant woodVariant) {
+        return RED_GRAPEVINES.get(woodVariant);
+    }
+
+    public static Block whiteGrapevine(WoodVariant woodVariant) {
+        return WHITE_GRAPEVINES.get(woodVariant);
+    }
+
+    public static Block grapevine(
+            GrapeVariety variety,
+            WoodVariant woodVariant
+    ) {
+        return variety == GrapeVariety.RED
+                ? redGrapevine(woodVariant)
+                : whiteGrapevine(woodVariant);
+    }
+
+    public static Block[] grapePressBlocks() {
+        return orderedBlocks(GRAPE_PRESSES);
+    }
+
+    public static Block[] fermentationBarrelBlocks() {
+        return orderedBlocks(FERMENTATION_BARRELS);
+    }
+
+    public static Block[] agingBarrelBlocks() {
+        return orderedBlocks(AGING_BARRELS);
+    }
+
+    private static Map<WoodVariant, Block> registerTrellises() {
+        EnumMap<WoodVariant, Block> blocks =
+                new EnumMap<>(WoodVariant.class);
+        blocks.put(WoodVariant.OAK, OAK_TRELLIS);
+
+        for (WoodVariant woodVariant : WoodVariant.values()) {
+            if (woodVariant == WoodVariant.OAK) {
+                continue;
+            }
+
+            blocks.put(
+                    woodVariant,
+                    registerWithItem(
+                            woodVariant.trellisId(),
+                            properties -> new TrellisBlock(
+                                    woodVariant,
+                                    properties
+                            ),
+                            trellisProperties()
+                    )
+            );
+        }
+
+        return Collections.unmodifiableMap(blocks);
+    }
+
+    private static Map<WoodVariant, Block> registerMachineVariants(
+            WoodVariant existingVariant,
+            Block existingBlock,
+            Function<WoodVariant, String> idFactory,
+            Function<BlockBehaviour.Properties, Block> factory
+    ) {
+        EnumMap<WoodVariant, Block> blocks =
+                new EnumMap<>(WoodVariant.class);
+        blocks.put(existingVariant, existingBlock);
+
+        for (WoodVariant woodVariant : WoodVariant.values()) {
+            if (woodVariant == existingVariant) {
+                continue;
+            }
+
+            blocks.put(
+                    woodVariant,
+                    registerWithItem(
+                            idFactory.apply(woodVariant),
+                            factory,
+                            machineProperties()
+                    )
+            );
+        }
+
+        return Collections.unmodifiableMap(blocks);
+    }
+
+    private static Map<WoodVariant, Block> registerGrapevines(
+            boolean red,
+            Block existingBlock
+    ) {
+        EnumMap<WoodVariant, Block> blocks =
+                new EnumMap<>(WoodVariant.class);
+        blocks.put(WoodVariant.OAK, existingBlock);
+
+        for (WoodVariant woodVariant : WoodVariant.values()) {
+            if (woodVariant == WoodVariant.OAK) {
+                continue;
+            }
+
+            blocks.put(
+                    woodVariant,
+                    registerWithoutItem(
+                            woodVariant.grapevineId(red),
+                            properties -> red
+                                    ? new RedGrapevineBlock(
+                                            woodVariant,
+                                            properties
+                                    )
+                                    : new WhiteGrapevineBlock(
+                                            woodVariant,
+                                            properties
+                                    ),
+                            grapevineProperties()
+                    )
+            );
+        }
+
+        return Collections.unmodifiableMap(blocks);
+    }
+
+    private static Block[] orderedBlocks(
+            Map<WoodVariant, Block> blocks
+    ) {
+        WoodVariant[] variants = WoodVariant.values();
+        Block[] result = new Block[variants.length];
+
+        for (int index = 0; index < variants.length; index++) {
+            result[index] = blocks.get(variants[index]);
+        }
+
+        return result;
+    }
+
+    private static BlockBehaviour.Properties trellisProperties() {
+        return BlockBehaviour.Properties.of()
+                .strength(1.5F)
+                .sound(SoundType.WOOD)
+                .noOcclusion();
+    }
+
+    private static BlockBehaviour.Properties machineProperties() {
+        return BlockBehaviour.Properties.of()
+                .strength(2.5F)
+                .sound(SoundType.WOOD)
+                .noOcclusion();
+    }
+
+    private static BlockBehaviour.Properties grapevineProperties() {
+        return BlockBehaviour.Properties.of()
+                .strength(1.0F)
+                .sound(SoundType.VINE)
+                .noOcclusion()
+                .randomTicks();
     }
 
     private static Block registerWithItem(
@@ -169,10 +366,11 @@ public final class ModBlocks {
                         CreativeModeTabs.FUNCTIONAL_BLOCKS
                 )
                 .register(output -> {
-                    output.accept(OAK_TRELLIS);
-                    output.accept(GRAPE_PRESS);
-                    output.accept(FERMENTATION_BARREL);
-                    output.accept(AGING_BARREL);
+                    TRELLISES.values().forEach(output::accept);
+                    GRAPE_PRESSES.values().forEach(output::accept);
+                    FERMENTATION_BARRELS.values()
+                            .forEach(output::accept);
+                    AGING_BARRELS.values().forEach(output::accept);
                 });
     }
 }

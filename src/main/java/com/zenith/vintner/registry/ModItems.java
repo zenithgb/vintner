@@ -41,7 +41,7 @@ public final class ModItems {
     public static final Item RED_GRAPE_CUTTING = register(
             "red_grape_cutting",
             properties -> new GrapeCuttingItem(
-                    () -> ModBlocks.RED_GRAPEVINE,
+                    ModBlocks::redGrapevine,
                     properties
             )
     );
@@ -49,7 +49,7 @@ public final class ModItems {
     public static final Item WHITE_GRAPE_CUTTING = register(
             "white_grape_cutting",
             properties -> new GrapeCuttingItem(
-                    () -> ModBlocks.WHITE_GRAPEVINE,
+                    ModBlocks::whiteGrapevine,
                     properties
             )
     );

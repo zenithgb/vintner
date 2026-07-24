@@ -4,27 +4,37 @@ import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
+import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.registry.ModAttachments;
+import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.WineConsumptionManager;
 import com.zenith.vintner.wine.WineConsumptionState;
 import com.zenith.vintner.wine.WineMetadata;
+import com.zenith.vintner.wine.WinePairingManager;
 import com.zenith.vintner.wine.WineQuality;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -40,6 +50,161 @@ public final class VintnerGameTests {
     private static final BlockPos FIRST = new BlockPos(2, 1, 2);
     private static final BlockPos EAST = FIRST.east();
     private static final BlockPos UPPER = FIRST.above();
+
+    @GameTest(maxTicks = 40)
+    public void allWoodVariantRegistriesAreComplete(
+            GameTestHelper helper
+    ) {
+        int expected = WoodVariant.values().length;
+
+        helper.assertValueEqual(
+                ModBlocks.TRELLISES.size(),
+                expected,
+                "Every wood family should have a trellis"
+        );
+        helper.assertValueEqual(
+                ModBlocks.GRAPE_PRESSES.size(),
+                expected,
+                "Every wood family should have a grape press"
+        );
+        helper.assertValueEqual(
+                ModBlocks.FERMENTATION_BARRELS.size(),
+                expected,
+                "Every wood family should have a fermentation barrel"
+        );
+        helper.assertValueEqual(
+                ModBlocks.AGING_BARRELS.size(),
+                expected,
+                "Every wood family should have an aging barrel"
+        );
+        helper.assertValueEqual(
+                ModBlocks.RED_GRAPEVINES.size(),
+                expected,
+                "Every wood family should retain red-vine supports"
+        );
+        helper.assertValueEqual(
+                ModBlocks.WHITE_GRAPEVINES.size(),
+                expected,
+                "Every wood family should retain white-vine supports"
+        );
+
+        for (WoodVariant woodVariant : WoodVariant.values()) {
+            helper.assertTrue(
+                    ModBlockEntities.GRAPE_PRESS.isValid(
+                            ModBlocks.grapePress(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " grape press should support its block entity"
+            );
+            helper.assertTrue(
+                    ModBlockEntities.FERMENTATION_BARREL.isValid(
+                            ModBlocks.fermentationBarrel(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " fermentation barrel should support its block entity"
+            );
+            helper.assertTrue(
+                    ModBlockEntities.AGING_BARREL.isValid(
+                            ModBlocks.agingBarrel(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " aging barrel should support its block entity"
+            );
+        }
+
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void differentWoodTrellisesConnect(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(
+                FIRST,
+                ModBlocks.trellis(WoodVariant.SPRUCE)
+        );
+        helper.setBlock(
+                EAST,
+                ModBlocks.trellis(WoodVariant.BAMBOO)
+        );
+
+        helper.succeedWhen(() -> {
+            helper.assertBlockProperty(
+                    FIRST,
+                    TrellisBlock.EAST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+            helper.assertBlockProperty(
+                    EAST,
+                    TrellisBlock.WEST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+        });
+    }
+
+    @GameTest(maxTicks = 40)
+    public void grapeCuttingPreservesTrellisWood(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        Block expected = ModBlocks.redGrapevine(
+                WoodVariant.SPRUCE
+        );
+
+        helper.setBlock(
+                FIRST,
+                ModBlocks.trellis(WoodVariant.SPRUCE)
+        );
+        helper.placeAt(
+                player,
+                new ItemStack(ModItems.RED_GRAPE_CUTTING),
+                FIRST.above(),
+                net.minecraft.core.Direction.DOWN
+        );
+
+        helper.assertBlockPresent(expected, FIRST);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void upperGrapevinePreservesItsTrellisWood(
+            GameTestHelper helper
+    ) {
+        Block rootVine = ModBlocks.redGrapevine(
+                WoodVariant.SPRUCE
+        );
+        Block upperVine = ModBlocks.redGrapevine(
+                WoodVariant.MANGROVE
+        );
+
+        helper.setBlock(
+                FIRST,
+                rootVine.defaultBlockState()
+                        .setValue(GrapevineBlock.AGE, 1)
+        );
+        helper.setBlock(
+                UPPER,
+                ModBlocks.trellis(WoodVariant.MANGROVE)
+        );
+
+        ((GrapevineBlock) rootVine).performBonemeal(
+                helper.getLevel(),
+                RandomSource.create(1L),
+                helper.absolutePos(FIRST),
+                helper.getBlockState(FIRST)
+        );
+
+        helper.assertBlockPresent(upperVine, UPPER);
+        helper.assertBlockProperty(
+                UPPER,
+                GrapevineBlock.UPPER,
+                true
+        );
+        helper.succeed();
+    }
 
     @GameTest(maxTicks = 40)
     public void trellisesConnectAndDisconnect(
@@ -624,6 +789,221 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void matchingMealExtendsActiveWineOnce(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.RED,
+                WineQuality.COMMON
+        );
+        int originalDuration =
+                WineEffectProfile.RED.remainingDuration(player);
+
+        WinePairingManager.onMealConsumed(
+                helper.getLevel(),
+                player,
+                new ItemStack(Items.COOKED_BEEF)
+        );
+        int pairedDuration =
+                WineEffectProfile.RED.remainingDuration(player);
+
+        WinePairingManager.onMealConsumed(
+                helper.getLevel(),
+                player,
+                new ItemStack(Items.COOKED_MUTTON)
+        );
+
+        helper.assertValueEqual(
+                pairedDuration,
+                Math.round(
+                        originalDuration
+                                * WinePairingManager.DURATION_MULTIPLIER
+                ),
+                "A matching meal should extend the wine duration"
+        );
+        helper.assertValueEqual(
+                WineEffectProfile.RED.remainingDuration(player),
+                pairedDuration,
+                "One wine serving must not pair more than once"
+        );
+        helper.assertTrue(
+                WinePairingManager.state(
+                        player,
+                        helper.getLevel().getGameTime()
+                ).paired(),
+                "The wine serving should remember that it was paired"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void recentMealPairsWithNextMatchingWine(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+
+        WinePairingManager.onMealConsumed(
+                helper.getLevel(),
+                player,
+                new ItemStack(Items.COOKED_SALMON)
+        );
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.WHITE,
+                WineQuality.COMMON
+        );
+
+        helper.assertValueEqual(
+                WineEffectProfile.WHITE.remainingDuration(player),
+                Math.round(
+                        45 * 20
+                                * WinePairingManager
+                                        .DURATION_MULTIPLIER
+                ),
+                "A recent matching meal should pair when wine is drunk"
+        );
+        helper.assertTrue(
+                WinePairingManager.state(
+                        player,
+                        helper.getLevel().getGameTime()
+                ).paired(),
+                "Meal-first pairing should mark the serving as paired"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void mismatchedMealDoesNotExtendWine(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.RED,
+                WineQuality.COMMON
+        );
+        int originalDuration =
+                WineEffectProfile.RED.remainingDuration(player);
+
+        WinePairingManager.onMealConsumed(
+                helper.getLevel(),
+                player,
+                new ItemStack(Items.COOKED_COD)
+        );
+
+        helper.assertValueEqual(
+                WineEffectProfile.RED.remainingDuration(player),
+                originalDuration,
+                "Fish should not extend a red wine profile"
+        );
+        helper.assertFalse(
+                WinePairingManager.state(
+                        player,
+                        helper.getLevel().getGameTime()
+                ).paired(),
+                "A mismatched meal must not consume the pairing"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void finishingTaggedFoodUsesPairingSystem(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.WHITE,
+                WineQuality.COMMON
+        );
+        int originalDuration =
+                WineEffectProfile.WHITE.remainingDuration(player);
+
+        new ItemStack(Items.BREAD).finishUsingItem(
+                helper.getLevel(),
+                player
+        );
+
+        helper.assertTrue(
+                WineEffectProfile.WHITE.remainingDuration(player)
+                        > originalDuration,
+                "Finishing a tagged food should invoke wine pairing"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void survivalIngredientsUnlockVintnerRecipes(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+
+        for (WoodVariant woodVariant : WoodVariant.values()) {
+            triggerInventoryChange(
+                    player,
+                    planksFor(woodVariant)
+            );
+        }
+        triggerInventoryChange(player, Items.BONE_MEAL);
+
+        helper.succeedWhen(() -> {
+            for (WoodVariant woodVariant : WoodVariant.values()) {
+                assertRecipeKnown(
+                        helper,
+                        player,
+                        woodVariant.trellisId()
+                );
+                assertRecipeKnown(
+                        helper,
+                        player,
+                        woodVariant.grapePressId()
+                );
+                assertRecipeKnown(
+                        helper,
+                        player,
+                        woodVariant.fermentationBarrelId()
+                );
+                assertRecipeKnown(
+                        helper,
+                        player,
+                        woodVariant.agingBarrelId()
+                );
+            }
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "compost"
+            );
+        });
+    }
+
+    private static Item planksFor(WoodVariant woodVariant) {
+        return switch (woodVariant) {
+            case OAK -> Items.OAK_PLANKS;
+            case SPRUCE -> Items.SPRUCE_PLANKS;
+            case BIRCH -> Items.BIRCH_PLANKS;
+            case JUNGLE -> Items.JUNGLE_PLANKS;
+            case ACACIA -> Items.ACACIA_PLANKS;
+            case DARK_OAK -> Items.DARK_OAK_PLANKS;
+            case MANGROVE -> Items.MANGROVE_PLANKS;
+            case CHERRY -> Items.CHERRY_PLANKS;
+            case PALE_OAK -> Items.PALE_OAK_PLANKS;
+            case BAMBOO -> Items.BAMBOO_PLANKS;
+            case CRIMSON -> Items.CRIMSON_PLANKS;
+            case WARPED -> Items.WARPED_PLANKS;
+        };
+    }
+
+    @GameTest(maxTicks = 40)
     public void pressEnforcesCapacityAndConvertsGrapes(
             GameTestHelper helper
     ) {
@@ -1145,6 +1525,39 @@ public final class VintnerGameTests {
                 2.0
         );
         helper.succeed();
+    }
+
+    private static void triggerInventoryChange(
+            ServerPlayer player,
+            Item item
+    ) {
+        ItemStack stack = new ItemStack(item);
+        player.getInventory().add(stack);
+        CriteriaTriggers.INVENTORY_CHANGED.trigger(
+                player,
+                player.getInventory(),
+                stack
+        );
+    }
+
+    private static void assertRecipeKnown(
+            GameTestHelper helper,
+            ServerPlayer player,
+            String recipePath
+    ) {
+        ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(
+                Registries.RECIPE,
+                Identifier.fromNamespaceAndPath(
+                        "vintner",
+                        recipePath
+                )
+        );
+
+        helper.assertTrue(
+                player.getRecipeBook().contains(recipeKey),
+                "Survival progression should unlock "
+                        + recipePath
+        );
     }
 
     private static BlockState matureLowerVine() {

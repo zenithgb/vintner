@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PCP",
+    "P P"
+  ],
+  "key": {
+    "P": "minecraft:spruce_planks",
+    "C": "minecraft:iron_chain"
+  },
+  "result": {
+    "id": "vintner:spruce_trellis",
+    "count": 2
+  }
+}

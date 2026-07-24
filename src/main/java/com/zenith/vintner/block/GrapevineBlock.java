@@ -60,9 +60,10 @@ public abstract class GrapevineBlock
 
     protected GrapevineBlock(
             GrapeVariety variety,
+            WoodVariant woodVariant,
             BlockBehaviour.Properties properties
     ) {
-        super(properties);
+        super(woodVariant, properties);
         this.variety = variety;
 
         registerDefaultState(
@@ -171,7 +172,8 @@ public abstract class GrapevineBlock
             } else {
                 return copyTrellisProperties(
                         state,
-                        ModBlocks.OAK_TRELLIS.defaultBlockState()
+                        ModBlocks.trellis(woodVariant())
+                                .defaultBlockState()
                 ).setValue(HAS_BELOW, false);
             }
         }
@@ -337,7 +339,11 @@ public abstract class GrapevineBlock
                 ? upperState.setValue(AGE, age)
                 : copyTrellisProperties(
                         upperState,
-                        defaultBlockState()
+                        ModBlocks.grapevine(
+                                variety,
+                                ((TrellisBlock) upperState.getBlock())
+                                        .woodVariant()
+                        ).defaultBlockState()
                 )
                 .setValue(UPPER, true)
                 .setValue(AGE, age);
@@ -356,12 +362,14 @@ public abstract class GrapevineBlock
     }
 
     private boolean isMatchingUpper(BlockState state) {
-        return state.getBlock() == this
+        return state.getBlock() instanceof GrapevineBlock grapevine
+                && grapevine.variety == variety
                 && state.getValue(UPPER);
     }
 
     private boolean isMatchingLower(BlockState state) {
-        return state.getBlock() == this
+        return state.getBlock() instanceof GrapevineBlock grapevine
+                && grapevine.variety == variety
                 && !state.getValue(UPPER);
     }
 
@@ -392,9 +400,12 @@ public abstract class GrapevineBlock
             BlockPos pos,
             BlockState source
     ) {
+        WoodVariant woodVariant =
+                ((TrellisBlock) source.getBlock()).woodVariant();
+
         BlockState restored = copyTrellisProperties(
                 source,
-                ModBlocks.OAK_TRELLIS.defaultBlockState()
+                ModBlocks.trellis(woodVariant).defaultBlockState()
         )
                 .setValue(
                         HAS_ABOVE,

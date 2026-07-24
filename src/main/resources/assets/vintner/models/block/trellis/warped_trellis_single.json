@@ -1,0 +1,7 @@
+{
+  "parent": "vintner:block/trellis/trellis_single",
+  "textures": {
+    "wood": "minecraft:block/warped_planks",
+    "particle": "minecraft:block/warped_planks"
+  }
+}

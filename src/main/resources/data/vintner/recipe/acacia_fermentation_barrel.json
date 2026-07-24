@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "P P",
+    "PPP"
+  ],
+  "key": {
+    "P": "minecraft:acacia_planks"
+  },
+  "result": {
+    "id": "vintner:acacia_fermentation_barrel",
+    "count": 1
+  }
+}

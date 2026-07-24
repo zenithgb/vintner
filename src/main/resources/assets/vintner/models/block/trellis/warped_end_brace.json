@@ -1,0 +1,7 @@
+{
+  "parent": "vintner:block/trellis/end_brace",
+  "textures": {
+    "wood": "minecraft:block/warped_planks",
+    "particle": "minecraft:block/warped_planks"
+  }
+}

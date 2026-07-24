@@ -1,0 +1,9 @@
+{
+  "parent": "vintner:block/grape_press",
+  "textures": {
+    "wood": "minecraft:block/warped_planks",
+    "beam": "minecraft:block/warped_stem",
+    "end": "minecraft:block/warped_stem_top",
+    "particle": "minecraft:block/warped_planks"
+  }
+}

@@ -3,6 +3,7 @@ package com.zenith.vintner.item;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
+import com.zenith.vintner.block.WoodVariant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,17 +16,17 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 public final class GrapeCuttingItem extends Item {
-    private final Supplier<Block> grapevineSupplier;
+    private final Function<WoodVariant, Block> grapevineFactory;
 
     public GrapeCuttingItem(
-            Supplier<Block> grapevineSupplier,
+            Function<WoodVariant, Block> grapevineFactory,
             Properties properties
     ) {
         super(properties);
-        this.grapevineSupplier = grapevineSupplier;
+        this.grapevineFactory = grapevineFactory;
     }
 
     @Override
@@ -46,10 +47,13 @@ public final class GrapeCuttingItem extends Item {
 
         BlockPos plantingPos = findPlantingPos(level, clickedPos);
         BlockState trellisState = level.getBlockState(plantingPos);
+        WoodVariant woodVariant =
+                ((TrellisBlock) trellisState.getBlock()).woodVariant();
+        Block grapevine = grapevineFactory.apply(woodVariant);
 
         if (level instanceof ServerLevel serverLevel) {
             Player player = context.getPlayer();
-            BlockState plantedState = grapevineSupplier.get()
+            BlockState plantedState = grapevine
                     .defaultBlockState()
                     .setValue(
                             TrellisBlock.FACING,
@@ -98,7 +102,7 @@ public final class GrapeCuttingItem extends Item {
             if (player instanceof ServerPlayer serverPlayer) {
                 ModAdvancements.grantPlanting(
                         serverPlayer,
-                        grapevineSupplier.get()
+                        grapevine
                 );
             }
 

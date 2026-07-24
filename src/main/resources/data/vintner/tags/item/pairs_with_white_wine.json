@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:cooked_cod",
+    "minecraft:cooked_salmon",
+    "minecraft:mushroom_stew",
+    "minecraft:beetroot_soup",
+    "minecraft:suspicious_stew",
+    "minecraft:bread",
+    "minecraft:apple",
+    "minecraft:carrot"
+  ]
+}

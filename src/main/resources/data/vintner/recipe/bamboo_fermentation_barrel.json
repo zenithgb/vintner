@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "P P",
+    "PPP"
+  ],
+  "key": {
+    "P": "minecraft:bamboo_planks"
+  },
+  "result": {
+    "id": "vintner:bamboo_fermentation_barrel",
+    "count": 1
+  }
+}

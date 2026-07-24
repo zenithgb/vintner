@@ -56,6 +56,11 @@ public final class WineConsumptionManager {
                 nextDrinkCount
         );
         sendFeedback(consumer, nextDrinkCount);
+        WinePairingManager.onWineConsumed(
+                level,
+                consumer,
+                profile
+        );
 
         return new ConsumptionResult(
                 nextDrinkCount,

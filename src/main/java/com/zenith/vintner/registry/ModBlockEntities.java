@@ -20,7 +20,7 @@ public final class ModBlockEntities {
                     ),
                     FabricBlockEntityTypeBuilder.create(
                             GrapePressBlockEntity::new,
-                            ModBlocks.GRAPE_PRESS
+                            ModBlocks.grapePressBlocks()
                     ).build()
             );
 
@@ -34,7 +34,7 @@ public final class ModBlockEntities {
                     ),
                     FabricBlockEntityTypeBuilder.create(
                             AgingBarrelBlockEntity::new,
-                            ModBlocks.AGING_BARREL
+                            ModBlocks.agingBarrelBlocks()
                     ).build()
             );
 
@@ -48,7 +48,7 @@ public final class ModBlockEntities {
                     ),
                     FabricBlockEntityTypeBuilder.create(
                             FermentationBarrelBlockEntity::new,
-                            ModBlocks.FERMENTATION_BARREL
+                            ModBlocks.fermentationBarrelBlocks()
                     ).build()
             );
 

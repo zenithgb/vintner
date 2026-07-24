@@ -70,6 +70,25 @@ public enum WineEffectProfile {
         return instance == null ? -1 : instance.getAmplifier();
     }
 
+    public boolean isRedStyle() {
+        return this == RED || this == AGED_RED;
+    }
+
+    public void extendActiveDuration(
+            LivingEntity consumer,
+            float multiplier
+    ) {
+        MobEffectInstance active = consumer.getEffect(effect);
+
+        if (active == null) {
+            return;
+        }
+
+        MobEffectInstance extended =
+                active.withScaledDuration(multiplier);
+        consumer.addEffect(extended);
+    }
+
     public Component effectSummary() {
         return Component.translatable(
                 "wine_profile.vintner." + translationKey
@@ -88,5 +107,17 @@ public enum WineEffectProfile {
         for (WineEffectProfile profile : values()) {
             consumer.removeEffect(profile.effect);
         }
+    }
+
+    public static WineEffectProfile activeProfile(
+            LivingEntity consumer
+    ) {
+        for (WineEffectProfile profile : values()) {
+            if (profile.isActive(consumer)) {
+                return profile;
+            }
+        }
+
+        return null;
     }
 }

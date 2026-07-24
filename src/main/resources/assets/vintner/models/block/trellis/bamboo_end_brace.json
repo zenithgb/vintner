@@ -1,0 +1,7 @@
+{
+  "parent": "vintner:block/trellis/end_brace",
+  "textures": {
+    "wood": "minecraft:block/bamboo_planks",
+    "particle": "minecraft:block/bamboo_planks"
+  }
+}

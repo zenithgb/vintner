@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PCP",
+    "P P"
+  ],
+  "key": {
+    "P": "minecraft:acacia_planks",
+    "C": "minecraft:iron_chain"
+  },
+  "result": {
+    "id": "vintner:acacia_trellis",
+    "count": 2
+  }
+}

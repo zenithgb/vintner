@@ -63,8 +63,18 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
             13.0
     };
 
+    private final WoodVariant woodVariant;
+
     public TrellisBlock(BlockBehaviour.Properties properties) {
+        this(WoodVariant.OAK, properties);
+    }
+
+    public TrellisBlock(
+            WoodVariant woodVariant,
+            BlockBehaviour.Properties properties
+    ) {
         super(properties);
+        this.woodVariant = woodVariant;
 
         registerDefaultState(
                 stateDefinition.any()
@@ -77,6 +87,10 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
                         .setValue(HAS_ABOVE, false)
                         .setValue(HAS_BELOW, false)
         );
+    }
+
+    public final WoodVariant woodVariant() {
+        return woodVariant;
     }
 
     @Override

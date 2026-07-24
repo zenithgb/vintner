@@ -1,0 +1,99 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "vintner:block/trellis/spruce_trellis_single"
+      }
+    },
+    {
+      "when": {
+        "east": "level",
+        "has_above": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level"
+      }
+    },
+    {
+      "when": {
+        "south": "level",
+        "has_above": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "west": "level",
+        "has_above": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "north": "level",
+        "has_above": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "north": "none",
+        "east": "none",
+        "south": "none",
+        "west": "level",
+        "has_below": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/spruce_end_brace"
+      }
+    },
+    {
+      "when": {
+        "north": "level",
+        "east": "none",
+        "south": "none",
+        "west": "none",
+        "has_below": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/spruce_end_brace",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "north": "none",
+        "east": "level",
+        "south": "none",
+        "west": "none",
+        "has_below": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/spruce_end_brace",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "north": "none",
+        "east": "none",
+        "south": "level",
+        "west": "none",
+        "has_below": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/spruce_end_brace",
+        "y": 270
+      }
+    }
+  ]
+}
