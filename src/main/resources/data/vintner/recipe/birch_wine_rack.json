@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "S S",
+    "PPP"
+  ],
+  "key": {
+    "P": "minecraft:birch_planks",
+    "S": "minecraft:stick"
+  },
+  "result": {
+    "id": "vintner:birch_wine_rack",
+    "count": 1
+  }
+}

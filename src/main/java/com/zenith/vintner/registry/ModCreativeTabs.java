@@ -53,6 +53,11 @@ public final class ModCreativeTabs {
                                         .forEach(output::accept);
                                 output.accept(ModItems.AGED_RED_WINE);
                                 output.accept(ModItems.AGED_WHITE_WINE);
+                                ModBlocks.WINE_RACKS.values()
+                                        .forEach(output::accept);
+                                output.accept(
+                                        ModItems.VINTNER_ALMANAC
+                                );
                             })
                             .build()
             );

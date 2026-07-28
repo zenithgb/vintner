@@ -1,0 +1,29 @@
+{
+  "parent": "vintner:vintner/build_cellar",
+  "criteria": {
+    "ideal_cellar": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.ideal_cellar.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "vintner:aged_red_wine"
+    },
+    "title": {
+      "translate": "advancement.vintner.ideal_cellar.title"
+    }
+  },
+  "requirements": [
+    [
+      "ideal_cellar"
+    ]
+  ],
+  "rewards": {
+    "experience": 50
+  },
+  "sends_telemetry_event": false
+}

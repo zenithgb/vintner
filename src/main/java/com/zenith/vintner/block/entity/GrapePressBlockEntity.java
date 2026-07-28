@@ -154,6 +154,13 @@ public final class GrapePressBlockEntity extends BlockEntity {
                     vintage,
                     quality
             );
+            WineMetadata.ensureBatchIdentity(
+                    must,
+                    WineMetadata.createBatchId(
+                            level == null ? 0L : level.getGameTime(),
+                            worldPosition
+                    )
+            );
 
             items.set(
                     OUTPUT_SLOT,
@@ -191,11 +198,7 @@ public final class GrapePressBlockEntity extends BlockEntity {
         ItemStack bottledMust =
                 new ItemStack(output.getItem());
 
-        WineMetadata.apply(
-                bottledMust,
-                WineMetadata.vintage(output),
-                WineMetadata.quality(output)
-        );
+        WineMetadata.copyBatchMetadata(output, bottledMust);
 
         output.shrink(1);
 

@@ -3,6 +3,7 @@ package com.zenith.vintner.item;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineQuality;
 import com.zenith.vintner.wine.WineConsumptionManager;
+import com.zenith.vintner.wine.WineAgeStage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -69,6 +70,7 @@ public final class WineItem extends Item {
             LivingEntity consumer
     ) {
         WineQuality quality = WineMetadata.quality(stack);
+        WineAgeStage ageStage = WineMetadata.ageStage(stack);
         ItemStack result = super.finishUsingItem(
                 stack,
                 level,
@@ -80,7 +82,8 @@ public final class WineItem extends Item {
                     serverLevel,
                     consumer,
                     effectProfile,
-                    quality
+                    quality,
+                    ageStage
             );
         }
 

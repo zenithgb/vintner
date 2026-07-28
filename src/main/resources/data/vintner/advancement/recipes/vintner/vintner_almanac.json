@@ -1,0 +1,36 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_grapes": {
+      "conditions": {
+        "items": [
+          {
+            "items": "vintner:red_grapes"
+          },
+          {
+            "items": "vintner:white_grapes"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "vintner:vintner_almanac"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_grapes",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "vintner:vintner_almanac"
+    ]
+  },
+  "sends_telemetry_event": false
+}

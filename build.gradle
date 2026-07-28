@@ -29,6 +29,13 @@ loom {
 			vmArg "-Dfabric-api.gametest"
 			vmArg "-Dfabric-api.gametest.report-file=${file("build/test-results/gametest/TEST-vintner.xml")}"
 		}
+
+		releaseServer {
+			server()
+			name = "Vintner Release Server"
+			runDir = "build/release-server-run"
+			programArg "nogui"
+		}
 	}
 
 	mods {
@@ -65,6 +72,48 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.release = 25
+}
+
+tasks.register("auditReleaseAssets", Exec) {
+	group = "verification"
+	description = "Audits Vintner JSON, models, textures, recipes, loot, and language coverage."
+	workingDir projectDir
+	commandLine "python3", "scripts/audit_release_assets.py"
+}
+
+tasks.register("prepareReleaseServer") {
+	group = "verification"
+	description = "Prepares an isolated local server for release smoke testing."
+
+	def smokeDir = layout.buildDirectory.dir("release-server-run")
+	outputs.files(
+			smokeDir.map { it.file("eula.txt") },
+			smokeDir.map { it.file("server.properties") }
+	)
+
+	doLast {
+		def directory = smokeDir.get().asFile
+		directory.mkdirs()
+
+		new File(directory, "eula.txt").text = "eula=true\n"
+		new File(directory, "server.properties").text = """
+level-name=release-smoke-world
+max-players=2
+motd=Vintner release smoke test
+online-mode=false
+server-port=25566
+simulation-distance=4
+view-distance=4
+""".stripIndent().trim() + "\n"
+	}
+}
+
+tasks.named("runReleaseServer") {
+	dependsOn tasks.named("prepareReleaseServer")
+}
+
+tasks.named("check") {
+	dependsOn tasks.named("auditReleaseAssets")
 }
 
 java {

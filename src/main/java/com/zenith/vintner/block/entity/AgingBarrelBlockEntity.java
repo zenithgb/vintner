@@ -27,6 +27,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
     private boolean ready;
     private int vintage = 1;
     private WineQuality quality = WineQuality.COMMON;
+    private long batchId;
     private int lastComparatorSignal = -1;
 
     public AgingBarrelBlockEntity(
@@ -114,23 +115,32 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
 
         return wineType == offeredType
                 && vintage == WineMetadata.vintage(stack)
-                && quality == WineMetadata.quality(stack);
+                && quality == WineMetadata.quality(stack)
+                && batchMatches(stack);
     }
 
     public boolean insertOne(ItemStack stack) {
-        int offeredType = getWineType(stack);
+        WineMetadata.ensureDefaults(stack);
+        WineMetadata.ensureBatchIdentity(
+                stack,
+                WineMetadata.createBatchId(
+                        level == null ? 0L : level.getGameTime(),
+                        worldPosition
+                )
+        );
 
         if (!canInsert(stack)) {
             return false;
         }
 
-        WineMetadata.ensureDefaults(stack);
+        int offeredType = getWineType(stack);
 
         if (wineType == 0) {
             wineType = offeredType;
             agingProgress = 0;
             vintage = WineMetadata.vintage(stack);
             quality = WineMetadata.quality(stack);
+            batchId = WineMetadata.batchId(stack);
         }
 
         bottleCount++;
@@ -192,6 +202,11 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                 vintage,
                 quality.improved()
         );
+        WineMetadata.ensureBatchIdentity(result, batchId);
+        WineMetadata.markBottled(
+                result,
+                level == null ? 0L : level.getGameTime()
+        );
 
         bottleCount--;
 
@@ -230,8 +245,17 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                 vintage,
                 ready ? quality.improved() : quality
         );
+        WineMetadata.ensureBatchIdentity(result, batchId);
 
         return result;
+    }
+
+    private boolean batchMatches(ItemStack stack) {
+        long offeredBatch = WineMetadata.batchId(stack);
+
+        return batchId == 0L
+                || offeredBatch == 0L
+                || batchId == offeredBatch;
     }
 
     private void resetBatch() {
@@ -241,6 +265,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         ready = false;
         vintage = 1;
         quality = WineQuality.COMMON;
+        batchId = 0L;
     }
 
     private void markChangedAndSync() {
@@ -322,6 +347,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                         WineQuality.COMMON.id()
                 )
         );
+        batchId = input.getLongOr("BatchId", 0L);
     }
 
     @Override
@@ -334,5 +360,6 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         output.putBoolean("Ready", ready);
         output.putInt("Vintage", vintage);
         output.putInt("Quality", quality.id());
+        output.putLong("BatchId", batchId);
     }
 }

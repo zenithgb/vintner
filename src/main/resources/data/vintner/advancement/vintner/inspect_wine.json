@@ -1,0 +1,28 @@
+{
+  "parent": "vintner:vintner/age_wine",
+  "criteria": {
+    "inspected": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.inspect_wine.description"
+    },
+    "icon": {
+      "id": "vintner:vintner_almanac"
+    },
+    "title": {
+      "translate": "advancement.vintner.inspect_wine.title"
+    }
+  },
+  "requirements": [
+    [
+      "inspected"
+    ]
+  ],
+  "rewards": {
+    "experience": 25
+  },
+  "sends_telemetry_event": false
+}

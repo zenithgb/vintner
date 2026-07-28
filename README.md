@@ -37,6 +37,20 @@ one minute; use an empty hand to inspect progress or collect finished wine.
 The aging barrel holds four matching bottles of wine. Aging takes ninety
 seconds, improves the wine by one quality tier, and produces aged wine.
 
+Wine racks hold four bottles without opening an inventory screen. Bottles age
+while stored, and the surrounding build determines cellar quality: sheltered,
+dark, underground spaces with nearby water age wine best, while nearby heat
+damages it. Stored bottles catch up on elapsed world time when their chunk is
+loaded again. Wine racks, trellises, presses, and both barrel types are
+available in every supported vanilla wood family.
+
+Craft a Vintner's Almanac from a book and both grape varieties. Use it while
+holding wine in the other hand to inspect the bottle's vintage, batch, tasting
+profile, age, and last storage conditions. Use it directly on a wine rack to
+inspect the cellar around that rack. Normal wine tooltips remain intentionally
+compact. Cellar advancements guide players from laying down their first rack to
+identifying a vintage and discovering ideal storage conditions.
+
 Trellises connect independently on all four horizontal faces. Vertically
 stacked trellises form separate same-height rows; they do not create diagonal
 wires between elevations. Shift-placement creates an isolated trellis that

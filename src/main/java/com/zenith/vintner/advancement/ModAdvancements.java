@@ -67,6 +67,22 @@ public final class ModAdvancements {
         );
     }
 
+    public static void grantInspection(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/inspect_wine",
+                "inspected"
+        );
+    }
+
+    public static void grantIdealCellar(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/ideal_cellar",
+                "ideal_cellar"
+        );
+    }
+
     private static void grant(
             ServerPlayer player,
             String path,

@@ -1,0 +1,32 @@
+{
+  "parent": "vintner:block/wine_rack_bottle_1",
+  "textures": {
+    "bottle": "minecraft:block/green_terracotta"
+  },
+  "elements": [
+    {
+      "from": [9, 10, 4],
+      "to": [13, 13, 13],
+      "faces": {
+        "north": {"texture": "#bottle"},
+        "east": {"texture": "#bottle"},
+        "south": {"texture": "#bottle"},
+        "west": {"texture": "#bottle"},
+        "up": {"texture": "#bottle"},
+        "down": {"texture": "#bottle"}
+      }
+    },
+    {
+      "from": [10, 10.5, 2],
+      "to": [12, 12.5, 4],
+      "faces": {
+        "north": {"texture": "#cork"},
+        "east": {"texture": "#bottle"},
+        "south": {"texture": "#bottle"},
+        "west": {"texture": "#bottle"},
+        "up": {"texture": "#bottle"},
+        "down": {"texture": "#bottle"}
+      }
+    }
+  ]
+}

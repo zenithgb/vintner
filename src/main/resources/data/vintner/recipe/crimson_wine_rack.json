@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "S S",
+    "PPP"
+  ],
+  "key": {
+    "P": "minecraft:crimson_planks",
+    "S": "minecraft:stick"
+  },
+  "result": {
+    "id": "vintner:crimson_wine_rack",
+    "count": 1
+  }
+}

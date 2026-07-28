@@ -3,6 +3,7 @@ package com.zenith.vintner.registry;
 import com.zenith.vintner.item.CompostItem;
 import com.zenith.vintner.item.GrapeCuttingItem;
 import com.zenith.vintner.item.MustItem;
+import com.zenith.vintner.item.VintnerAlmanacItem;
 
 import com.zenith.vintner.item.WineConsumables;
 import com.zenith.vintner.item.WineEffectProfile;
@@ -124,6 +125,11 @@ public final class ModItems {
             )
     );
 
+    public static final Item VINTNER_ALMANAC = register(
+            "vintner_almanac",
+            VintnerAlmanacItem::new
+    );
+
     private ModItems() {
     }
 
@@ -161,6 +167,7 @@ public final class ModItems {
                     output.accept(COMPOST);
                     output.accept(RED_GRAPE_CUTTING);
                     output.accept(WHITE_GRAPE_CUTTING);
+                    output.accept(VINTNER_ALMANAC);
                 });
 
         CreativeModeTabEvents

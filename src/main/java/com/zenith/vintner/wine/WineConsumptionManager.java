@@ -23,6 +23,22 @@ public final class WineConsumptionManager {
             WineEffectProfile profile,
             WineQuality quality
     ) {
+        return consume(
+                level,
+                consumer,
+                profile,
+                quality,
+                WineAgeStage.DEVELOPING
+        );
+    }
+
+    public static ConsumptionResult consume(
+            ServerLevel level,
+            LivingEntity consumer,
+            WineEffectProfile profile,
+            WineQuality quality,
+            WineAgeStage ageStage
+    ) {
         AttachmentTarget target = (AttachmentTarget) consumer;
         long gameTime = level.getGameTime();
 
@@ -35,7 +51,9 @@ public final class WineConsumptionManager {
                 MAX_TRACKED_DRINKS,
                 current.drinks() + 1
         );
-        float benefitMultiplier = benefitMultiplier(nextDrinkCount);
+        float benefitMultiplier =
+                benefitMultiplier(nextDrinkCount)
+                        * ageStage.benefitMultiplier();
 
         target.setAttached(
                 ModAttachments.WINE_CONSUMPTION,
@@ -55,6 +73,17 @@ public final class WineConsumptionManager {
                 consumer,
                 nextDrinkCount
         );
+
+        if (ageStage == WineAgeStage.SPOILED) {
+            consumer.addEffect(
+                    new MobEffectInstance(
+                            MobEffects.NAUSEA,
+                            20 * 20,
+                            0
+                    )
+            );
+            impaired = true;
+        }
         sendFeedback(consumer, nextDrinkCount);
         WinePairingManager.onWineConsumed(
                 level,

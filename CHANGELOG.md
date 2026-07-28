@@ -2,6 +2,37 @@
 
 All notable changes to Vintner are documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Stable wine batch identities that survive pressing, fermentation, barrel
+  aging, bottling, storage, and save/reload cycles.
+- Deterministic tasting profiles and an opt-in Vintner's Almanac, keeping
+  detailed wine information out of normal item tooltips.
+- Bottle aging stages from young through peak and decline, with storage
+  quality affecting aging speed and poor storage eventually spoiling wine.
+- Cellar evaluation based on shelter, depth, light, nearby water, and heat.
+- UI-free wine racks with four visible bottle positions, comparator output,
+  safe bottle drops, and variants for all twelve supported wood families.
+- Cellar progression for building a rack, inspecting a vintage, and discovering
+  ideal storage conditions.
+
+### Changed
+
+- Bottle age now adjusts wine benefit duration; peak bottles are strongest,
+  while spoiled bottles cause nausea.
+- Stored bottles now catch up on elapsed world time after their chunk unloads,
+  while still respecting the rack's current cellar conditions.
+- Identified must and wine batches can no longer be silently blended with a
+  different identified batch.
+
+### Fixed
+
+- Cellar humidity now requires actual adjacent water instead of incorrectly
+  treating dry neighboring blocks as humid.
+- The Vintner's Almanac recipe now unlocks after obtaining either grape variety.
+
 ## [1.0.1] - 2026-07-23
 
 ### Fixed

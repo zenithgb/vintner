@@ -9,6 +9,7 @@ import com.zenith.vintner.block.GrapePressBlock;
 import com.zenith.vintner.block.RedGrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.WhiteGrapevineBlock;
+import com.zenith.vintner.block.WineRackBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.vineyard.GrapeVariety;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
@@ -86,6 +87,20 @@ public final class ModBlocks {
                     GrapePressBlock::new
             );
 
+    public static final Block WINE_RACK = registerWithItem(
+            "wine_rack",
+            WineRackBlock::new,
+            machineProperties()
+    );
+
+    public static final Map<WoodVariant, Block> WINE_RACKS =
+            registerMachineVariants(
+                    WoodVariant.OAK,
+                    WINE_RACK,
+                    WoodVariant::wineRackId,
+                    WineRackBlock::new
+            );
+
     public static final Block VINEYARD_SOIL =
             registerWithItem(
                     "vineyard_soil",
@@ -140,6 +155,10 @@ public final class ModBlocks {
         return AGING_BARRELS.get(woodVariant);
     }
 
+    public static Block wineRack(WoodVariant woodVariant) {
+        return WINE_RACKS.get(woodVariant);
+    }
+
     public static Block redGrapevine(WoodVariant woodVariant) {
         return RED_GRAPEVINES.get(woodVariant);
     }
@@ -167,6 +186,10 @@ public final class ModBlocks {
 
     public static Block[] agingBarrelBlocks() {
         return orderedBlocks(AGING_BARRELS);
+    }
+
+    public static Block[] wineRackBlocks() {
+        return orderedBlocks(WINE_RACKS);
     }
 
     private static Map<WoodVariant, Block> registerTrellises() {
@@ -371,6 +394,7 @@ public final class ModBlocks {
                     FERMENTATION_BARRELS.values()
                             .forEach(output::accept);
                     AGING_BARRELS.values().forEach(output::accept);
+                    WINE_RACKS.values().forEach(output::accept);
                 });
     }
 }

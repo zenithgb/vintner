@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:book",
+    "vintner:red_grapes",
+    "vintner:white_grapes"
+  ],
+  "result": {
+    "id": "vintner:vintner_almanac",
+    "count": 1
+  }
+}
