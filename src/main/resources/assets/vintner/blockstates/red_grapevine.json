@@ -48,6 +48,7 @@
       "when": {
         "age": "0|1",
         "east": "level",
+        "has_above": "false",
         "upper": "false"
       },
       "apply": {
@@ -58,6 +59,7 @@
       "when": {
         "age": "0|1",
         "south": "level",
+        "has_above": "false",
         "upper": "false"
       },
       "apply": {
@@ -69,6 +71,7 @@
       "when": {
         "age": "0|1",
         "west": "level",
+        "has_above": "false",
         "upper": "false"
       },
       "apply": {
@@ -80,6 +83,7 @@
       "when": {
         "age": "0|1",
         "north": "level",
+        "has_above": "false",
         "upper": "false"
       },
       "apply": {

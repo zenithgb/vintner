@@ -402,6 +402,7 @@ def audit_young_grapevine_wires(
             if (
                 when.get("age") != "0|1"
                 or when.get("upper") != "false"
+                or when.get("has_above") != "false"
             ):
                 continue
 
@@ -413,7 +414,8 @@ def audit_young_grapevine_wires(
         if missing:
             fail(
                 f"{grapevine}: young lower vine is missing wire "
-                f"coverage for {sorted(missing)}"
+                f"coverage without a stacked trellis for "
+                f"{sorted(missing)}"
             )
 
 
