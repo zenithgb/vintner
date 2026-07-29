@@ -24,6 +24,7 @@
   "tooltip.vintner.vintage": "Vintage: Year %s",
   "tooltip.vintner.batch": "Batch: %s",
   "tooltip.vintner.almanac": "Use while holding a bottle in your other hand",
+  "tooltip.vintner.wine.bottle_number": "Bottle %s of %s",
   "message.vintner.almanac.no_wine": "Hold a bottle of wine in your other hand to inspect it.",
   "message.vintner.almanac.identity": "%s wine | Year %s | Batch %s",
   "message.vintner.almanac.age": "Bottle age: %s (%s days)",

@@ -1,6 +1,11 @@
 {
   "multipart": [
     {
+      "apply": {
+        "model": "vintner:block/fermentation_airlock"
+      }
+    },
+    {
       "when": {
         "facing": "north"
       },

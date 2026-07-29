@@ -191,6 +191,19 @@ public final class WineRackBlockEntity extends BlockEntity {
         return copies;
     }
 
+    public List<ItemStack> removeAllBottles() {
+        List<ItemStack> removed = getStoredBottlesCopy();
+
+        if (removed.isEmpty()) {
+            return removed;
+        }
+
+        bottles.clear();
+        lastAgingGameTime = -1L;
+        markChangedAndSync();
+        return removed;
+    }
+
     public ItemStack getBottleCopy(int slot) {
         if (slot < 0 || slot >= CAPACITY) {
             return ItemStack.EMPTY;

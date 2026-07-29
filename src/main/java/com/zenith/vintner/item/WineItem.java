@@ -56,6 +56,18 @@ public final class WineItem extends Item {
                 flag
         );
 
+        int bottleNumber = WineMetadata.bottleNumber(stack);
+
+        if (bottleNumber > 0) {
+            tooltip.accept(
+                    Component.translatable(
+                            "tooltip.vintner.wine.bottle_number",
+                            bottleNumber,
+                            WineMetadata.batchBottleCount(stack)
+                    ).withStyle(ChatFormatting.DARK_GRAY)
+            );
+        }
+
         tooltip.accept(
                 effectProfile.conciseSummary()
                         .copy()

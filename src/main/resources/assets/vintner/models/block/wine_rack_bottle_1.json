@@ -6,8 +6,8 @@
   },
   "elements": [
     {
-      "from": [3, 3, 4],
-      "to": [7, 6, 13],
+      "from": [4, 2, 4],
+      "to": [6, 4, 12],
       "faces": {
         "north": {"texture": "#bottle"},
         "east": {"texture": "#bottle"},
@@ -18,8 +18,8 @@
       }
     },
     {
-      "from": [4, 3.5, 2],
-      "to": [6, 5.5, 4],
+      "from": [4.5, 2.5, 2.5],
+      "to": [5.5, 3.5, 4],
       "faces": {
         "north": {"texture": "#cork"},
         "east": {"texture": "#bottle"},

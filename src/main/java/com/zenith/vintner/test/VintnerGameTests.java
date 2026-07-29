@@ -37,6 +37,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -52,7 +53,10 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
 
 public final class VintnerGameTests {
     private static final BlockPos FIRST = new BlockPos(2, 1, 2);
@@ -1808,6 +1812,86 @@ public final class VintnerGameTests {
                 rack.getBottleCount(),
                 0,
                 "Removing the bottle should empty the rack"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineRackEmptyHandInteractionReturnsBottle(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_RACK);
+        WineRackBlockEntity rack = helper.getBlockEntity(
+                FIRST,
+                WineRackBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.ensureBatchIdentity(wine, 135790L);
+        helper.assertTrue(
+                rack.insertOne(wine),
+                "The interaction test rack should accept wine"
+        );
+        var player = helper.makeMockServerPlayer(
+                GameType.SURVIVAL
+        );
+
+        helper.useBlock(FIRST, player);
+
+        helper.assertValueEqual(
+                rack.getBottleCount(),
+                0,
+                "Empty-hand use should remove the latest bottle"
+        );
+        helper.assertTrue(
+                player.getInventory().contains(
+                        stack -> WineMetadata.batchId(stack)
+                                == 135790L
+                ),
+                "Empty-hand use should return the same bottle"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void creativeRackBreakDropsStoredBottle(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_RACK);
+        WineRackBlockEntity rack = helper.getBlockEntity(
+                FIRST,
+                WineRackBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.WHITE_WINE);
+        WineMetadata.ensureBatchIdentity(wine, 975310L);
+        WineMetadata.assignBottleNumber(wine, 2, 4);
+        helper.assertTrue(
+                rack.insertOne(wine),
+                "The creative-break rack should accept wine"
+        );
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.CREATIVE);
+
+        player.gameMode.destroyBlock(helper.absolutePos(FIRST));
+
+        helper.assertBlockNotPresent(ModBlocks.WINE_RACK, FIRST);
+        helper.assertItemEntityPresent(
+                ModItems.WHITE_WINE,
+                FIRST,
+                2.0
+        );
+        List<ItemEntity> drops = helper.getLevel()
+                .getEntitiesOfClass(
+                        ItemEntity.class,
+                        new AABB(helper.absolutePos(FIRST)).inflate(2.0)
+                );
+        helper.assertTrue(
+                drops.stream().anyMatch(drop ->
+                        WineMetadata.batchId(drop.getItem()) == 975310L
+                                && WineMetadata.bottleNumber(
+                                drop.getItem()
+                        ) == 2
+                ),
+                "Creative breaking should preserve bottle metadata"
         );
         helper.succeed();
     }

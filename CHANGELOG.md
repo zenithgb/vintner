@@ -30,12 +30,21 @@ All notable changes to Vintner are documented in this file.
   while still respecting the rack's current cellar conditions.
 - Identified must and wine batches can no longer be silently blended with a
   different identified batch.
+- Fermentation barrels now carry a tall glass airlock, giving them a distinct
+  silhouette from low copper-banded aging barrels.
+- Wine racks now use a lighter open-frame design with slimmer stored bottles.
+- Numbered wines now show their bottle position as one compact tooltip line;
+  detailed batch, tasting, age, and cellar data remains in the Almanac.
 
 ### Fixed
 
 - Cellar humidity now requires actual adjacent water instead of incorrectly
   treating dry neighboring blocks as humid.
 - The Vintner's Almanac recipe now unlocks after obtaining either grape variety.
+- Empty-hand wine-rack interactions now return the latest stored bottle.
+- Breaking a filled wine rack in Creative mode now drops its bottles with their
+  wine metadata intact.
+- Trellis end braces are inset from the post to prevent coplanar face clipping.
 
 ## [1.0.1] - 2026-07-23
 

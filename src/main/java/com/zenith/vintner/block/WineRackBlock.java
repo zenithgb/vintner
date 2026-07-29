@@ -197,7 +197,7 @@ public final class WineRackBlock extends BaseEntityBlock {
         }
 
         if (!(heldStack.getItem() instanceof WineItem)) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
         if (!rack.canInsert(heldStack)) {
@@ -276,6 +276,25 @@ public final class WineRackBlock extends BaseEntityBlock {
                 1.0F
         );
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public BlockState playerWillDestroy(
+            Level level,
+            BlockPos pos,
+            BlockState state,
+            Player player
+    ) {
+        if (!level.isClientSide()
+                && player.getAbilities().instabuild
+                && level.getBlockEntity(pos)
+                instanceof WineRackBlockEntity rack) {
+            for (ItemStack bottle : rack.removeAllBottles()) {
+                Block.popResource(level, pos, bottle);
+            }
+        }
+
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override
