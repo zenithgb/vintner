@@ -1,5 +1,5 @@
 {
-  "parent": "vintner:block/cask_bung",
+  "parent": "vintner:block/fermentation_airlock_indicator",
   "textures": {
     "indicator": "minecraft:block/red_stained_glass"
   }

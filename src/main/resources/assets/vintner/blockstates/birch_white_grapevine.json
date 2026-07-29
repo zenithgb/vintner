@@ -46,6 +46,49 @@
     },
     {
       "when": {
+        "age": "0|1",
+        "east": "level",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level"
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "south": "level",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "west": "level",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "north": "level",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 270
+      }
+    },
+    {
+      "when": {
         "age": "0",
         "upper": "false"
       },

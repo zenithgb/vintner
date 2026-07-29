@@ -381,6 +381,71 @@ def audit_translations() -> None:
                 )
 
 
+def audit_young_grapevine_wires(
+    grapevines: set[str],
+) -> None:
+    directions = {"north", "east", "south", "west"}
+
+    for grapevine in sorted(grapevines):
+        path = ASSETS / f"blockstates/{grapevine}.json"
+        data = load_json(path)
+        if not isinstance(data, dict):
+            continue
+
+        covered: set[str] = set()
+        for part in data.get("multipart", []):
+            if not isinstance(part, dict):
+                continue
+            when = part.get("when")
+            if not isinstance(when, dict):
+                continue
+            if (
+                when.get("age") != "0|1"
+                or when.get("upper") != "false"
+            ):
+                continue
+
+            for direction in directions:
+                if when.get(direction) == "level":
+                    covered.add(direction)
+
+        missing = directions - covered
+        if missing:
+            fail(
+                f"{grapevine}: young lower vine is missing wire "
+                f"coverage for {sorted(missing)}"
+            )
+
+
+def audit_fermentation_airlock_bounds() -> None:
+    path = ASSETS / "models/block/fermentation_airlock.json"
+    data = load_json(path)
+    if not isinstance(data, dict):
+        return
+
+    for index, element in enumerate(data.get("elements", [])):
+        if not isinstance(element, dict):
+            continue
+        for bound_name in ("from", "to"):
+            bound = element.get(bound_name)
+            if not isinstance(bound, list) or len(bound) != 3:
+                fail(
+                    f"fermentation airlock element {index} has an "
+                    f"invalid {bound_name} bound"
+                )
+                continue
+            if any(
+                not isinstance(value, (int, float))
+                or value < 0
+                or value > 16
+                for value in bound
+            ):
+                fail(
+                    f"fermentation airlock element {index} extends "
+                    f"outside one block: {bound_name}={bound}"
+                )
+
+
 def main() -> int:
     audit_all_json()
     reachable_models = audit_model_references()
@@ -388,6 +453,8 @@ def main() -> int:
     public_blocks, grapevines = audit_wood_families()
     audit_axe_tag(public_blocks)
     audit_translations()
+    audit_young_grapevine_wires(grapevines)
+    audit_fermentation_airlock_bounds()
 
     if errors:
         print(

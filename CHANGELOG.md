@@ -30,11 +30,13 @@ All notable changes to Vintner are documented in this file.
   while still respecting the rack's current cellar conditions.
 - Identified must and wine batches can no longer be silently blended with a
   different identified batch.
-- Fermentation barrels now carry a tall glass airlock, giving them a distinct
-  silhouette from low copper-banded aging barrels.
+- Fermentation barrels now carry a compact capped airlock, distinguishing them
+  from copper-banded aging barrels without exceeding one block.
 - Wine racks now use a lighter open-frame design with slimmer stored bottles.
 - Numbered wines now show their bottle position as one compact tooltip line;
   detailed batch, tasting, age, and cellar data remains in the Almanac.
+- Wine racks now align cleanly when placed side by side or stacked, with
+  larger visible bottles.
 
 ### Fixed
 
@@ -45,6 +47,8 @@ All notable changes to Vintner are documented in this file.
 - Breaking a filled wine rack in Creative mode now drops its bottles with their
   wine metadata intact.
 - Trellis end braces are inset from the post to prevent coplanar face clipping.
+- Trellis end braces now reach the ground cleanly, and young vines retain both
+  halves of a two-trellis wire until their upper growth takes over.
 
 ## [1.0.1] - 2026-07-23
 
