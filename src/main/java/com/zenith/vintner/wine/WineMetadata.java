@@ -19,6 +19,18 @@ public final class WineMetadata {
             "VintnerStorageDamage";
     private static final String CELLAR_RATING_KEY =
             "VintnerCellarRating";
+    private static final String BOTTLE_NUMBER_KEY =
+            "VintnerBottleNumber";
+    private static final String BATCH_BOTTLE_COUNT_KEY =
+            "VintnerBatchBottleCount";
+    private static final String STORAGE_POOR_TICKS_KEY =
+            "VintnerStoragePoorTicks";
+    private static final String STORAGE_BASIC_TICKS_KEY =
+            "VintnerStorageBasicTicks";
+    private static final String STORAGE_GOOD_TICKS_KEY =
+            "VintnerStorageGoodTicks";
+    private static final String STORAGE_IDEAL_TICKS_KEY =
+            "VintnerStorageIdealTicks";
 
     /*
      * One Minecraft year is currently treated as 96 in-game days.
@@ -152,7 +164,38 @@ public final class WineMetadata {
                 CELLAR_RATING_KEY,
                 CellarRating.BASIC.id()
         );
+        for (CellarRating rating : CellarRating.values()) {
+            tag.putLong(storageTicksKey(rating), 0L);
+        }
         setTag(stack, tag);
+    }
+
+    public static void assignBottleNumber(
+            ItemStack stack,
+            int bottleNumber,
+            int batchBottleCount
+    ) {
+        CompoundTag tag = getTagCopy(stack);
+        int safeBatchCount = Math.max(1, batchBottleCount);
+        int safeBottleNumber = Math.clamp(
+                bottleNumber,
+                1,
+                safeBatchCount
+        );
+        tag.putInt(BOTTLE_NUMBER_KEY, safeBottleNumber);
+        tag.putInt(BATCH_BOTTLE_COUNT_KEY, safeBatchCount);
+        setTag(stack, tag);
+    }
+
+    public static int bottleNumber(ItemStack stack) {
+        return getTagCopy(stack).getIntOr(BOTTLE_NUMBER_KEY, 0);
+    }
+
+    public static int batchBottleCount(ItemStack stack) {
+        return getTagCopy(stack).getIntOr(
+                BATCH_BOTTLE_COUNT_KEY,
+                0
+        );
     }
 
     public static long bottledAt(ItemStack stack) {
@@ -183,6 +226,51 @@ public final class WineMetadata {
         );
     }
 
+    public static long storageTicks(
+            ItemStack stack,
+            CellarRating rating
+    ) {
+        return getTagCopy(stack).getLongOr(
+                storageTicksKey(rating),
+                0L
+        );
+    }
+
+    public static long totalStorageTicks(ItemStack stack) {
+        long total = 0L;
+
+        for (CellarRating rating : CellarRating.values()) {
+            total = saturatedAdd(total, storageTicks(stack, rating));
+        }
+
+        return total;
+    }
+
+    public static long totalStorageDays(ItemStack stack) {
+        return totalStorageTicks(stack) / 24000L;
+    }
+
+    public static CellarRating dominantCellarRating(
+            ItemStack stack
+    ) {
+        CellarRating lastRating = lastCellarRating(stack);
+        CellarRating dominant = lastRating;
+        long longestDuration = -1L;
+
+        for (CellarRating rating : CellarRating.values()) {
+            long duration = storageTicks(stack, rating);
+
+            if (duration > longestDuration
+                    || (duration == longestDuration
+                    && rating == lastRating)) {
+                dominant = rating;
+                longestDuration = duration;
+            }
+        }
+
+        return dominant;
+    }
+
     public static void ageBottle(
             ItemStack stack,
             long elapsedTicks,
@@ -196,9 +284,12 @@ public final class WineMetadata {
         long age = tag.getLongOr(BOTTLE_AGE_KEY, 0L);
         int damage = tag.getIntOr(STORAGE_DAMAGE_KEY, 0);
 
-        age += Math.max(
-                1L,
-                Math.round(elapsedTicks * rating.ageRate())
+        age = saturatedAdd(
+                age,
+                Math.max(
+                        1L,
+                        Math.round(elapsedTicks * rating.ageRate())
+                )
         );
         long accumulatedDamage = (long) damage
                 + rating.storageDamage(elapsedTicks);
@@ -210,6 +301,14 @@ public final class WineMetadata {
         tag.putLong(BOTTLE_AGE_KEY, age);
         tag.putInt(STORAGE_DAMAGE_KEY, damage);
         tag.putInt(CELLAR_RATING_KEY, rating.id());
+        String historyKey = storageTicksKey(rating);
+        tag.putLong(
+                historyKey,
+                saturatedAdd(
+                        tag.getLongOr(historyKey, 0L),
+                        elapsedTicks
+                )
+        );
         setTag(stack, tag);
     }
 
@@ -293,6 +392,22 @@ public final class WineMetadata {
                 ^ ((long) vintage << 32)
                 ^ quality.id() * 0x9E3779B97F4A7C15L;
         return Long.hashCode(mixed);
+    }
+
+    private static String storageTicksKey(CellarRating rating) {
+        return switch (rating) {
+            case POOR -> STORAGE_POOR_TICKS_KEY;
+            case BASIC -> STORAGE_BASIC_TICKS_KEY;
+            case GOOD -> STORAGE_GOOD_TICKS_KEY;
+            case IDEAL -> STORAGE_IDEAL_TICKS_KEY;
+        };
+    }
+
+    private static long saturatedAdd(long first, long second) {
+        if (second > 0L && first > Long.MAX_VALUE - second) {
+            return Long.MAX_VALUE;
+        }
+        return first + second;
     }
 
     private static CompoundTag getTagCopy(ItemStack stack) {

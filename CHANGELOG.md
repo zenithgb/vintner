@@ -8,10 +8,14 @@ All notable changes to Vintner are documented in this file.
 
 - Stable wine batch identities that survive pressing, fermentation, barrel
   aging, bottling, storage, and save/reload cycles.
+- Numbered bottles within each fermentation or aging batch, with extraction
+  order preserved across barrel save/reload cycles.
 - Deterministic tasting profiles and an opt-in Vintner's Almanac, keeping
   detailed wine information out of normal item tooltips.
 - Bottle aging stages from young through peak and decline, with storage
   quality affecting aging speed and poor storage eventually spoiling wine.
+- Cumulative bottle storage histories by cellar rating, summarized by the
+  Vintner's Almanac.
 - Cellar evaluation based on shelter, depth, light, nearby water, and heat.
 - UI-free wine racks with four visible bottle positions, comparator output,
   safe bottle drops, and variants for all twelve supported wood families.

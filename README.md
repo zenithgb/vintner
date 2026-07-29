@@ -46,10 +46,11 @@ available in every supported vanilla wood family.
 
 Craft a Vintner's Almanac from a book and both grape varieties. Use it while
 holding wine in the other hand to inspect the bottle's vintage, batch, tasting
-profile, age, and last storage conditions. Use it directly on a wine rack to
-inspect the cellar around that rack. Normal wine tooltips remain intentionally
-compact. Cellar advancements guide players from laying down their first rack to
-identifying a vintage and discovering ideal storage conditions.
+profile, numbered place in its batch, age, and cumulative cellar history. Use
+it directly on a wine rack to inspect the cellar around that rack. Normal wine
+tooltips remain intentionally compact. Cellar advancements guide players from
+laying down their first rack to identifying a vintage and discovering ideal
+storage conditions.
 
 Trellises connect independently on all four horizontal faces. Vertically
 stacked trellises form separate same-height rows; they do not create diagonal

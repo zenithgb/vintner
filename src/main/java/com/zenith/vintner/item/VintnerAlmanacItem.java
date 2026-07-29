@@ -61,15 +61,35 @@ public final class VintnerAlmanacItem extends Item {
                             .copy()
                             .withStyle(ChatFormatting.GRAY)
             );
+
+            if (WineMetadata.bottleNumber(bottle) > 0) {
+                player.sendSystemMessage(
+                        Component.translatable(
+                                "message.vintner.almanac.bottle_number",
+                                WineMetadata.bottleNumber(bottle),
+                                WineMetadata.batchBottleCount(bottle)
+                        ).withStyle(ChatFormatting.DARK_GRAY)
+                );
+            }
+
             player.sendSystemMessage(
                     Component.translatable(
                             "message.vintner.almanac.age",
                             WineMetadata.ageStage(bottle).displayName(),
-                            WineMetadata.bottleAgeDays(bottle),
-                            WineMetadata.lastCellarRating(bottle)
-                                    .displayName()
+                            WineMetadata.bottleAgeDays(bottle)
                     ).withStyle(ChatFormatting.DARK_GRAY)
             );
+
+            if (WineMetadata.totalStorageTicks(bottle) > 0L) {
+                player.sendSystemMessage(
+                        Component.translatable(
+                                "message.vintner.almanac.storage_history",
+                                WineMetadata.totalStorageDays(bottle),
+                                WineMetadata.dominantCellarRating(bottle)
+                                        .displayName()
+                        ).withStyle(ChatFormatting.DARK_GRAY)
+                );
+            }
 
             if (player instanceof ServerPlayer serverPlayer) {
                 ModAdvancements.grantInspection(serverPlayer);

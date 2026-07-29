@@ -23,6 +23,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
 
     private int wineType;
     private int bottleCount;
+    private int bottlesTaken;
     private int agingProgress;
     private boolean ready;
     private int vintage = 1;
@@ -207,7 +208,13 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                 result,
                 level == null ? 0L : level.getGameTime()
         );
+        WineMetadata.assignBottleNumber(
+                result,
+                bottlesTaken + 1,
+                bottlesTaken + bottleCount
+        );
 
+        bottlesTaken++;
         bottleCount--;
 
         if (bottleCount <= 0) {
@@ -266,6 +273,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         vintage = 1;
         quality = WineQuality.COMMON;
         batchId = 0L;
+        bottlesTaken = 0;
     }
 
     private void markChangedAndSync() {
@@ -348,6 +356,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                 )
         );
         batchId = input.getLongOr("BatchId", 0L);
+        bottlesTaken = input.getIntOr("BottlesTaken", 0);
     }
 
     @Override
@@ -361,5 +370,6 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         output.putInt("Vintage", vintage);
         output.putInt("Quality", quality.id());
         output.putLong("BatchId", batchId);
+        output.putInt("BottlesTaken", bottlesTaken);
     }
 }

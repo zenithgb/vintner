@@ -1241,6 +1241,72 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void fermentationAssignsPersistentBottleNumbers(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.FERMENTATION_BARREL);
+
+        FermentationBarrelBlockEntity barrel = helper.getBlockEntity(
+                FIRST,
+                FermentationBarrelBlockEntity.class
+        );
+        ItemStack must = new ItemStack(ModItems.RED_MUST);
+        WineMetadata.apply(must, 12, WineQuality.FINE);
+        WineMetadata.ensureBatchIdentity(must, 13579L);
+
+        for (int bottle = 0; bottle < 3; bottle++) {
+            helper.assertTrue(
+                    barrel.insertOne(must),
+                    "The numbered test batch should accept three bottles"
+            );
+        }
+
+        for (int tick = 0;
+             tick < FermentationBarrelBlockEntity.FERMENTATION_TIME;
+             tick++) {
+            FermentationBarrelBlockEntity.serverTick(
+                    helper.getLevel(),
+                    helper.absolutePos(FIRST),
+                    helper.getBlockState(FIRST),
+                    barrel
+            );
+        }
+
+        ItemStack firstBottle = barrel.takeOneWine();
+        helper.assertValueEqual(
+                WineMetadata.bottleNumber(firstBottle),
+                1,
+                "The first extracted wine should be bottle one"
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchBottleCount(firstBottle),
+                3,
+                "Bottle identity should record the original batch size"
+        );
+
+        FermentationBarrelBlockEntity restored =
+                (FermentationBarrelBlockEntity) reload(helper, barrel);
+        ItemStack secondBottle = restored.takeOneWine();
+
+        helper.assertValueEqual(
+                WineMetadata.bottleNumber(secondBottle),
+                2,
+                "Bottle numbering should survive a save/load cycle"
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchBottleCount(secondBottle),
+                3,
+                "The restored barrel should preserve its batch size"
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchId(secondBottle),
+                WineMetadata.batchId(firstBottle),
+                "Numbered bottles should retain one batch identity"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void agingCompletesAndImprovesQuality(
             GameTestHelper helper
     ) {
@@ -1254,6 +1320,10 @@ public final class VintnerGameTests {
         WineMetadata.apply(wine, 4, WineQuality.COMMON);
 
         helper.assertTrue(barrel.insertOne(wine), "Wine should be accepted");
+        helper.assertTrue(
+                barrel.insertOne(wine),
+                "A matching second bottle should join the aging batch"
+        );
 
         for (int tick = 0;
              tick < AgingBarrelBlockEntity.AGING_TIME;
@@ -1292,6 +1362,79 @@ public final class VintnerGameTests {
                 WineMetadata.quality(agedWine),
                 WineQuality.FINE,
                 "Aging should improve common wine to fine quality"
+        );
+        helper.assertValueEqual(
+                WineMetadata.bottleNumber(agedWine),
+                1,
+                "The first aged output should be bottle one"
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchBottleCount(agedWine),
+                2,
+                "Aged bottle identity should record the batch size"
+        );
+
+        AgingBarrelBlockEntity restored =
+                (AgingBarrelBlockEntity) reload(helper, barrel);
+        ItemStack secondAgedWine = restored.takeOneAgedWine();
+
+        helper.assertValueEqual(
+                WineMetadata.bottleNumber(secondAgedWine),
+                2,
+                "Aged bottle numbering should survive save/load"
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchBottleCount(secondAgedWine),
+                2,
+                "The restored aging barrel should preserve batch size"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void bottleStorageHistoryTracksCellarTime(
+            GameTestHelper helper
+    ) {
+        ItemStack wine = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.apply(wine, 14, WineQuality.EXCEPTIONAL);
+        WineMetadata.markBottled(wine, 100L);
+
+        WineMetadata.ageBottle(
+                wine,
+                24000L,
+                com.zenith.vintner.wine.CellarRating.BASIC
+        );
+        WineMetadata.ageBottle(
+                wine,
+                48000L,
+                com.zenith.vintner.wine.CellarRating.IDEAL
+        );
+
+        helper.assertValueEqual(
+                WineMetadata.storageTicks(
+                        wine,
+                        com.zenith.vintner.wine.CellarRating.BASIC
+                ),
+                24000L,
+                "Basic-cellar time should be recorded"
+        );
+        helper.assertValueEqual(
+                WineMetadata.storageTicks(
+                        wine,
+                        com.zenith.vintner.wine.CellarRating.IDEAL
+                ),
+                48000L,
+                "Ideal-cellar time should be recorded"
+        );
+        helper.assertValueEqual(
+                WineMetadata.totalStorageDays(wine),
+                3L,
+                "Storage history should report total elapsed days"
+        );
+        helper.assertValueEqual(
+                WineMetadata.dominantCellarRating(wine),
+                com.zenith.vintner.wine.CellarRating.IDEAL,
+                "The longest storage condition should be dominant"
         );
         helper.succeed();
     }
