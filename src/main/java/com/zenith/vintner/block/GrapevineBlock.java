@@ -4,7 +4,6 @@ import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.wine.GrapeQualityEvaluator;
 import com.zenith.vintner.wine.WineMetadata;
-import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQuality;
 import com.zenith.vintner.wine.VineyardConditionReport;
 import com.zenith.vintner.wine.WinemakingEffects;
@@ -635,20 +634,6 @@ public abstract class GrapevineBlock
                     vintage,
                     report.qualityProfile()
             );
-            WineMetadata.applyProvenance(
-                    grapes,
-                    WineProvenance.harvested(
-                            variety,
-                            serverLevel.getGameTime(),
-                            serverLevel.dimension()
-                                    .identifier()
-                                    .toString(),
-                            rootPos,
-                            player.getUUID(),
-                            player.getGameProfile().name()
-                    )
-            );
-
             Block.popResource(
                     serverLevel,
                     pos,

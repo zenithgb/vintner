@@ -2104,16 +2104,6 @@ public final class VintnerGameTests {
         );
         helper.setBlock(agingPos, ModBlocks.AGING_BARREL);
 
-        WineProvenance provenance = new WineProvenance(
-                "red",
-                240000L,
-                "minecraft:overworld",
-                40,
-                72,
-                -18,
-                "00000000-0000-0000-0000-000000000001",
-                "Test Vintner"
-        );
         ItemStack grapes = new ItemStack(
                 ModItems.RED_GRAPES,
                 GrapePressBlockEntity.GRAPES_PER_PRESS
@@ -2123,19 +2113,34 @@ public final class VintnerGameTests {
                 4,
                 WineQualityProfile.vineyard(50)
         );
-        WineMetadata.applyProvenance(grapes, provenance);
 
         GrapePressBlockEntity press = helper.getBlockEntity(
                 pressPos,
                 GrapePressBlockEntity.class
         );
         press.insert(grapes, grapes.getCount());
-        helper.assertTrue(press.press(), "Grapes should press");
+        ServerPlayer producer =
+                helper.makeMockServerPlayerInLevel();
+        helper.assertTrue(
+                press.press(producer),
+                "Grapes should press"
+        );
         ItemStack must = press.bottleOneMust();
+        WineProvenance provenance =
+                WineMetadata.provenance(must);
+        helper.assertTrue(
+                provenance.known(),
+                "Pressing should establish batch provenance"
+        );
         helper.assertValueEqual(
-                WineMetadata.provenance(must),
-                provenance,
-                "Pressed must should preserve harvest provenance"
+                provenance.variety(),
+                "red",
+                "Batch provenance should identify the grape variety"
+        );
+        helper.assertValueEqual(
+                provenance.producerName(),
+                producer.getGameProfile().name(),
+                "Batch provenance should identify the producer"
         );
 
         FermentationBarrelBlockEntity fermentation =
@@ -2162,7 +2167,7 @@ public final class VintnerGameTests {
         helper.assertValueEqual(
                 WineMetadata.provenance(wine),
                 provenance,
-                "Fermentation should preserve harvest provenance"
+                "Fermentation should preserve batch provenance"
         );
 
         AgingBarrelBlockEntity aging = helper.getBlockEntity(
@@ -2188,7 +2193,31 @@ public final class VintnerGameTests {
         helper.assertValueEqual(
                 WineMetadata.provenance(agedWine),
                 provenance,
-                "Barrel ageing should preserve harvest provenance"
+                "Barrel ageing should preserve batch provenance"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void matchingGrapesFromDifferentVinesCanStack(
+            GameTestHelper helper
+    ) {
+        ItemStack first = new ItemStack(ModItems.RED_GRAPES, 3);
+        ItemStack second = new ItemStack(ModItems.RED_GRAPES, 4);
+        WineQualityProfile profile =
+                WineQualityProfile.vineyard(55);
+
+        WineMetadata.applyProfile(first, 2, profile);
+        WineMetadata.applyProfile(second, 2, profile);
+
+        helper.assertTrue(
+                ItemStack.isSameItemSameComponents(first, second),
+                "Matching grapes must stack regardless of source vine"
+        );
+        helper.assertTrue(
+                !WineMetadata.provenance(first).known()
+                        && !WineMetadata.provenance(second).known(),
+                "Provenance should begin when a batch is pressed"
         );
         helper.succeed();
     }

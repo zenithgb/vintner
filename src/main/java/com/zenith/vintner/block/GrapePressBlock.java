@@ -221,7 +221,7 @@ public final class GrapePressBlock extends BaseEntityBlock {
         }
 
         if (level instanceof ServerLevel serverLevel
-                && press.press()) {
+                && press.press(player)) {
             if (player instanceof ServerPlayer serverPlayer) {
                 ModAdvancements.grantPressing(
                         serverPlayer,

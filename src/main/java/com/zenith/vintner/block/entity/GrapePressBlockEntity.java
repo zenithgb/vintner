@@ -7,9 +7,11 @@ import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.block.GrapePressBlock;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.vineyard.GrapeVariety;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -17,6 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jetbrains.annotations.Nullable;
 
 public final class GrapePressBlockEntity extends BlockEntity {
     public static final int INPUT_SLOT = 0;
@@ -134,6 +137,10 @@ public final class GrapePressBlockEntity extends BlockEntity {
     }
 
     public boolean press() {
+        return press(null);
+    }
+
+    public boolean press(@Nullable Player producer) {
         if (!canPress()) {
             return false;
         }
@@ -143,6 +150,22 @@ public final class GrapePressBlockEntity extends BlockEntity {
         int vintage = WineMetadata.vintage(input);
         WineProvenance provenance =
                 WineMetadata.provenance(input);
+
+        if (!provenance.known()
+                && producer != null
+                && level != null) {
+            provenance = WineProvenance.batched(
+                    input.is(ModItems.RED_GRAPES)
+                            ? GrapeVariety.RED
+                            : GrapeVariety.WHITE,
+                    level.getGameTime(),
+                    level.dimension().identifier().toString(),
+                    worldPosition,
+                    producer.getUUID(),
+                    producer.getGameProfile().name()
+            );
+        }
+
         WineQualityProfile qualityProfile =
                 WineMetadata.qualityProfile(input)
                         .withProcessing(5);

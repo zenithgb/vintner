@@ -72,7 +72,7 @@ public final class VintnerAlmanacItem extends Item {
                         Component.translatable(
                                 "message.vintner.almanac.provenance",
                                 provenance.varietyDisplayName(),
-                                provenance.harvestDay(),
+                                provenance.batchDay(),
                                 provenance.originDisplayName(),
                                 provenance.producerDisplayName()
                         ).withStyle(ChatFormatting.DARK_GRAY)

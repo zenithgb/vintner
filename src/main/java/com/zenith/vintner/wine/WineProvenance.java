@@ -43,7 +43,7 @@ public record WineProvenance(
         );
     }
 
-    public static WineProvenance harvested(
+    public static WineProvenance batched(
             GrapeVariety variety,
             long gameTime,
             String dimension,
@@ -67,7 +67,7 @@ public record WineProvenance(
         return !UNKNOWN.equals(variety);
     }
 
-    public long harvestDay() {
+    public long batchDay() {
         return harvestedAt / TICKS_PER_DAY;
     }
 

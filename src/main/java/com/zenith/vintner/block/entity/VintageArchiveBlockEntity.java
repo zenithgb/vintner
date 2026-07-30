@@ -101,7 +101,7 @@ public final class VintageArchiveBlockEntity extends BlockEntity {
                     Component.translatable(
                             "message.vintner.vintage_archive.provenance",
                             provenance.varietyDisplayName(),
-                            provenance.harvestDay(),
+                            provenance.batchDay(),
                             provenance.producerDisplayName()
                     ).withStyle(ChatFormatting.DARK_GRAY)
             );

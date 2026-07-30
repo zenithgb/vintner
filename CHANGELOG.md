@@ -6,9 +6,9 @@ All notable changes to Vintner are documented in this file.
 
 ### Added
 
-- Persistent wine provenance from harvest through pressing, fermentation,
-  barrel ageing, and bottling, including grape variety, harvest day, origin,
-  and producer.
+- Persistent wine provenance from pressing through fermentation, barrel
+  ageing, and bottling, including grape variety, batch day, winery origin, and
+  producer without preventing grapes from different vines from stacking.
 - Almanac reports for provenance, bottling day, and a concise hold, drink-now,
   past-peak, or spoiled recommendation.
 - Vintage Archives that catalogue up to sixteen unique wine batches without
