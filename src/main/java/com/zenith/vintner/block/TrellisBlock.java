@@ -56,6 +56,9 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
     private static final VoxelShape POST_SHAPE =
             Block.box(7.0, 0.0, 7.0, 9.0, 16.0, 9.0);
 
+    private static final VoxelShape INTERACTION_POST_SHAPE =
+            Block.box(5.5, 0.0, 5.5, 10.5, 16.0, 10.5);
+
     private static final double[] WIRE_HEIGHTS = {
             4.0,
             7.0,
@@ -346,7 +349,7 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
             BlockPos pos,
             CollisionContext context
     ) {
-        return createTrellisShape(state);
+        return createTrellisInteractionShape(state);
     }
 
     @Override
@@ -385,6 +388,64 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
         }
 
         return shape;
+    }
+
+    private static VoxelShape createTrellisInteractionShape(
+            BlockState state
+    ) {
+        VoxelShape shape = INTERACTION_POST_SHAPE;
+
+        if (state.getValue(HAS_ABOVE)) {
+            return shape;
+        }
+
+        if (state.getValue(NORTH) != RowConnection.NONE) {
+            shape = addInteractionArm(shape, Direction.NORTH);
+        }
+
+        if (state.getValue(EAST) != RowConnection.NONE) {
+            shape = addInteractionArm(shape, Direction.EAST);
+        }
+
+        if (state.getValue(SOUTH) != RowConnection.NONE) {
+            shape = addInteractionArm(shape, Direction.SOUTH);
+        }
+
+        if (state.getValue(WEST) != RowConnection.NONE) {
+            shape = addInteractionArm(shape, Direction.WEST);
+        }
+
+        return shape;
+    }
+
+    private static VoxelShape addInteractionArm(
+            VoxelShape shape,
+            Direction direction
+    ) {
+        VoxelShape arm = switch (direction) {
+            case WEST -> Block.box(
+                    0.0, 2.0, 6.5,
+                    8.0, 15.0, 9.5
+            );
+            case EAST -> Block.box(
+                    8.0, 2.0, 6.5,
+                    16.0, 15.0, 9.5
+            );
+            case NORTH -> Block.box(
+                    6.5, 2.0, 0.0,
+                    9.5, 15.0, 8.0
+            );
+            case SOUTH -> Block.box(
+                    6.5, 2.0, 8.0,
+                    9.5, 15.0, 16.0
+            );
+            default -> throw new IllegalStateException(
+                    "Trellis interaction arm must be horizontal: "
+                            + direction
+            );
+        };
+
+        return Shapes.or(shape, arm);
     }
 
     private static VoxelShape addWireShapes(
