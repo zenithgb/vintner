@@ -4,6 +4,8 @@ All notable changes to Vintner are documented in this file.
 
 ## [Unreleased]
 
+## [1.2.0-rc.1] - 2026-07-30
+
 ### Added
 
 - Stable wine batch identities that survive pressing, fermentation, barrel
