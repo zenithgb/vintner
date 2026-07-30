@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "vintner:block/dark_oak_vintage_archive"
+    },
+    "facing=east": {
+      "model": "vintner:block/dark_oak_vintage_archive",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "vintner:block/dark_oak_vintage_archive",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "vintner:block/dark_oak_vintage_archive",
+      "y": 270
+    }
+  }
+}

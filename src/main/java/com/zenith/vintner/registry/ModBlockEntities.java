@@ -5,6 +5,7 @@ import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
+import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -63,6 +64,19 @@ public final class ModBlockEntities {
                     FabricBlockEntityTypeBuilder.create(
                             WineRackBlockEntity::new,
                             ModBlocks.wineRackBlocks()
+                    ).build()
+            );
+
+    public static final BlockEntityType<VintageArchiveBlockEntity>
+            VINTAGE_ARCHIVE = Registry.register(
+                    BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                    Identifier.fromNamespaceAndPath(
+                            Vintner.MOD_ID,
+                            "vintage_archive"
+                    ),
+                    FabricBlockEntityTypeBuilder.create(
+                            VintageArchiveBlockEntity::new,
+                            ModBlocks.vintageArchiveBlocks()
                     ).build()
             );
 

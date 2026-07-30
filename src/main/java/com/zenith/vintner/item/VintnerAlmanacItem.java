@@ -2,7 +2,9 @@ package com.zenith.vintner.item;
 
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.wine.WineMetadata;
+import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQualityProfile;
+import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -62,6 +64,26 @@ public final class VintnerAlmanacItem extends Item {
                             .copy()
                             .withStyle(ChatFormatting.GRAY)
             );
+            WineProvenance provenance =
+                    WineMetadata.provenance(bottle);
+
+            if (provenance.known()) {
+                player.sendSystemMessage(
+                        Component.translatable(
+                                "message.vintner.almanac.provenance",
+                                provenance.varietyDisplayName(),
+                                provenance.harvestDay(),
+                                provenance.originDisplayName(),
+                                provenance.producerDisplayName()
+                        ).withStyle(ChatFormatting.DARK_GRAY)
+                );
+            } else {
+                player.sendSystemMessage(
+                        Component.translatable(
+                                "message.vintner.almanac.provenance_legacy"
+                        ).withStyle(ChatFormatting.DARK_GRAY)
+                );
+            }
             WineQualityProfile quality =
                     WineMetadata.qualityProfile(bottle);
             player.sendSystemMessage(
@@ -94,6 +116,21 @@ public final class VintnerAlmanacItem extends Item {
                             WineMetadata.bottleAgeDays(bottle)
                     ).withStyle(ChatFormatting.DARK_GRAY)
             );
+            player.sendSystemMessage(
+                    Component.translatable(
+                            "message.vintner.almanac.readiness",
+                            WineReadiness.from(bottle).displayName()
+                    ).withStyle(ChatFormatting.DARK_GRAY)
+            );
+
+            if (WineMetadata.bottledAt(bottle) > 0L) {
+                player.sendSystemMessage(
+                        Component.translatable(
+                                "message.vintner.almanac.bottled",
+                                WineMetadata.bottledDay(bottle)
+                        ).withStyle(ChatFormatting.DARK_GRAY)
+                );
+            }
 
             if (WineMetadata.totalStorageTicks(bottle) > 0L) {
                 player.sendSystemMessage(

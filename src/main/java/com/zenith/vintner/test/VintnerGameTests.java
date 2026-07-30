@@ -8,6 +8,7 @@ import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
+import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.registry.ModAttachments;
@@ -20,9 +21,11 @@ import com.zenith.vintner.wine.WineConsumptionManager;
 import com.zenith.vintner.wine.WineConsumptionState;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WinePairingManager;
+import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQuality;
 import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.wine.WineAgeStage;
+import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
 import net.minecraft.advancements.AdvancementHolder;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
@@ -43,6 +46,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.InteractionHand;
@@ -99,6 +103,11 @@ public final class VintnerGameTests {
                 "Every wood family should have a wine rack"
         );
         helper.assertValueEqual(
+                ModBlocks.VINTAGE_ARCHIVES.size(),
+                expected,
+                "Every wood family should have a vintage archive"
+        );
+        helper.assertValueEqual(
                 ModBlocks.RED_GRAPEVINES.size(),
                 expected,
                 "Every wood family should retain red-vine supports"
@@ -141,6 +150,14 @@ public final class VintnerGameTests {
                     ),
                     woodVariant.id()
                             + " wine rack should support its block entity"
+            );
+            helper.assertTrue(
+                    ModBlockEntities.VINTAGE_ARCHIVE.isValid(
+                            ModBlocks.vintageArchive(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " vintage archive should support its block entity"
             );
         }
 
@@ -2069,6 +2086,198 @@ public final class VintnerGameTests {
                 WineMetadata.quality(restoredBottle),
                 WineQuality.EXCEPTIONAL,
                 "Rack serialization must preserve wine quality"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void provenanceSurvivesTheFullWinemakingPath(
+            GameTestHelper helper
+    ) {
+        BlockPos pressPos = new BlockPos(1, 1, 1);
+        BlockPos fermentationPos = new BlockPos(3, 1, 1);
+        BlockPos agingPos = new BlockPos(5, 1, 1);
+        helper.setBlock(pressPos, ModBlocks.GRAPE_PRESS);
+        helper.setBlock(
+                fermentationPos,
+                ModBlocks.FERMENTATION_BARREL
+        );
+        helper.setBlock(agingPos, ModBlocks.AGING_BARREL);
+
+        WineProvenance provenance = new WineProvenance(
+                "red",
+                240000L,
+                "minecraft:overworld",
+                40,
+                72,
+                -18,
+                "00000000-0000-0000-0000-000000000001",
+                "Test Vintner"
+        );
+        ItemStack grapes = new ItemStack(
+                ModItems.RED_GRAPES,
+                GrapePressBlockEntity.GRAPES_PER_PRESS
+        );
+        WineMetadata.applyProfile(
+                grapes,
+                4,
+                WineQualityProfile.vineyard(50)
+        );
+        WineMetadata.applyProvenance(grapes, provenance);
+
+        GrapePressBlockEntity press = helper.getBlockEntity(
+                pressPos,
+                GrapePressBlockEntity.class
+        );
+        press.insert(grapes, grapes.getCount());
+        helper.assertTrue(press.press(), "Grapes should press");
+        ItemStack must = press.bottleOneMust();
+        helper.assertValueEqual(
+                WineMetadata.provenance(must),
+                provenance,
+                "Pressed must should preserve harvest provenance"
+        );
+
+        FermentationBarrelBlockEntity fermentation =
+                helper.getBlockEntity(
+                        fermentationPos,
+                        FermentationBarrelBlockEntity.class
+                );
+        for (int bottle = 0;
+             bottle < FermentationBarrelBlockEntity.CAPACITY;
+             bottle++) {
+            fermentation.insertOne(must);
+        }
+        for (int tick = 0;
+             tick < FermentationBarrelBlockEntity.FERMENTATION_TIME;
+             tick++) {
+            FermentationBarrelBlockEntity.serverTick(
+                    helper.getLevel(),
+                    helper.absolutePos(fermentationPos),
+                    helper.getBlockState(fermentationPos),
+                    fermentation
+            );
+        }
+        ItemStack wine = fermentation.takeOneWine();
+        helper.assertValueEqual(
+                WineMetadata.provenance(wine),
+                provenance,
+                "Fermentation should preserve harvest provenance"
+        );
+
+        AgingBarrelBlockEntity aging = helper.getBlockEntity(
+                agingPos,
+                AgingBarrelBlockEntity.class
+        );
+        for (int bottle = 0;
+             bottle < AgingBarrelBlockEntity.CAPACITY;
+             bottle++) {
+            aging.insertOne(wine);
+        }
+        for (int tick = 0;
+             tick < AgingBarrelBlockEntity.AGING_TIME;
+             tick++) {
+            AgingBarrelBlockEntity.serverTick(
+                    helper.getLevel(),
+                    helper.absolutePos(agingPos),
+                    helper.getBlockState(agingPos),
+                    aging
+            );
+        }
+        ItemStack agedWine = aging.takeOneAgedWine();
+        helper.assertValueEqual(
+                WineMetadata.provenance(agedWine),
+                provenance,
+                "Barrel ageing should preserve harvest provenance"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void vintageArchiveCataloguesUniqueBatches(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.VINTAGE_ARCHIVE);
+        VintageArchiveBlockEntity archive = helper.getBlockEntity(
+                FIRST,
+                VintageArchiveBlockEntity.class
+        );
+        ItemStack first = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.apply(first, 3, WineQuality.FINE);
+        WineMetadata.ensureBatchIdentity(first, 1001L);
+        WineMetadata.applyProvenance(
+                first,
+                new WineProvenance(
+                        "red",
+                        72000L,
+                        "minecraft:overworld",
+                        1,
+                        2,
+                        3,
+                        "",
+                        "Archivist"
+                )
+        );
+
+        helper.assertValueEqual(
+                archive.record(first),
+                VintageArchiveBlockEntity.RecordResult.ADDED,
+                "The first batch should create an archive record"
+        );
+        WineMetadata.ageBottle(
+                first,
+                WineAgeStage.PEAK_AT,
+                CellarRating.IDEAL
+        );
+        helper.assertValueEqual(
+                archive.record(first),
+                VintageArchiveBlockEntity.RecordResult.UPDATED,
+                "Scanning the same batch should update its snapshot"
+        );
+
+        ItemStack second = new ItemStack(ModItems.WHITE_WINE);
+        WineMetadata.apply(second, 4, WineQuality.GOOD);
+        WineMetadata.ensureBatchIdentity(second, 1002L);
+        helper.assertValueEqual(
+                archive.record(second),
+                VintageArchiveBlockEntity.RecordResult.ADDED,
+                "A different batch should create a second record"
+        );
+        helper.assertValueEqual(
+                archive.getRecordCount(),
+                2,
+                "The archive should count unique batches"
+        );
+        helper.assertValueEqual(
+                WineReadiness.from(archive.getRecordCopy(0)),
+                WineReadiness.DRINK_NOW,
+                "An updated peak record should be marked drink now"
+        );
+
+        VintageArchiveBlockEntity restored =
+                (VintageArchiveBlockEntity) reload(helper, archive);
+        helper.assertValueEqual(
+                restored.getRecordCount(),
+                2,
+                "Archive records should survive save and load"
+        );
+        helper.assertValueEqual(
+                WineMetadata.provenance(
+                        restored.getRecordCopy(0)
+                ).producerName(),
+                "Archivist",
+                "Archive serialization should preserve provenance"
+        );
+
+        ItemStack archiveDrop = Block.getDrops(
+                helper.getBlockState(FIRST),
+                helper.getLevel(),
+                helper.absolutePos(FIRST),
+                restored
+        ).stream().findFirst().orElse(ItemStack.EMPTY);
+        helper.assertTrue(
+                archiveDrop.has(DataComponents.BLOCK_ENTITY_DATA),
+                "A filled archive drop should retain its catalogue"
         );
         helper.succeed();
     }

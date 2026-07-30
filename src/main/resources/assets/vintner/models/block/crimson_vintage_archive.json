@@ -1,0 +1,7 @@
+{
+  "parent": "vintner:block/vintage_archive",
+  "textures": {
+    "wood": "minecraft:block/crimson_planks",
+    "particle": "minecraft:block/crimson_planks"
+  }
+}

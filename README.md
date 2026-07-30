@@ -43,16 +43,23 @@ Wine racks hold four bottles without opening an inventory screen. Bottles age
 while stored, and the surrounding build determines cellar quality: sheltered,
 dark, underground spaces with nearby water age wine best, while nearby heat
 damages it. Stored bottles catch up on elapsed world time when their chunk is
-loaded again. Wine racks, trellises, presses, and both barrel types are
-available in every supported vanilla wood family.
+loaded again. Wine racks, trellises, presses, both barrel types, and Vintage
+Archives are available in every supported vanilla wood family.
 
 Craft a Vintner's Almanac from a book and both grape varieties. Use it while
 holding wine in the other hand to inspect the bottle's vintage, batch, tasting
 profile, quality score and production breakdown, numbered place in its batch,
-age, and cumulative cellar history. Use it directly on a wine rack to inspect
-the cellar around that rack. Normal wine tooltips remain intentionally compact.
-Cellar advancements guide players from laying down their first rack to
-identifying a vintage and discovering ideal storage conditions.
+age, cumulative cellar history, harvest provenance, bottling day, and whether
+the bottle should be held or enjoyed now. Use it directly on a wine rack to
+inspect the cellar around that rack. Normal wine tooltips remain intentionally
+compact. Cellar advancements guide players from laying down their first rack
+to identifying a vintage and discovering ideal storage conditions.
+
+Craft a Vintage Archive to build a physical record of a cellar collection.
+Use a wine bottle on the Archive to catalogue its current metadata without
+consuming it. Rescanning the same batch updates its entry rather than using
+another slot. Use the Almanac on the Archive to cycle through its sixteen
+records, or use an empty hand for a collection summary.
 
 Trellises connect independently on all four horizontal faces. Vertically
 stacked trellises form separate same-height rows; they do not create diagonal

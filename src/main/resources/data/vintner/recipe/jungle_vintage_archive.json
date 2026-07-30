@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "PBP",
+    "PCP"
+  ],
+  "key": {
+    "P": "minecraft:jungle_planks",
+    "B": "minecraft:book",
+    "C": "minecraft:chest"
+  },
+  "result": {
+    "id": "vintner:jungle_vintage_archive",
+    "count": 1
+  }
+}

@@ -113,6 +113,14 @@ def rack_id(wood: str) -> str:
     return "wine_rack" if wood == "oak" else f"{wood}_wine_rack"
 
 
+def archive_id(wood: str) -> str:
+    return (
+        "vintage_archive"
+        if wood == "oak"
+        else f"{wood}_vintage_archive"
+    )
+
+
 def grapevine_id(wood: str, color: str) -> str:
     return (
         f"{color}_grapevine"
@@ -285,6 +293,19 @@ def generate_machine_models() -> None:
                 },
             )
 
+        archive = archive_id(wood)
+        if archive != "vintage_archive":
+            write_json(
+                ASSETS / f"models/block/{archive}.json",
+                {
+                    "parent": "vintner:block/vintage_archive",
+                    "textures": {
+                        "wood": textures["wood"],
+                        "particle": textures["particle"],
+                    },
+                },
+            )
+
 
 def generate_machine_blockstates() -> None:
     families = (
@@ -303,6 +324,10 @@ def generate_machine_blockstates() -> None:
         (
             "wine_rack",
             rack_id,
+        ),
+        (
+            "vintage_archive",
+            archive_id,
         ),
     )
 
@@ -347,6 +372,10 @@ def generate_items() -> None:
             (
                 rack_id(wood),
                 f"vintner:block/{rack_id(wood)}",
+            ),
+            (
+                archive_id(wood),
+                f"vintner:block/{archive_id(wood)}",
             ),
         )
 
@@ -439,6 +468,7 @@ def generate_survival_data() -> None:
             fermentation_id(wood),
             aging_id(wood),
             rack_id(wood),
+            archive_id(wood),
         )
         axe_blocks.extend(f"vintner:{block_id}" for block_id in ids)
 
@@ -528,6 +558,24 @@ def generate_survival_data() -> None:
                     "count": 1,
                 },
             },
+            archive_id(wood): {
+                "type": "minecraft:crafting_shaped",
+                "category": "misc",
+                "pattern": [
+                    "PPP",
+                    "PBP",
+                    "PCP",
+                ],
+                "key": {
+                    "P": planks,
+                    "B": "minecraft:book",
+                    "C": "minecraft:chest",
+                },
+                "result": {
+                    "id": f"vintner:{archive_id(wood)}",
+                    "count": 1,
+                },
+            },
         }
 
         for recipe_id, recipe in recipes.items():
@@ -593,6 +641,9 @@ def generate_language() -> None:
         language[f"block.vintner.{rack_id(wood)}"] = (
             f"{title} Wine Rack"
         )
+        language[f"block.vintner.{archive_id(wood)}"] = (
+            f"{title} Vintage Archive"
+        )
         language[
             f"block.vintner.{grapevine_id(wood, 'red')}"
         ] = f"{title} Red Grapevine"
@@ -618,8 +669,8 @@ def main() -> None:
     generate_language()
     print(
         "Generated 12 wood families for trellises, grape presses, "
-        "fermentation barrels, aging barrels, wine racks, and "
-        "grapevine supports."
+        "fermentation barrels, aging barrels, wine racks, vintage "
+        "archives, and grapevine supports."
     )
 
 

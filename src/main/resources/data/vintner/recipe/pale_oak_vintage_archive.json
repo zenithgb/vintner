@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "PBP",
+    "PCP"
+  ],
+  "key": {
+    "P": "minecraft:pale_oak_planks",
+    "B": "minecraft:book",
+    "C": "minecraft:chest"
+  },
+  "result": {
+    "id": "vintner:pale_oak_vintage_archive",
+    "count": 1
+  }
+}

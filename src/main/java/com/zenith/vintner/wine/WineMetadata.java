@@ -27,6 +27,20 @@ public final class WineMetadata {
     private static final String BATCH_ID_KEY = "VintnerBatchId";
     private static final String PROFILE_SEED_KEY =
             "VintnerProfileSeed";
+    private static final String PROVENANCE_VERSION_KEY =
+            "VintnerProvenanceVersion";
+    private static final String VARIETY_KEY = "VintnerVariety";
+    private static final String HARVESTED_AT_KEY =
+            "VintnerHarvestedAt";
+    private static final String ORIGIN_DIMENSION_KEY =
+            "VintnerOriginDimension";
+    private static final String ORIGIN_X_KEY = "VintnerOriginX";
+    private static final String ORIGIN_Y_KEY = "VintnerOriginY";
+    private static final String ORIGIN_Z_KEY = "VintnerOriginZ";
+    private static final String PRODUCER_ID_KEY =
+            "VintnerProducerId";
+    private static final String PRODUCER_NAME_KEY =
+            "VintnerProducerName";
     private static final String BOTTLED_AT_KEY = "VintnerBottledAt";
     private static final String BOTTLE_AGE_KEY = "VintnerBottleAge";
     private static final String STORAGE_DAMAGE_KEY =
@@ -189,6 +203,60 @@ public final class WineMetadata {
         );
     }
 
+    public static void applyProvenance(
+            ItemStack stack,
+            WineProvenance provenance
+    ) {
+        CompoundTag tag = getTagCopy(stack);
+        tag.putInt(PROVENANCE_VERSION_KEY, 1);
+        tag.putString(VARIETY_KEY, provenance.variety());
+        tag.putLong(
+                HARVESTED_AT_KEY,
+                provenance.harvestedAt()
+        );
+        tag.putString(
+                ORIGIN_DIMENSION_KEY,
+                provenance.originDimension()
+        );
+        tag.putInt(ORIGIN_X_KEY, provenance.originX());
+        tag.putInt(ORIGIN_Y_KEY, provenance.originY());
+        tag.putInt(ORIGIN_Z_KEY, provenance.originZ());
+        tag.putString(
+                PRODUCER_ID_KEY,
+                provenance.producerId()
+        );
+        tag.putString(
+                PRODUCER_NAME_KEY,
+                provenance.producerName()
+        );
+        setTag(stack, tag);
+    }
+
+    public static WineProvenance provenance(ItemStack stack) {
+        CompoundTag tag = getTagCopy(stack);
+
+        if (tag.getIntOr(PROVENANCE_VERSION_KEY, 0) <= 0) {
+            return WineProvenance.legacy();
+        }
+
+        return new WineProvenance(
+                tag.getStringOr(
+                        VARIETY_KEY,
+                        WineProvenance.UNKNOWN
+                ),
+                tag.getLongOr(HARVESTED_AT_KEY, 0L),
+                tag.getStringOr(
+                        ORIGIN_DIMENSION_KEY,
+                        WineProvenance.UNKNOWN
+                ),
+                tag.getIntOr(ORIGIN_X_KEY, 0),
+                tag.getIntOr(ORIGIN_Y_KEY, 0),
+                tag.getIntOr(ORIGIN_Z_KEY, 0),
+                tag.getStringOr(PRODUCER_ID_KEY, ""),
+                tag.getStringOr(PRODUCER_NAME_KEY, "")
+        );
+    }
+
     public static void copyBatchMetadata(
             ItemStack source,
             ItemStack target
@@ -247,6 +315,10 @@ public final class WineMetadata {
 
     public static long bottledAt(ItemStack stack) {
         return getTagCopy(stack).getLongOr(BOTTLED_AT_KEY, 0L);
+    }
+
+    public static long bottledDay(ItemStack stack) {
+        return bottledAt(stack) / 24000L;
     }
 
     public static long bottleAge(ItemStack stack) {

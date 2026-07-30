@@ -5,6 +5,7 @@ import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.WinemakingEffects;
 import com.zenith.vintner.wine.WineMetadata;
+import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQuality;
 import com.zenith.vintner.wine.WineQualityProfile;
 import net.minecraft.core.BlockPos;
@@ -30,6 +31,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
     private int vintage = 1;
     private WineQualityProfile qualityProfile =
             WineQualityProfile.legacy(WineQuality.TABLE);
+    private WineProvenance provenance = WineProvenance.legacy();
     private long batchId;
     private int lastComparatorSignal = -1;
 
@@ -145,6 +147,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
             agingProgress = 0;
             vintage = WineMetadata.vintage(stack);
             qualityProfile = WineMetadata.qualityProfile(stack);
+            provenance = WineMetadata.provenance(stack);
             batchId = WineMetadata.batchId(stack);
         }
 
@@ -207,6 +210,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                 vintage,
                 qualityProfile.withAgeing(10)
         );
+        WineMetadata.applyProvenance(result, provenance);
         WineMetadata.ensureBatchIdentity(result, batchId);
         WineMetadata.markBottled(
                 result,
@@ -258,6 +262,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                         ? qualityProfile.withAgeing(10)
                         : qualityProfile
         );
+        WineMetadata.applyProvenance(result, provenance);
         WineMetadata.ensureBatchIdentity(result, batchId);
 
         return result;
@@ -279,6 +284,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         vintage = 1;
         qualityProfile =
                 WineQualityProfile.legacy(WineQuality.TABLE);
+        provenance = WineProvenance.legacy();
         batchId = 0L;
         bottlesTaken = 0;
     }
@@ -367,6 +373,10 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                 "Quality",
                 legacyQuality
         );
+        provenance = WineProvenance.load(
+                input,
+                "Provenance"
+        );
         batchId = input.getLongOr("BatchId", 0L);
         bottlesTaken = input.getIntOr("BottlesTaken", 0);
     }
@@ -382,6 +392,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         output.putInt("Vintage", vintage);
         output.putInt("Quality", qualityProfile.quality().id());
         qualityProfile.save(output, "Quality");
+        provenance.save(output, "Provenance");
         output.putLong("BatchId", batchId);
         output.putInt("BottlesTaken", bottlesTaken);
     }

@@ -55,6 +55,8 @@ public final class ModCreativeTabs {
                                 output.accept(ModItems.AGED_WHITE_WINE);
                                 ModBlocks.WINE_RACKS.values()
                                         .forEach(output::accept);
+                                ModBlocks.VINTAGE_ARCHIVES.values()
+                                        .forEach(output::accept);
                                 output.accept(
                                         ModItems.VINTNER_ALMANAC
                                 );

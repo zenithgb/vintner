@@ -4,6 +4,19 @@ All notable changes to Vintner are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Persistent wine provenance from harvest through pressing, fermentation,
+  barrel ageing, and bottling, including grape variety, harvest day, origin,
+  and producer.
+- Almanac reports for provenance, bottling day, and a concise hold, drink-now,
+  past-peak, or spoiled recommendation.
+- Vintage Archives that catalogue up to sixteen unique wine batches without
+  consuming their bottles, update existing batch records when rescanned, and
+  retain their catalogue when moved in Survival, and support comparator output.
+- Vintage Archive variants, recipes, loot tables, item presentation, and
+  recipe unlocks for all twelve supported wood families.
+
 ## [1.1.0] - 2026-08-07
 
 ### Added

@@ -1,6 +1,7 @@
 package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.wine.WineMetadata;
+import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQualityProfile;
 
 import com.zenith.vintner.block.GrapePressBlock;
@@ -140,6 +141,8 @@ public final class GrapePressBlockEntity extends BlockEntity {
         ItemStack input = getInput();
         Item mustItem = getMustFor(input);
         int vintage = WineMetadata.vintage(input);
+        WineProvenance provenance =
+                WineMetadata.provenance(input);
         WineQualityProfile qualityProfile =
                 WineMetadata.qualityProfile(input)
                         .withProcessing(5);
@@ -159,6 +162,10 @@ public final class GrapePressBlockEntity extends BlockEntity {
                     must,
                     vintage,
                     qualityProfile
+            );
+            WineMetadata.applyProvenance(
+                    must,
+                    provenance
             );
             WineMetadata.ensureBatchIdentity(
                     must,
