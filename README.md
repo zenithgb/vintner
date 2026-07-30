@@ -46,6 +46,14 @@ damages it. Stored bottles catch up on elapsed world time when their chunk is
 loaded again. Wine racks, trellises, presses, both barrel types, and Vintage
 Archives are available in every supported vanilla wood family.
 
+Wine crates provide dense, UI-free cellar storage for up to sixteen mixed
+bottles. Use a bottle on a crate to store it and use an empty hand to retrieve
+the most recently stored bottle. Every bottle keeps its batch, numbering,
+quality, provenance, and age metadata. Crated bottles continue ageing under
+the surrounding cellar conditions, while the Almanac reports crate capacity
+and cellar quality at a glance. Wine crates are available in every supported
+vanilla wood family.
+
 Craft a Vintner's Almanac from a book and both grape varieties. Use it while
 holding wine in the other hand to inspect the bottle's vintage, batch, tasting
 profile, quality score and production breakdown, numbered place in its batch,
@@ -91,7 +99,8 @@ Starter cuttings remain renewable and accessible:
 All three winemaking machines support comparator output. The grape press
 reports its stored must level. Fermentation and aging barrels progress from
 signal strength 1 to 14 while working, output 15 when ready, and output 0 when
-empty.
+empty. Wine racks and wine crates output a signal proportional to the number
+of stored bottles.
 
 ## Development
 

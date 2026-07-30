@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "vintner:block/wine_crate"
+    },
+    "facing=east": {
+      "model": "vintner:block/wine_crate",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "vintner:block/wine_crate",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "vintner:block/wine_crate",
+      "y": 270
+    }
+  }
+}

@@ -10,6 +10,7 @@ import com.zenith.vintner.block.RedGrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.block.WhiteGrapevineBlock;
+import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.block.WineRackBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.vineyard.GrapeVariety;
@@ -102,6 +103,20 @@ public final class ModBlocks {
                     WineRackBlock::new
             );
 
+    public static final Block WINE_CRATE = registerWithItem(
+            "wine_crate",
+            WineCrateBlock::new,
+            machineProperties()
+    );
+
+    public static final Map<WoodVariant, Block> WINE_CRATES =
+            registerMachineVariants(
+                    WoodVariant.OAK,
+                    WINE_CRATE,
+                    WoodVariant::wineCrateId,
+                    WineCrateBlock::new
+            );
+
     public static final Block VINTAGE_ARCHIVE = registerWithItem(
             "vintage_archive",
             VintageArchiveBlock::new,
@@ -174,6 +189,10 @@ public final class ModBlocks {
         return WINE_RACKS.get(woodVariant);
     }
 
+    public static Block wineCrate(WoodVariant woodVariant) {
+        return WINE_CRATES.get(woodVariant);
+    }
+
     public static Block vintageArchive(
             WoodVariant woodVariant
     ) {
@@ -211,6 +230,10 @@ public final class ModBlocks {
 
     public static Block[] wineRackBlocks() {
         return orderedBlocks(WINE_RACKS);
+    }
+
+    public static Block[] wineCrateBlocks() {
+        return orderedBlocks(WINE_CRATES);
     }
 
     public static Block[] vintageArchiveBlocks() {
@@ -420,6 +443,7 @@ public final class ModBlocks {
                             .forEach(output::accept);
                     AGING_BARRELS.values().forEach(output::accept);
                     WINE_RACKS.values().forEach(output::accept);
+                    WINE_CRATES.values().forEach(output::accept);
                     VINTAGE_ARCHIVES.values()
                             .forEach(output::accept);
                 });

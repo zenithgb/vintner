@@ -41,6 +41,9 @@
   "message.vintner.cellar.report": "Cellar: %s | Sheltered: %s | Underground: %s | Dark: %s | Water nearby: %s | Heat nearby: %s",
   "message.vintner.wine_rack.empty": "The wine rack is empty.",
   "message.vintner.wine_rack.full": "The wine rack is full.",
+  "message.vintner.wine_crate.empty": "The wine crate is empty.",
+  "message.vintner.wine_crate.full": "The wine crate is full.",
+  "message.vintner.wine_crate.summary": "Wine Crate: %s/%s bottles | Cellar: %s",
   "message.vintner.vintage_archive.added": "Recorded batch %s in the archive (%s/%s).",
   "message.vintner.vintage_archive.updated": "Updated the archive record for batch %s (%s/%s).",
   "message.vintner.vintage_archive.full": "The archive is full; batch %s was not recorded (%s/%s).",
@@ -253,5 +256,17 @@
   "block.vintner.pale_oak_vintage_archive": "Pale Oak Vintage Archive",
   "block.vintner.bamboo_vintage_archive": "Bamboo Vintage Archive",
   "block.vintner.crimson_vintage_archive": "Crimson Vintage Archive",
-  "block.vintner.warped_vintage_archive": "Warped Vintage Archive"
+  "block.vintner.warped_vintage_archive": "Warped Vintage Archive",
+  "block.vintner.wine_crate": "Oak Wine Crate",
+  "block.vintner.spruce_wine_crate": "Spruce Wine Crate",
+  "block.vintner.birch_wine_crate": "Birch Wine Crate",
+  "block.vintner.jungle_wine_crate": "Jungle Wine Crate",
+  "block.vintner.acacia_wine_crate": "Acacia Wine Crate",
+  "block.vintner.dark_oak_wine_crate": "Dark Oak Wine Crate",
+  "block.vintner.mangrove_wine_crate": "Mangrove Wine Crate",
+  "block.vintner.cherry_wine_crate": "Cherry Wine Crate",
+  "block.vintner.pale_oak_wine_crate": "Pale Oak Wine Crate",
+  "block.vintner.bamboo_wine_crate": "Bamboo Wine Crate",
+  "block.vintner.crimson_wine_crate": "Crimson Wine Crate",
+  "block.vintner.warped_wine_crate": "Warped Wine Crate"
 }

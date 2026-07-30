@@ -13,6 +13,7 @@ from generate_wood_variants import (
     WOODS,
     aging_id,
     archive_id,
+    crate_id,
     fermentation_id,
     grapevine_id,
     press_id,
@@ -275,6 +276,7 @@ def expected_resource_ids() -> tuple[set[str], set[str]]:
                 fermentation_id(wood),
                 aging_id(wood),
                 rack_id(wood),
+                crate_id(wood),
                 archive_id(wood),
             }
         )

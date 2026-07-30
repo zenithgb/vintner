@@ -54,6 +54,12 @@ public enum WoodVariant implements StringRepresentable {
                 : id + "_wine_rack";
     }
 
+    public String wineCrateId() {
+        return this == OAK
+                ? "wine_crate"
+                : id + "_wine_crate";
+    }
+
     public String vintageArchiveId() {
         return this == OAK
                 ? "vintage_archive"

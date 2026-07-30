@@ -4,6 +4,7 @@ import com.zenith.vintner.Vintner;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
+import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -64,6 +65,19 @@ public final class ModBlockEntities {
                     FabricBlockEntityTypeBuilder.create(
                             WineRackBlockEntity::new,
                             ModBlocks.wineRackBlocks()
+                    ).build()
+            );
+
+    public static final BlockEntityType<WineCrateBlockEntity>
+            WINE_CRATE = Registry.register(
+                    BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                    Identifier.fromNamespaceAndPath(
+                            Vintner.MOD_ID,
+                            "wine_crate"
+                    ),
+                    FabricBlockEntityTypeBuilder.create(
+                            WineCrateBlockEntity::new,
+                            ModBlocks.wineCrateBlocks()
                     ).build()
             );
 

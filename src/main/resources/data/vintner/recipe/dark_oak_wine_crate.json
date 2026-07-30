@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "PCP",
+    "PPP"
+  ],
+  "key": {
+    "P": "minecraft:dark_oak_planks",
+    "C": "minecraft:chest"
+  },
+  "result": {
+    "id": "vintner:dark_oak_wine_crate",
+    "count": 1
+  }
+}
