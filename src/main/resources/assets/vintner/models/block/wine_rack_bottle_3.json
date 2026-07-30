@@ -2,8 +2,8 @@
   "parent": "vintner:block/wine_rack_bottle_1",
   "elements": [
     {
-      "from": [3.625, 9.625, 4.25],
-      "to": [6.375, 12.375, 11.75],
+      "from": [3.625, 9.0, 4.25],
+      "to": [6.375, 11.75, 11.75],
       "faces": {
         "north": {"texture": "#bottle"},
         "east": {"texture": "#bottle"},
@@ -14,8 +14,8 @@
       }
     },
     {
-      "from": [4.375, 10.375, 2.75],
-      "to": [5.625, 11.625, 4.25],
+      "from": [4.375, 9.75, 2.75],
+      "to": [5.625, 11.0, 4.25],
       "faces": {
         "north": {"texture": "#cork"},
         "east": {"texture": "#bottle"},
