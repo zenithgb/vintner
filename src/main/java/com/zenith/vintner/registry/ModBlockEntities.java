@@ -4,6 +4,7 @@ import com.zenith.vintner.Vintner;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
+import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -20,7 +21,7 @@ public final class ModBlockEntities {
                     ),
                     FabricBlockEntityTypeBuilder.create(
                             GrapePressBlockEntity::new,
-                            ModBlocks.GRAPE_PRESS
+                            ModBlocks.grapePressBlocks()
                     ).build()
             );
 
@@ -34,7 +35,7 @@ public final class ModBlockEntities {
                     ),
                     FabricBlockEntityTypeBuilder.create(
                             AgingBarrelBlockEntity::new,
-                            ModBlocks.AGING_BARREL
+                            ModBlocks.agingBarrelBlocks()
                     ).build()
             );
 
@@ -48,7 +49,20 @@ public final class ModBlockEntities {
                     ),
                     FabricBlockEntityTypeBuilder.create(
                             FermentationBarrelBlockEntity::new,
-                            ModBlocks.FERMENTATION_BARREL
+                            ModBlocks.fermentationBarrelBlocks()
+                    ).build()
+            );
+
+    public static final BlockEntityType<WineRackBlockEntity>
+            WINE_RACK = Registry.register(
+                    BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                    Identifier.fromNamespaceAndPath(
+                            Vintner.MOD_ID,
+                            "wine_rack"
+                    ),
+                    FabricBlockEntityTypeBuilder.create(
+                            WineRackBlockEntity::new,
+                            ModBlocks.wineRackBlocks()
                     ).build()
             );
 

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " I ",
+    "SPS",
+    "BBB"
+  ],
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "S": "minecraft:stick",
+    "P": "minecraft:piston",
+    "B": "minecraft:bamboo_planks"
+  },
+  "result": {
+    "id": "vintner:bamboo_grape_press",
+    "count": 1
+  }
+}

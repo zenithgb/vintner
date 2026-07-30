@@ -1,7 +1,7 @@
 package com.zenith.vintner.advancement;
 
 import com.zenith.vintner.Vintner;
-import com.zenith.vintner.registry.ModBlocks;
+import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.registry.ModItems;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.resources.Identifier;
@@ -20,7 +20,9 @@ public final class ModAdvancements {
         grant(
                 player,
                 "vintner/plant_grapevine",
-                grapevine == ModBlocks.RED_GRAPEVINE
+                grapevine instanceof GrapevineBlock vine
+                        && vine.getVariety()
+                        == com.zenith.vintner.vineyard.GrapeVariety.RED
                         ? "red_grapevine"
                         : "white_grapevine"
         );
@@ -62,6 +64,22 @@ public final class ModAdvancements {
                 agedWine.is(ModItems.AGED_RED_WINE)
                         ? "aged_red_wine"
                         : "aged_white_wine"
+        );
+    }
+
+    public static void grantInspection(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/inspect_wine",
+                "inspected"
+        );
+    }
+
+    public static void grantIdealCellar(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/ideal_cellar",
+                "ideal_cellar"
         );
     }
 

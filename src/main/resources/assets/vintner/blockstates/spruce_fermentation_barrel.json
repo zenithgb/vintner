@@ -1,0 +1,70 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "vintner:block/fermentation_airlock"
+      }
+    },
+    {
+      "when": {
+        "facing": "north"
+      },
+      "apply": {
+        "model": "vintner:block/spruce_fermentation_barrel"
+      }
+    },
+    {
+      "when": {
+        "facing": "east"
+      },
+      "apply": {
+        "model": "vintner:block/spruce_fermentation_barrel",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south"
+      },
+      "apply": {
+        "model": "vintner:block/spruce_fermentation_barrel",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west"
+      },
+      "apply": {
+        "model": "vintner:block/spruce_fermentation_barrel",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "status": "1",
+        "wine_type": "1"
+      },
+      "apply": {
+        "model": "vintner:block/fermentation_barrel_red_fermenting"
+      }
+    },
+    {
+      "when": {
+        "status": "1",
+        "wine_type": "2"
+      },
+      "apply": {
+        "model": "vintner:block/fermentation_barrel_white_fermenting"
+      }
+    },
+    {
+      "when": {
+        "status": "2"
+      },
+      "apply": {
+        "model": "vintner:block/fermentation_barrel_ready"
+      }
+    }
+  ]
+}

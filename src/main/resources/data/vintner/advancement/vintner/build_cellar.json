@@ -1,0 +1,108 @@
+{
+  "parent": "vintner:vintner/age_wine",
+  "criteria": {
+    "crafted_oak": {
+      "conditions": {
+        "recipe_id": "vintner:wine_rack"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_spruce": {
+      "conditions": {
+        "recipe_id": "vintner:spruce_wine_rack"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_birch": {
+      "conditions": {
+        "recipe_id": "vintner:birch_wine_rack"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_jungle": {
+      "conditions": {
+        "recipe_id": "vintner:jungle_wine_rack"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_acacia": {
+      "conditions": {
+        "recipe_id": "vintner:acacia_wine_rack"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_dark_oak": {
+      "conditions": {
+        "recipe_id": "vintner:dark_oak_wine_rack"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_mangrove": {
+      "conditions": {
+        "recipe_id": "vintner:mangrove_wine_rack"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_cherry": {
+      "conditions": {
+        "recipe_id": "vintner:cherry_wine_rack"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_pale_oak": {
+      "conditions": {
+        "recipe_id": "vintner:pale_oak_wine_rack"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_bamboo": {
+      "conditions": {
+        "recipe_id": "vintner:bamboo_wine_rack"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_crimson": {
+      "conditions": {
+        "recipe_id": "vintner:crimson_wine_rack"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_warped": {
+      "conditions": {
+        "recipe_id": "vintner:warped_wine_rack"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.build_cellar.description"
+    },
+    "icon": {
+      "id": "vintner:wine_rack"
+    },
+    "title": {
+      "translate": "advancement.vintner.build_cellar.title"
+    }
+  },
+  "requirements": [
+    [
+      "crafted_oak",
+      "crafted_spruce",
+      "crafted_birch",
+      "crafted_jungle",
+      "crafted_acacia",
+      "crafted_dark_oak",
+      "crafted_mangrove",
+      "crafted_cherry",
+      "crafted_pale_oak",
+      "crafted_bamboo",
+      "crafted_crimson",
+      "crafted_warped"
+    ]
+  ],
+  "rewards": {
+    "experience": 25
+  },
+  "sends_telemetry_event": false
+}

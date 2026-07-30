@@ -5,6 +5,8 @@ public record VineyardConditionReport(
         boolean suitableTemperature,
         boolean precipitation,
         boolean preparedSoil,
+        int qualityScore,
+        WineQualityProfile qualityProfile,
         WineQuality predictedQuality
 ) {
 }

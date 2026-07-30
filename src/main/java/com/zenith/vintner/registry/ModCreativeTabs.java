@@ -35,22 +35,29 @@ public final class ModCreativeTabs {
                             .displayItems((parameters, output) -> {
                                 output.accept(ModItems.COMPOST);
                                 output.accept(ModBlocks.VINEYARD_SOIL);
-                                output.accept(ModBlocks.OAK_TRELLIS);
+                                ModBlocks.TRELLISES.values()
+                                        .forEach(output::accept);
                                 output.accept(ModItems.RED_GRAPE_CUTTING);
                                 output.accept(ModItems.WHITE_GRAPE_CUTTING);
                                 output.accept(ModItems.RED_GRAPES);
                                 output.accept(ModItems.WHITE_GRAPES);
-                                output.accept(ModBlocks.GRAPE_PRESS);
+                                ModBlocks.GRAPE_PRESSES.values()
+                                        .forEach(output::accept);
                                 output.accept(ModItems.RED_MUST);
                                 output.accept(ModItems.WHITE_MUST);
-                                output.accept(
-                                        ModBlocks.FERMENTATION_BARREL
-                                );
+                                ModBlocks.FERMENTATION_BARRELS.values()
+                                        .forEach(output::accept);
                                 output.accept(ModItems.RED_WINE);
                                 output.accept(ModItems.WHITE_WINE);
-                                output.accept(ModBlocks.AGING_BARREL);
+                                ModBlocks.AGING_BARRELS.values()
+                                        .forEach(output::accept);
                                 output.accept(ModItems.AGED_RED_WINE);
                                 output.accept(ModItems.AGED_WHITE_WINE);
+                                ModBlocks.WINE_RACKS.values()
+                                        .forEach(output::accept);
+                                output.accept(
+                                        ModItems.VINTNER_ALMANAC
+                                );
                             })
                             .build()
             );

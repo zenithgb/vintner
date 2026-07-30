@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.zenith.vintner.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "ItemStackMixin",
+    "PlayerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

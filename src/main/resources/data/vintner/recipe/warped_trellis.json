@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PCP",
+    "P P"
+  ],
+  "key": {
+    "P": "minecraft:warped_planks",
+    "C": "minecraft:iron_chain"
+  },
+  "result": {
+    "id": "vintner:warped_trellis",
+    "count": 2
+  }
+}

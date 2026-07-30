@@ -1,0 +1,33 @@
+{
+  "textures": {
+    "bottle": "minecraft:block/green_terracotta",
+    "cork": "minecraft:block/stripped_oak_log",
+    "particle": "minecraft:block/green_terracotta"
+  },
+  "elements": [
+    {
+      "from": [3.625, 1.5, 4.25],
+      "to": [6.375, 4.25, 11.75],
+      "faces": {
+        "north": {"texture": "#bottle"},
+        "east": {"texture": "#bottle"},
+        "south": {"texture": "#bottle"},
+        "west": {"texture": "#bottle"},
+        "up": {"texture": "#bottle"},
+        "down": {"texture": "#bottle"}
+      }
+    },
+    {
+      "from": [4.375, 2.25, 2.75],
+      "to": [5.625, 3.5, 4.25],
+      "faces": {
+        "north": {"texture": "#cork"},
+        "east": {"texture": "#bottle"},
+        "south": {"texture": "#bottle"},
+        "west": {"texture": "#bottle"},
+        "up": {"texture": "#bottle"},
+        "down": {"texture": "#bottle"}
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "P P",
+    "PPP"
+  ],
+  "key": {
+    "P": "minecraft:birch_planks"
+  },
+  "result": {
+    "id": "vintner:birch_fermentation_barrel",
+    "count": 1
+  }
+}

@@ -2,11 +2,11 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "pattern": [
-    "SCS",
-    "S S"
+    "PCP",
+    "P P"
   ],
   "key": {
-    "S": "minecraft:stick",
+    "P": "minecraft:oak_planks",
     "C": "minecraft:iron_chain"
   },
   "result": {

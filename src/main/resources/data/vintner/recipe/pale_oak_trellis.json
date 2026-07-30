@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PCP",
+    "P P"
+  ],
+  "key": {
+    "P": "minecraft:pale_oak_planks",
+    "C": "minecraft:iron_chain"
+  },
+  "result": {
+    "id": "vintner:pale_oak_trellis",
+    "count": 2
+  }
+}

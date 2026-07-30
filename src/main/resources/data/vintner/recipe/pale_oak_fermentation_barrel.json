@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "P P",
+    "PPP"
+  ],
+  "key": {
+    "P": "minecraft:pale_oak_planks"
+  },
+  "result": {
+    "id": "vintner:pale_oak_fermentation_barrel",
+    "count": 1
+  }
+}

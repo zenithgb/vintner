@@ -11,7 +11,14 @@ public final class RedGrapevineBlock extends GrapevineBlock {
             simpleCodec(RedGrapevineBlock::new);
 
     public RedGrapevineBlock(BlockBehaviour.Properties properties) {
-        super(GrapeVariety.RED, properties);
+        this(WoodVariant.OAK, properties);
+    }
+
+    public RedGrapevineBlock(
+            WoodVariant woodVariant,
+            BlockBehaviour.Properties properties
+    ) {
+        super(GrapeVariety.RED, woodVariant, properties);
     }
 
     @Override

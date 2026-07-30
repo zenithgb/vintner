@@ -1,0 +1,7 @@
+{
+  "parent": "vintner:block/wine_rack",
+  "textures": {
+    "wood": "minecraft:block/bamboo_planks",
+    "particle": "minecraft:block/bamboo_planks"
+  }
+}

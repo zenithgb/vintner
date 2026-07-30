@@ -1,9 +1,75 @@
 {
   "parent": "vintner:vintner/root",
   "criteria": {
-    "crafted_trellis": {
+    "crafted_oak": {
       "conditions": {
         "recipe_id": "vintner:oak_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_spruce": {
+      "conditions": {
+        "recipe_id": "vintner:spruce_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_birch": {
+      "conditions": {
+        "recipe_id": "vintner:birch_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_jungle": {
+      "conditions": {
+        "recipe_id": "vintner:jungle_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_acacia": {
+      "conditions": {
+        "recipe_id": "vintner:acacia_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_dark_oak": {
+      "conditions": {
+        "recipe_id": "vintner:dark_oak_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_mangrove": {
+      "conditions": {
+        "recipe_id": "vintner:mangrove_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_cherry": {
+      "conditions": {
+        "recipe_id": "vintner:cherry_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_pale_oak": {
+      "conditions": {
+        "recipe_id": "vintner:pale_oak_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_bamboo": {
+      "conditions": {
+        "recipe_id": "vintner:bamboo_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_crimson": {
+      "conditions": {
+        "recipe_id": "vintner:crimson_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_warped": {
+      "conditions": {
+        "recipe_id": "vintner:warped_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     }
@@ -21,7 +87,18 @@
   },
   "requirements": [
     [
-      "crafted_trellis"
+      "crafted_oak",
+      "crafted_spruce",
+      "crafted_birch",
+      "crafted_jungle",
+      "crafted_acacia",
+      "crafted_dark_oak",
+      "crafted_mangrove",
+      "crafted_cherry",
+      "crafted_pale_oak",
+      "crafted_bamboo",
+      "crafted_crimson",
+      "crafted_warped"
     ]
   ],
   "sends_telemetry_event": false
