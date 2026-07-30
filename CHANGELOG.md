@@ -48,6 +48,10 @@ All notable changes to Vintner are documented in this file.
 
 ### Fixed
 
+- Fermentation and ageing now wait for a complete four-bottle batch before
+  progress, active visuals, and processing effects begin.
+- Wine rack inventory models now use Minecraft's standard angled block-item
+  presentation, making every wood variant easier to identify.
 - Cellar humidity now requires actual adjacent water instead of incorrectly
   treating dry neighboring blocks as humid.
 - The Vintner's Almanac recipe now unlocks after obtaining either grape variety.

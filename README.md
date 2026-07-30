@@ -31,11 +31,13 @@ The grape press accepts one matching grape at a time and converts four grapes
 into one bottle of must. Use the press with an empty hand to press a complete
 batch, then use a glass bottle to collect the must.
 
-The fermentation barrel holds four matching bottles of must. Fermentation takes
-one minute; use an empty hand to inspect progress or collect finished wine.
+The fermentation barrel holds four matching bottles of must. Fermentation
+begins once the barrel is full and takes one minute; use an empty hand to
+inspect progress or collect finished wine.
 
-The aging barrel holds four matching bottles of wine. Aging takes ninety
-seconds, records an ageing-quality contribution, and produces aged wine.
+The aging barrel holds four matching bottles of wine. Aging begins once the
+barrel is full, takes ninety seconds, records an ageing-quality contribution,
+and produces aged wine.
 
 Wine racks hold four bottles without opening an inventory screen. Bottles age
 while stored, and the surrounding build determines cellar quality: sheltered,

@@ -1168,7 +1168,14 @@ public final class VintnerGameTests {
         ItemStack must = new ItemStack(ModItems.WHITE_MUST);
         WineMetadata.apply(must, 7, WineQuality.FINE);
 
-        helper.assertTrue(barrel.insertOne(must), "Must should be accepted");
+        for (int bottle = 0;
+             bottle < FermentationBarrelBlockEntity.CAPACITY;
+             bottle++) {
+            helper.assertTrue(
+                    barrel.insertOne(must),
+                    "A full matching batch of must should be accepted"
+            );
+        }
 
         for (int tick = 0;
              tick < FermentationBarrelBlockEntity.FERMENTATION_TIME;
@@ -1249,6 +1256,123 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void barrelsWaitForFullBatchBeforeProcessing(
+            GameTestHelper helper
+    ) {
+        BlockPos agingPos = new BlockPos(3, 1, 1);
+        helper.setBlock(FIRST, ModBlocks.FERMENTATION_BARREL);
+        helper.setBlock(agingPos, ModBlocks.AGING_BARREL);
+
+        FermentationBarrelBlockEntity fermentation =
+                helper.getBlockEntity(
+                        FIRST,
+                        FermentationBarrelBlockEntity.class
+                );
+        ItemStack must = new ItemStack(ModItems.RED_MUST);
+
+        for (int bottle = 1;
+             bottle < FermentationBarrelBlockEntity.CAPACITY;
+             bottle++) {
+            helper.assertTrue(
+                    fermentation.insertOne(must),
+                    "Partial must should remain stored while waiting"
+            );
+        }
+        FermentationBarrelBlockEntity.serverTick(
+                helper.getLevel(),
+                helper.absolutePos(FIRST),
+                helper.getBlockState(FIRST),
+                fermentation
+        );
+        helper.assertValueEqual(
+                fermentation.getProgressPercent(),
+                0,
+                "A partial fermentation batch must not progress"
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                FermentationBarrelBlock.STATUS,
+                0
+        );
+
+        helper.assertTrue(
+                fermentation.insertOne(must),
+                "The fourth must bottle should start fermentation"
+        );
+        for (int tick = 0; tick < 20; tick++) {
+            FermentationBarrelBlockEntity.serverTick(
+                    helper.getLevel(),
+                    helper.absolutePos(FIRST),
+                    helper.getBlockState(FIRST),
+                    fermentation
+            );
+        }
+        helper.assertTrue(
+                fermentation.getProgressPercent() > 0,
+                "A full fermentation batch should progress"
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                FermentationBarrelBlock.STATUS,
+                1
+        );
+
+        AgingBarrelBlockEntity aging = helper.getBlockEntity(
+                agingPos,
+                AgingBarrelBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.WHITE_WINE);
+
+        for (int bottle = 1;
+             bottle < AgingBarrelBlockEntity.CAPACITY;
+             bottle++) {
+            helper.assertTrue(
+                    aging.insertOne(wine),
+                    "Partial wine should remain stored while waiting"
+            );
+        }
+        AgingBarrelBlockEntity.serverTick(
+                helper.getLevel(),
+                helper.absolutePos(agingPos),
+                helper.getBlockState(agingPos),
+                aging
+        );
+        helper.assertValueEqual(
+                aging.getProgressPercent(),
+                0,
+                "A partial ageing batch must not progress"
+        );
+        helper.assertBlockProperty(
+                agingPos,
+                AgingBarrelBlock.STATUS,
+                0
+        );
+
+        helper.assertTrue(
+                aging.insertOne(wine),
+                "The fourth wine bottle should start ageing"
+        );
+        for (int tick = 0; tick < 20; tick++) {
+            AgingBarrelBlockEntity.serverTick(
+                    helper.getLevel(),
+                    helper.absolutePos(agingPos),
+                    helper.getBlockState(agingPos),
+                    aging
+            );
+        }
+        helper.assertTrue(
+                aging.getProgressPercent() > 0,
+                "A full ageing batch should progress"
+        );
+        helper.assertBlockProperty(
+                agingPos,
+                AgingBarrelBlock.STATUS,
+                1
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void fermentationAssignsPersistentBottleNumbers(
             GameTestHelper helper
     ) {
@@ -1262,10 +1386,12 @@ public final class VintnerGameTests {
         WineMetadata.apply(must, 12, WineQuality.FINE);
         WineMetadata.ensureBatchIdentity(must, 13579L);
 
-        for (int bottle = 0; bottle < 3; bottle++) {
+        for (int bottle = 0;
+             bottle < FermentationBarrelBlockEntity.CAPACITY;
+             bottle++) {
             helper.assertTrue(
                     barrel.insertOne(must),
-                    "The numbered test batch should accept three bottles"
+                    "The numbered test batch should fill the barrel"
             );
         }
 
@@ -1288,7 +1414,7 @@ public final class VintnerGameTests {
         );
         helper.assertValueEqual(
                 WineMetadata.batchBottleCount(firstBottle),
-                3,
+                FermentationBarrelBlockEntity.CAPACITY,
                 "Bottle identity should record the original batch size"
         );
 
@@ -1303,7 +1429,7 @@ public final class VintnerGameTests {
         );
         helper.assertValueEqual(
                 WineMetadata.batchBottleCount(secondBottle),
-                3,
+                FermentationBarrelBlockEntity.CAPACITY,
                 "The restored barrel should preserve its batch size"
         );
         helper.assertValueEqual(
@@ -1327,11 +1453,14 @@ public final class VintnerGameTests {
         ItemStack wine = new ItemStack(ModItems.RED_WINE);
         WineMetadata.apply(wine, 4, WineQuality.TABLE);
 
-        helper.assertTrue(barrel.insertOne(wine), "Wine should be accepted");
-        helper.assertTrue(
-                barrel.insertOne(wine),
-                "A matching second bottle should join the aging batch"
-        );
+        for (int bottle = 0;
+             bottle < AgingBarrelBlockEntity.CAPACITY;
+             bottle++) {
+            helper.assertTrue(
+                    barrel.insertOne(wine),
+                    "A full matching wine batch should be accepted"
+            );
+        }
 
         for (int tick = 0;
              tick < AgingBarrelBlockEntity.AGING_TIME;
@@ -1378,7 +1507,7 @@ public final class VintnerGameTests {
         );
         helper.assertValueEqual(
                 WineMetadata.batchBottleCount(agedWine),
-                2,
+                AgingBarrelBlockEntity.CAPACITY,
                 "Aged bottle identity should record the batch size"
         );
 
@@ -1393,7 +1522,7 @@ public final class VintnerGameTests {
         );
         helper.assertValueEqual(
                 WineMetadata.batchBottleCount(secondAgedWine),
-                2,
+                AgingBarrelBlockEntity.CAPACITY,
                 "The restored aging barrel should preserve batch size"
         );
         helper.succeed();
@@ -1620,10 +1749,14 @@ public final class VintnerGameTests {
                         fermentationPos,
                         FermentationBarrelBlockEntity.class
                 );
-        helper.assertTrue(
-                fermentation.insertOne(must),
-                "Identified must should enter fermentation"
-        );
+        for (int bottle = 0;
+             bottle < FermentationBarrelBlockEntity.CAPACITY;
+             bottle++) {
+            helper.assertTrue(
+                    fermentation.insertOne(must),
+                    "Identified must should fill fermentation"
+            );
+        }
 
         for (int tick = 0;
              tick < FermentationBarrelBlockEntity.FERMENTATION_TIME;
@@ -1647,10 +1780,14 @@ public final class VintnerGameTests {
                 agingPos,
                 AgingBarrelBlockEntity.class
         );
-        helper.assertTrue(
-                aging.insertOne(wine),
-                "Identified wine should enter barrel aging"
-        );
+        for (int bottle = 0;
+             bottle < AgingBarrelBlockEntity.CAPACITY;
+             bottle++) {
+            helper.assertTrue(
+                    aging.insertOne(wine),
+                    "Identified wine should fill barrel ageing"
+            );
+        }
 
         for (int tick = 0;
              tick < AgingBarrelBlockEntity.AGING_TIME;
@@ -2381,10 +2518,14 @@ public final class VintnerGameTests {
                         fermentationPos,
                         FermentationBarrelBlockEntity.class
                 );
-        helper.assertTrue(
-                fermentation.insertOne(must),
-                "Scored must should enter fermentation"
-        );
+        for (int bottle = 0;
+             bottle < FermentationBarrelBlockEntity.CAPACITY;
+             bottle++) {
+            helper.assertTrue(
+                    fermentation.insertOne(must),
+                    "Scored must should fill fermentation"
+            );
+        }
         for (int tick = 0;
              tick < FermentationBarrelBlockEntity.FERMENTATION_TIME;
              tick++) {
@@ -2406,10 +2547,14 @@ public final class VintnerGameTests {
                 agingPos,
                 AgingBarrelBlockEntity.class
         );
-        helper.assertTrue(
-                aging.insertOne(wine),
-                "Scored wine should enter barrel ageing"
-        );
+        for (int bottle = 0;
+             bottle < AgingBarrelBlockEntity.CAPACITY;
+             bottle++) {
+            helper.assertTrue(
+                    aging.insertOne(wine),
+                    "Scored wine should fill barrel ageing"
+            );
+        }
         for (int tick = 0;
              tick < AgingBarrelBlockEntity.AGING_TIME;
              tick++) {

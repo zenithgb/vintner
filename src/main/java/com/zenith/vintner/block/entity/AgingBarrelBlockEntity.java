@@ -49,7 +49,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         barrel.updateComparatorSignal();
 
         if (barrel.wineType == 0
-                || barrel.bottleCount <= 0
+                || barrel.bottleCount < CAPACITY
                 || barrel.ready) {
             return;
         }
@@ -318,9 +318,9 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
             return;
         }
 
-        int status = wineType == 0
-                ? 0
-                : ready ? 2 : 1;
+        int status = ready
+                ? 2
+                : bottleCount >= CAPACITY ? 1 : 0;
 
         BlockState updated = state
                 .setValue(AgingBarrelBlock.STATUS, status)

@@ -54,7 +54,7 @@ public final class FermentationBarrelBlockEntity
         barrel.updateComparatorSignal();
 
         if (barrel.batchType == 0
-                || barrel.bottleCount <= 0
+                || barrel.bottleCount < CAPACITY
                 || barrel.ready) {
             return;
         }
@@ -330,9 +330,9 @@ public final class FermentationBarrelBlockEntity
             return;
         }
 
-        int status = batchType == 0
-                ? 0
-                : ready ? 2 : 1;
+        int status = ready
+                ? 2
+                : bottleCount >= CAPACITY ? 1 : 0;
 
         BlockState updated = state
                 .setValue(

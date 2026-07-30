@@ -91,6 +91,18 @@ public final class WinemakingFeedback {
             return;
         }
 
+        if (barrel.getBottleCount()
+                < FermentationBarrelBlockEntity.CAPACITY) {
+            show(
+                    player,
+                    "message.vintner.fermentation.waiting",
+                    wineType(barrel.getBatchType()),
+                    barrel.getBottleCount(),
+                    FermentationBarrelBlockEntity.CAPACITY
+            );
+            return;
+        }
+
         show(
                 player,
                 "message.vintner.fermentation.progress",
@@ -134,6 +146,18 @@ public final class WinemakingFeedback {
             show(
                     player,
                     "message.vintner.aging.ready",
+                    wineType(barrel.getWineType()),
+                    barrel.getBottleCount(),
+                    AgingBarrelBlockEntity.CAPACITY
+            );
+            return;
+        }
+
+        if (barrel.getBottleCount()
+                < AgingBarrelBlockEntity.CAPACITY) {
+            show(
+                    player,
+                    "message.vintner.aging.waiting",
                     wineType(barrel.getWineType()),
                     barrel.getBottleCount(),
                     AgingBarrelBlockEntity.CAPACITY
