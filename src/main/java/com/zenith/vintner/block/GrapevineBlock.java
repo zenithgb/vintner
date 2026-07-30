@@ -584,7 +584,8 @@ public abstract class GrapevineBlock
                                 ),
                                 qualityText(
                                         report.predictedQuality()
-                                )
+                                ),
+                                report.qualityScore()
                         )
                 );
             }
@@ -622,16 +623,16 @@ public abstract class GrapevineBlock
                     serverLevel.getGameTime()
             );
 
-            WineQuality quality =
-                    GrapeQualityEvaluator.evaluate(
+            VineyardConditionReport report =
+                    GrapeQualityEvaluator.inspect(
                             serverLevel,
                             rootPos
                     );
 
-            WineMetadata.apply(
+            WineMetadata.applyProfile(
                     grapes,
                     vintage,
-                    quality
+                    report.qualityProfile()
             );
 
             Block.popResource(

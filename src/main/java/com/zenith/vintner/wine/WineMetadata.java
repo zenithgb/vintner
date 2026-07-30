@@ -10,6 +10,20 @@ import net.minecraft.world.item.component.CustomData;
 public final class WineMetadata {
     private static final String VINTAGE_KEY = "VintnerVintage";
     private static final String QUALITY_KEY = "VintnerQuality";
+    private static final String QUALITY_PROFILE_VERSION_KEY =
+            "VintnerQualityProfileVersion";
+    private static final String QUALITY_FOUNDATION_KEY =
+            "VintnerQualityFoundation";
+    private static final String QUALITY_VINEYARD_KEY =
+            "VintnerQualityVineyard";
+    private static final String QUALITY_PROCESSING_KEY =
+            "VintnerQualityProcessing";
+    private static final String QUALITY_FERMENTATION_KEY =
+            "VintnerQualityFermentation";
+    private static final String QUALITY_AGEING_KEY =
+            "VintnerQualityAgeing";
+    private static final String QUALITY_STORAGE_KEY =
+            "VintnerQualityStorage";
     private static final String BATCH_ID_KEY = "VintnerBatchId";
     private static final String PROFILE_SEED_KEY =
             "VintnerProfileSeed";
@@ -52,9 +66,21 @@ public final class WineMetadata {
             int vintage,
             WineQuality quality
     ) {
+        applyProfile(
+                stack,
+                vintage,
+                WineQualityProfile.legacy(quality)
+        );
+    }
+
+    public static void applyProfile(
+            ItemStack stack,
+            int vintage,
+            WineQualityProfile profile
+    ) {
         CompoundTag tag = getTagCopy(stack);
         tag.putInt(VINTAGE_KEY, Math.max(1, vintage));
-        tag.putInt(QUALITY_KEY, quality.id());
+        writeQualityProfile(tag, profile);
 
         stack.set(
                 DataComponents.CUSTOM_DATA,
@@ -64,7 +90,7 @@ public final class WineMetadata {
 
     public static void ensureDefaults(ItemStack stack) {
         if (!hasMetadata(stack)) {
-            apply(stack, 1, WineQuality.COMMON);
+            apply(stack, 1, WineQuality.TABLE);
         }
     }
 
@@ -116,9 +142,30 @@ public final class WineMetadata {
     }
 
     public static WineQuality quality(ItemStack stack) {
-        int qualityId = getTagCopy(stack).getIntOr(
+        return qualityProfile(stack).quality();
+    }
+
+    public static int qualityScore(ItemStack stack) {
+        return qualityProfile(stack).score();
+    }
+
+    public static WineQualityProfile qualityProfile(ItemStack stack) {
+        return readQualityProfile(getTagCopy(stack));
+    }
+
+    public static void setQualityProfile(
+            ItemStack stack,
+            WineQualityProfile profile
+    ) {
+        CompoundTag tag = getTagCopy(stack);
+        writeQualityProfile(tag, profile);
+        setTag(stack, tag);
+    }
+
+    private static WineQuality legacyQuality(CompoundTag tag) {
+        int qualityId = tag.getIntOr(
                 QUALITY_KEY,
-                WineQuality.COMMON.id()
+                WineQuality.TABLE.id()
         );
 
         return WineQuality.byId(qualityId);
@@ -309,6 +356,9 @@ public final class WineMetadata {
                         elapsedTicks
                 )
         );
+        WineQualityProfile profile = readQualityProfile(tag)
+                .withStorage(storageContribution(tag));
+        writeQualityProfile(tag, profile);
         setTag(stack, tag);
     }
 
@@ -320,20 +370,25 @@ public final class WineMetadata {
         );
     }
 
-    public static void improveQuality(ItemStack stack) {
-        apply(
-                stack,
-                vintage(stack),
-                quality(stack).improved()
-        );
-    }
-
     public static boolean matchesBatch(
             ItemStack first,
             ItemStack second
     ) {
-        if (vintage(first) != vintage(second)
-                || quality(first) != quality(second)) {
+        if (!matchesBatchIdentity(first, second)
+                || !qualityProfile(first).equals(
+                qualityProfile(second)
+        )) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static boolean matchesBatchIdentity(
+            ItemStack first,
+            ItemStack second
+    ) {
+        if (vintage(first) != vintage(second)) {
             return false;
         }
 
@@ -401,6 +456,68 @@ public final class WineMetadata {
             case GOOD -> STORAGE_GOOD_TICKS_KEY;
             case IDEAL -> STORAGE_IDEAL_TICKS_KEY;
         };
+    }
+
+    private static WineQualityProfile readQualityProfile(
+            CompoundTag tag
+    ) {
+        if (tag.getIntOr(QUALITY_PROFILE_VERSION_KEY, 0) <= 0) {
+            return WineQualityProfile.legacy(legacyQuality(tag));
+        }
+
+        return new WineQualityProfile(
+                tag.getIntOr(QUALITY_FOUNDATION_KEY, 0),
+                tag.getIntOr(QUALITY_VINEYARD_KEY, 0),
+                tag.getIntOr(QUALITY_PROCESSING_KEY, 0),
+                tag.getIntOr(QUALITY_FERMENTATION_KEY, 0),
+                tag.getIntOr(QUALITY_AGEING_KEY, 0),
+                tag.getIntOr(QUALITY_STORAGE_KEY, 0)
+        );
+    }
+
+    private static void writeQualityProfile(
+            CompoundTag tag,
+            WineQualityProfile profile
+    ) {
+        tag.putInt(
+                QUALITY_PROFILE_VERSION_KEY,
+                WineQualityProfile.VERSION
+        );
+        tag.putInt(QUALITY_FOUNDATION_KEY, profile.foundation());
+        tag.putInt(QUALITY_VINEYARD_KEY, profile.vineyard());
+        tag.putInt(QUALITY_PROCESSING_KEY, profile.processing());
+        tag.putInt(
+                QUALITY_FERMENTATION_KEY,
+                profile.fermentation()
+        );
+        tag.putInt(QUALITY_AGEING_KEY, profile.ageing());
+        tag.putInt(QUALITY_STORAGE_KEY, profile.storage());
+        tag.putInt(QUALITY_KEY, profile.quality().id());
+    }
+
+    private static int storageContribution(CompoundTag tag) {
+        long idealDays = tag.getLongOr(
+                STORAGE_IDEAL_TICKS_KEY,
+                0L
+        ) / 24000L;
+        long goodDays = tag.getLongOr(
+                STORAGE_GOOD_TICKS_KEY,
+                0L
+        ) / 24000L;
+        long poorDays = tag.getLongOr(
+                STORAGE_POOR_TICKS_KEY,
+                0L
+        ) / 24000L;
+        long damageDays = tag.getIntOr(
+                STORAGE_DAMAGE_KEY,
+                0
+        ) / 24000L;
+        long score = idealDays / 4L
+                + goodDays / 8L
+                - poorDays / 2L
+                - damageDays;
+
+        return (int) Math.clamp(score, -30L, 15L);
     }
 
     private static long saturatedAdd(long first, long second) {

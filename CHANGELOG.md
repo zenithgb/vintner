@@ -21,6 +21,10 @@ All notable changes to Vintner are documented in this file.
   safe bottle drops, and variants for all twelve supported wood families.
 - Cellar progression for building a rack, inspecting a vintage, and discovering
   ideal storage conditions.
+- A persistent 0–100 wine-quality profile with the six roadmap tiers: Rough,
+  Table, Good, Fine, Exceptional, and Legendary.
+- Inspectable vineyard, pressing, fermentation, ageing, and cellar quality
+  contributions in the Vintner's Almanac.
 
 ### Changed
 
@@ -37,6 +41,10 @@ All notable changes to Vintner are documented in this file.
   detailed batch, tasting, age, and cellar data remains in the Almanac.
 - Wine racks now align cleanly when placed side by side or stacked, with
   larger visible bottles.
+- Wine quality now accumulates through the full production chain instead of
+  being copied unchanged and automatically raised by one tier.
+- Existing Common, Fine, and Exceptional bottle and barrel data migrates to
+  stable scored profiles without losing its previous quality meaning.
 
 ### Fixed
 

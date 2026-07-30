@@ -1,7 +1,7 @@
 package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.wine.WineMetadata;
-import com.zenith.vintner.wine.WineQuality;
+import com.zenith.vintner.wine.WineQualityProfile;
 
 import com.zenith.vintner.block.GrapePressBlock;
 import com.zenith.vintner.registry.ModBlockEntities;
@@ -122,9 +122,13 @@ public final class GrapePressBlockEntity extends BlockEntity {
 
         return output.is(mustItem)
                 && output.getCount() < CAPACITY
-                && WineMetadata.matchesBatch(
+                && WineMetadata.matchesBatchIdentity(
                         output,
                         input
+                )
+                && WineMetadata.qualityProfile(output).equals(
+                        WineMetadata.qualityProfile(input)
+                                .withProcessing(5)
                 );
     }
 
@@ -136,7 +140,9 @@ public final class GrapePressBlockEntity extends BlockEntity {
         ItemStack input = getInput();
         Item mustItem = getMustFor(input);
         int vintage = WineMetadata.vintage(input);
-        WineQuality quality = WineMetadata.quality(input);
+        WineQualityProfile qualityProfile =
+                WineMetadata.qualityProfile(input)
+                        .withProcessing(5);
 
         input.shrink(GRAPES_PER_PRESS);
 
@@ -149,10 +155,10 @@ public final class GrapePressBlockEntity extends BlockEntity {
         if (output.isEmpty()) {
             ItemStack must = new ItemStack(mustItem);
 
-            WineMetadata.apply(
+            WineMetadata.applyProfile(
                     must,
                     vintage,
-                    quality
+                    qualityProfile
             );
             WineMetadata.ensureBatchIdentity(
                     must,

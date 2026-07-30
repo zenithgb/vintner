@@ -2,6 +2,7 @@ package com.zenith.vintner.item;
 
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.wine.WineMetadata;
+import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.wine.WineTastingProfile;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -60,6 +61,20 @@ public final class VintnerAlmanacItem extends Item {
                             .description()
                             .copy()
                             .withStyle(ChatFormatting.GRAY)
+            );
+            WineQualityProfile quality =
+                    WineMetadata.qualityProfile(bottle);
+            player.sendSystemMessage(
+                    Component.translatable(
+                            "message.vintner.almanac.quality_score",
+                            quality.score(),
+                            quality.foundation(),
+                            quality.vineyard(),
+                            quality.processing(),
+                            quality.fermentation(),
+                            quality.ageing(),
+                            quality.storage()
+                    ).withStyle(ChatFormatting.DARK_GRAY)
             );
 
             if (WineMetadata.bottleNumber(bottle) > 0) {

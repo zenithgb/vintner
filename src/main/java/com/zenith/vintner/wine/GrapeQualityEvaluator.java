@@ -42,32 +42,32 @@ public final class GrapeQualityEvaluator {
         int score = 0;
 
         if (openSky) {
-            score++;
+            score += 15;
         }
 
         if (suitableTemperature) {
-            score++;
+            score += 15;
         }
 
         if (precipitation) {
-            score++;
+            score += 10;
         }
 
         if (preparedSoil) {
-            score++;
+            score += 20;
         }
 
-        WineQuality predictedQuality = switch (score) {
-            case 4 -> WineQuality.EXCEPTIONAL;
-            case 2, 3 -> WineQuality.FINE;
-            default -> WineQuality.COMMON;
-        };
+        WineQualityProfile profile =
+                WineQualityProfile.vineyard(score);
+        WineQuality predictedQuality = profile.quality();
 
         return new VineyardConditionReport(
                 openSky,
                 suitableTemperature,
                 precipitation,
                 preparedSoil,
+                score,
+                profile,
                 predictedQuality
         );
     }

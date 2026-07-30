@@ -6,6 +6,7 @@ import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.WinemakingEffects;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineQuality;
+import com.zenith.vintner.wine.WineQualityProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
@@ -32,7 +33,8 @@ public final class FermentationBarrelBlockEntity
     private int fermentationProgress;
     private boolean ready;
     private int vintage = 1;
-    private WineQuality quality = WineQuality.COMMON;
+    private WineQualityProfile qualityProfile =
+            WineQualityProfile.legacy(WineQuality.TABLE);
     private long batchId;
     private int lastComparatorSignal = -1;
 
@@ -127,7 +129,9 @@ public final class FermentationBarrelBlockEntity
 
         return batchType == offeredType
                 && vintage == WineMetadata.vintage(stack)
-                && quality == WineMetadata.quality(stack)
+                && qualityProfile.equals(
+                        WineMetadata.qualityProfile(stack)
+                )
                 && batchMatches(stack);
     }
 
@@ -151,7 +155,7 @@ public final class FermentationBarrelBlockEntity
             batchType = offeredType;
             fermentationProgress = 0;
             vintage = WineMetadata.vintage(stack);
-            quality = WineMetadata.quality(stack);
+            qualityProfile = WineMetadata.qualityProfile(stack);
             batchId = WineMetadata.batchId(stack);
         }
 
@@ -209,10 +213,10 @@ public final class FermentationBarrelBlockEntity
 
         ItemStack result = new ItemStack(wine);
 
-        WineMetadata.apply(
+        WineMetadata.applyProfile(
                 result,
                 vintage,
-                quality
+                qualityProfile.withFermentation(5)
         );
         WineMetadata.ensureBatchIdentity(result, batchId);
         WineMetadata.markBottled(
@@ -258,10 +262,12 @@ public final class FermentationBarrelBlockEntity
                 bottleCount
         );
 
-        WineMetadata.apply(
+        WineMetadata.applyProfile(
                 result,
                 vintage,
-                quality
+                ready
+                        ? qualityProfile.withFermentation(5)
+                        : qualityProfile
         );
         WineMetadata.ensureBatchIdentity(result, batchId);
 
@@ -282,7 +288,8 @@ public final class FermentationBarrelBlockEntity
         fermentationProgress = 0;
         ready = false;
         vintage = 1;
-        quality = WineQuality.COMMON;
+        qualityProfile =
+                WineQualityProfile.legacy(WineQuality.TABLE);
         batchId = 0L;
         bottlesTaken = 0;
     }
@@ -368,11 +375,16 @@ public final class FermentationBarrelBlockEntity
                 input.getIntOr("FermentationProgress", 0);
         ready = input.getBooleanOr("Ready", false);
         vintage = input.getIntOr("Vintage", 1);
-        quality = WineQuality.byId(
+        WineQuality legacyQuality = WineQuality.byId(
                 input.getIntOr(
                         "Quality",
-                        WineQuality.COMMON.id()
+                        WineQuality.TABLE.id()
                 )
+        );
+        qualityProfile = WineQualityProfile.load(
+                input,
+                "Quality",
+                legacyQuality
         );
         batchId = input.getLongOr("BatchId", 0L);
         bottlesTaken = input.getIntOr("BottlesTaken", 0);
@@ -390,7 +402,8 @@ public final class FermentationBarrelBlockEntity
         );
         output.putBoolean("Ready", ready);
         output.putInt("Vintage", vintage);
-        output.putInt("Quality", quality.id());
+        output.putInt("Quality", qualityProfile.quality().id());
+        qualityProfile.save(output, "Quality");
         output.putLong("BatchId", batchId);
         output.putInt("BottlesTaken", bottlesTaken);
     }

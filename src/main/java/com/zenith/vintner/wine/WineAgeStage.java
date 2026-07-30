@@ -54,11 +54,7 @@ public enum WineAgeStage {
             return SPOILED;
         }
 
-        float potential = switch (quality) {
-            case COMMON -> 0.75F;
-            case FINE -> 1.0F;
-            case EXCEPTIONAL -> 1.5F;
-        };
+        float potential = quality.ageingPotential();
         long adjusted = Math.round(age / potential);
 
         if (adjusted >= DECLINING_AT) {

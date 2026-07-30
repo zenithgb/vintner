@@ -80,11 +80,16 @@ public record WineTastingProfile(
             return "fading_finish";
         }
         if (stage == WineAgeStage.PEAK
-                || quality == WineQuality.EXCEPTIONAL) {
+                || quality == WineQuality.EXCEPTIONAL
+                || quality == WineQuality.LEGENDARY) {
             return "long_finish";
         }
-        if (quality == WineQuality.FINE) {
+        if (quality == WineQuality.GOOD
+                || quality == WineQuality.FINE) {
             return "balanced_finish";
+        }
+        if (quality == WineQuality.ROUGH) {
+            return "short_finish";
         }
         return select(
                 new String[]{"clean_finish", "short_finish"},

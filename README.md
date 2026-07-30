@@ -35,7 +35,7 @@ The fermentation barrel holds four matching bottles of must. Fermentation takes
 one minute; use an empty hand to inspect progress or collect finished wine.
 
 The aging barrel holds four matching bottles of wine. Aging takes ninety
-seconds, improves the wine by one quality tier, and produces aged wine.
+seconds, records an ageing-quality contribution, and produces aged wine.
 
 Wine racks hold four bottles without opening an inventory screen. Bottles age
 while stored, and the surrounding build determines cellar quality: sheltered,
@@ -46,11 +46,11 @@ available in every supported vanilla wood family.
 
 Craft a Vintner's Almanac from a book and both grape varieties. Use it while
 holding wine in the other hand to inspect the bottle's vintage, batch, tasting
-profile, numbered place in its batch, age, and cumulative cellar history. Use
-it directly on a wine rack to inspect the cellar around that rack. Normal wine
-tooltips remain intentionally compact. Cellar advancements guide players from
-laying down their first rack to identifying a vintage and discovering ideal
-storage conditions.
+profile, quality score and production breakdown, numbered place in its batch,
+age, and cumulative cellar history. Use it directly on a wine rack to inspect
+the cellar around that rack. Normal wine tooltips remain intentionally compact.
+Cellar advancements guide players from laying down their first rack to
+identifying a vintage and discovering ideal storage conditions.
 
 Trellises connect independently on all four horizontal faces. Vertically
 stacked trellises form separate same-height rows; they do not create diagonal
@@ -64,9 +64,12 @@ Use the grape press, fermentation barrel, or aging barrel with an empty hand
 to inspect its contents and progress. Machine interactions also report full,
 incompatible, or unfinished batches in the action bar.
 
-Wine quality affects the finished drink. Fine wine effects last 25% longer;
-Exceptional wine effects last 50% longer and its signature effect is level II.
-Ageing improves the wine by one quality tier.
+Wine quality is scored from 0–100 across vineyard conditions, pressing,
+fermentation, barrel ageing, and bottle storage. The score produces six tiers:
+Rough, Table, Good, Fine, Exceptional, and Legendary. Higher tiers last longer,
+have stronger signature effects, and retain their character for longer in the
+cellar. Ideal storage can gradually improve a strong bottle, while poor storage
+progressively reduces its quality and can eventually spoil it.
 
 Starter cuttings remain renewable and accessible:
 
