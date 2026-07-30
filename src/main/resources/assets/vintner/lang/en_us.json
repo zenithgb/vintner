@@ -53,7 +53,7 @@
   "wine_variety.vintner.white": "White",
   "wine_variety.vintner.unknown": "Unknown",
   "wine_origin.vintner.unknown": "Unknown vineyard",
-  "wine_origin.vintner.coordinates": "Vineyard at %s, %s, %s in %s",
+  "wine_origin.vintner.coordinates": "Winery at %s, %s, %s in %s",
   "wine_producer.vintner.unknown": "Unknown",
   "wine_readiness.vintner.hold": "Hold",
   "wine_readiness.vintner.drink_now": "Drink now",
