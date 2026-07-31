@@ -75,6 +75,26 @@ WOODS = {
     },
 }
 
+GLASS_COLORS = (
+    "clear",
+    "white",
+    "orange",
+    "magenta",
+    "light_blue",
+    "yellow",
+    "lime",
+    "pink",
+    "gray",
+    "light_gray",
+    "cyan",
+    "purple",
+    "blue",
+    "brown",
+    "green",
+    "red",
+    "black",
+)
+
 
 def write_json(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -391,19 +411,19 @@ def generate_cellar_fixture_base_models() -> None:
             },
             "elements": [
                 # Four tall legs carry a barrel placed in the block above.
-                {"from": [1, 0, 2], "to": [3, 14, 4], "faces": copy.deepcopy(beam_faces)},
-                {"from": [13, 0, 2], "to": [15, 14, 4], "faces": copy.deepcopy(beam_faces)},
-                {"from": [1, 0, 12], "to": [3, 14, 14], "faces": copy.deepcopy(beam_faces)},
-                {"from": [13, 0, 12], "to": [15, 14, 14], "faces": copy.deepcopy(beam_faces)},
+                {"from": [1.5, 0, 2.5], "to": [2.5, 14.25, 3.5], "faces": copy.deepcopy(beam_faces)},
+                {"from": [13.5, 0, 2.5], "to": [14.5, 14.25, 3.5], "faces": copy.deepcopy(beam_faces)},
+                {"from": [1.5, 0, 12.5], "to": [2.5, 14.25, 13.5], "faces": copy.deepcopy(beam_faces)},
+                {"from": [13.5, 0, 12.5], "to": [14.5, 14.25, 13.5], "faces": copy.deepcopy(beam_faces)},
                 # Wide feet and mid braces keep the empty stand intentional.
-                {"from": [0.5, 0, 1.5], "to": [15.5, 2, 4.5], "faces": copy.deepcopy(wood_faces)},
-                {"from": [0.5, 0, 11.5], "to": [15.5, 2, 14.5], "faces": copy.deepcopy(wood_faces)},
-                {"from": [2, 6, 2.5], "to": [14, 8, 3.5], "faces": copy.deepcopy(wood_faces)},
-                {"from": [2, 6, 12.5], "to": [14, 8, 13.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [0.75, 0, 2], "to": [15.25, 1.25, 4], "faces": copy.deepcopy(wood_faces)},
+                {"from": [0.75, 0, 12], "to": [15.25, 1.25, 14], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 6.5, 2.75], "to": [14, 7.5, 3.25], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 6.5, 12.75], "to": [14, 7.5, 13.25], "faces": copy.deepcopy(wood_faces)},
                 # The two saddles reach the block boundary, eliminating the
-                # visible air gap beneath a barrel placed on the stand.
-                {"from": [2, 13, 2], "to": [14, 16, 5], "faces": copy.deepcopy(wood_faces)},
-                {"from": [2, 13, 11], "to": [14, 16, 14], "faces": copy.deepcopy(wood_faces)},
+                # visible air gap without sharing a face with the barrel.
+                {"from": [2.5, 14, 2.5], "to": [13.5, 15.75, 4.25], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2.5, 14, 11.75], "to": [13.5, 15.75, 13.5], "faces": copy.deepcopy(wood_faces)},
             ],
         },
     )
@@ -496,6 +516,34 @@ def generate_cellar_fixture_base_models() -> None:
                 },
             )
 
+    glass_faces = cube_faces("#glass")
+    glass_elements = [
+        {"from": [2.5, 2.5, 0.75], "to": [7.5, 6.25, 0.95], "faces": copy.deepcopy(glass_faces)},
+        {"from": [8.5, 2.5, 0.75], "to": [13.5, 6.25, 0.95], "faces": copy.deepcopy(glass_faces)},
+        {"from": [2.5, 9.5, 0.75], "to": [7.5, 13.5, 0.95], "faces": copy.deepcopy(glass_faces)},
+        {"from": [8.5, 9.5, 0.75], "to": [13.5, 13.5, 0.95], "faces": copy.deepcopy(glass_faces)},
+    ]
+    for color in GLASS_COLORS:
+        texture = (
+            "minecraft:block/glass"
+            if color == "clear"
+            else f"minecraft:block/{color}_stained_glass"
+        )
+        write_json(
+            ASSETS / f"models/block/cellar_fixture_glass_{color}.json",
+            {
+                "parent": "minecraft:block/block",
+                "textures": {
+                    "glass": {
+                        "force_translucent": True,
+                        "sprite": texture,
+                    },
+                    "particle": texture,
+                },
+                "elements": copy.deepcopy(glass_elements),
+            },
+        )
+
 
 def generate_cellar_fixture_blockstates() -> None:
     rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
@@ -524,6 +572,23 @@ def generate_cellar_fixture_blockstates() -> None:
                         apply["y"] = rotation
                     multipart.append({
                         "when": {"facing": facing, "bottle_count": visible},
+                        "apply": apply,
+                    })
+            for color in GLASS_COLORS:
+                for facing, rotation in rotations.items():
+                    apply = {
+                        "model": (
+                            "vintner:block/"
+                            f"cellar_fixture_glass_{color}"
+                        )
+                    }
+                    if rotation:
+                        apply["y"] = rotation
+                    multipart.append({
+                        "when": {
+                            "facing": facing,
+                            "glass_color": color,
+                        },
                         "apply": apply,
                     })
             write_json(ASSETS / f"blockstates/{block_id}.json", {"multipart": multipart})
@@ -803,6 +868,31 @@ def generate_machine_blockstates() -> None:
 
 
 def generate_items() -> None:
+    def fixture_item_model(block_id: str) -> dict[str, object]:
+        variant = read_json(ASSETS / f"models/block/{block_id}.json")
+        parent = variant.get("parent", "")
+        base = variant
+        if parent.startswith("vintner:block/"):
+            parent_id = parent.removeprefix("vintner:block/")
+            base = read_json(ASSETS / f"models/block/{parent_id}.json")
+
+        glass = read_json(
+            ASSETS / "models/block/cellar_fixture_glass_clear.json"
+        )
+        textures = {
+            **base.get("textures", {}),
+            **variant.get("textures", {}),
+            "glass": glass["textures"]["glass"],
+        }
+        return {
+            "parent": "minecraft:block/block",
+            "textures": textures,
+            "elements": (
+                copy.deepcopy(base.get("elements", []))
+                + copy.deepcopy(glass.get("elements", []))
+            ),
+        }
+
     for wood in WOODS:
         ids_and_models = (
             (
@@ -848,9 +938,16 @@ def generate_items() -> None:
         )
 
         for block_id, parent in ids_and_models:
+            if block_id in {
+                shelf_id(wood),
+                cabinet_id(wood),
+            }:
+                item_model = fixture_item_model(block_id)
+            else:
+                item_model = {"parent": parent}
             write_json(
                 ASSETS / f"models/item/{block_id}.json",
-                {"parent": parent},
+                item_model,
             )
             write_json(
                 ASSETS / f"items/{block_id}.json",

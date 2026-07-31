@@ -53,6 +53,8 @@ public class CellarCollectionBlock extends BaseEntityBlock {
             BlockStateProperties.HORIZONTAL_FACING;
     public static final IntegerProperty BOTTLE_COUNT =
             IntegerProperty.create("bottle_count", 0, 8);
+    public static final EnumProperty<CellarGlassColor> GLASS_COLOR =
+            EnumProperty.create("glass_color", CellarGlassColor.class);
     private static final VoxelShape SHAPE =
             Block.box(0.5, 0, 0.5, 15.5, 16, 15.5);
 
@@ -72,6 +74,7 @@ public class CellarCollectionBlock extends BaseEntityBlock {
                 stateDefinition.any()
                         .setValue(FACING, Direction.NORTH)
                         .setValue(BOTTLE_COUNT, 0)
+                        .setValue(GLASS_COLOR, CellarGlassColor.CLEAR)
         );
     }
 
@@ -147,6 +150,32 @@ public class CellarCollectionBlock extends BaseEntityBlock {
         if (!(level.getBlockEntity(pos)
                 instanceof CellarCollectionBlockEntity collection)) {
             return InteractionResult.PASS;
+        }
+
+        CellarGlassColor glassColor =
+                CellarGlassColor.fromDye(heldStack);
+        if (glassColor != null) {
+            if (state.getValue(GLASS_COLOR) == glassColor) {
+                return InteractionResult.SUCCESS;
+            }
+            if (level instanceof ServerLevel serverLevel) {
+                serverLevel.setBlockAndUpdate(
+                        pos,
+                        state.setValue(GLASS_COLOR, glassColor)
+                );
+                if (!player.getAbilities().instabuild) {
+                    heldStack.shrink(1);
+                }
+                serverLevel.playSound(
+                        null,
+                        pos,
+                        SoundEvents.DYE_USE,
+                        SoundSource.BLOCKS,
+                        0.8F,
+                        1.0F
+                );
+            }
+            return InteractionResult.SUCCESS;
         }
 
         if (heldStack.is(ModItems.VINTNER_ALMANAC)) {
@@ -326,6 +355,6 @@ public class CellarCollectionBlock extends BaseEntityBlock {
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING, BOTTLE_COUNT);
+        builder.add(FACING, BOTTLE_COUNT, GLASS_COLOR);
     }
 }

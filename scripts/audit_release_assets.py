@@ -205,7 +205,7 @@ def audit_model_textures(paths: set[Path]) -> None:
         if not chain:
             continue
 
-        texture_variables: dict[str, str] = {}
+        texture_variables: dict[str, object] = {}
         for _, data in chain:
             textures = data.get("textures", {})
             if isinstance(textures, dict):
@@ -214,7 +214,7 @@ def audit_model_textures(paths: set[Path]) -> None:
                         key: value
                         for key, value in textures.items()
                         if isinstance(key, str)
-                        and isinstance(value, str)
+                        and isinstance(value, (str, dict))
                     }
                 )
 
@@ -246,6 +246,21 @@ def audit_model_textures(paths: set[Path]) -> None:
                         f"{relative(path)}"
                     )
                     break
+                if isinstance(value, dict):
+                    sprite = value.get("sprite")
+                    if not isinstance(sprite, str):
+                        fail(
+                            f"invalid texture object #{variable} in "
+                            f"{relative(path)}"
+                        )
+                        break
+                    target = texture_path(sprite)
+                    if target is not None and not target.is_file():
+                        fail(
+                            f"missing texture {sprite!r} used by "
+                            f"{relative(path)}"
+                        )
+                    break
                 if value.startswith("#"):
                     current = value[1:]
                     continue
@@ -258,6 +273,16 @@ def audit_model_textures(paths: set[Path]) -> None:
                 break
 
         for value in texture_variables.values():
+            if isinstance(value, dict):
+                sprite = value.get("sprite")
+                if isinstance(sprite, str):
+                    target = texture_path(sprite)
+                    if target is not None and not target.is_file():
+                        fail(
+                            f"missing texture {sprite!r} declared by "
+                            f"{relative(path)}"
+                        )
+                continue
             if value.startswith("#"):
                 continue
             target = texture_path(value)

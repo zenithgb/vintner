@@ -1,6 +1,7 @@
 package com.zenith.vintner.test;
 
 import com.zenith.vintner.block.AgingBarrelBlock;
+import com.zenith.vintner.block.CellarGlassColor;
 import com.zenith.vintner.block.CellarCollectionBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
@@ -53,6 +54,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
@@ -3378,6 +3380,92 @@ public final class VintnerGameTests {
                 WineMetadata.batchId(restored.takeLastBottle()),
                 99001L,
                 "Cabinet retrieval should preserve bottle identity"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cellarFixtureGlassCanBeDyedWithoutLosingWine(
+            GameTestHelper helper
+    ) {
+        BlockPos shelfPos = new BlockPos(1, 1, 1);
+        BlockPos cabinetPos = new BlockPos(3, 1, 1);
+        helper.setBlock(shelfPos, ModBlocks.LABELLED_CELLAR_SHELF);
+        helper.setBlock(cabinetPos, ModBlocks.TASTING_CABINET);
+        CellarCollectionBlockEntity shelf = helper.getBlockEntity(
+                shelfPos,
+                CellarCollectionBlockEntity.class
+        );
+        ItemStack bottle = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.ensureBatchIdentity(bottle, 77119L);
+        helper.assertTrue(
+                shelf.insertOne(bottle),
+                "The dye test shelf should accept its bottle"
+        );
+        helper.assertBlockProperty(
+                shelfPos,
+                CellarCollectionBlock.GLASS_COLOR,
+                CellarGlassColor.CLEAR
+        );
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack redDye = new ItemStack(
+                Items.DYE.pick(DyeColor.RED)
+        );
+        player.setItemInHand(InteractionHand.MAIN_HAND, redDye);
+        BlockPos absoluteShelf = helper.absolutePos(shelfPos);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                redDye,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteShelf),
+                        Direction.NORTH,
+                        absoluteShelf,
+                        false
+                )
+        );
+
+        helper.assertBlockProperty(
+                shelfPos,
+                CellarCollectionBlock.GLASS_COLOR,
+                CellarGlassColor.RED
+        );
+        helper.assertValueEqual(
+                redDye.getCount(),
+                0,
+                "Survival dyeing should consume one dye"
+        );
+        helper.assertValueEqual(
+                shelf.getBottleCount(),
+                1,
+                "Dyeing glass must preserve stored wine"
+        );
+
+        ItemStack blueDye = new ItemStack(
+                Items.DYE.pick(DyeColor.BLUE)
+        );
+        player.setItemInHand(InteractionHand.MAIN_HAND, blueDye);
+        BlockPos absoluteCabinet = helper.absolutePos(cabinetPos);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                blueDye,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteCabinet),
+                        Direction.NORTH,
+                        absoluteCabinet,
+                        false
+                )
+        );
+
+        helper.assertBlockProperty(
+                cabinetPos,
+                CellarCollectionBlock.GLASS_COLOR,
+                CellarGlassColor.BLUE
         );
         helper.succeed();
     }
