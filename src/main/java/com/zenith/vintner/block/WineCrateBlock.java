@@ -18,6 +18,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -129,6 +130,11 @@ public final class WineCrateBlock extends BaseEntityBlock {
             InteractionHand hand,
             BlockHitResult hitResult
     ) {
+        if (heldStack.getItem() instanceof BlockItem blockItem
+                && blockItem.getBlock() instanceof WineCrateBlock) {
+            return InteractionResult.PASS;
+        }
+
         BlockEntity blockEntity = level.getBlockEntity(pos);
 
         if (!(blockEntity instanceof WineCrateBlockEntity crate)) {

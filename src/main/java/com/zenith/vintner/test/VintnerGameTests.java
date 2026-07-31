@@ -64,6 +64,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -2220,6 +2221,37 @@ public final class VintnerGameTests {
                 ),
                 "Empty-hand use should preserve the bottle metadata"
         );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineCratesCanBePlacedDirectlyOnEachOther(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_CRATE);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        Block upperCrate = ModBlocks.wineCrate(
+                WoodVariant.SPRUCE
+        );
+        ItemStack crateItem = new ItemStack(upperCrate.asItem());
+        player.setItemInHand(InteractionHand.MAIN_HAND, crateItem);
+        BlockPos lowerPos = helper.absolutePos(FIRST);
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                crateItem,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atBottomCenterOf(lowerPos.above()),
+                        Direction.UP,
+                        lowerPos,
+                        false
+                )
+        );
+
+        helper.assertBlockPresent(ModBlocks.WINE_CRATE, FIRST);
+        helper.assertBlockPresent(upperCrate, UPPER);
         helper.succeed();
     }
 
