@@ -337,47 +337,46 @@ def generate_crate_bottle_models() -> None:
     }
     centers = (3.0, 6.33, 9.67, 13.0)
 
-    for row, z_center in enumerate(centers, start=1):
-        elements = []
+    slot = 0
 
+    for z_center in centers:
         for x_center in centers:
-            elements.extend(
-                [
-                    {
-                        "from": [x_center - 1, 2, z_center - 1],
-                        "to": [x_center + 1, 8, z_center + 1],
-                        "faces": copy.deepcopy(bottle_faces),
-                    },
-                    {
-                        "from": [x_center - 0.72, 8, z_center - 0.72],
-                        "to": [x_center + 0.72, 9, z_center + 0.72],
-                        "faces": copy.deepcopy(bottle_faces),
-                    },
-                    {
-                        "from": [x_center - 0.38, 9, z_center - 0.38],
-                        "to": [x_center + 0.38, 11.3, z_center + 0.38],
-                        "faces": copy.deepcopy(bottle_faces),
-                    },
-                    {
-                        "from": [x_center - 0.43, 11.3, z_center - 0.43],
-                        "to": [x_center + 0.43, 11.8, z_center + 0.43],
-                        "faces": copy.deepcopy(cork_faces),
-                    },
-                ]
-            )
-
-        write_json(
-            ASSETS / f"models/block/wine_crate_bottle_row_{row}.json",
-            {
-                "parent": "minecraft:block/block",
-                "textures": {
-                    "bottle": "minecraft:block/green_concrete",
-                    "cork": "minecraft:block/stripped_oak_log_top",
-                    "particle": "minecraft:block/green_concrete",
+            slot += 1
+            elements = [
+                {
+                    "from": [x_center - 1, 2, z_center - 1],
+                    "to": [x_center + 1, 8, z_center + 1],
+                    "faces": copy.deepcopy(bottle_faces),
                 },
-                "elements": elements,
-            },
-        )
+                {
+                    "from": [x_center - 0.72, 8, z_center - 0.72],
+                    "to": [x_center + 0.72, 9, z_center + 0.72],
+                    "faces": copy.deepcopy(bottle_faces),
+                },
+                {
+                    "from": [x_center - 0.38, 9, z_center - 0.38],
+                    "to": [x_center + 0.38, 11.3, z_center + 0.38],
+                    "faces": copy.deepcopy(bottle_faces),
+                },
+                {
+                    "from": [x_center - 0.43, 11.3, z_center - 0.43],
+                    "to": [x_center + 0.43, 11.8, z_center + 0.43],
+                    "faces": copy.deepcopy(cork_faces),
+                },
+            ]
+
+            write_json(
+                ASSETS / f"models/block/wine_crate_bottle_slot_{slot}.json",
+                {
+                    "parent": "minecraft:block/block",
+                    "textures": {
+                        "bottle": "minecraft:block/green_concrete",
+                        "cork": "minecraft:block/stripped_oak_log_top",
+                        "particle": "minecraft:block/green_concrete",
+                    },
+                    "elements": elements,
+                },
+            )
 
 
 def generate_crate_blockstate() -> None:
@@ -400,12 +399,12 @@ def generate_crate_blockstate() -> None:
             }
         )
 
-    for row in range(1, 5):
-        visible_at = "|".join(str(value) for value in range(row, 5))
+    for slot in range(1, 17):
+        visible_at = "|".join(str(value) for value in range(slot, 17))
 
         for facing, rotation in rotations.items():
             apply = {
-                "model": f"vintner:block/wine_crate_bottle_row_{row}"
+                "model": f"vintner:block/wine_crate_bottle_slot_{slot}"
             }
             if rotation:
                 apply["y"] = rotation
@@ -413,7 +412,7 @@ def generate_crate_blockstate() -> None:
                 {
                     "when": {
                         "facing": facing,
-                        "bottle_rows": visible_at,
+                        "bottle_count": visible_at,
                     },
                     "apply": apply,
                 }

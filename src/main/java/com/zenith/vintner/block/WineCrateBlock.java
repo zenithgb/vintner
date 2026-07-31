@@ -49,8 +49,8 @@ public final class WineCrateBlock extends BaseEntityBlock {
             simpleCodec(WineCrateBlock::new);
     public static final EnumProperty<Direction> FACING =
             BlockStateProperties.HORIZONTAL_FACING;
-    public static final IntegerProperty BOTTLE_ROWS =
-            IntegerProperty.create("bottle_rows", 0, 4);
+    public static final IntegerProperty BOTTLE_COUNT =
+            IntegerProperty.create("bottle_count", 0, 16);
     private static final VoxelShape SHAPE =
             Block.box(0.5, 0, 0.5, 15.5, 12, 15.5);
 
@@ -59,7 +59,7 @@ public final class WineCrateBlock extends BaseEntityBlock {
         registerDefaultState(
                 stateDefinition.any()
                         .setValue(FACING, Direction.NORTH)
-                        .setValue(BOTTLE_ROWS, 0)
+                        .setValue(BOTTLE_COUNT, 0)
         );
     }
 
@@ -297,6 +297,6 @@ public final class WineCrateBlock extends BaseEntityBlock {
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING, BOTTLE_ROWS);
+        builder.add(FACING, BOTTLE_COUNT);
     }
 }

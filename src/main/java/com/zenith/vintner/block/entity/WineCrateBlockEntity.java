@@ -240,10 +240,9 @@ public final class WineCrateBlockEntity extends BlockEntity {
             return;
         }
 
-        int rows = (getBottleCount() + 3) / 4;
         BlockState updated = state.setValue(
-                WineCrateBlock.BOTTLE_ROWS,
-                rows
+                WineCrateBlock.BOTTLE_COUNT,
+                getBottleCount()
         );
 
         if (!updated.equals(state)) {

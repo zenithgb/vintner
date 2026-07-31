@@ -2141,6 +2141,11 @@ public final class VintnerGameTests {
                     crate.insertOne(wine),
                     "The crate should accept bottle " + (index + 1)
             );
+            helper.assertBlockProperty(
+                    FIRST,
+                    WineCrateBlock.BOTTLE_COUNT,
+                    index + 1
+            );
         }
 
         helper.assertValueEqual(
@@ -2155,8 +2160,8 @@ public final class VintnerGameTests {
         );
         helper.assertBlockProperty(
                 FIRST,
-                WineCrateBlock.BOTTLE_ROWS,
-                4
+                WineCrateBlock.BOTTLE_COUNT,
+                16
         );
         helper.assertFalse(
                 crate.insertOne(new ItemStack(ModItems.RED_WINE)),
@@ -2205,7 +2210,7 @@ public final class VintnerGameTests {
         );
         helper.assertBlockProperty(
                 FIRST,
-                WineCrateBlock.BOTTLE_ROWS,
+                WineCrateBlock.BOTTLE_COUNT,
                 0
         );
         helper.assertTrue(

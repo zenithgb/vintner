@@ -3,7 +3,7 @@
   "textures": {
     "wood": "minecraft:block/oak_planks",
     "records": "minecraft:block/chiseled_bookshelf_occupied",
-    "paper": "minecraft:item/paper",
+    "paper": "minecraft:block/quartz_block_top",
     "ink": "minecraft:block/black_wool",
     "metal": "minecraft:block/exposed_copper",
     "particle": "minecraft:block/oak_planks"
