@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
@@ -48,14 +49,17 @@ public final class WineCrateBlock extends BaseEntityBlock {
             simpleCodec(WineCrateBlock::new);
     public static final EnumProperty<Direction> FACING =
             BlockStateProperties.HORIZONTAL_FACING;
+    public static final IntegerProperty BOTTLE_ROWS =
+            IntegerProperty.create("bottle_rows", 0, 4);
     private static final VoxelShape SHAPE =
-            Block.box(0.5, 0, 0.5, 15.5, 15.5, 15.5);
+            Block.box(0.5, 0, 0.5, 15.5, 12, 15.5);
 
     public WineCrateBlock(BlockBehaviour.Properties properties) {
         super(properties);
         registerDefaultState(
                 stateDefinition.any()
                         .setValue(FACING, Direction.NORTH)
+                        .setValue(BOTTLE_ROWS, 0)
         );
     }
 
@@ -293,6 +297,6 @@ public final class WineCrateBlock extends BaseEntityBlock {
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING);
+        builder.add(FACING, BOTTLE_ROWS);
     }
 }

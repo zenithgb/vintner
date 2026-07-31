@@ -4,6 +4,7 @@ import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
+import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
@@ -2152,6 +2153,11 @@ public final class VintnerGameTests {
                 15,
                 "A full crate should output comparator strength 15"
         );
+        helper.assertBlockProperty(
+                FIRST,
+                WineCrateBlock.BOTTLE_ROWS,
+                4
+        );
         helper.assertFalse(
                 crate.insertOne(new ItemStack(ModItems.RED_WINE)),
                 "A full crate must reject a seventeenth bottle"
@@ -2196,6 +2202,11 @@ public final class VintnerGameTests {
                 crate.getBottleCount(),
                 0,
                 "Empty-hand use should remove the latest crate bottle"
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                WineCrateBlock.BOTTLE_ROWS,
+                0
         );
         helper.assertTrue(
                 player.getInventory().contains(

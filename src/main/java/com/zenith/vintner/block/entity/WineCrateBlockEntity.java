@@ -1,5 +1,6 @@
 package com.zenith.vintner.block.entity;
 
+import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.wine.CellarConditions;
@@ -10,6 +11,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -223,7 +225,34 @@ public final class WineCrateBlockEntity extends BlockEntity {
 
     private void markChangedAndSync() {
         setChanged();
+        syncVisualState();
         updateComparatorSignal();
+    }
+
+    private void syncVisualState() {
+        if (level == null) {
+            return;
+        }
+
+        BlockState state = getBlockState();
+
+        if (!(state.getBlock() instanceof WineCrateBlock)) {
+            return;
+        }
+
+        int rows = (getBottleCount() + 3) / 4;
+        BlockState updated = state.setValue(
+                WineCrateBlock.BOTTLE_ROWS,
+                rows
+        );
+
+        if (!updated.equals(state)) {
+            level.setBlock(
+                    worldPosition,
+                    updated,
+                    Block.UPDATE_CLIENTS
+            );
+        }
     }
 
     private void updateComparatorSignal() {

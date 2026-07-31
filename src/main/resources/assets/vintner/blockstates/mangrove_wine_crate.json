@@ -1,19 +1,195 @@
 {
-  "variants": {
-    "facing=north": {
-      "model": "vintner:block/mangrove_wine_crate"
+  "multipart": [
+    {
+      "when": {
+        "facing": "north"
+      },
+      "apply": {
+        "model": "vintner:block/mangrove_wine_crate"
+      }
     },
-    "facing=east": {
-      "model": "vintner:block/mangrove_wine_crate",
-      "y": 90
+    {
+      "when": {
+        "facing": "east"
+      },
+      "apply": {
+        "model": "vintner:block/mangrove_wine_crate",
+        "y": 90
+      }
     },
-    "facing=south": {
-      "model": "vintner:block/mangrove_wine_crate",
-      "y": 180
+    {
+      "when": {
+        "facing": "south"
+      },
+      "apply": {
+        "model": "vintner:block/mangrove_wine_crate",
+        "y": 180
+      }
     },
-    "facing=west": {
-      "model": "vintner:block/mangrove_wine_crate",
-      "y": 270
+    {
+      "when": {
+        "facing": "west"
+      },
+      "apply": {
+        "model": "vintner:block/mangrove_wine_crate",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottle_rows": "1|2|3|4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottle_rows": "1|2|3|4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottle_rows": "1|2|3|4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottle_rows": "1|2|3|4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottle_rows": "2|3|4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottle_rows": "2|3|4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottle_rows": "2|3|4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottle_rows": "2|3|4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottle_rows": "3|4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_3"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottle_rows": "3|4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottle_rows": "3|4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottle_rows": "3|4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottle_rows": "4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_4"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottle_rows": "4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottle_rows": "4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottle_rows": "4"
+      },
+      "apply": {
+        "model": "vintner:block/wine_crate_bottle_row_4",
+        "y": 270
+      }
     }
-  }
+  ]
 }

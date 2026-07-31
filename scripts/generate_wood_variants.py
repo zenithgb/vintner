@@ -326,6 +326,105 @@ def generate_machine_models() -> None:
             )
 
 
+def generate_crate_bottle_models() -> None:
+    bottle_faces = {
+        face: {"texture": "#bottle"}
+        for face in ("north", "east", "south", "west", "up", "down")
+    }
+    cork_faces = {
+        face: {"texture": "#cork"}
+        for face in ("north", "east", "south", "west", "up", "down")
+    }
+    centers = (3.0, 6.33, 9.67, 13.0)
+
+    for row, z_center in enumerate(centers, start=1):
+        elements = []
+
+        for x_center in centers:
+            elements.extend(
+                [
+                    {
+                        "from": [x_center - 1, 2, z_center - 1],
+                        "to": [x_center + 1, 8, z_center + 1],
+                        "faces": copy.deepcopy(bottle_faces),
+                    },
+                    {
+                        "from": [x_center - 0.72, 8, z_center - 0.72],
+                        "to": [x_center + 0.72, 9, z_center + 0.72],
+                        "faces": copy.deepcopy(bottle_faces),
+                    },
+                    {
+                        "from": [x_center - 0.38, 9, z_center - 0.38],
+                        "to": [x_center + 0.38, 11.3, z_center + 0.38],
+                        "faces": copy.deepcopy(bottle_faces),
+                    },
+                    {
+                        "from": [x_center - 0.43, 11.3, z_center - 0.43],
+                        "to": [x_center + 0.43, 11.8, z_center + 0.43],
+                        "faces": copy.deepcopy(cork_faces),
+                    },
+                ]
+            )
+
+        write_json(
+            ASSETS / f"models/block/wine_crate_bottle_row_{row}.json",
+            {
+                "parent": "minecraft:block/block",
+                "textures": {
+                    "bottle": "minecraft:block/green_concrete",
+                    "cork": "minecraft:block/stripped_oak_log_top",
+                    "particle": "minecraft:block/green_concrete",
+                },
+                "elements": elements,
+            },
+        )
+
+
+def generate_crate_blockstate() -> None:
+    rotations = {
+        "north": 0,
+        "east": 90,
+        "south": 180,
+        "west": 270,
+    }
+    multipart = []
+
+    for facing, rotation in rotations.items():
+        apply = {"model": "vintner:block/wine_crate"}
+        if rotation:
+            apply["y"] = rotation
+        multipart.append(
+            {
+                "when": {"facing": facing},
+                "apply": apply,
+            }
+        )
+
+    for row in range(1, 5):
+        visible_at = "|".join(str(value) for value in range(row, 5))
+
+        for facing, rotation in rotations.items():
+            apply = {
+                "model": f"vintner:block/wine_crate_bottle_row_{row}"
+            }
+            if rotation:
+                apply["y"] = rotation
+            multipart.append(
+                {
+                    "when": {
+                        "facing": facing,
+                        "bottle_rows": visible_at,
+                    },
+                    "apply": apply,
+                }
+            )
+
+    write_json(
+        ASSETS / "blockstates/wine_crate.json",
+        {"multipart": multipart},
+    )
+
+
 def generate_machine_blockstates() -> None:
     families = (
         (
@@ -710,6 +809,8 @@ def main() -> None:
     generate_trellis_blockstates()
     generate_grapevine_blockstates()
     generate_machine_models()
+    generate_crate_bottle_models()
+    generate_crate_blockstate()
     generate_machine_blockstates()
     generate_items()
     generate_survival_data()
