@@ -35,9 +35,11 @@ The fermentation barrel holds four matching bottles of must. Fermentation
 begins once the barrel is full and takes one minute; use an empty hand to
 inspect progress or collect finished wine.
 
-The aging barrel holds four matching bottles of wine. Aging begins once the
-barrel is full, takes ninety seconds, records an ageing-quality contribution,
-and produces aged wine.
+Ageing vessels begin only when full and produce wine with a recorded vessel
+identity. Oak barrels hold four bottles and provide the strongest classic oak
+contribution. Chestnut barrels work faster and favour red wine, neutral
+barrels preserve primary fruit character, and large casks hold eight bottles
+for slower, gentler ageing.
 
 Wine racks hold four bottles without opening an inventory screen. Bottles age
 while stored, and the surrounding build determines cellar quality: sheltered,
@@ -54,11 +56,19 @@ the surrounding cellar conditions, while the Almanac reports crate capacity
 and cellar quality at a glance. Wine crates are available in every supported
 vanilla wood family.
 
+Barrel stands provide low-profile cellar staging. Labelled Cellar Shelves hold
+eight bottles from one batch, making complete vintages easy to organise.
+Tasting Cabinets hold eight mixed bottles for comparison. Both fixtures show
+their exact bottle count, age bottles under the surrounding cellar conditions,
+support comparator output, preserve metadata, and are available in every
+supported wood family.
+
 Craft a Vintner's Almanac from a book and both grape varieties. Use it while
 holding wine in the other hand to inspect the bottle's vintage, batch, tasting
-profile, quality score and production breakdown, numbered place in its batch,
-age, cumulative cellar history, batch provenance, bottling day, and whether
-the bottle should be held or enjoyed now. Provenance is established when a
+profile, body and finish, wine style, estate, quality score and production
+breakdown, numbered place in its batch, age, cumulative cellar history, batch
+provenance, ageing vessel, estimated trade value, cellar prestige, bottling
+day, and whether the bottle should be held or enjoyed now. Provenance is established when a
 batch is pressed so grapes from matching vines remain stackable. Use the
 Almanac directly on a wine rack to
 inspect the cellar around that rack. Normal wine tooltips remain intentionally
@@ -86,9 +96,12 @@ incompatible, or unfinished batches in the action bar.
 Wine quality is scored from 0–100 across vineyard conditions, pressing,
 fermentation, barrel ageing, and bottle storage. The score produces six tiers:
 Rough, Table, Good, Fine, Exceptional, and Legendary. Higher tiers last longer,
-have stronger signature effects, and retain their character for longer in the
-cellar. Ideal storage can gradually improve a strong bottle, while poor storage
-progressively reduces its quality and can eventually spoil it.
+have stronger signature effects and food pairings, carry higher value and
+prestige, have fewer quality faults, and retain their character for longer in
+the cellar. Cellars evaluate shelter, depth, darkness, humidity, nearby heat,
+temperature stability, and machinery disturbance. Ideal storage can gradually
+improve a strong bottle, while poor storage progressively reduces its quality
+and can eventually spoil it.
 
 Starter cuttings remain renewable and accessible:
 

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "S S",
+    "PSP",
+    "P P"
+  ],
+  "key": {
+    "P": "minecraft:birch_planks",
+    "S": "minecraft:birch_slab"
+  },
+  "result": {
+    "id": "vintner:birch_barrel_stand",
+    "count": 1
+  }
+}

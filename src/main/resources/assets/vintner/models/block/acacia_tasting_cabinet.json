@@ -1,0 +1,9 @@
+{
+  "parent": "vintner:block/tasting_cabinet",
+  "textures": {
+    "wood": "minecraft:block/acacia_planks",
+    "beam": "minecraft:block/acacia_log",
+    "end": "minecraft:block/acacia_log_top",
+    "particle": "minecraft:block/acacia_planks"
+  }
+}

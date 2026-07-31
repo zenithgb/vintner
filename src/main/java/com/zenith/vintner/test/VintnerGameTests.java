@@ -1,12 +1,14 @@
 package com.zenith.vintner.test;
 
 import com.zenith.vintner.block.AgingBarrelBlock;
+import com.zenith.vintner.block.CellarCollectionBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
+import com.zenith.vintner.block.entity.CellarCollectionBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
@@ -19,6 +21,8 @@ import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.CellarConditions;
 import com.zenith.vintner.wine.CellarRating;
+import com.zenith.vintner.wine.AgingVessel;
+import com.zenith.vintner.wine.GrapeQualityEvaluator;
 import com.zenith.vintner.wine.WineConsumptionManager;
 import com.zenith.vintner.wine.WineConsumptionState;
 import com.zenith.vintner.wine.WineMetadata;
@@ -29,6 +33,7 @@ import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.wine.WineAgeStage;
 import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
+import com.zenith.vintner.wine.WineStyle;
 import net.minecraft.advancements.AdvancementHolder;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -116,6 +121,21 @@ public final class VintnerGameTests {
                 "Every wood family should have a vintage archive"
         );
         helper.assertValueEqual(
+                ModBlocks.BARREL_STANDS.size(),
+                expected,
+                "Every wood family should have a barrel stand"
+        );
+        helper.assertValueEqual(
+                ModBlocks.LABELLED_CELLAR_SHELVES.size(),
+                expected,
+                "Every wood family should have a labelled cellar shelf"
+        );
+        helper.assertValueEqual(
+                ModBlocks.TASTING_CABINETS.size(),
+                expected,
+                "Every wood family should have a tasting cabinet"
+        );
+        helper.assertValueEqual(
                 ModBlocks.RED_GRAPEVINES.size(),
                 expected,
                 "Every wood family should retain red-vine supports"
@@ -175,7 +195,34 @@ public final class VintnerGameTests {
                     woodVariant.id()
                             + " vintage archive should support its block entity"
             );
+            helper.assertTrue(
+                    ModBlockEntities.CELLAR_COLLECTION.isValid(
+                            ModBlocks.labelledCellarShelf(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " labelled shelf should support its block entity"
+            );
+            helper.assertTrue(
+                    ModBlockEntities.CELLAR_COLLECTION.isValid(
+                            ModBlocks.tastingCabinet(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " tasting cabinet should support its block entity"
+            );
         }
+
+        helper.assertTrue(
+                ModBlockEntities.AGING_BARREL.isValid(
+                        ModBlocks.CHESTNUT_AGING_BARREL.defaultBlockState()
+                ) && ModBlockEntities.AGING_BARREL.isValid(
+                        ModBlocks.NEUTRAL_AGING_BARREL.defaultBlockState()
+                ) && ModBlockEntities.AGING_BARREL.isValid(
+                        ModBlocks.LARGE_CASK.defaultBlockState()
+                ),
+                "Every specialist ageing vessel should support barrel data"
+        );
 
         helper.succeed();
     }
@@ -2982,6 +3029,57 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void vineyardQualityUsesAllPhaseThreeInputs(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                GrapeQualityEvaluator.score(
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true
+                ),
+                60,
+                "An ideal mature, managed, ripe, dry harvest should score sixty"
+        );
+        helper.assertValueEqual(
+                GrapeQualityEvaluator.score(
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                ),
+                0,
+                "Poor site, vine, yield, ripeness, and weather should score zero"
+        );
+        helper.assertTrue(
+                GrapeQualityEvaluator.score(
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        false
+                ) < 60,
+                "Wet harvest weather should reduce an otherwise ideal score"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void legacyQualityIdsRemainReadable(
             GameTestHelper helper
     ) {
@@ -3120,6 +3218,262 @@ public final class VintnerGameTests {
                 WineMetadata.quality(agedWine),
                 WineQuality.EXCEPTIONAL,
                 "The accumulated score should determine the final tier"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void specialistAgeingVesselsHaveDistinctProfiles(
+            GameTestHelper helper
+    ) {
+        BlockPos chestnutPos = new BlockPos(1, 1, 1);
+        BlockPos neutralPos = new BlockPos(3, 1, 1);
+        BlockPos caskPos = new BlockPos(5, 1, 1);
+        helper.setBlock(chestnutPos, ModBlocks.CHESTNUT_AGING_BARREL);
+        helper.setBlock(neutralPos, ModBlocks.NEUTRAL_AGING_BARREL);
+        helper.setBlock(caskPos, ModBlocks.LARGE_CASK);
+
+        AgingBarrelBlockEntity chestnut = helper.getBlockEntity(
+                chestnutPos,
+                AgingBarrelBlockEntity.class
+        );
+        AgingBarrelBlockEntity neutral = helper.getBlockEntity(
+                neutralPos,
+                AgingBarrelBlockEntity.class
+        );
+        AgingBarrelBlockEntity cask = helper.getBlockEntity(
+                caskPos,
+                AgingBarrelBlockEntity.class
+        );
+
+        helper.assertValueEqual(
+                chestnut.getVessel(),
+                AgingVessel.CHESTNUT,
+                "The chestnut barrel should use its specialist profile"
+        );
+        helper.assertValueEqual(
+                neutral.getVessel(),
+                AgingVessel.NEUTRAL,
+                "The neutral barrel should use its specialist profile"
+        );
+        helper.assertValueEqual(
+                cask.getCapacity(),
+                8,
+                "The large cask should hold eight matching bottles"
+        );
+        helper.assertTrue(
+                chestnut.getAgingTime() < neutral.getAgingTime()
+                        && neutral.getAgingTime() < cask.getAgingTime(),
+                "Vessel oxygen exposure should create distinct ageing speeds"
+        );
+        helper.assertTrue(
+                AgingVessel.CHESTNUT.spoilageRiskPenalty()
+                        > AgingVessel.NEUTRAL.spoilageRiskPenalty(),
+                "Higher-exposure chestnut should carry more spoilage risk"
+        );
+        helper.assertTrue(
+                AgingVessel.CHESTNUT.qualityContribution(1)
+                        > AgingVessel.CHESTNUT.qualityContribution(2),
+                "Chestnut should have a meaningful red-wine style affinity"
+        );
+        helper.assertTrue(
+                !AgingVessel.OAK.tastingNote(true).equals(
+                        AgingVessel.LARGE_CASK.tastingNote(true)
+                ),
+                "Vessel tannin and flavour should change tasting notes"
+        );
+
+        ItemStack bottle = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.applyProfile(
+                bottle,
+                12,
+                new WineQualityProfile(0, 55, 5, 5, 0, 0)
+        );
+        WineMetadata.ensureBatchIdentity(bottle, 3012001L);
+        for (int index = 0; index < cask.getCapacity(); index++) {
+            helper.assertTrue(
+                    cask.insertOne(bottle),
+                    "The large cask should accept bottle " + (index + 1)
+            );
+        }
+        for (int tick = 0; tick < cask.getAgingTime(); tick++) {
+            AgingBarrelBlockEntity.serverTick(
+                    helper.getLevel(),
+                    helper.absolutePos(caskPos),
+                    helper.getBlockState(caskPos),
+                    cask
+            );
+        }
+        ItemStack result = cask.takeOneAgedWine();
+        helper.assertValueEqual(
+                WineMetadata.agingVessel(result),
+                AgingVessel.LARGE_CASK,
+                "Finished wine should remember its ageing vessel"
+        );
+        helper.assertValueEqual(
+                WineMetadata.qualityProfile(result).ageing(),
+                AgingVessel.LARGE_CASK.qualityContribution(1),
+                "The cask profile should contribute to final quality"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cellarFixturesSeparateBatchAndTastingStorage(
+            GameTestHelper helper
+    ) {
+        BlockPos shelfPos = new BlockPos(1, 1, 1);
+        BlockPos cabinetPos = new BlockPos(3, 1, 1);
+        helper.setBlock(shelfPos, ModBlocks.LABELLED_CELLAR_SHELF);
+        helper.setBlock(cabinetPos, ModBlocks.TASTING_CABINET);
+        CellarCollectionBlockEntity shelf = helper.getBlockEntity(
+                shelfPos,
+                CellarCollectionBlockEntity.class
+        );
+        CellarCollectionBlockEntity cabinet = helper.getBlockEntity(
+                cabinetPos,
+                CellarCollectionBlockEntity.class
+        );
+        ItemStack first = new ItemStack(ModItems.AGED_RED_WINE);
+        ItemStack matching = new ItemStack(ModItems.AGED_RED_WINE);
+        ItemStack other = new ItemStack(ModItems.AGED_WHITE_WINE);
+        WineMetadata.apply(first, 8, WineQuality.FINE);
+        WineMetadata.apply(matching, 8, WineQuality.FINE);
+        WineMetadata.apply(other, 9, WineQuality.EXCEPTIONAL);
+        WineMetadata.ensureBatchIdentity(first, 88001L);
+        WineMetadata.ensureBatchIdentity(matching, 88001L);
+        WineMetadata.ensureBatchIdentity(other, 99001L);
+
+        helper.assertTrue(
+                shelf.insertOne(first) && shelf.insertOne(matching),
+                "A labelled shelf should accept bottles from its batch"
+        );
+        helper.assertFalse(
+                shelf.insertOne(other),
+                "A labelled shelf should reject a different batch"
+        );
+        helper.assertTrue(
+                cabinet.insertOne(first) && cabinet.insertOne(other),
+                "A tasting cabinet should accept mixed vintages"
+        );
+        helper.assertBlockProperty(
+                shelfPos,
+                CellarCollectionBlock.BOTTLE_COUNT,
+                2
+        );
+        helper.assertBlockProperty(
+                cabinetPos,
+                CellarCollectionBlock.BOTTLE_COUNT,
+                2
+        );
+
+        CellarCollectionBlockEntity restored =
+                (CellarCollectionBlockEntity) reload(helper, cabinet);
+        helper.assertValueEqual(
+                restored.getBottleCount(),
+                2,
+                "Tasting cabinet contents should survive save and load"
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchId(restored.takeLastBottle()),
+                99001L,
+                "Cabinet retrieval should preserve bottle identity"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void completeVintageIdentitySupportsCellarDecisions(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                WineStyle.from(new ItemStack(ModItems.WHITE_GRAPES)),
+                WineStyle.WHITE,
+                "White grapes should establish white-wine style metadata"
+        );
+        helper.assertValueEqual(
+                WineStyle.from(new ItemStack(ModItems.WHITE_MUST)),
+                WineStyle.WHITE,
+                "White must should retain white-wine style metadata"
+        );
+        ItemStack bottle = new ItemStack(ModItems.AGED_WHITE_WINE);
+        WineMetadata.apply(bottle, 14, WineQuality.LEGENDARY);
+        WineMetadata.ensureBatchIdentity(bottle, 140014L);
+        WineMetadata.applyProvenance(
+                bottle,
+                new WineProvenance(
+                        "white",
+                        336000L,
+                        "minecraft:overworld",
+                        12,
+                        64,
+                        -8,
+                        "producer-id",
+                        "North Hill"
+                )
+        );
+        WineMetadata.setEstateName(bottle, "North Hill Estate");
+        WineMetadata.markBottled(bottle, 336000L);
+        WineMetadata.ageBottle(
+                bottle,
+                WineAgeStage.PEAK_AT,
+                CellarRating.IDEAL
+        );
+
+        helper.assertValueEqual(
+                WineMetadata.wineStyle(bottle),
+                WineStyle.WHITE,
+                "Wine style should be stored or inferred from the bottle"
+        );
+        helper.assertValueEqual(
+                WineMetadata.estateName(bottle),
+                "North Hill Estate",
+                "Wine identity should preserve its estate"
+        );
+        helper.assertTrue(
+                WineMetadata.estimatedTradeValue(bottle)
+                        > WineQuality.TABLE.tradeValue(),
+                "Peak legendary wine should advertise a premium value"
+        );
+        helper.assertTrue(
+                WineMetadata.settlementPrestige(bottle) > 0,
+                "Collectible wine should expose a prestige value"
+        );
+        helper.assertTrue(
+                WineTastingProfile.from(bottle).body() != null,
+                "The tasting profile should include body as well as notes"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cellarStabilityAndDisturbanceAffectRating(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                CellarConditions.ratingFor(
+                        true,
+                        true,
+                        true,
+                        true,
+                        false,
+                        true,
+                        false
+                ),
+                CellarRating.IDEAL,
+                "A stable protected cellar should be ideal"
+        );
+        helper.assertTrue(
+                CellarConditions.ratingFor(
+                        true,
+                        true,
+                        true,
+                        true,
+                        false,
+                        true,
+                        true
+                ) != CellarRating.IDEAL,
+                "Nearby machinery disturbance should reduce cellar quality"
         );
         helper.succeed();
     }

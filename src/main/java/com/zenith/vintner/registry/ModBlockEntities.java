@@ -2,6 +2,7 @@ package com.zenith.vintner.registry;
 
 import com.zenith.vintner.Vintner;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
+import com.zenith.vintner.block.entity.CellarCollectionBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
@@ -91,6 +92,19 @@ public final class ModBlockEntities {
                     FabricBlockEntityTypeBuilder.create(
                             VintageArchiveBlockEntity::new,
                             ModBlocks.vintageArchiveBlocks()
+                    ).build()
+            );
+
+    public static final BlockEntityType<CellarCollectionBlockEntity>
+            CELLAR_COLLECTION = Registry.register(
+                    BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                    Identifier.fromNamespaceAndPath(
+                            Vintner.MOD_ID,
+                            "cellar_collection"
+                    ),
+                    FabricBlockEntityTypeBuilder.create(
+                            CellarCollectionBlockEntity::new,
+                            ModBlocks.cellarCollectionBlocks()
                     ).build()
             );
 

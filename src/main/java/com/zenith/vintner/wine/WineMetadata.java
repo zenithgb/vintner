@@ -59,6 +59,12 @@ public final class WineMetadata {
             "VintnerStorageGoodTicks";
     private static final String STORAGE_IDEAL_TICKS_KEY =
             "VintnerStorageIdealTicks";
+    private static final String AGING_VESSEL_KEY =
+            "VintnerAgingVessel";
+    private static final String ESTATE_NAME_KEY =
+            "VintnerEstateName";
+    private static final String WINE_STYLE_KEY =
+            "VintnerWineStyle";
 
     /*
      * One Minecraft year is currently treated as 96 in-game days.
@@ -105,6 +111,24 @@ public final class WineMetadata {
     public static void ensureDefaults(ItemStack stack) {
         if (!hasMetadata(stack)) {
             apply(stack, 1, WineQuality.TABLE);
+        }
+        ensureIdentityDetails(stack);
+    }
+
+    private static void ensureIdentityDetails(ItemStack stack) {
+        CompoundTag tag = getTagCopy(stack);
+        boolean changed = false;
+
+        if (!tag.contains(WINE_STYLE_KEY)) {
+            tag.putString(WINE_STYLE_KEY, WineStyle.from(stack).id());
+            changed = true;
+        }
+        if (!tag.contains(ESTATE_NAME_KEY)) {
+            tag.putString(ESTATE_NAME_KEY, defaultEstateName(tag));
+            changed = true;
+        }
+        if (changed) {
+            setTag(stack, tag);
         }
     }
 
@@ -229,6 +253,18 @@ public final class WineMetadata {
                 PRODUCER_NAME_KEY,
                 provenance.producerName()
         );
+        if (!tag.contains(ESTATE_NAME_KEY)
+                || tag.getStringOr(ESTATE_NAME_KEY, "").isBlank()
+                || "Independent Vineyard".equals(
+                tag.getStringOr(ESTATE_NAME_KEY, "")
+        )) {
+            tag.putString(
+                    ESTATE_NAME_KEY,
+                    provenance.producerName().isBlank()
+                            ? "Independent Vineyard"
+                            : provenance.producerName() + " Vineyard"
+            );
+        }
         setTag(stack, tag);
     }
 
@@ -300,6 +336,71 @@ public final class WineMetadata {
         tag.putInt(BOTTLE_NUMBER_KEY, safeBottleNumber);
         tag.putInt(BATCH_BOTTLE_COUNT_KEY, safeBatchCount);
         setTag(stack, tag);
+    }
+
+    public static void setAgingVessel(
+            ItemStack stack,
+            AgingVessel vessel
+    ) {
+        CompoundTag tag = getTagCopy(stack);
+        tag.putString(AGING_VESSEL_KEY, vessel.id());
+        setTag(stack, tag);
+    }
+
+    public static AgingVessel agingVessel(ItemStack stack) {
+        return AgingVessel.byId(
+                getTagCopy(stack).getStringOr(
+                        AGING_VESSEL_KEY,
+                        AgingVessel.OAK.id()
+                )
+        );
+    }
+
+    public static WineStyle wineStyle(ItemStack stack) {
+        CompoundTag tag = getTagCopy(stack);
+        return tag.contains(WINE_STYLE_KEY)
+                ? WineStyle.byId(tag.getStringOr(
+                        WINE_STYLE_KEY,
+                        WineStyle.from(stack).id()
+                ))
+                : WineStyle.from(stack);
+    }
+
+    public static void setEstateName(ItemStack stack, String estateName) {
+        CompoundTag tag = getTagCopy(stack);
+        tag.putString(
+                ESTATE_NAME_KEY,
+                estateName == null || estateName.isBlank()
+                        ? "Independent Vineyard"
+                        : estateName.trim()
+        );
+        setTag(stack, tag);
+    }
+
+    public static String estateName(ItemStack stack) {
+        CompoundTag tag = getTagCopy(stack);
+        return tag.getStringOr(
+                ESTATE_NAME_KEY,
+                defaultEstateName(tag)
+        );
+    }
+
+    public static int estimatedTradeValue(ItemStack stack) {
+        int ageAdjustment = switch (ageStage(stack)) {
+            case YOUNG -> 0;
+            case DEVELOPING -> 1;
+            case MATURE -> 2;
+            case PEAK -> 4;
+            case DECLINING -> -1;
+            case SPOILED -> -quality(stack).tradeValue();
+        };
+        return Math.max(0, quality(stack).tradeValue() + ageAdjustment);
+    }
+
+    public static int settlementPrestige(ItemStack stack) {
+        return ageStage(stack) == WineAgeStage.SPOILED
+                ? 0
+                : quality(stack).prestigeValue();
     }
 
     public static int bottleNumber(ItemStack stack) {
@@ -528,6 +629,13 @@ public final class WineMetadata {
             case GOOD -> STORAGE_GOOD_TICKS_KEY;
             case IDEAL -> STORAGE_IDEAL_TICKS_KEY;
         };
+    }
+
+    private static String defaultEstateName(CompoundTag tag) {
+        String producer = tag.getStringOr(PRODUCER_NAME_KEY, "");
+        return producer.isBlank()
+                ? "Independent Vineyard"
+                : producer + " Vineyard";
     }
 
     private static WineQualityProfile readQualityProfile(

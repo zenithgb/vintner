@@ -125,6 +125,26 @@ def archive_id(wood: str) -> str:
     )
 
 
+def stand_id(wood: str) -> str:
+    return "barrel_stand" if wood == "oak" else f"{wood}_barrel_stand"
+
+
+def shelf_id(wood: str) -> str:
+    return (
+        "labelled_cellar_shelf"
+        if wood == "oak"
+        else f"{wood}_labelled_cellar_shelf"
+    )
+
+
+def cabinet_id(wood: str) -> str:
+    return (
+        "tasting_cabinet"
+        if wood == "oak"
+        else f"{wood}_tasting_cabinet"
+    )
+
+
 def grapevine_id(wood: str, color: str) -> str:
     return (
         f"{color}_grapevine"
@@ -325,6 +345,231 @@ def generate_machine_models() -> None:
                 },
             )
 
+        for block_id, parent in (
+            (stand_id(wood), "barrel_stand"),
+            (shelf_id(wood), "labelled_cellar_shelf"),
+            (cabinet_id(wood), "tasting_cabinet"),
+        ):
+            if block_id == parent:
+                continue
+            write_json(
+                ASSETS / f"models/block/{block_id}.json",
+                {
+                    "parent": f"vintner:block/{parent}",
+                    "textures": {
+                        "wood": textures["wood"],
+                        "beam": textures["beam"],
+                        "end": textures["end"],
+                        "particle": textures["particle"],
+                    },
+                },
+            )
+
+
+def cube_faces(texture: str) -> dict[str, dict[str, str]]:
+    return {
+        face: {"texture": texture}
+        for face in ("north", "east", "south", "west", "up", "down")
+    }
+
+
+def generate_cellar_fixture_base_models() -> None:
+    wood_faces = cube_faces("#wood")
+    beam_faces = cube_faces("#beam")
+    metal_faces = cube_faces("#metal")
+    label_faces = cube_faces("#label")
+
+    write_json(
+        ASSETS / "models/block/barrel_stand.json",
+        {
+            "parent": "minecraft:block/block",
+            "textures": {
+                "wood": "minecraft:block/oak_planks",
+                "beam": "minecraft:block/oak_log",
+                "end": "minecraft:block/oak_log_top",
+                "particle": "minecraft:block/oak_planks",
+            },
+            "elements": [
+                {"from": [1, 0, 1], "to": [3, 6, 3], "faces": copy.deepcopy(beam_faces)},
+                {"from": [13, 0, 1], "to": [15, 6, 3], "faces": copy.deepcopy(beam_faces)},
+                {"from": [1, 0, 13], "to": [3, 6, 15], "faces": copy.deepcopy(beam_faces)},
+                {"from": [13, 0, 13], "to": [15, 6, 15], "faces": copy.deepcopy(beam_faces)},
+                {"from": [1, 4, 1], "to": [15, 7, 3], "faces": copy.deepcopy(wood_faces)},
+                {"from": [1, 4, 13], "to": [15, 7, 15], "faces": copy.deepcopy(wood_faces)},
+                {"from": [1, 2, 3], "to": [3, 5, 13], "faces": copy.deepcopy(wood_faces)},
+                {"from": [13, 2, 3], "to": [15, 5, 13], "faces": copy.deepcopy(wood_faces)},
+            ],
+        },
+    )
+
+    write_json(
+        ASSETS / "models/block/labelled_cellar_shelf.json",
+        {
+            "parent": "minecraft:block/block",
+            "textures": {
+                "wood": "minecraft:block/oak_planks",
+                "beam": "minecraft:block/oak_log",
+                "end": "minecraft:block/oak_log_top",
+                "label": "minecraft:block/birch_planks",
+                "particle": "minecraft:block/oak_planks",
+            },
+            "elements": [
+                {"from": [0.5, 0, 0.5], "to": [2, 16, 15.5], "faces": copy.deepcopy(beam_faces)},
+                {"from": [14, 0, 0.5], "to": [15.5, 16, 15.5], "faces": copy.deepcopy(beam_faces)},
+                {"from": [2, 0, 1], "to": [14, 1.5, 15], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 7.25, 1], "to": [14, 8.75, 15], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 14.5, 1], "to": [14, 16, 15], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 1.5, 14], "to": [14, 14.5, 15.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [5.5, 6.5, 0.25], "to": [10.5, 9.5, 1], "faces": copy.deepcopy(label_faces)},
+            ],
+        },
+    )
+
+    write_json(
+        ASSETS / "models/block/tasting_cabinet.json",
+        {
+            "parent": "minecraft:block/block",
+            "textures": {
+                "wood": "minecraft:block/oak_planks",
+                "beam": "minecraft:block/oak_log",
+                "end": "minecraft:block/oak_log_top",
+                "metal": "minecraft:block/copper_block",
+                "particle": "minecraft:block/oak_planks",
+            },
+            "elements": [
+                {"from": [0.5, 0, 0.5], "to": [2.25, 16, 15.5], "faces": copy.deepcopy(beam_faces)},
+                {"from": [13.75, 0, 0.5], "to": [15.5, 16, 15.5], "faces": copy.deepcopy(beam_faces)},
+                {"from": [2.25, 0, 1], "to": [13.75, 1.75, 15], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2.25, 7.25, 1], "to": [13.75, 8.75, 15], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2.25, 14.25, 1], "to": [13.75, 16, 15], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2.25, 1.75, 14], "to": [13.75, 14.25, 15.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [6.25, 7.4, 0.2], "to": [9.75, 8.6, 1], "faces": copy.deepcopy(metal_faces)},
+            ],
+        },
+    )
+
+    bottle_faces = cube_faces("#bottle")
+    cork_faces = cube_faces("#cork")
+    slot = 0
+    for y in (2.0, 9.0):
+        for x in (3.0, 6.33, 9.67, 13.0):
+            slot += 1
+            write_json(
+                ASSETS / f"models/block/cellar_fixture_bottle_slot_{slot}.json",
+                {
+                    "parent": "minecraft:block/block",
+                    "textures": {
+                        "bottle": "minecraft:block/green_concrete",
+                        "cork": "minecraft:block/stripped_oak_log_top",
+                        "particle": "minecraft:block/green_concrete",
+                    },
+                    "elements": [
+                        {"from": [x - 0.8, y, 6.7], "to": [x + 0.8, y + 4.4, 9.3], "faces": copy.deepcopy(bottle_faces)},
+                        {"from": [x - 0.45, y + 4.4, 7.1], "to": [x + 0.45, y + 6.0, 8.9], "faces": copy.deepcopy(bottle_faces)},
+                        {"from": [x - 0.48, y + 6.0, 7.05], "to": [x + 0.48, y + 6.4, 8.95], "faces": copy.deepcopy(cork_faces)},
+                    ],
+                },
+            )
+
+
+def generate_cellar_fixture_blockstates() -> None:
+    rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
+    for wood in WOODS:
+        for block_id in (stand_id(wood),):
+            multipart = []
+            for facing, rotation in rotations.items():
+                apply = {"model": f"vintner:block/{block_id}"}
+                if rotation:
+                    apply["y"] = rotation
+                multipart.append({"when": {"facing": facing}, "apply": apply})
+            write_json(ASSETS / f"blockstates/{block_id}.json", {"multipart": multipart})
+
+        for block_id in (shelf_id(wood), cabinet_id(wood)):
+            multipart = []
+            for facing, rotation in rotations.items():
+                apply = {"model": f"vintner:block/{block_id}"}
+                if rotation:
+                    apply["y"] = rotation
+                multipart.append({"when": {"facing": facing}, "apply": apply})
+            for slot in range(1, 9):
+                visible = "|".join(str(value) for value in range(slot, 9))
+                for facing, rotation in rotations.items():
+                    apply = {"model": f"vintner:block/cellar_fixture_bottle_slot_{slot}"}
+                    if rotation:
+                        apply["y"] = rotation
+                    multipart.append({
+                        "when": {"facing": facing, "bottle_count": visible},
+                        "apply": apply,
+                    })
+            write_json(ASSETS / f"blockstates/{block_id}.json", {"multipart": multipart})
+
+
+def generate_special_aging_vessels() -> None:
+    vessels = {
+        "chestnut_aging_barrel": {
+            "wood": "minecraft:block/dark_oak_planks",
+            "end": "minecraft:block/stripped_dark_oak_log_top",
+            "band": "minecraft:block/iron_block",
+        },
+        "neutral_aging_barrel": {
+            "wood": "minecraft:block/stripped_oak_log",
+            "end": "minecraft:block/stripped_oak_log_top",
+            "band": "minecraft:block/iron_block",
+        },
+        "large_cask": {
+            "wood": "minecraft:block/spruce_planks",
+            "end": "minecraft:block/spruce_log_top",
+            "band": "minecraft:block/copper_block",
+        },
+    }
+    template = read_json(ASSETS / "blockstates/aging_barrel.json")
+    for block_id, textures in vessels.items():
+        write_json(
+            ASSETS / f"models/block/{block_id}.json",
+            {
+                "parent": "vintner:block/cask",
+                "textures": {
+                    **textures,
+                    "particle": textures["wood"],
+                },
+            },
+        )
+        write_json(
+            ASSETS / f"blockstates/{block_id}.json",
+            replace_model(
+                copy.deepcopy(template),
+                "vintner:block/aging_barrel",
+                f"vintner:block/{block_id}",
+            ),
+        )
+        write_json(
+            ASSETS / f"models/item/{block_id}.json",
+            {"parent": f"vintner:block/{block_id}"},
+        )
+        write_json(
+            ASSETS / f"items/{block_id}.json",
+            {"model": {"type": "minecraft:model", "model": f"vintner:item/{block_id}"}},
+        )
+        write_json(DATA / f"loot_table/blocks/{block_id}.json", loot_table(block_id))
+
+    recipes = {
+        "chestnut_aging_barrel": ("minecraft:dark_oak_planks", "minecraft:iron_ingot"),
+        "neutral_aging_barrel": ("minecraft:oak_planks", "minecraft:honeycomb"),
+        "large_cask": ("minecraft:spruce_planks", "minecraft:copper_ingot"),
+    }
+    for block_id, (planks, band) in recipes.items():
+        write_json(DATA / f"recipe/{block_id}.json", {
+            "type": "minecraft:crafting_shaped",
+            "category": "misc",
+            "pattern": ["PPP", "B B", "PPP"],
+            "key": {"P": planks, "B": band},
+            "result": {"id": f"vintner:{block_id}", "count": 1},
+        })
+        write_json(
+            DATA / f"advancement/recipes/vintner/{block_id}.json",
+            recipe_advancement(block_id, planks),
+        )
+
 
 def generate_crate_bottle_models() -> None:
     bottle_faces = {
@@ -502,6 +747,18 @@ def generate_items() -> None:
                 archive_id(wood),
                 f"vintner:block/{archive_id(wood)}",
             ),
+            (
+                stand_id(wood),
+                f"vintner:block/{stand_id(wood)}",
+            ),
+            (
+                shelf_id(wood),
+                f"vintner:block/{shelf_id(wood)}",
+            ),
+            (
+                cabinet_id(wood),
+                f"vintner:block/{cabinet_id(wood)}",
+            ),
         )
 
         for block_id, parent in ids_and_models:
@@ -595,6 +852,9 @@ def generate_survival_data() -> None:
             rack_id(wood),
             crate_id(wood),
             archive_id(wood),
+            stand_id(wood),
+            shelf_id(wood),
+            cabinet_id(wood),
         )
         axe_blocks.extend(f"vintner:{block_id}" for block_id in ids)
 
@@ -719,6 +979,27 @@ def generate_survival_data() -> None:
                     "count": 1,
                 },
             },
+            stand_id(wood): {
+                "type": "minecraft:crafting_shaped",
+                "category": "misc",
+                "pattern": ["S S", "PSP", "P P"],
+                "key": {"P": planks, "S": f"minecraft:{wood}_slab"},
+                "result": {"id": f"vintner:{stand_id(wood)}", "count": 1},
+            },
+            shelf_id(wood): {
+                "type": "minecraft:crafting_shaped",
+                "category": "misc",
+                "pattern": ["PPP", "SPS", "PNP"],
+                "key": {"P": planks, "S": "minecraft:stick", "N": "minecraft:name_tag"},
+                "result": {"id": f"vintner:{shelf_id(wood)}", "count": 1},
+            },
+            cabinet_id(wood): {
+                "type": "minecraft:crafting_shaped",
+                "category": "misc",
+                "pattern": ["PGP", "PBP", "PGP"],
+                "key": {"P": planks, "G": "minecraft:glass_pane", "B": "minecraft:book"},
+                "result": {"id": f"vintner:{cabinet_id(wood)}", "count": 1},
+            },
         }
 
         for recipe_id, recipe in recipes.items():
@@ -735,6 +1016,15 @@ def generate_survival_data() -> None:
                 DATA / f"loot_table/blocks/{recipe_id}.json",
                 loot_table(recipe_id),
             )
+
+    axe_blocks.extend(
+        f"vintner:{block_id}"
+        for block_id in (
+            "chestnut_aging_barrel",
+            "neutral_aging_barrel",
+            "large_cask",
+        )
+    )
 
     write_json(
         ROOT
@@ -790,6 +1080,15 @@ def generate_language() -> None:
         language[f"block.vintner.{archive_id(wood)}"] = (
             f"{title} Vintage Archive"
         )
+        language[f"block.vintner.{stand_id(wood)}"] = (
+            f"{title} Barrel Stand"
+        )
+        language[f"block.vintner.{shelf_id(wood)}"] = (
+            f"{title} Labelled Cellar Shelf"
+        )
+        language[f"block.vintner.{cabinet_id(wood)}"] = (
+            f"{title} Tasting Cabinet"
+        )
         language[
             f"block.vintner.{grapevine_id(wood, 'red')}"
         ] = f"{title} Red Grapevine"
@@ -800,6 +1099,59 @@ def generate_language() -> None:
     language["advancement.vintner.craft_trellis.description"] = (
         "Craft a trellis for your first vine"
     )
+    language["block.vintner.chestnut_aging_barrel"] = (
+        "Chestnut Aging Barrel"
+    )
+    language["block.vintner.neutral_aging_barrel"] = (
+        "Neutral Aging Barrel"
+    )
+    language["block.vintner.large_cask"] = "Large Cask"
+    language["aging_vessel.vintner.oak"] = "Oak barrel"
+    language["aging_vessel.vintner.chestnut"] = "Chestnut barrel"
+    language["aging_vessel.vintner.neutral"] = "Neutral barrel"
+    language["aging_vessel.vintner.large_cask"] = "Large cask"
+    language["message.vintner.almanac.vessel"] = (
+        "Aged in: %s"
+    )
+    language["wine_style.vintner.red"] = "Red"
+    language["wine_style.vintner.white"] = "White"
+    language["message.vintner.almanac.style_estate"] = (
+        "Style: %s | Estate: %s"
+    )
+    language["message.vintner.almanac.value"] = (
+        "Estimated value: %s emeralds | Cellar prestige: %s"
+    )
+    language["tasting_note.vintner.light_body"] = "light-bodied"
+    language["tasting_note.vintner.rustic_body"] = "rustic-bodied"
+    language["tasting_note.vintner.medium_body"] = "medium-bodied"
+    language["tasting_note.vintner.full_body"] = "full-bodied"
+    language["message.vintner.labelled_cellar_shelf.empty"] = (
+        "The labelled cellar shelf is empty."
+    )
+    language["message.vintner.labelled_cellar_shelf.full"] = (
+        "The labelled cellar shelf is full."
+    )
+    language["message.vintner.labelled_cellar_shelf.incompatible"] = (
+        "The shelf label is reserved for a different batch."
+    )
+    language["message.vintner.labelled_cellar_shelf.summary"] = (
+        "Labelled Shelf: %s/%s bottles | Cellar: %s"
+    )
+    language["message.vintner.tasting_cabinet.empty"] = (
+        "The tasting cabinet is empty."
+    )
+    language["message.vintner.tasting_cabinet.full"] = (
+        "The tasting cabinet is full."
+    )
+    language["message.vintner.tasting_cabinet.incompatible"] = (
+        "That bottle cannot be stored in the tasting cabinet."
+    )
+    language["message.vintner.tasting_cabinet.summary"] = (
+        "Tasting Cabinet: %s/%s bottles | Cellar: %s"
+    )
+    language["message.vintner.cellar_collection.selection"] = (
+        "%s wine | Year %s | Batch %s | %s"
+    )
     write_json(path, language)
 
 
@@ -808,6 +1160,9 @@ def main() -> None:
     generate_trellis_blockstates()
     generate_grapevine_blockstates()
     generate_machine_models()
+    generate_cellar_fixture_base_models()
+    generate_cellar_fixture_blockstates()
+    generate_special_aging_vessels()
     generate_crate_bottle_models()
     generate_crate_blockstate()
     generate_machine_blockstates()

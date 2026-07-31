@@ -91,6 +91,47 @@ public enum WineQuality {
         };
     }
 
+    public float pairingMultiplier() {
+        return switch (this) {
+            case ROUGH -> 1.25F;
+            case TABLE -> 1.5F;
+            case GOOD -> 1.6F;
+            case FINE -> 1.7F;
+            case EXCEPTIONAL -> 1.85F;
+            case LEGENDARY -> 2.0F;
+        };
+    }
+
+    public int tradeValue() {
+        return switch (this) {
+            case ROUGH -> 1;
+            case TABLE -> 2;
+            case GOOD -> 4;
+            case FINE -> 6;
+            case EXCEPTIONAL -> 9;
+            case LEGENDARY -> 14;
+        };
+    }
+
+    public int prestigeValue() {
+        return switch (this) {
+            case ROUGH -> 0;
+            case TABLE -> 1;
+            case GOOD -> 2;
+            case FINE -> 4;
+            case EXCEPTIONAL -> 7;
+            case LEGENDARY -> 12;
+        };
+    }
+
+    public float negativeEffectChance() {
+        return switch (this) {
+            case ROUGH -> 0.15F;
+            case TABLE -> 0.05F;
+            default -> 0.0F;
+        };
+    }
+
     public Component effectBonus() {
         return Component.translatable(
                 "wine_effect_bonus.vintner." + translationKey

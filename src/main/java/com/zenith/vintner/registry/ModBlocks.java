@@ -4,6 +4,9 @@ import com.zenith.vintner.block.VineyardSoilBlock;
 
 import com.zenith.vintner.Vintner;
 import com.zenith.vintner.block.AgingBarrelBlock;
+import com.zenith.vintner.block.BarrelStandBlock;
+import com.zenith.vintner.block.CellarCollectionBlock;
+import com.zenith.vintner.block.CellarFixtureKind;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapePressBlock;
 import com.zenith.vintner.block.RedGrapevineBlock;
@@ -14,6 +17,7 @@ import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.block.WineRackBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.wine.AgingVessel;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -59,6 +63,35 @@ public final class ModBlocks {
                     WoodVariant::agingBarrelId,
                     AgingBarrelBlock::new
             );
+
+    public static final Block CHESTNUT_AGING_BARREL =
+            registerWithItem(
+                    "chestnut_aging_barrel",
+                    properties -> new AgingBarrelBlock(
+                            AgingVessel.CHESTNUT,
+                            properties
+                    ),
+                    machineProperties()
+            );
+
+    public static final Block NEUTRAL_AGING_BARREL =
+            registerWithItem(
+                    "neutral_aging_barrel",
+                    properties -> new AgingBarrelBlock(
+                            AgingVessel.NEUTRAL,
+                            properties
+                    ),
+                    machineProperties()
+            );
+
+    public static final Block LARGE_CASK = registerWithItem(
+            "large_cask",
+            properties -> new AgingBarrelBlock(
+                    AgingVessel.LARGE_CASK,
+                    properties
+            ),
+            machineProperties()
+    );
 
     public static final Block FERMENTATION_BARREL =
             registerWithItem(
@@ -131,6 +164,61 @@ public final class ModBlocks {
                     VintageArchiveBlock::new
             );
 
+    public static final Block BARREL_STAND = registerWithItem(
+            "barrel_stand",
+            BarrelStandBlock::new,
+            machineProperties()
+    );
+
+    public static final Map<WoodVariant, Block> BARREL_STANDS =
+            registerMachineVariants(
+                    WoodVariant.OAK,
+                    BARREL_STAND,
+                    WoodVariant::barrelStandId,
+                    BarrelStandBlock::new
+            );
+
+    public static final Block LABELLED_CELLAR_SHELF =
+            registerWithItem(
+                    "labelled_cellar_shelf",
+                    properties -> new CellarCollectionBlock(
+                            CellarFixtureKind.LABELLED_SHELF,
+                            properties
+                    ),
+                    machineProperties()
+            );
+
+    public static final Map<WoodVariant, Block>
+            LABELLED_CELLAR_SHELVES = registerMachineVariants(
+                    WoodVariant.OAK,
+                    LABELLED_CELLAR_SHELF,
+                    WoodVariant::labelledCellarShelfId,
+                    properties -> new CellarCollectionBlock(
+                            CellarFixtureKind.LABELLED_SHELF,
+                            properties
+                    )
+            );
+
+    public static final Block TASTING_CABINET = registerWithItem(
+            "tasting_cabinet",
+            properties -> new CellarCollectionBlock(
+                    CellarFixtureKind.TASTING_CABINET,
+                    properties
+            ),
+            machineProperties()
+    );
+
+    public static final Map<WoodVariant, Block> TASTING_CABINETS =
+            registerMachineVariants(
+                    WoodVariant.OAK,
+                    TASTING_CABINET,
+                    WoodVariant::tastingCabinetId,
+                    properties -> new CellarCollectionBlock(
+                            CellarFixtureKind.TASTING_CABINET,
+                            properties
+                    )
+            );
+
     public static final Block VINEYARD_SOIL =
             registerWithItem(
                     "vineyard_soil",
@@ -199,6 +287,18 @@ public final class ModBlocks {
         return VINTAGE_ARCHIVES.get(woodVariant);
     }
 
+    public static Block barrelStand(WoodVariant woodVariant) {
+        return BARREL_STANDS.get(woodVariant);
+    }
+
+    public static Block labelledCellarShelf(WoodVariant woodVariant) {
+        return LABELLED_CELLAR_SHELVES.get(woodVariant);
+    }
+
+    public static Block tastingCabinet(WoodVariant woodVariant) {
+        return TASTING_CABINETS.get(woodVariant);
+    }
+
     public static Block redGrapevine(WoodVariant woodVariant) {
         return RED_GRAPEVINES.get(woodVariant);
     }
@@ -225,7 +325,19 @@ public final class ModBlocks {
     }
 
     public static Block[] agingBarrelBlocks() {
-        return orderedBlocks(AGING_BARRELS);
+        Block[] cosmetic = orderedBlocks(AGING_BARRELS);
+        Block[] result = new Block[cosmetic.length + 3];
+        System.arraycopy(
+                cosmetic,
+                0,
+                result,
+                0,
+                cosmetic.length
+        );
+        result[cosmetic.length] = CHESTNUT_AGING_BARREL;
+        result[cosmetic.length + 1] = NEUTRAL_AGING_BARREL;
+        result[cosmetic.length + 2] = LARGE_CASK;
+        return result;
     }
 
     public static Block[] wineRackBlocks() {
@@ -238,6 +350,21 @@ public final class ModBlocks {
 
     public static Block[] vintageArchiveBlocks() {
         return orderedBlocks(VINTAGE_ARCHIVES);
+    }
+
+    public static Block[] cellarCollectionBlocks() {
+        Block[] shelves = orderedBlocks(LABELLED_CELLAR_SHELVES);
+        Block[] cabinets = orderedBlocks(TASTING_CABINETS);
+        Block[] result = new Block[shelves.length + cabinets.length];
+        System.arraycopy(shelves, 0, result, 0, shelves.length);
+        System.arraycopy(
+                cabinets,
+                0,
+                result,
+                shelves.length,
+                cabinets.length
+        );
+        return result;
     }
 
     private static Map<WoodVariant, Block> registerTrellises() {
@@ -442,9 +569,17 @@ public final class ModBlocks {
                     FERMENTATION_BARRELS.values()
                             .forEach(output::accept);
                     AGING_BARRELS.values().forEach(output::accept);
+                    output.accept(CHESTNUT_AGING_BARREL);
+                    output.accept(NEUTRAL_AGING_BARREL);
+                    output.accept(LARGE_CASK);
                     WINE_RACKS.values().forEach(output::accept);
                     WINE_CRATES.values().forEach(output::accept);
                     VINTAGE_ARCHIVES.values()
+                            .forEach(output::accept);
+                    BARREL_STANDS.values().forEach(output::accept);
+                    LABELLED_CELLAR_SHELVES.values()
+                            .forEach(output::accept);
+                    TASTING_CABINETS.values()
                             .forEach(output::accept);
                 });
     }

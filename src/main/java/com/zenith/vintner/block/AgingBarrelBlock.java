@@ -5,6 +5,7 @@ import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.wine.AgingVessel;
 import com.zenith.vintner.wine.WinemakingFeedback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,7 +39,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class AgingBarrelBlock extends BaseEntityBlock {
+public class AgingBarrelBlock extends BaseEntityBlock {
     public static final MapCodec<AgingBarrelBlock> CODEC =
             simpleCodec(AgingBarrelBlock::new);
 
@@ -51,10 +52,20 @@ public final class AgingBarrelBlock extends BaseEntityBlock {
     public static final IntegerProperty WINE_TYPE =
             IntegerProperty.create("wine_type", 0, 2);
 
+    private final AgingVessel vessel;
+
     public AgingBarrelBlock(
             BlockBehaviour.Properties properties
     ) {
+        this(AgingVessel.OAK, properties);
+    }
+
+    public AgingBarrelBlock(
+            AgingVessel vessel,
+            BlockBehaviour.Properties properties
+    ) {
         super(properties);
+        this.vessel = vessel;
 
         registerDefaultState(
                 stateDefinition.any()
@@ -62,6 +73,10 @@ public final class AgingBarrelBlock extends BaseEntityBlock {
                         .setValue(STATUS, 0)
                         .setValue(WINE_TYPE, 0)
         );
+    }
+
+    public AgingVessel vessel() {
+        return vessel;
     }
 
     @Override

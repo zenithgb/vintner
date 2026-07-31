@@ -178,6 +178,20 @@ public final class WineRackBlock extends BaseEntityBlock {
                                         )
                                         : Component.translatable(
                                                 "cellar.vintner.no"
+                                        ),
+                                conditions.stableTemperature()
+                                        ? Component.translatable(
+                                                "cellar.vintner.yes"
+                                        )
+                                        : Component.translatable(
+                                                "cellar.vintner.no"
+                                        ),
+                                conditions.disturbed()
+                                        ? Component.translatable(
+                                                "cellar.vintner.yes"
+                                        )
+                                        : Component.translatable(
+                                                "cellar.vintner.no"
                                         )
                         )
                 );

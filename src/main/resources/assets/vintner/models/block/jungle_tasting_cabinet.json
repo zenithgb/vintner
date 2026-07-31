@@ -1,0 +1,9 @@
+{
+  "parent": "vintner:block/tasting_cabinet",
+  "textures": {
+    "wood": "minecraft:block/jungle_planks",
+    "beam": "minecraft:block/jungle_log",
+    "end": "minecraft:block/jungle_log_top",
+    "particle": "minecraft:block/jungle_planks"
+  }
+}

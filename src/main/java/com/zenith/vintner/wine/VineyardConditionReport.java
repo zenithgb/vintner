@@ -5,6 +5,11 @@ public record VineyardConditionReport(
         boolean suitableTemperature,
         boolean precipitation,
         boolean preparedSoil,
+        boolean matureVine,
+        boolean healthyVine,
+        boolean managedYield,
+        boolean ripeHarvest,
+        boolean dryHarvestWeather,
         int qualityScore,
         WineQualityProfile qualityProfile,
         WineQuality predictedQuality

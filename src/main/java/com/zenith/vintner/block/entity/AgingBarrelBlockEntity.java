@@ -3,6 +3,7 @@ package com.zenith.vintner.block.entity;
 import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.wine.AgingVessel;
 import com.zenith.vintner.wine.WinemakingEffects;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineProvenance;
@@ -51,7 +52,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         barrel.updateComparatorSignal();
 
         if (barrel.wineType == 0
-                || barrel.bottleCount < CAPACITY
+                || barrel.bottleCount < barrel.getCapacity()
                 || barrel.ready) {
             return;
         }
@@ -70,8 +71,8 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
             );
         }
 
-        if (barrel.agingProgress >= AGING_TIME) {
-            barrel.agingProgress = AGING_TIME;
+        if (barrel.agingProgress >= barrel.getAgingTime()) {
+            barrel.agingProgress = barrel.getAgingTime();
             barrel.ready = true;
             barrel.markChangedAndSync();
 
@@ -110,7 +111,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
             return false;
         }
 
-        if (bottleCount >= CAPACITY) {
+        if (bottleCount >= getCapacity()) {
             return false;
         }
 
@@ -168,6 +169,21 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         return bottleCount;
     }
 
+    public AgingVessel getVessel() {
+        BlockState state = getBlockState();
+        return state.getBlock() instanceof AgingBarrelBlock barrel
+                ? barrel.vessel()
+                : AgingVessel.OAK;
+    }
+
+    public int getCapacity() {
+        return getVessel().capacity();
+    }
+
+    public int getAgingTime() {
+        return getVessel().agingTime();
+    }
+
     public int getProgressPercent() {
         if (isReady()) {
             return 100;
@@ -175,7 +191,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
 
         return Math.min(
                 100,
-                agingProgress * 100 / AGING_TIME
+                agingProgress * 100 / getAgingTime()
         );
     }
 
@@ -190,7 +206,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
 
         return 1 + Math.min(
                 13,
-                agingProgress * 14 / AGING_TIME
+                agingProgress * 14 / getAgingTime()
         );
     }
 
@@ -208,9 +224,12 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         WineMetadata.applyProfile(
                 result,
                 vintage,
-                qualityProfile.withAgeing(10)
+                qualityProfile.withAgeing(
+                        getVessel().qualityContribution(wineType)
+                )
         );
         WineMetadata.applyProvenance(result, provenance);
+        WineMetadata.setAgingVessel(result, getVessel());
         WineMetadata.ensureBatchIdentity(result, batchId);
         WineMetadata.markBottled(
                 result,
@@ -259,10 +278,15 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                 result,
                 vintage,
                 ready
-                        ? qualityProfile.withAgeing(10)
+                        ? qualityProfile.withAgeing(
+                                getVessel().qualityContribution(wineType)
+                        )
                         : qualityProfile
         );
         WineMetadata.applyProvenance(result, provenance);
+        if (ready) {
+            WineMetadata.setAgingVessel(result, getVessel());
+        }
         WineMetadata.ensureBatchIdentity(result, batchId);
 
         return result;
@@ -326,7 +350,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
 
         int status = ready
                 ? 2
-                : bottleCount >= CAPACITY ? 1 : 0;
+                : bottleCount >= getCapacity() ? 1 : 0;
 
         BlockState updated = state
                 .setValue(AgingBarrelBlock.STATUS, status)

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "S S",
+    "PSP",
+    "P P"
+  ],
+  "key": {
+    "P": "minecraft:warped_planks",
+    "S": "minecraft:warped_slab"
+  },
+  "result": {
+    "id": "vintner:warped_barrel_stand",
+    "count": 1
+  }
+}

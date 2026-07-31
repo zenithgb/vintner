@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PGP",
+    "PBP",
+    "PGP"
+  ],
+  "key": {
+    "P": "minecraft:acacia_planks",
+    "G": "minecraft:glass_pane",
+    "B": "minecraft:book"
+  },
+  "result": {
+    "id": "vintner:acacia_tasting_cabinet",
+    "count": 1
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "parent": "vintner:block/tasting_cabinet",
+  "textures": {
+    "wood": "minecraft:block/cherry_planks",
+    "beam": "minecraft:block/cherry_log",
+    "end": "minecraft:block/cherry_log_top",
+    "particle": "minecraft:block/cherry_planks"
+  }
+}

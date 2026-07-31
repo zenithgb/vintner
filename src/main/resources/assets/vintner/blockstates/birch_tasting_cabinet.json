@@ -1,0 +1,351 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north"
+      },
+      "apply": {
+        "model": "vintner:block/birch_tasting_cabinet"
+      }
+    },
+    {
+      "when": {
+        "facing": "east"
+      },
+      "apply": {
+        "model": "vintner:block/birch_tasting_cabinet",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south"
+      },
+      "apply": {
+        "model": "vintner:block/birch_tasting_cabinet",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west"
+      },
+      "apply": {
+        "model": "vintner:block/birch_tasting_cabinet",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottle_count": "1|2|3|4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottle_count": "1|2|3|4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottle_count": "1|2|3|4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottle_count": "1|2|3|4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottle_count": "2|3|4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottle_count": "2|3|4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottle_count": "2|3|4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottle_count": "2|3|4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottle_count": "3|4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_3"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottle_count": "3|4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottle_count": "3|4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottle_count": "3|4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottle_count": "4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_4"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottle_count": "4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottle_count": "4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottle_count": "4|5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_4",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottle_count": "5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_5"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottle_count": "5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_5",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottle_count": "5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_5",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottle_count": "5|6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_5",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottle_count": "6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_6"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottle_count": "6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_6",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottle_count": "6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_6",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottle_count": "6|7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_6",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottle_count": "7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_7"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottle_count": "7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_7",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottle_count": "7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_7",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottle_count": "7|8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_7",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottle_count": "8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_8"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottle_count": "8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_8",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottle_count": "8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_8",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottle_count": "8"
+      },
+      "apply": {
+        "model": "vintner:block/cellar_fixture_bottle_slot_8",
+        "y": 270
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "B B",
+    "PPP"
+  ],
+  "key": {
+    "P": "minecraft:dark_oak_planks",
+    "B": "minecraft:iron_ingot"
+  },
+  "result": {
+    "id": "vintner:chestnut_aging_barrel",
+    "count": 1
+  }
+}

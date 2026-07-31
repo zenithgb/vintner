@@ -13,11 +13,14 @@ from generate_wood_variants import (
     WOODS,
     aging_id,
     archive_id,
+    cabinet_id,
     crate_id,
     fermentation_id,
     grapevine_id,
     press_id,
     rack_id,
+    shelf_id,
+    stand_id,
     trellis_id,
 )
 
@@ -278,6 +281,9 @@ def expected_resource_ids() -> tuple[set[str], set[str]]:
                 rack_id(wood),
                 crate_id(wood),
                 archive_id(wood),
+                stand_id(wood),
+                shelf_id(wood),
+                cabinet_id(wood),
             }
         )
         grapevines.update(
@@ -286,6 +292,13 @@ def expected_resource_ids() -> tuple[set[str], set[str]]:
                 grapevine_id(wood, "white"),
             }
         )
+    public_blocks.update(
+        {
+            "chestnut_aging_barrel",
+            "neutral_aging_barrel",
+            "large_cask",
+        }
+    )
     return public_blocks, grapevines
 
 

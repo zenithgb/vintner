@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "B B",
+    "PPP"
+  ],
+  "key": {
+    "P": "minecraft:oak_planks",
+    "B": "minecraft:honeycomb"
+  },
+  "result": {
+    "id": "vintner:neutral_aging_barrel",
+    "count": 1
+  }
+}

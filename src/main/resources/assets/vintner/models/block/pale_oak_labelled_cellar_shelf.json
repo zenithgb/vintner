@@ -1,0 +1,9 @@
+{
+  "parent": "vintner:block/labelled_cellar_shelf",
+  "textures": {
+    "wood": "minecraft:block/pale_oak_planks",
+    "beam": "minecraft:block/pale_oak_log",
+    "end": "minecraft:block/pale_oak_log_top",
+    "particle": "minecraft:block/pale_oak_planks"
+  }
+}

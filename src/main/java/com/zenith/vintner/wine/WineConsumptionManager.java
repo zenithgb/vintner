@@ -83,12 +83,24 @@ public final class WineConsumptionManager {
                     )
             );
             impaired = true;
+        } else if (quality.negativeEffectChance() > 0.0F
+                && level.getRandom().nextFloat()
+                < quality.negativeEffectChance()) {
+            consumer.addEffect(
+                    new MobEffectInstance(
+                            MobEffects.NAUSEA,
+                            8 * 20,
+                            0
+                    )
+            );
+            impaired = true;
         }
         sendFeedback(consumer, nextDrinkCount);
         WinePairingManager.onWineConsumed(
                 level,
                 consumer,
-                profile
+                profile,
+                quality
         );
 
         return new ConsumptionResult(
