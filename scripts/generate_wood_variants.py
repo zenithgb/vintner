@@ -390,14 +390,20 @@ def generate_cellar_fixture_base_models() -> None:
                 "particle": "minecraft:block/oak_planks",
             },
             "elements": [
-                {"from": [1, 0, 1], "to": [3, 6, 3], "faces": copy.deepcopy(beam_faces)},
-                {"from": [13, 0, 1], "to": [15, 6, 3], "faces": copy.deepcopy(beam_faces)},
-                {"from": [1, 0, 13], "to": [3, 6, 15], "faces": copy.deepcopy(beam_faces)},
-                {"from": [13, 0, 13], "to": [15, 6, 15], "faces": copy.deepcopy(beam_faces)},
-                {"from": [1, 4, 1], "to": [15, 7, 3], "faces": copy.deepcopy(wood_faces)},
-                {"from": [1, 4, 13], "to": [15, 7, 15], "faces": copy.deepcopy(wood_faces)},
-                {"from": [1, 2, 3], "to": [3, 5, 13], "faces": copy.deepcopy(wood_faces)},
-                {"from": [13, 2, 3], "to": [15, 5, 13], "faces": copy.deepcopy(wood_faces)},
+                # Four tall legs carry a barrel placed in the block above.
+                {"from": [1, 0, 2], "to": [3, 14, 4], "faces": copy.deepcopy(beam_faces)},
+                {"from": [13, 0, 2], "to": [15, 14, 4], "faces": copy.deepcopy(beam_faces)},
+                {"from": [1, 0, 12], "to": [3, 14, 14], "faces": copy.deepcopy(beam_faces)},
+                {"from": [13, 0, 12], "to": [15, 14, 14], "faces": copy.deepcopy(beam_faces)},
+                # Wide feet and mid braces keep the empty stand intentional.
+                {"from": [0.5, 0, 1.5], "to": [15.5, 2, 4.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [0.5, 0, 11.5], "to": [15.5, 2, 14.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 6, 2.5], "to": [14, 8, 3.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 6, 12.5], "to": [14, 8, 13.5], "faces": copy.deepcopy(wood_faces)},
+                # The two saddles reach the block boundary, eliminating the
+                # visible air gap beneath a barrel placed on the stand.
+                {"from": [2, 13, 2], "to": [14, 16, 5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 13, 11], "to": [14, 16, 14], "faces": copy.deepcopy(wood_faces)},
             ],
         },
     )
@@ -410,17 +416,26 @@ def generate_cellar_fixture_base_models() -> None:
                 "wood": "minecraft:block/oak_planks",
                 "beam": "minecraft:block/oak_log",
                 "end": "minecraft:block/oak_log_top",
-                "label": "minecraft:block/birch_planks",
+                "label": "minecraft:block/cut_copper",
                 "particle": "minecraft:block/oak_planks",
             },
             "elements": [
+                # Framed four-bay cellar shelving with a solid back.
                 {"from": [0.5, 0, 0.5], "to": [2, 16, 15.5], "faces": copy.deepcopy(beam_faces)},
                 {"from": [14, 0, 0.5], "to": [15.5, 16, 15.5], "faces": copy.deepcopy(beam_faces)},
-                {"from": [2, 0, 1], "to": [14, 1.5, 15], "faces": copy.deepcopy(wood_faces)},
-                {"from": [2, 7.25, 1], "to": [14, 8.75, 15], "faces": copy.deepcopy(wood_faces)},
-                {"from": [2, 14.5, 1], "to": [14, 16, 15], "faces": copy.deepcopy(wood_faces)},
-                {"from": [2, 1.5, 14], "to": [14, 14.5, 15.5], "faces": copy.deepcopy(wood_faces)},
-                {"from": [5.5, 6.5, 0.25], "to": [10.5, 9.5, 1], "faces": copy.deepcopy(label_faces)},
+                {"from": [2, 0, 1], "to": [14, 2, 15], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 7, 1], "to": [14, 9, 15], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 14, 1], "to": [14, 16, 15], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 2, 14], "to": [14, 14, 15.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [7.5, 2, 1], "to": [8.5, 14, 15], "faces": copy.deepcopy(beam_faces)},
+                # Front lips stop the bottles reading as if they float.
+                {"from": [2, 2, 0.5], "to": [14, 3, 1.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 9, 0.5], "to": [14, 10, 1.5], "faces": copy.deepcopy(wood_faces)},
+                # One label holder for each storage bay.
+                {"from": [3.25, 6.25, 0.2], "to": [6.75, 7, 0.75], "faces": copy.deepcopy(label_faces)},
+                {"from": [9.25, 6.25, 0.2], "to": [12.75, 7, 0.75], "faces": copy.deepcopy(label_faces)},
+                {"from": [3.25, 13.25, 0.2], "to": [6.75, 14, 0.75], "faces": copy.deepcopy(label_faces)},
+                {"from": [9.25, 13.25, 0.2], "to": [12.75, 14, 0.75], "faces": copy.deepcopy(label_faces)},
             ],
         },
     )
@@ -433,17 +448,27 @@ def generate_cellar_fixture_base_models() -> None:
                 "wood": "minecraft:block/oak_planks",
                 "beam": "minecraft:block/oak_log",
                 "end": "minecraft:block/oak_log_top",
-                "metal": "minecraft:block/copper_block",
+                "metal": "minecraft:block/gold_block",
+                "cloth": "minecraft:block/red_wool",
                 "particle": "minecraft:block/oak_planks",
             },
             "elements": [
-                {"from": [0.5, 0, 0.5], "to": [2.25, 16, 15.5], "faces": copy.deepcopy(beam_faces)},
-                {"from": [13.75, 0, 0.5], "to": [15.5, 16, 15.5], "faces": copy.deepcopy(beam_faces)},
-                {"from": [2.25, 0, 1], "to": [13.75, 1.75, 15], "faces": copy.deepcopy(wood_faces)},
-                {"from": [2.25, 7.25, 1], "to": [13.75, 8.75, 15], "faces": copy.deepcopy(wood_faces)},
-                {"from": [2.25, 14.25, 1], "to": [13.75, 16, 15], "faces": copy.deepcopy(wood_faces)},
-                {"from": [2.25, 1.75, 14], "to": [13.75, 14.25, 15.5], "faces": copy.deepcopy(wood_faces)},
-                {"from": [6.25, 7.4, 0.2], "to": [9.75, 8.6, 1], "faces": copy.deepcopy(metal_faces)},
+                # Furniture-style case with an overhanging crown and plinth.
+                {"from": [0, 0, 0.5], "to": [16, 1.5, 15.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [0, 14.5, 0.5], "to": [16, 16, 15.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [0.75, 1.5, 0.75], "to": [2.5, 14.5, 15.25], "faces": copy.deepcopy(beam_faces)},
+                {"from": [13.5, 1.5, 0.75], "to": [15.25, 14.5, 15.25], "faces": copy.deepcopy(beam_faces)},
+                {"from": [2.5, 7, 1], "to": [13.5, 9, 15], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2.5, 1.5, 14], "to": [13.5, 14.5, 15.25], "faces": copy.deepcopy(wood_faces)},
+                # Central mullion and door rails create four display panels.
+                {"from": [7.5, 1.5, 0.4], "to": [8.5, 14.5, 1.2], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2.5, 6.25, 0.4], "to": [13.5, 7.25, 1.2], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2.5, 13.5, 0.4], "to": [13.5, 14.5, 1.2], "faces": copy.deepcopy(wood_faces)},
+                # A red tasting-cloth strip and paired brass pulls distinguish
+                # this curated cabinet from utilitarian cellar shelving.
+                {"from": [2.5, 8.75, 0.2], "to": [13.5, 9.35, 1], "faces": copy.deepcopy(cube_faces("#cloth"))},
+                {"from": [6.75, 7.35, 0], "to": [7.5, 8.25, 0.75], "faces": copy.deepcopy(metal_faces)},
+                {"from": [8.5, 7.35, 0], "to": [9.25, 8.25, 0.75], "faces": copy.deepcopy(metal_faces)},
             ],
         },
     )
@@ -510,28 +535,89 @@ def generate_special_aging_vessels() -> None:
             "wood": "minecraft:block/dark_oak_planks",
             "end": "minecraft:block/stripped_dark_oak_log_top",
             "band": "minecraft:block/iron_block",
+            "label": "minecraft:block/cut_copper",
         },
         "neutral_aging_barrel": {
             "wood": "minecraft:block/stripped_oak_log",
             "end": "minecraft:block/stripped_oak_log_top",
             "band": "minecraft:block/iron_block",
+            "label": "minecraft:block/birch_planks",
         },
         "large_cask": {
             "wood": "minecraft:block/spruce_planks",
             "end": "minecraft:block/spruce_log_top",
             "band": "minecraft:block/copper_block",
+            "label": "minecraft:block/cut_copper",
         },
+    }
+    base_cask = read_json(ASSETS / "models/block/cask.json")
+
+    def hoop(y_min: float, y_max: float) -> list[dict[str, object]]:
+        band_faces = cube_faces("#band")
+        return [
+            {"from": [1.25, y_min, 1.5], "to": [1.5, y_max, 14.5], "faces": copy.deepcopy(band_faces)},
+            {"from": [14.5, y_min, 1.5], "to": [14.75, y_max, 14.5], "faces": copy.deepcopy(band_faces)},
+            {"from": [1.5, y_min, 1.25], "to": [14.5, y_max, 1.5], "faces": copy.deepcopy(band_faces)},
+            {"from": [1.5, y_min, 14.5], "to": [14.5, y_max, 14.75], "faces": copy.deepcopy(band_faces)},
+        ]
+
+    def scaled_large_cask() -> list[dict[str, object]]:
+        elements = copy.deepcopy(base_cask["elements"])
+        for element in elements:
+            for bound in ("from", "to"):
+                coordinates = element[bound]
+                coordinates[0] = round(
+                    max(0, min(16, 8 + (coordinates[0] - 8) * 1.12)),
+                    3,
+                )
+                coordinates[2] = round(
+                    max(0, min(16, 8 + (coordinates[2] - 8) * 1.12)),
+                    3,
+                )
+        return elements
+
+    vessel_elements = {
+        # Chestnut contributes stronger tannin and is visually secured with a
+        # third central hoop and a copper cooper's plate.
+        "chestnut_aging_barrel": (
+            copy.deepcopy(base_cask["elements"])
+            + hoop(7.5, 8.5)
+            + [{
+                "from": [6, 9, 0],
+                "to": [10, 11.5, 0.6],
+                "faces": cube_faces("#label"),
+            }]
+        ),
+        # Neutral oak represents a seasoned, low-extraction barrel. Its broad
+        # pale cellar label differentiates it from fresh oak at a glance.
+        "neutral_aging_barrel": (
+            copy.deepcopy(base_cask["elements"])
+            + [{
+                "from": [5, 9, 0],
+                "to": [11, 12, 0.65],
+                "faces": cube_faces("#label"),
+            }]
+        ),
+        # The large cask nearly fills its block and carries four copper hoops,
+        # communicating its doubled capacity without becoming a multiblock.
+        "large_cask": (
+            scaled_large_cask()
+            + hoop(6, 6.75)
+            + hoop(9.25, 10)
+        ),
     }
     template = read_json(ASSETS / "blockstates/aging_barrel.json")
     for block_id, textures in vessels.items():
         write_json(
             ASSETS / f"models/block/{block_id}.json",
             {
-                "parent": "vintner:block/cask",
+                "parent": "minecraft:block/block",
+                "ambientocclusion": False,
                 "textures": {
                     **textures,
                     "particle": textures["wood"],
                 },
+                "elements": vessel_elements[block_id],
             },
         )
         write_json(

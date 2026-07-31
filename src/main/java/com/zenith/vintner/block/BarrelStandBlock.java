@@ -18,7 +18,7 @@ public final class BarrelStandBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<BarrelStandBlock> CODEC =
             simpleCodec(BarrelStandBlock::new);
     private static final VoxelShape SHAPE =
-            Block.box(0.5, 0, 0.5, 15.5, 8, 15.5);
+            Block.box(0.5, 0, 0.5, 15.5, 16, 15.5);
 
     public BarrelStandBlock(BlockBehaviour.Properties properties) {
         super(properties);
