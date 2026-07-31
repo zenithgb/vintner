@@ -2252,6 +2252,12 @@ public final class VintnerGameTests {
 
         helper.assertBlockPresent(ModBlocks.WINE_CRATE, FIRST);
         helper.assertBlockPresent(upperCrate, UPPER);
+        helper.assertTrue(
+                helper.getBlockState(FIRST)
+                        .getShape(helper.getLevel(), lowerPos)
+                        .max(Direction.Axis.Y) == 1.0,
+                "A stacked crate must support the crate above it"
+        );
         helper.succeed();
     }
 

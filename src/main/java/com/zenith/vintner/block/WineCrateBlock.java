@@ -53,7 +53,7 @@ public final class WineCrateBlock extends BaseEntityBlock {
     public static final IntegerProperty BOTTLE_COUNT =
             IntegerProperty.create("bottle_count", 0, 16);
     private static final VoxelShape SHAPE =
-            Block.box(0.5, 0, 0.5, 15.5, 12, 15.5);
+            Block.box(0.5, 0, 0.5, 15.5, 16, 15.5);
 
     public WineCrateBlock(BlockBehaviour.Properties properties) {
         super(properties);
