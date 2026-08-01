@@ -368,7 +368,7 @@ public final class VintnerGameTests {
                             structureManager,
                             Rotation.NONE
                     ),
-                    new net.minecraft.core.Vec3i(11, 3, 9),
+                    new net.minecraft.core.Vec3i(11, 5, 9),
                     "Vineyard pool element size"
             );
             helper.assertValueEqual(
@@ -444,7 +444,7 @@ public final class VintnerGameTests {
             );
             helper.assertValueEqual(
                     template.getSize().getY(),
-                    3,
+                    5,
                     "Vineyard height"
             );
             helper.assertValueEqual(
@@ -460,6 +460,19 @@ public final class VintnerGameTests {
                     ).size(),
                     16,
                     "Vineyard soil plots"
+            );
+            helper.assertTrue(
+                    template.filterBlocks(
+                            BlockPos.ZERO,
+                            settings,
+                            Blocks.DIRT
+                    ).size() >= 99
+                            || template.filterBlocks(
+                            BlockPos.ZERO,
+                            settings,
+                            Blocks.SANDSTONE
+                    ).size() >= 99,
+                    "Vineyard must contain a complete buried foundation"
             );
 
             int grapevineBlocks = 0;

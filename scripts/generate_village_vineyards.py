@@ -13,7 +13,7 @@ STRUCTURE_ROOT = (
     ROOT / "src/main/resources/data/vintner/structure/village"
 )
 DATA_VERSION = 4903
-SIZE = (11, 3, 9)
+SIZE = (11, 5, 9)
 
 CULTURES = {
     "plains": "oak",
@@ -21,6 +21,22 @@ CULTURES = {
     "savanna": "acacia",
     "snowy": "spruce",
     "taiga": "spruce",
+}
+
+FOUNDATIONS = {
+    "plains": "minecraft:dirt",
+    "desert": "minecraft:sandstone",
+    "savanna": "minecraft:dirt",
+    "snowy": "minecraft:dirt",
+    "taiga": "minecraft:dirt",
+}
+
+SURFACES = {
+    "plains": "minecraft:grass_block",
+    "desert": "minecraft:sand",
+    "savanna": "minecraft:grass_block",
+    "snowy": "minecraft:snow_block",
+    "taiga": "minecraft:podzol",
 }
 
 TAG_END = 0
@@ -170,6 +186,8 @@ def create_structure(culture: str, wood: str) -> bytes:
 
     soil = state("vintner:vineyard_soil")
     path = state("minecraft:dirt_path")
+    foundation = state(FOUNDATIONS[culture])
+    surface = state(SURFACES[culture])
     composter = state("minecraft:composter", {"level": "4"})
     jigsaw = state(
         "minecraft:jigsaw",
@@ -181,23 +199,31 @@ def create_structure(culture: str, wood: str) -> bytes:
         dict[str, tuple[int, object]],
     ] = {}
 
+    # Village farms are rigid pieces. A complete buried foundation and surface
+    # layer create a deliberate terrace instead of leaving parts of the farm
+    # floating over, or swallowed by, uneven village terrain.
+    for x in range(SIZE[0]):
+        for z in range(SIZE[2]):
+            blocks[(x, 0, z)] = block_entry((x, 0, z), foundation)
+            blocks[(x, 1, z)] = block_entry((x, 1, z), surface)
+
     for x in range(1, SIZE[0]):
-        blocks[(x, 0, 4)] = block_entry((x, 0, 4), path)
+        blocks[(x, 1, 4)] = block_entry((x, 1, 4), path)
 
     for z, colour in ((1, "red"), (7, "white")):
         vine_name = grapevine_name(wood, colour)
         for x in range(2, 10):
-            blocks[(x, 0, z)] = block_entry((x, 0, z), soil)
-            for y, upper in ((1, False), (2, True)):
+            blocks[(x, 1, z)] = block_entry((x, 1, z), soil)
+            for y, upper in ((2, False), (3, True)):
                 vine = state(
                     vine_name,
                     vine_properties(x, upper),
                 )
                 blocks[(x, y, z)] = block_entry((x, y, z), vine)
 
-    blocks[(10, 1, 4)] = block_entry((10, 1, 4), composter)
-    blocks[(0, 0, 4)] = block_entry(
-        (0, 0, 4),
+    blocks[(10, 2, 4)] = block_entry((10, 2, 4), composter)
+    blocks[(0, 1, 4)] = block_entry(
+        (0, 1, 4),
         jigsaw,
         {
             "joint": tag_string("aligned"),
