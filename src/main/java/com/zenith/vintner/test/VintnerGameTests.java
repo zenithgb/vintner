@@ -277,6 +277,14 @@ public final class VintnerGameTests {
                         .test(winemakerPoi),
                 "The Cooper must not claim grape presses"
         );
+        helper.assertTrue(
+                VillagerProfession.ALL_ACQUIRABLE_JOBS.test(winemakerPoi),
+                "Unemployed villagers must discover grape presses"
+        );
+        helper.assertTrue(
+                VillagerProfession.ALL_ACQUIRABLE_JOBS.test(cooperPoi),
+                "Unemployed villagers must discover barrel stands"
+        );
 
         for (Block press : ModBlocks.grapePressBlocks()) {
             helper.assertTrue(
@@ -297,6 +305,64 @@ public final class VintnerGameTests {
         }
 
         helper.succeed();
+    }
+
+    @GameTest(maxTicks = 300)
+    public void unemployedVillagerClaimsGrapePress(
+            GameTestHelper helper
+    ) {
+        BlockPos pressPos = FIRST;
+
+        helper.setBlock(pressPos, ModBlocks.GRAPE_PRESS);
+        helper.getLevel()
+                .dimensionType()
+                .defaultClock()
+                .ifPresent(clock -> helper.getLevel()
+                        .clockManager()
+                        .setTotalTicks(clock, 2000L));
+
+        Villager winemaker = helper.spawn(
+                EntityTypes.VILLAGER,
+                pressPos.west()
+        );
+
+        helper.succeedWhen(() -> {
+            helper.assertTrue(
+                    winemaker.getVillagerData()
+                            .profession()
+                            .is(ModVillagers.WINEMAKER),
+                    "The villager beside a grape press should become a Winemaker"
+            );
+        });
+    }
+
+    @GameTest(maxTicks = 300)
+    public void unemployedVillagerClaimsBarrelStand(
+            GameTestHelper helper
+    ) {
+        BlockPos standPos = FIRST;
+
+        helper.setBlock(standPos, ModBlocks.BARREL_STAND);
+        helper.getLevel()
+                .dimensionType()
+                .defaultClock()
+                .ifPresent(clock -> helper.getLevel()
+                        .clockManager()
+                        .setTotalTicks(clock, 2000L));
+
+        Villager cooper = helper.spawn(
+                EntityTypes.VILLAGER,
+                standPos.west()
+        );
+
+        helper.succeedWhen(() -> {
+            helper.assertTrue(
+                    cooper.getVillagerData()
+                            .profession()
+                            .is(ModVillagers.COOPER),
+                    "The villager beside a barrel stand should become a Cooper"
+            );
+        });
     }
 
     @GameTest(maxTicks = 40)

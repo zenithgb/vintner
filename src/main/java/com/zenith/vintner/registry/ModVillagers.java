@@ -37,7 +37,7 @@ public final class ModVillagers {
     public static final PoiType WINEMAKER_POI = PoiHelper.register(
             WINEMAKER_ID,
             1,
-            1,
+            2,
             ModBlocks.grapePressBlocks()
     );
     public static final PoiType COOPER_POI = PoiHelper.register(
