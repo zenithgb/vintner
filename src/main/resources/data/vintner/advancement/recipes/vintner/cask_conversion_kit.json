@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:large_cask"
+        "recipe": "vintner:cask_conversion_kit"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "vintner:large_cask"
+      "vintner:cask_conversion_kit"
     ]
   },
   "sends_telemetry_event": false

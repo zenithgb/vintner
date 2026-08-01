@@ -1,13 +1,14 @@
 package com.zenith.vintner.wine;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.StringRepresentable;
 
 /**
- * Functional ageing-vessel choices for Phase 3. Cosmetic wood-family ageing
- * barrels remain oak-style vessels; the specialist blocks opt into the other
- * profiles explicitly.
+ * Functional cooperage treatments for Phase 3. The treatment is stored in a
+ * placed barrel's block state, independently from its cosmetic wood family.
+ * Legacy specialist blocks still use their original default profiles.
  */
-public enum AgingVessel {
+public enum AgingVessel implements StringRepresentable {
     OAK(
             "oak", 4, 20 * 90, 11, 1, 0,
             "moderate", "firm", "low", "red"
@@ -61,6 +62,11 @@ public enum AgingVessel {
     }
 
     public String id() {
+        return id;
+    }
+
+    @Override
+    public String getSerializedName() {
         return id;
     }
 

@@ -3,19 +3,19 @@
   "criteria": {
     "toasted": {
       "conditions": {
-        "recipe_id": "vintner:chestnut_aging_barrel"
+        "recipe_id": "vintner:toasting_kit"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "seasoned": {
       "conditions": {
-        "recipe_id": "vintner:neutral_aging_barrel"
+        "recipe_id": "vintner:seasoning_kit"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "cellar_cask": {
       "conditions": {
-        "recipe_id": "vintner:large_cask"
+        "recipe_id": "vintner:cask_conversion_kit"
       },
       "trigger": "minecraft:recipe_crafted"
     }
@@ -25,7 +25,7 @@
       "translate": "advancement.vintner.choose_aging_style.description"
     },
     "icon": {
-      "id": "vintner:chestnut_aging_barrel"
+      "id": "vintner:toasting_kit"
     },
     "title": {
       "translate": "advancement.vintner.choose_aging_style.title"

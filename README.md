@@ -44,15 +44,20 @@ for slower, gentler ageing.
 The ordinary ageing barrel is available in every supported wood family, but
 those wood choices are cosmetic and share the balanced standard profile. Once
 that loop is familiar, any ordinary barrel can become one of three clearly
-signposted specialist choices:
+signposted specialist choices. Craft a cooperage kit, then use it on an empty
+placed barrel; the barrel keeps its original wood appearance:
 
-- Toast any ordinary ageing barrel with four charcoal to make a Toasted Aging
-  Barrel: fast, bold, red-focused ageing with a little more risk.
-- Hydrate any ordinary ageing barrel with a water bucket to make a
-  Seasoned Aging Barrel: slow, gentle, fruit-preserving ageing with very low
+- A Toasting Kit creates fast, bold, red-focused ageing with a little more
   risk.
-- Cooper two ordinary ageing barrels with six spruce planks and a copper ingot
-  to make a Cellar Cask: an eight-bottle vessel for slow bulk maturation.
+- A Seasoning Kit creates slow, gentle, fruit-preserving ageing with very low
+  risk.
+- A Cask Conversion Kit creates an eight-bottle vessel for slow bulk
+  maturation.
+
+Breaking a specialised ordinary barrel returns both its wood-family barrel
+and the applied kit, so the treatment can be reused. Older standalone Toasted,
+Seasoned, and Cellar Cask blocks remain loadable for existing worlds, but new
+cellars use the kit system.
 
 These are parallel cellar strategies rather than simple power tiers. Use the
 Vintner's Almanac directly on any placed ageing vessel to compare its role,

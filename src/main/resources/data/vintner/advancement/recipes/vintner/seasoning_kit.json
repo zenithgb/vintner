@@ -5,7 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": "minecraft:charcoal"
+            "items": "minecraft:honeycomb"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:chestnut_aging_barrel"
+        "recipe": "vintner:seasoning_kit"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "vintner:chestnut_aging_barrel"
+      "vintner:seasoning_kit"
     ]
   },
   "sends_telemetry_event": false

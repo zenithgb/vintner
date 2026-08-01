@@ -2,15 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "W",
-    "A"
+    " H ",
+    "HBH",
+    " H "
   ],
   "key": {
-    "W": "minecraft:water_bucket",
-    "A": "#vintner:aging_barrels"
+    "H": "minecraft:honeycomb",
+    "B": "minecraft:water_bucket"
   },
   "result": {
-    "id": "vintner:neutral_aging_barrel",
+    "id": "vintner:seasoning_kit",
     "count": 1
   }
 }

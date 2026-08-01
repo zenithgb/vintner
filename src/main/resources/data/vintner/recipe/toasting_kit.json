@@ -8,10 +8,10 @@
   ],
   "key": {
     "C": "minecraft:charcoal",
-    "A": "#vintner:aging_barrels"
+    "A": "minecraft:iron_ingot"
   },
   "result": {
-    "id": "vintner:chestnut_aging_barrel",
+    "id": "vintner:toasting_kit",
     "count": 1
   }
 }

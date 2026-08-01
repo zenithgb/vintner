@@ -3,19 +3,19 @@
   "criteria": {
     "toasted": {
       "conditions": {
-        "recipe_id": "vintner:chestnut_aging_barrel"
+        "recipe_id": "vintner:toasting_kit"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "seasoned": {
       "conditions": {
-        "recipe_id": "vintner:neutral_aging_barrel"
+        "recipe_id": "vintner:seasoning_kit"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "cellar_cask": {
       "conditions": {
-        "recipe_id": "vintner:large_cask"
+        "recipe_id": "vintner:cask_conversion_kit"
       },
       "trigger": "minecraft:recipe_crafted"
     }
@@ -26,16 +26,22 @@
     },
     "frame": "challenge",
     "icon": {
-      "id": "vintner:large_cask"
+      "id": "vintner:cask_conversion_kit"
     },
     "title": {
       "translate": "advancement.vintner.master_cooper.title"
     }
   },
   "requirements": [
-    ["toasted"],
-    ["seasoned"],
-    ["cellar_cask"]
+    [
+      "toasted"
+    ],
+    [
+      "seasoned"
+    ],
+    [
+      "cellar_cask"
+    ]
   ],
   "rewards": {
     "experience": 75

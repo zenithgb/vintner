@@ -569,9 +569,6 @@ public final class ModBlocks {
                     FERMENTATION_BARRELS.values()
                             .forEach(output::accept);
                     AGING_BARRELS.values().forEach(output::accept);
-                    output.accept(CHESTNUT_AGING_BARREL);
-                    output.accept(NEUTRAL_AGING_BARREL);
-                    output.accept(LARGE_CASK);
                     WINE_RACKS.values().forEach(output::accept);
                     WINE_CRATES.values().forEach(output::accept);
                     VINTAGE_ARCHIVES.values()

@@ -3367,6 +3367,165 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void cooperageKitsPreserveWoodAndConfigureEmptyBarrels(
+            GameTestHelper helper
+    ) {
+        AgingVessel[] profiles = {
+                AgingVessel.CHESTNUT,
+                AgingVessel.NEUTRAL,
+                AgingVessel.LARGE_CASK
+        };
+        Item[] kits = {
+                ModItems.TOASTING_KIT,
+                ModItems.SEASONING_KIT,
+                ModItems.CASK_CONVERSION_KIT
+        };
+        Block barrelBlock = ModBlocks.agingBarrel(
+                WoodVariant.CHERRY
+        );
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+
+        for (int index = 0; index < profiles.length; index++) {
+            BlockPos pos = new BlockPos(1 + index * 2, 1, 1);
+            helper.setBlock(pos, barrelBlock);
+            Item kitItem = kits[index];
+            ItemStack kit = new ItemStack(kitItem);
+            player.setItemInHand(InteractionHand.MAIN_HAND, kit);
+            BlockPos absolutePos = helper.absolutePos(pos);
+
+            player.gameMode.useItemOn(
+                    player,
+                    helper.getLevel(),
+                    kit,
+                    InteractionHand.MAIN_HAND,
+                    new BlockHitResult(
+                            Vec3.atCenterOf(absolutePos),
+                            Direction.NORTH,
+                            absolutePos,
+                            false
+                    )
+            );
+
+            helper.assertBlockPresent(barrelBlock, pos);
+            helper.assertBlockProperty(
+                    pos,
+                    AgingBarrelBlock.VESSEL,
+                    profiles[index]
+            );
+            AgingBarrelBlockEntity barrel = helper.getBlockEntity(
+                    pos,
+                    AgingBarrelBlockEntity.class
+            );
+            helper.assertValueEqual(
+                    barrel.getVessel(),
+                    profiles[index],
+                    "The applied kit should control barrel behaviour"
+            );
+
+            List<ItemStack> drops = Block.getDrops(
+                    helper.getBlockState(pos),
+                    helper.getLevel(),
+                    absolutePos,
+                    barrel
+            );
+            helper.assertTrue(
+                    drops.stream().anyMatch(stack -> stack.is(
+                            barrelBlock.asItem()
+                    )),
+                    "The upgraded barrel should retain its wood item"
+            );
+            helper.assertTrue(
+                    drops.stream().anyMatch(stack -> stack.is(kitItem)),
+                    "Breaking an upgraded barrel should return its kit"
+            );
+        }
+
+        BlockPos toastedPos = new BlockPos(1, 1, 1);
+        ItemStack replacementKit = new ItemStack(
+                ModItems.SEASONING_KIT
+        );
+        player.setItemInHand(
+                InteractionHand.MAIN_HAND,
+                replacementKit
+        );
+        BlockPos absoluteToastedPos = helper.absolutePos(toastedPos);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                replacementKit,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteToastedPos),
+                        Direction.NORTH,
+                        absoluteToastedPos,
+                        false
+                )
+        );
+        helper.assertBlockProperty(
+                toastedPos,
+                AgingBarrelBlock.VESSEL,
+                AgingVessel.CHESTNUT
+        );
+        helper.assertValueEqual(
+                replacementKit.getCount(),
+                1,
+                "Refitting a treated barrel must not destroy either kit"
+        );
+
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cooperageTreatmentCannotChangeMidBatch(
+            GameTestHelper helper
+    ) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, ModBlocks.AGING_BARREL);
+        AgingBarrelBlockEntity barrel = helper.getBlockEntity(
+                pos,
+                AgingBarrelBlockEntity.class
+        );
+        helper.assertTrue(
+                barrel.insertOne(new ItemStack(ModItems.RED_WINE)),
+                "The test barrel should accept its first bottle"
+        );
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ItemStack kit = new ItemStack(ModItems.TOASTING_KIT);
+        player.setItemInHand(InteractionHand.MAIN_HAND, kit);
+        BlockPos absolutePos = helper.absolutePos(pos);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                kit,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absolutePos),
+                        Direction.NORTH,
+                        absolutePos,
+                        false
+                )
+        );
+
+        helper.assertBlockProperty(
+                pos,
+                AgingBarrelBlock.VESSEL,
+                AgingVessel.OAK
+        );
+        helper.assertValueEqual(
+                kit.getCount(),
+                1,
+                "A rejected treatment must not consume the kit"
+        );
+        helper.assertValueEqual(
+                barrel.getBottleCount(),
+                1,
+                "A rejected treatment must not disturb the batch"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void cellarFixturesSeparateBatchAndTastingStorage(
             GameTestHelper helper
     ) {

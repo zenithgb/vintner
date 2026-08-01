@@ -169,10 +169,14 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         return bottleCount;
     }
 
+    public boolean isEmpty() {
+        return wineType == 0 && bottleCount == 0;
+    }
+
     public AgingVessel getVessel() {
         BlockState state = getBlockState();
-        return state.getBlock() instanceof AgingBarrelBlock barrel
-                ? barrel.vessel()
+        return state.hasProperty(AgingBarrelBlock.VESSEL)
+                ? state.getValue(AgingBarrelBlock.VESSEL)
                 : AgingVessel.OAK;
     }
 

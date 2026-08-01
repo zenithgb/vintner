@@ -130,6 +130,21 @@ public final class ModItems {
             VintnerAlmanacItem::new
     );
 
+    public static final Item TOASTING_KIT = register(
+            "toasting_kit",
+            Item::new
+    );
+
+    public static final Item SEASONING_KIT = register(
+            "seasoning_kit",
+            Item::new
+    );
+
+    public static final Item CASK_CONVERSION_KIT = register(
+            "cask_conversion_kit",
+            Item::new
+    );
+
     private ModItems() {
     }
 
@@ -167,6 +182,9 @@ public final class ModItems {
                     output.accept(COMPOST);
                     output.accept(RED_GRAPE_CUTTING);
                     output.accept(WHITE_GRAPE_CUTTING);
+                    output.accept(TOASTING_KIT);
+                    output.accept(SEASONING_KIT);
+                    output.accept(CASK_CONVERSION_KIT);
                     output.accept(VINTNER_ALMANAC);
                 });
 

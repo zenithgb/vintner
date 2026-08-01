@@ -1,0 +1,8 @@
+{
+  "parent": "vintner:block/chestnut_aging_barrel",
+  "textures": {
+    "wood": "minecraft:block/birch_planks",
+    "end": "minecraft:block/birch_log_top",
+    "particle": "minecraft:block/birch_planks"
+  }
+}

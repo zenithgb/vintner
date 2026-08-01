@@ -296,6 +296,7 @@ def generate_machine_models() -> None:
                 },
             )
 
+
         fermentation = fermentation_id(wood)
         if fermentation != "fermentation_barrel":
             write_json(
@@ -384,6 +385,59 @@ def generate_machine_models() -> None:
                     },
                 },
             )
+
+
+def aging_barrel_blockstate(
+    models: dict[str, str] | None = None,
+    legacy_model: str | None = None,
+) -> dict[str, object]:
+    multipart: list[dict[str, object]] = []
+    rotations = {
+        "north": 0,
+        "east": 90,
+        "south": 180,
+        "west": 270,
+    }
+
+    for facing, rotation in rotations.items():
+        if legacy_model is not None:
+            apply: dict[str, object] = {"model": legacy_model}
+            if rotation:
+                apply["y"] = rotation
+            multipart.append({
+                "when": {"facing": facing},
+                "apply": apply,
+            })
+            continue
+
+        if models is None:
+            raise ValueError("Ordinary aging barrels require vessel models")
+
+        for vessel, model in models.items():
+            apply = {"model": model}
+            if rotation:
+                apply["y"] = rotation
+            multipart.append({
+                "when": {"facing": facing, "vessel": vessel},
+                "apply": apply,
+            })
+
+    overlays = (
+        (1, 1, "aging_barrel_red_aging"),
+        (1, 2, "aging_barrel_white_aging"),
+        (2, 1, "aging_barrel_red_ready"),
+        (2, 2, "aging_barrel_white_ready"),
+    )
+    for status, wine_type, model in overlays:
+        multipart.append({
+            "when": {
+                "status": str(status),
+                "wine_type": str(wine_type),
+            },
+            "apply": {"model": f"vintner:block/{model}"},
+        })
+
+    return {"multipart": multipart}
 
 
 def cube_faces(texture: str) -> dict[str, dict[str, str]]:
@@ -704,7 +758,6 @@ def generate_special_aging_vessels() -> None:
             + hoop(9.25, 10)
         ),
     }
-    template = read_json(ASSETS / "blockstates/aging_barrel.json")
     for block_id, textures in vessels.items():
         write_json(
             ASSETS / f"models/block/{block_id}.json",
@@ -720,10 +773,8 @@ def generate_special_aging_vessels() -> None:
         )
         write_json(
             ASSETS / f"blockstates/{block_id}.json",
-            replace_model(
-                copy.deepcopy(template),
-                "vintner:block/aging_barrel",
-                f"vintner:block/{block_id}",
+            aging_barrel_blockstate(
+                legacy_model=f"vintner:block/{block_id}",
             ),
         )
         write_json(
@@ -740,45 +791,132 @@ def generate_special_aging_vessels() -> None:
         "replace": False,
         "values": [f"vintner:{aging_id(wood)}" for wood in WOODS],
     })
+
+    profile_parents = {
+        "toasted": "chestnut_aging_barrel",
+        "seasoned": "neutral_aging_barrel",
+        "cellar_cask": "large_cask",
+    }
+    for wood in WOODS:
+        block_id = aging_id(wood)
+        textures = machine_textures(wood)
+        for profile, parent in profile_parents.items():
+            write_json(
+                ASSETS / f"models/block/{block_id}_{profile}.json",
+                {
+                    "parent": f"vintner:block/{parent}",
+                    "textures": {
+                        "wood": textures["wood"],
+                        "end": textures["end"],
+                        "particle": textures["particle"],
+                    },
+                },
+            )
+
+    obsolete_recipes = (
+        "chestnut_aging_barrel",
+        "neutral_aging_barrel",
+        "large_cask",
+    )
+    for recipe_id in obsolete_recipes:
+        for path in (
+            DATA / f"recipe/{recipe_id}.json",
+            DATA / f"advancement/recipes/vintner/{recipe_id}.json",
+        ):
+            if path.exists():
+                path.unlink()
+
+
+def generate_cooperage_kits() -> None:
     recipes = {
-        "chestnut_aging_barrel": {
+        "toasting_kit": {
             "pattern": [" C ", "CAC", " C "],
             "key": {
                 "C": "minecraft:charcoal",
-                "A": "#vintner:aging_barrels",
+                "A": "minecraft:iron_ingot",
             },
             "unlock": "minecraft:charcoal",
+            "texture": "minecraft:item/fire_charge",
         },
-        "neutral_aging_barrel": {
-            "pattern": ["W", "A"],
+        "seasoning_kit": {
+            "pattern": [" H ", "HBH", " H "],
             "key": {
-                "W": "minecraft:water_bucket",
-                "A": "#vintner:aging_barrels",
+                "H": "minecraft:honeycomb",
+                "B": "minecraft:water_bucket",
             },
-            "unlock": "minecraft:water_bucket",
+            "unlock": "minecraft:honeycomb",
+            "texture": "minecraft:item/honeycomb",
         },
-        "large_cask": {
-            "pattern": ["PAP", "PCP", "PAP"],
+        "cask_conversion_kit": {
+            "pattern": ["PCP", "PPP", "PCP"],
             "key": {
                 "P": "minecraft:spruce_planks",
                 "C": "minecraft:copper_ingot",
-                "A": "#vintner:aging_barrels",
             },
             "unlock": "minecraft:copper_ingot",
+            "texture": "minecraft:item/copper_ingot",
         },
     }
-    for block_id, recipe in recipes.items():
-        write_json(DATA / f"recipe/{block_id}.json", {
+    for item_id, recipe in recipes.items():
+        write_json(DATA / f"recipe/{item_id}.json", {
             "type": "minecraft:crafting_shaped",
             "category": "misc",
             "pattern": recipe["pattern"],
             "key": recipe["key"],
-            "result": {"id": f"vintner:{block_id}", "count": 1},
+            "result": {"id": f"vintner:{item_id}", "count": 1},
         })
         write_json(
-            DATA / f"advancement/recipes/vintner/{block_id}.json",
-            recipe_advancement(block_id, recipe["unlock"]),
+            DATA / f"advancement/recipes/vintner/{item_id}.json",
+            recipe_advancement(item_id, recipe["unlock"]),
         )
+        write_json(
+            ASSETS / f"models/item/{item_id}.json",
+            {
+                "parent": "minecraft:item/generated",
+                "textures": {"layer0": recipe["texture"]},
+            },
+        )
+        write_json(
+            ASSETS / f"items/{item_id}.json",
+            {
+                "model": {
+                    "type": "minecraft:model",
+                    "model": f"vintner:item/{item_id}",
+                }
+            },
+        )
+
+    criteria = {
+        "toasted": {
+            "conditions": {"recipe_id": "vintner:toasting_kit"},
+            "trigger": "minecraft:recipe_crafted",
+        },
+        "seasoned": {
+            "conditions": {"recipe_id": "vintner:seasoning_kit"},
+            "trigger": "minecraft:recipe_crafted",
+        },
+        "cellar_cask": {
+            "conditions": {
+                "recipe_id": "vintner:cask_conversion_kit",
+            },
+            "trigger": "minecraft:recipe_crafted",
+        },
+    }
+    choose_path = DATA / "advancement/vintner/choose_aging_style.json"
+    choose = read_json(choose_path)
+    choose["criteria"] = copy.deepcopy(criteria)
+    choose["requirements"] = [list(criteria)]
+    choose["display"]["icon"]["id"] = "vintner:toasting_kit"
+    write_json(choose_path, choose)
+
+    master_path = DATA / "advancement/vintner/master_cooper.json"
+    master = read_json(master_path)
+    master["criteria"] = copy.deepcopy(criteria)
+    master["requirements"] = [[criterion] for criterion in criteria]
+    master["display"]["icon"]["id"] = (
+        "vintner:cask_conversion_kit"
+    )
+    write_json(master_path, master)
 
 
 def generate_crate_bottle_models() -> None:
@@ -908,6 +1046,26 @@ def generate_machine_blockstates() -> None:
     )
 
     for base_id, id_factory in families:
+        if base_id == "aging_barrel":
+            for wood in WOODS:
+                block_id = id_factory(wood)
+                write_json(
+                    ASSETS / f"blockstates/{block_id}.json",
+                    aging_barrel_blockstate({
+                        "oak": f"vintner:block/{block_id}",
+                        "chestnut": (
+                            f"vintner:block/{block_id}_toasted"
+                        ),
+                        "neutral": (
+                            f"vintner:block/{block_id}_seasoned"
+                        ),
+                        "large_cask": (
+                            f"vintner:block/{block_id}_cellar_cask"
+                        ),
+                    }),
+                )
+            continue
+
         template = read_json(
             ASSETS / f"blockstates/{base_id}.json"
         )
@@ -1354,6 +1512,11 @@ def generate_language() -> None:
         "Seasoned Aging Barrel"
     )
     language["block.vintner.large_cask"] = "Cellar Cask"
+    language["item.vintner.toasting_kit"] = "Toasting Kit"
+    language["item.vintner.seasoning_kit"] = "Seasoning Kit"
+    language["item.vintner.cask_conversion_kit"] = (
+        "Cask Conversion Kit"
+    )
     language["tag.item.vintner.aging_barrels"] = "Vintner Aging Barrels"
     language["aging_vessel.vintner.oak"] = "Oak barrel"
     language["aging_vessel.vintner.chestnut"] = "Toasted aging barrel"
@@ -1381,16 +1544,28 @@ def generate_language() -> None:
         "Bulk choice: very slow, gentle maturation for eight bottles with very low oxygen and soft tannin."
     )
     language["aging_vessel.vintner.crafting.oak"] = (
-        "Start here. Wood variants share this balanced profile; later refit one with charcoal, water, or spruce and copper."
+        "Start here. Every wood family begins with this balanced profile; apply a cooperage kit to an empty barrel to specialise it."
     )
     language["aging_vessel.vintner.crafting.chestnut"] = (
-        "Toast any ordinary Aging Barrel with four charcoal."
+        "Apply a Toasting Kit to an empty ordinary Aging Barrel."
     )
     language["aging_vessel.vintner.crafting.neutral"] = (
-        "Hydrate any ordinary Aging Barrel with one water bucket; the empty bucket is returned."
+        "Apply a Seasoning Kit to an empty ordinary Aging Barrel."
     )
     language["aging_vessel.vintner.crafting.large_cask"] = (
-        "Cooper two ordinary Aging Barrels with six spruce planks and one copper ingot."
+        "Apply a Cask Conversion Kit to an empty ordinary Aging Barrel."
+    )
+    language["message.vintner.aging.upgrade_applied"] = (
+        "Barrel configured for %s."
+    )
+    language["message.vintner.aging.upgrade_empty_required"] = (
+        "Empty the barrel before changing its cooperage treatment."
+    )
+    language["message.vintner.aging.upgrade_already_applied"] = (
+        "This barrel is already configured for %s."
+    )
+    language["message.vintner.aging.upgrade_recover_first"] = (
+        "This barrel already uses %s. Break it to recover the current kit before refitting it."
     )
     language["advancement.vintner.choose_aging_style.title"] = (
         "Choose an Aging Style"
@@ -1400,7 +1575,7 @@ def generate_language() -> None:
     )
     language["advancement.vintner.master_cooper.title"] = "Master Cooper"
     language["advancement.vintner.master_cooper.description"] = (
-        "Craft all three specialist aging vessels"
+        "Craft all three cooperage upgrade kits"
     )
     language["wine_style.vintner.red"] = "Red"
     language["wine_style.vintner.white"] = "White"
@@ -1452,6 +1627,7 @@ def main() -> None:
     generate_cellar_fixture_base_models()
     generate_cellar_fixture_blockstates()
     generate_special_aging_vessels()
+    generate_cooperage_kits()
     generate_crate_bottle_models()
     generate_crate_blockstate()
     generate_machine_blockstates()

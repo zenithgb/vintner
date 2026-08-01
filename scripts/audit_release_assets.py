@@ -329,6 +329,11 @@ def expected_resource_ids() -> tuple[set[str], set[str]]:
 
 def audit_wood_families() -> tuple[set[str], set[str]]:
     public_blocks, grapevines = expected_resource_ids()
+    compatibility_only = {
+        "chestnut_aging_barrel",
+        "neutral_aging_barrel",
+        "large_cask",
+    }
     lang = load_json(LANG_PATH)
     if not isinstance(lang, dict):
         lang = {}
@@ -345,6 +350,9 @@ def audit_wood_families() -> tuple[set[str], set[str]]:
                 / f"advancement/recipes/vintner/{block_id}.json"
             ),
         }
+        if block_id in compatibility_only:
+            paths.pop("recipe")
+            paths.pop("recipe advancement")
         for label, path in paths.items():
             if not path.is_file():
                 fail(
@@ -364,6 +372,8 @@ def audit_wood_families() -> tuple[set[str], set[str]]:
 
         namespaced_id = f"vintner:{block_id}"
         for label in ("loot table", "recipe", "recipe advancement"):
+            if label not in paths:
+                continue
             document = load_json(paths[label])
             if (
                 document is not None
@@ -385,6 +395,27 @@ def audit_wood_families() -> tuple[set[str], set[str]]:
             fail(f"{grapevine}: missing language key {translation_key}")
 
     return public_blocks, grapevines
+
+
+def audit_cooperage_kits() -> None:
+    lang = load_json(LANG_PATH)
+    for item_id in (
+        "toasting_kit",
+        "seasoning_kit",
+        "cask_conversion_kit",
+    ):
+        paths = (
+            ASSETS / f"items/{item_id}.json",
+            ASSETS / f"models/item/{item_id}.json",
+            DATA / f"recipe/{item_id}.json",
+            DATA / f"advancement/recipes/vintner/{item_id}.json",
+        )
+        for path in paths:
+            require_file(path)
+        if isinstance(lang, dict):
+            key = f"item.vintner.{item_id}"
+            if key not in lang:
+                fail(f"{item_id}: missing language key {key}")
 
 
 def audit_axe_tag(public_blocks: set[str]) -> None:
@@ -495,6 +526,7 @@ def main() -> int:
     reachable_models = audit_model_references()
     audit_model_textures(reachable_models)
     public_blocks, grapevines = audit_wood_families()
+    audit_cooperage_kits()
     audit_axe_tag(public_blocks)
     audit_translations()
     audit_young_grapevine_wires(grapevines)
