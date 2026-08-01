@@ -9,6 +9,8 @@ import com.zenith.vintner.wine.AgingVessel;
 import com.zenith.vintner.wine.WinemakingFeedback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -135,6 +137,13 @@ public class AgingBarrelBlock extends BaseEntityBlock {
             InteractionHand hand,
             BlockHitResult hitResult
     ) {
+        if (heldStack.is(ModItems.VINTNER_ALMANAC)) {
+            if (level instanceof ServerLevel) {
+                showVesselGuide(player);
+            }
+            return InteractionResult.SUCCESS;
+        }
+
         if (!heldStack.is(ModItems.RED_WINE)
                 && !heldStack.is(ModItems.WHITE_WINE)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
@@ -174,6 +183,30 @@ public class AgingBarrelBlock extends BaseEntityBlock {
         WinemakingFeedback.showAgingStatus(player, barrel);
 
         return InteractionResult.SUCCESS;
+    }
+
+    private void showVesselGuide(Player player) {
+        player.sendSystemMessage(
+                Component.translatable(
+                        "message.vintner.almanac.vessel_guide",
+                        vessel.displayName()
+                ).withStyle(ChatFormatting.GOLD)
+        );
+        player.sendSystemMessage(
+                Component.translatable(
+                        "message.vintner.almanac.vessel_capacity",
+                        vessel.capacity(),
+                        vessel.agingTimeSeconds()
+                ).withStyle(ChatFormatting.GRAY)
+        );
+        player.sendSystemMessage(
+                vessel.guide().copy().withStyle(ChatFormatting.GRAY)
+        );
+        player.sendSystemMessage(
+                vessel.craftingHint()
+                        .copy()
+                        .withStyle(ChatFormatting.DARK_GRAY)
+        );
     }
 
     @Override

@@ -353,7 +353,7 @@
         "glass_color": "clear"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_clear"
+        "model": "vintner:block/tasting_cabinet_glass_clear"
       }
     },
     {
@@ -362,7 +362,7 @@
         "glass_color": "clear"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_clear",
+        "model": "vintner:block/tasting_cabinet_glass_clear",
         "y": 90
       }
     },
@@ -372,7 +372,7 @@
         "glass_color": "clear"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_clear",
+        "model": "vintner:block/tasting_cabinet_glass_clear",
         "y": 180
       }
     },
@@ -382,7 +382,7 @@
         "glass_color": "clear"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_clear",
+        "model": "vintner:block/tasting_cabinet_glass_clear",
         "y": 270
       }
     },
@@ -392,7 +392,7 @@
         "glass_color": "white"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_white"
+        "model": "vintner:block/tasting_cabinet_glass_white"
       }
     },
     {
@@ -401,7 +401,7 @@
         "glass_color": "white"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_white",
+        "model": "vintner:block/tasting_cabinet_glass_white",
         "y": 90
       }
     },
@@ -411,7 +411,7 @@
         "glass_color": "white"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_white",
+        "model": "vintner:block/tasting_cabinet_glass_white",
         "y": 180
       }
     },
@@ -421,7 +421,7 @@
         "glass_color": "white"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_white",
+        "model": "vintner:block/tasting_cabinet_glass_white",
         "y": 270
       }
     },
@@ -431,7 +431,7 @@
         "glass_color": "orange"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_orange"
+        "model": "vintner:block/tasting_cabinet_glass_orange"
       }
     },
     {
@@ -440,7 +440,7 @@
         "glass_color": "orange"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_orange",
+        "model": "vintner:block/tasting_cabinet_glass_orange",
         "y": 90
       }
     },
@@ -450,7 +450,7 @@
         "glass_color": "orange"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_orange",
+        "model": "vintner:block/tasting_cabinet_glass_orange",
         "y": 180
       }
     },
@@ -460,7 +460,7 @@
         "glass_color": "orange"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_orange",
+        "model": "vintner:block/tasting_cabinet_glass_orange",
         "y": 270
       }
     },
@@ -470,7 +470,7 @@
         "glass_color": "magenta"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_magenta"
+        "model": "vintner:block/tasting_cabinet_glass_magenta"
       }
     },
     {
@@ -479,7 +479,7 @@
         "glass_color": "magenta"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_magenta",
+        "model": "vintner:block/tasting_cabinet_glass_magenta",
         "y": 90
       }
     },
@@ -489,7 +489,7 @@
         "glass_color": "magenta"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_magenta",
+        "model": "vintner:block/tasting_cabinet_glass_magenta",
         "y": 180
       }
     },
@@ -499,7 +499,7 @@
         "glass_color": "magenta"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_magenta",
+        "model": "vintner:block/tasting_cabinet_glass_magenta",
         "y": 270
       }
     },
@@ -509,7 +509,7 @@
         "glass_color": "light_blue"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_light_blue"
+        "model": "vintner:block/tasting_cabinet_glass_light_blue"
       }
     },
     {
@@ -518,7 +518,7 @@
         "glass_color": "light_blue"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_light_blue",
+        "model": "vintner:block/tasting_cabinet_glass_light_blue",
         "y": 90
       }
     },
@@ -528,7 +528,7 @@
         "glass_color": "light_blue"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_light_blue",
+        "model": "vintner:block/tasting_cabinet_glass_light_blue",
         "y": 180
       }
     },
@@ -538,7 +538,7 @@
         "glass_color": "light_blue"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_light_blue",
+        "model": "vintner:block/tasting_cabinet_glass_light_blue",
         "y": 270
       }
     },
@@ -548,7 +548,7 @@
         "glass_color": "yellow"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_yellow"
+        "model": "vintner:block/tasting_cabinet_glass_yellow"
       }
     },
     {
@@ -557,7 +557,7 @@
         "glass_color": "yellow"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_yellow",
+        "model": "vintner:block/tasting_cabinet_glass_yellow",
         "y": 90
       }
     },
@@ -567,7 +567,7 @@
         "glass_color": "yellow"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_yellow",
+        "model": "vintner:block/tasting_cabinet_glass_yellow",
         "y": 180
       }
     },
@@ -577,7 +577,7 @@
         "glass_color": "yellow"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_yellow",
+        "model": "vintner:block/tasting_cabinet_glass_yellow",
         "y": 270
       }
     },
@@ -587,7 +587,7 @@
         "glass_color": "lime"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_lime"
+        "model": "vintner:block/tasting_cabinet_glass_lime"
       }
     },
     {
@@ -596,7 +596,7 @@
         "glass_color": "lime"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_lime",
+        "model": "vintner:block/tasting_cabinet_glass_lime",
         "y": 90
       }
     },
@@ -606,7 +606,7 @@
         "glass_color": "lime"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_lime",
+        "model": "vintner:block/tasting_cabinet_glass_lime",
         "y": 180
       }
     },
@@ -616,7 +616,7 @@
         "glass_color": "lime"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_lime",
+        "model": "vintner:block/tasting_cabinet_glass_lime",
         "y": 270
       }
     },
@@ -626,7 +626,7 @@
         "glass_color": "pink"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_pink"
+        "model": "vintner:block/tasting_cabinet_glass_pink"
       }
     },
     {
@@ -635,7 +635,7 @@
         "glass_color": "pink"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_pink",
+        "model": "vintner:block/tasting_cabinet_glass_pink",
         "y": 90
       }
     },
@@ -645,7 +645,7 @@
         "glass_color": "pink"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_pink",
+        "model": "vintner:block/tasting_cabinet_glass_pink",
         "y": 180
       }
     },
@@ -655,7 +655,7 @@
         "glass_color": "pink"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_pink",
+        "model": "vintner:block/tasting_cabinet_glass_pink",
         "y": 270
       }
     },
@@ -665,7 +665,7 @@
         "glass_color": "gray"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_gray"
+        "model": "vintner:block/tasting_cabinet_glass_gray"
       }
     },
     {
@@ -674,7 +674,7 @@
         "glass_color": "gray"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_gray",
+        "model": "vintner:block/tasting_cabinet_glass_gray",
         "y": 90
       }
     },
@@ -684,7 +684,7 @@
         "glass_color": "gray"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_gray",
+        "model": "vintner:block/tasting_cabinet_glass_gray",
         "y": 180
       }
     },
@@ -694,7 +694,7 @@
         "glass_color": "gray"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_gray",
+        "model": "vintner:block/tasting_cabinet_glass_gray",
         "y": 270
       }
     },
@@ -704,7 +704,7 @@
         "glass_color": "light_gray"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_light_gray"
+        "model": "vintner:block/tasting_cabinet_glass_light_gray"
       }
     },
     {
@@ -713,7 +713,7 @@
         "glass_color": "light_gray"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_light_gray",
+        "model": "vintner:block/tasting_cabinet_glass_light_gray",
         "y": 90
       }
     },
@@ -723,7 +723,7 @@
         "glass_color": "light_gray"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_light_gray",
+        "model": "vintner:block/tasting_cabinet_glass_light_gray",
         "y": 180
       }
     },
@@ -733,7 +733,7 @@
         "glass_color": "light_gray"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_light_gray",
+        "model": "vintner:block/tasting_cabinet_glass_light_gray",
         "y": 270
       }
     },
@@ -743,7 +743,7 @@
         "glass_color": "cyan"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_cyan"
+        "model": "vintner:block/tasting_cabinet_glass_cyan"
       }
     },
     {
@@ -752,7 +752,7 @@
         "glass_color": "cyan"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_cyan",
+        "model": "vintner:block/tasting_cabinet_glass_cyan",
         "y": 90
       }
     },
@@ -762,7 +762,7 @@
         "glass_color": "cyan"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_cyan",
+        "model": "vintner:block/tasting_cabinet_glass_cyan",
         "y": 180
       }
     },
@@ -772,7 +772,7 @@
         "glass_color": "cyan"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_cyan",
+        "model": "vintner:block/tasting_cabinet_glass_cyan",
         "y": 270
       }
     },
@@ -782,7 +782,7 @@
         "glass_color": "purple"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_purple"
+        "model": "vintner:block/tasting_cabinet_glass_purple"
       }
     },
     {
@@ -791,7 +791,7 @@
         "glass_color": "purple"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_purple",
+        "model": "vintner:block/tasting_cabinet_glass_purple",
         "y": 90
       }
     },
@@ -801,7 +801,7 @@
         "glass_color": "purple"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_purple",
+        "model": "vintner:block/tasting_cabinet_glass_purple",
         "y": 180
       }
     },
@@ -811,7 +811,7 @@
         "glass_color": "purple"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_purple",
+        "model": "vintner:block/tasting_cabinet_glass_purple",
         "y": 270
       }
     },
@@ -821,7 +821,7 @@
         "glass_color": "blue"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_blue"
+        "model": "vintner:block/tasting_cabinet_glass_blue"
       }
     },
     {
@@ -830,7 +830,7 @@
         "glass_color": "blue"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_blue",
+        "model": "vintner:block/tasting_cabinet_glass_blue",
         "y": 90
       }
     },
@@ -840,7 +840,7 @@
         "glass_color": "blue"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_blue",
+        "model": "vintner:block/tasting_cabinet_glass_blue",
         "y": 180
       }
     },
@@ -850,7 +850,7 @@
         "glass_color": "blue"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_blue",
+        "model": "vintner:block/tasting_cabinet_glass_blue",
         "y": 270
       }
     },
@@ -860,7 +860,7 @@
         "glass_color": "brown"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_brown"
+        "model": "vintner:block/tasting_cabinet_glass_brown"
       }
     },
     {
@@ -869,7 +869,7 @@
         "glass_color": "brown"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_brown",
+        "model": "vintner:block/tasting_cabinet_glass_brown",
         "y": 90
       }
     },
@@ -879,7 +879,7 @@
         "glass_color": "brown"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_brown",
+        "model": "vintner:block/tasting_cabinet_glass_brown",
         "y": 180
       }
     },
@@ -889,7 +889,7 @@
         "glass_color": "brown"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_brown",
+        "model": "vintner:block/tasting_cabinet_glass_brown",
         "y": 270
       }
     },
@@ -899,7 +899,7 @@
         "glass_color": "green"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_green"
+        "model": "vintner:block/tasting_cabinet_glass_green"
       }
     },
     {
@@ -908,7 +908,7 @@
         "glass_color": "green"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_green",
+        "model": "vintner:block/tasting_cabinet_glass_green",
         "y": 90
       }
     },
@@ -918,7 +918,7 @@
         "glass_color": "green"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_green",
+        "model": "vintner:block/tasting_cabinet_glass_green",
         "y": 180
       }
     },
@@ -928,7 +928,7 @@
         "glass_color": "green"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_green",
+        "model": "vintner:block/tasting_cabinet_glass_green",
         "y": 270
       }
     },
@@ -938,7 +938,7 @@
         "glass_color": "red"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_red"
+        "model": "vintner:block/tasting_cabinet_glass_red"
       }
     },
     {
@@ -947,7 +947,7 @@
         "glass_color": "red"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_red",
+        "model": "vintner:block/tasting_cabinet_glass_red",
         "y": 90
       }
     },
@@ -957,7 +957,7 @@
         "glass_color": "red"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_red",
+        "model": "vintner:block/tasting_cabinet_glass_red",
         "y": 180
       }
     },
@@ -967,7 +967,7 @@
         "glass_color": "red"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_red",
+        "model": "vintner:block/tasting_cabinet_glass_red",
         "y": 270
       }
     },
@@ -977,7 +977,7 @@
         "glass_color": "black"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_black"
+        "model": "vintner:block/tasting_cabinet_glass_black"
       }
     },
     {
@@ -986,7 +986,7 @@
         "glass_color": "black"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_black",
+        "model": "vintner:block/tasting_cabinet_glass_black",
         "y": 90
       }
     },
@@ -996,7 +996,7 @@
         "glass_color": "black"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_black",
+        "model": "vintner:block/tasting_cabinet_glass_black",
         "y": 180
       }
     },
@@ -1006,7 +1006,7 @@
         "glass_color": "black"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_glass_black",
+        "model": "vintner:block/tasting_cabinet_glass_black",
         "y": 270
       }
     }

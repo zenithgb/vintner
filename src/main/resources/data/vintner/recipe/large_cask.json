@@ -2,13 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "PPP",
-    "B B",
-    "PPP"
+    "PCP",
+    "PAP",
+    "PCP"
   ],
   "key": {
     "P": "minecraft:spruce_planks",
-    "B": "minecraft:copper_ingot"
+    "C": "minecraft:copper_ingot",
+    "A": "#vintner:aging_barrels"
   },
   "result": {
     "id": "vintner:large_cask",

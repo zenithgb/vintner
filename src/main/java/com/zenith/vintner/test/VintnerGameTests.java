@@ -3225,6 +3225,52 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void almanacExplainsPlacedAgeingVessels(
+            GameTestHelper helper
+    ) {
+        BlockPos barrelPos = new BlockPos(1, 1, 1);
+        helper.setBlock(barrelPos, ModBlocks.CHESTNUT_AGING_BARREL);
+        AgingBarrelBlockEntity barrel = helper.getBlockEntity(
+                barrelPos,
+                AgingBarrelBlockEntity.class
+        );
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ItemStack almanac = new ItemStack(ModItems.VINTNER_ALMANAC);
+        player.setItemInHand(InteractionHand.MAIN_HAND, almanac);
+        BlockPos absoluteBarrel = helper.absolutePos(barrelPos);
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                almanac,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteBarrel),
+                        Direction.NORTH,
+                        absoluteBarrel,
+                        false
+                )
+        );
+
+        helper.assertValueEqual(
+                almanac.getCount(),
+                1,
+                "Reading a vessel guide must not consume the Almanac"
+        );
+        helper.assertValueEqual(
+                barrel.getBottleCount(),
+                0,
+                "Reading a vessel guide must not modify the barrel"
+        );
+        helper.assertValueEqual(
+                AgingVessel.CHESTNUT.agingTimeSeconds(),
+                75,
+                "The displayed Chestnut ageing time should stay accurate"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void specialistAgeingVesselsHaveDistinctProfiles(
             GameTestHelper helper
     ) {

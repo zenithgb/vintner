@@ -431,31 +431,19 @@
     {
       "from": [
         2.5,
-        2.5,
-        0.75
+        3,
+        1.5
       ],
       "to": [
         7.5,
-        6.25,
-        0.95
+        6.2,
+        1.625
       ],
       "faces": {
         "north": {
           "texture": "#glass"
         },
-        "east": {
-          "texture": "#glass"
-        },
         "south": {
-          "texture": "#glass"
-        },
-        "west": {
-          "texture": "#glass"
-        },
-        "up": {
-          "texture": "#glass"
-        },
-        "down": {
           "texture": "#glass"
         }
       }
@@ -463,31 +451,19 @@
     {
       "from": [
         8.5,
-        2.5,
-        0.75
+        3,
+        1.5
       ],
       "to": [
         13.5,
-        6.25,
-        0.95
+        6.2,
+        1.625
       ],
       "faces": {
         "north": {
           "texture": "#glass"
         },
-        "east": {
-          "texture": "#glass"
-        },
         "south": {
-          "texture": "#glass"
-        },
-        "west": {
-          "texture": "#glass"
-        },
-        "up": {
-          "texture": "#glass"
-        },
-        "down": {
           "texture": "#glass"
         }
       }
@@ -495,31 +471,19 @@
     {
       "from": [
         2.5,
-        9.5,
-        0.75
+        10,
+        1.5
       ],
       "to": [
         7.5,
-        13.5,
-        0.95
+        13.45,
+        1.625
       ],
       "faces": {
         "north": {
           "texture": "#glass"
         },
-        "east": {
-          "texture": "#glass"
-        },
         "south": {
-          "texture": "#glass"
-        },
-        "west": {
-          "texture": "#glass"
-        },
-        "up": {
-          "texture": "#glass"
-        },
-        "down": {
           "texture": "#glass"
         }
       }
@@ -527,31 +491,19 @@
     {
       "from": [
         8.5,
-        9.5,
-        0.75
+        10,
+        1.5
       ],
       "to": [
         13.5,
-        13.5,
-        0.95
+        13.45,
+        1.625
       ],
       "faces": {
         "north": {
           "texture": "#glass"
         },
-        "east": {
-          "texture": "#glass"
-        },
         "south": {
-          "texture": "#glass"
-        },
-        "west": {
-          "texture": "#glass"
-        },
-        "up": {
-          "texture": "#glass"
-        },
-        "down": {
           "texture": "#glass"
         }
       }

@@ -72,6 +72,10 @@ public enum AgingVessel {
         return agingTime;
     }
 
+    public int agingTimeSeconds() {
+        return agingTime / 20;
+    }
+
     public int qualityContribution(int wineType) {
         int stylePenalty = idealStyle.equals("red") && wineType == 2
                 ? mismatchPenalty
@@ -105,7 +109,7 @@ public enum AgingVessel {
         return switch (this) {
             case OAK -> red ? "soft_oak" : "rounded_mineral";
             case CHESTNUT -> "warm_spice";
-            case NEUTRAL -> red ? "firm_tannin" : "crisp_acidity";
+            case NEUTRAL -> red ? "red_fruit" : "crisp_acidity";
             case LARGE_CASK -> red
                     ? "earth_and_cedar"
                     : "floral_mineral";
@@ -114,6 +118,18 @@ public enum AgingVessel {
 
     public Component displayName() {
         return Component.translatable("aging_vessel.vintner." + id);
+    }
+
+    public Component guide() {
+        return Component.translatable(
+                "aging_vessel.vintner.guide." + id
+        );
+    }
+
+    public Component craftingHint() {
+        return Component.translatable(
+                "aging_vessel.vintner.crafting." + id
+        );
     }
 
     private static Component detail(String category, String value) {

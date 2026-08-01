@@ -411,10 +411,10 @@ def generate_cellar_fixture_base_models() -> None:
             },
             "elements": [
                 # Four tall legs carry a barrel placed in the block above.
-                {"from": [1.5, 0, 2.5], "to": [2.5, 14.25, 3.5], "faces": copy.deepcopy(beam_faces)},
-                {"from": [13.5, 0, 2.5], "to": [14.5, 14.25, 3.5], "faces": copy.deepcopy(beam_faces)},
-                {"from": [1.5, 0, 12.5], "to": [2.5, 14.25, 13.5], "faces": copy.deepcopy(beam_faces)},
-                {"from": [13.5, 0, 12.5], "to": [14.5, 14.25, 13.5], "faces": copy.deepcopy(beam_faces)},
+                {"from": [1.5, 0, 2.5], "to": [2.75, 14.25, 3.75], "faces": copy.deepcopy(beam_faces)},
+                {"from": [13.25, 0, 2.5], "to": [14.5, 14.25, 3.75], "faces": copy.deepcopy(beam_faces)},
+                {"from": [1.5, 0, 12.25], "to": [2.75, 14.25, 13.5], "faces": copy.deepcopy(beam_faces)},
+                {"from": [13.25, 0, 12.25], "to": [14.5, 14.25, 13.5], "faces": copy.deepcopy(beam_faces)},
                 # Wide feet and mid braces keep the empty stand intentional.
                 {"from": [0.75, 0, 2], "to": [15.25, 1.25, 4], "faces": copy.deepcopy(wood_faces)},
                 {"from": [0.75, 0, 12], "to": [15.25, 1.25, 14], "faces": copy.deepcopy(wood_faces)},
@@ -422,8 +422,8 @@ def generate_cellar_fixture_base_models() -> None:
                 {"from": [2, 6.5, 12.75], "to": [14, 7.5, 13.25], "faces": copy.deepcopy(wood_faces)},
                 # The two saddles reach the block boundary, eliminating the
                 # visible air gap without sharing a face with the barrel.
-                {"from": [2.5, 14, 2.5], "to": [13.5, 15.75, 4.25], "faces": copy.deepcopy(wood_faces)},
-                {"from": [2.5, 14, 11.75], "to": [13.5, 15.75, 13.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [3.25, 14.25, 3.25], "to": [12.75, 15.875, 4], "faces": copy.deepcopy(wood_faces)},
+                {"from": [3.25, 14.25, 12], "to": [12.75, 15.875, 12.75], "faces": copy.deepcopy(wood_faces)},
             ],
         },
     )
@@ -516,12 +516,21 @@ def generate_cellar_fixture_base_models() -> None:
                 },
             )
 
-    glass_faces = cube_faces("#glass")
-    glass_elements = [
-        {"from": [2.5, 2.5, 0.75], "to": [7.5, 6.25, 0.95], "faces": copy.deepcopy(glass_faces)},
-        {"from": [8.5, 2.5, 0.75], "to": [13.5, 6.25, 0.95], "faces": copy.deepcopy(glass_faces)},
-        {"from": [2.5, 9.5, 0.75], "to": [7.5, 13.5, 0.95], "faces": copy.deepcopy(glass_faces)},
-        {"from": [8.5, 9.5, 0.75], "to": [13.5, 13.5, 0.95], "faces": copy.deepcopy(glass_faces)},
+    glass_faces = {
+        "north": {"texture": "#glass"},
+        "south": {"texture": "#glass"},
+    }
+    shelf_glass_elements = [
+        {"from": [2.5, 3, 1.5], "to": [7.5, 6.2, 1.625], "faces": copy.deepcopy(glass_faces)},
+        {"from": [8.5, 3, 1.5], "to": [13.5, 6.2, 1.625], "faces": copy.deepcopy(glass_faces)},
+        {"from": [2.5, 10, 1.5], "to": [7.5, 13.45, 1.625], "faces": copy.deepcopy(glass_faces)},
+        {"from": [8.5, 10, 1.5], "to": [13.5, 13.45, 1.625], "faces": copy.deepcopy(glass_faces)},
+    ]
+    cabinet_glass_elements = [
+        {"from": [2.5, 1.75, 1.2], "to": [7.5, 6.25, 1.325], "faces": copy.deepcopy(glass_faces)},
+        {"from": [8.5, 1.75, 1.2], "to": [13.5, 6.25, 1.325], "faces": copy.deepcopy(glass_faces)},
+        {"from": [2.5, 9.35, 1.2], "to": [7.5, 13.5, 1.325], "faces": copy.deepcopy(glass_faces)},
+        {"from": [8.5, 9.35, 1.2], "to": [13.5, 13.5, 1.325], "faces": copy.deepcopy(glass_faces)},
     ]
     for color in GLASS_COLORS:
         texture = (
@@ -540,7 +549,21 @@ def generate_cellar_fixture_base_models() -> None:
                     },
                     "particle": texture,
                 },
-                "elements": copy.deepcopy(glass_elements),
+                "elements": copy.deepcopy(shelf_glass_elements),
+            },
+        )
+        write_json(
+            ASSETS / f"models/block/tasting_cabinet_glass_{color}.json",
+            {
+                "parent": "minecraft:block/block",
+                "textures": {
+                    "glass": {
+                        "force_translucent": True,
+                        "sprite": texture,
+                    },
+                    "particle": texture,
+                },
+                "elements": copy.deepcopy(cabinet_glass_elements),
             },
         )
 
@@ -576,10 +599,15 @@ def generate_cellar_fixture_blockstates() -> None:
                     })
             for color in GLASS_COLORS:
                 for facing, rotation in rotations.items():
+                    glass_prefix = (
+                        "tasting_cabinet_glass"
+                        if block_id == cabinet_id(wood)
+                        else "cellar_fixture_glass"
+                    )
                     apply = {
                         "model": (
                             "vintner:block/"
-                            f"cellar_fixture_glass_{color}"
+                            f"{glass_prefix}_{color}"
                         )
                     }
                     if rotation:
@@ -703,22 +731,49 @@ def generate_special_aging_vessels() -> None:
         )
         write_json(DATA / f"loot_table/blocks/{block_id}.json", loot_table(block_id))
 
+    write_json(DATA / "tags/item/aging_barrels.json", {
+        "replace": False,
+        "values": [f"vintner:{aging_id(wood)}" for wood in WOODS],
+    })
     recipes = {
-        "chestnut_aging_barrel": ("minecraft:dark_oak_planks", "minecraft:iron_ingot"),
-        "neutral_aging_barrel": ("minecraft:oak_planks", "minecraft:honeycomb"),
-        "large_cask": ("minecraft:spruce_planks", "minecraft:copper_ingot"),
+        "chestnut_aging_barrel": {
+            "pattern": ["DID", "DAD", "DID"],
+            "key": {
+                "D": "minecraft:dark_oak_planks",
+                "I": "minecraft:iron_ingot",
+                "A": "#vintner:aging_barrels",
+            },
+            "unlock": "minecraft:dark_oak_planks",
+        },
+        "neutral_aging_barrel": {
+            "pattern": [" H ", "HAH", " H "],
+            "key": {
+                "H": "minecraft:honeycomb",
+                "A": "#vintner:aging_barrels",
+            },
+            "unlock": "minecraft:honeycomb",
+        },
+        "large_cask": {
+            "pattern": ["PCP", "PAP", "PCP"],
+            "key": {
+                "P": "minecraft:spruce_planks",
+                "C": "minecraft:copper_ingot",
+                "A": "#vintner:aging_barrels",
+            },
+            "unlock": "minecraft:copper_ingot",
+        },
     }
-    for block_id, (planks, band) in recipes.items():
+    for block_id, recipe in recipes.items():
         write_json(DATA / f"recipe/{block_id}.json", {
             "type": "minecraft:crafting_shaped",
             "category": "misc",
-            "pattern": ["PPP", "B B", "PPP"],
-            "key": {"P": planks, "B": band},
+            "pattern": recipe["pattern"],
+            "key": recipe["key"],
             "result": {"id": f"vintner:{block_id}", "count": 1},
         })
         write_json(
             DATA / f"advancement/recipes/vintner/{block_id}.json",
-            recipe_advancement(block_id, planks),
+            recipe_advancement(block_id, recipe["unlock"]),
         )
 
 
@@ -876,8 +931,13 @@ def generate_items() -> None:
             parent_id = parent.removeprefix("vintner:block/")
             base = read_json(ASSETS / f"models/block/{parent_id}.json")
 
+        glass_prefix = (
+            "tasting_cabinet_glass"
+            if block_id.endswith("tasting_cabinet")
+            else "cellar_fixture_glass"
+        )
         glass = read_json(
-            ASSETS / "models/block/cellar_fixture_glass_clear.json"
+            ASSETS / f"models/block/{glass_prefix}_clear.json"
         )
         textures = {
             **base.get("textures", {}),
@@ -1286,15 +1346,46 @@ def generate_language() -> None:
         "Chestnut Aging Barrel"
     )
     language["block.vintner.neutral_aging_barrel"] = (
-        "Neutral Aging Barrel"
+        "Neutral Oak Barrel"
     )
     language["block.vintner.large_cask"] = "Large Cask"
+    language["tag.item.vintner.aging_barrels"] = "Vintner Aging Barrels"
     language["aging_vessel.vintner.oak"] = "Oak barrel"
     language["aging_vessel.vintner.chestnut"] = "Chestnut barrel"
-    language["aging_vessel.vintner.neutral"] = "Neutral barrel"
+    language["aging_vessel.vintner.neutral"] = "Neutral oak barrel"
     language["aging_vessel.vintner.large_cask"] = "Large cask"
     language["message.vintner.almanac.vessel"] = (
         "Aged in: %s"
+    )
+    language["message.vintner.almanac.vessel_guide"] = (
+        "Vessel guide: %s"
+    )
+    language["message.vintner.almanac.vessel_capacity"] = (
+        "Capacity: %s bottles | Ageing time: %s seconds"
+    )
+    language["aging_vessel.vintner.guide.oak"] = (
+        "Balanced fresh-oak ageing with firm tannin, moderate oxygen, and low risk. Best for red wine."
+    )
+    language["aging_vessel.vintner.guide.chestnut"] = (
+        "Fast, bold ageing with high oxygen and warm spice, but greater spoilage risk. Best for red wine."
+    )
+    language["aging_vessel.vintner.guide.neutral"] = (
+        "Slow, low-extraction ageing that preserves fruit and acidity with very low risk. Suits red or white wine."
+    )
+    language["aging_vessel.vintner.guide.large_cask"] = (
+        "Very slow, gentle maturation for eight bottles, with very low oxygen and soft tannin. Suits red or white wine."
+    )
+    language["aging_vessel.vintner.crafting.oak"] = (
+        "Craft from six matching planks and two iron ingots. Wood variants share this balanced profile."
+    )
+    language["aging_vessel.vintner.crafting.chestnut"] = (
+        "Re-cooper any Aging Barrel with six dark oak planks and two iron ingots."
+    )
+    language["aging_vessel.vintner.crafting.neutral"] = (
+        "Season any Aging Barrel with four honeycombs to reduce wood extraction."
+    )
+    language["aging_vessel.vintner.crafting.large_cask"] = (
+        "Expand any Aging Barrel with six spruce planks and two copper ingots."
     )
     language["wine_style.vintner.red"] = "Red"
     language["wine_style.vintner.white"] = "White"

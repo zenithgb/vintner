@@ -41,6 +41,21 @@ contribution. Chestnut barrels work faster and favour red wine, neutral
 barrels preserve primary fruit character, and large casks hold eight bottles
 for slower, gentler ageing.
 
+The ordinary ageing barrel is available in every supported wood family, but
+those wood choices are cosmetic and share the balanced oak profile. Chestnut,
+Neutral Oak, and Large Cask are the three deliberate specialist upgrades:
+
+- Re-cooper any ordinary ageing barrel with six dark oak planks and two iron
+  ingots to make a Chestnut Aging Barrel.
+- Season any ordinary ageing barrel with four honeycombs to make a Neutral Oak
+  Barrel.
+- Expand any ordinary ageing barrel with six spruce planks and two copper
+  ingots to make a Large Cask.
+
+Use the Vintner's Almanac directly on any placed ageing vessel to compare its
+capacity, ageing time, wine affinity, risk, and recipe before committing a
+batch.
+
 Wine racks hold four bottles without opening an inventory screen. Bottles age
 while stored, and the surrounding build determines cellar quality: sheltered,
 dark, underground spaces with nearby water age wine best, while nearby heat

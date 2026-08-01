@@ -2,13 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "PPP",
-    "B B",
-    "PPP"
+    "DID",
+    "DAD",
+    "DID"
   ],
   "key": {
-    "P": "minecraft:dark_oak_planks",
-    "B": "minecraft:iron_ingot"
+    "D": "minecraft:dark_oak_planks",
+    "I": "minecraft:iron_ingot",
+    "A": "#vintner:aging_barrels"
   },
   "result": {
     "id": "vintner:chestnut_aging_barrel",
