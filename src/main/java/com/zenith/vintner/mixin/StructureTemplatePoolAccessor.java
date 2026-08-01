@@ -24,4 +24,7 @@ public interface StructureTemplatePoolAccessor {
 
     @Accessor("templates")
     ObjectArrayList<StructurePoolElement> vintner$getTemplates();
+
+    @Accessor("maxSize")
+    void vintner$setMaxSize(int maxSize);
 }

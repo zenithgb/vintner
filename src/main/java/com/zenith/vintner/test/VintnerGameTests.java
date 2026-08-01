@@ -81,6 +81,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -351,12 +352,64 @@ public final class VintnerGameTests {
             );
             helper.assertValueEqual(
                     houses.get(houses.size() - 1).getSecond(),
-                    4,
+                    expectedVineyardWeight(poolKey),
                     "Vineyard farm weight"
+            );
+
+            StructurePoolElement vineyard = houses
+                    .get(houses.size() - 1)
+                    .getFirst();
+            var structureManager = helper.getLevel()
+                    .getServer()
+                    .getStructureManager();
+
+            helper.assertValueEqual(
+                    vineyard.getSize(
+                            structureManager,
+                            Rotation.NONE
+                    ),
+                    new net.minecraft.core.Vec3i(11, 3, 9),
+                    "Vineyard pool element size"
+            );
+            helper.assertValueEqual(
+                    vineyard.getShuffledJigsawBlocks(
+                            structureManager,
+                            BlockPos.ZERO,
+                            Rotation.NONE,
+                            RandomSource.create(0L)
+                    ).size(),
+                    1,
+                    "Vineyard must expose one village path connector"
             );
         }
 
         helper.succeed();
+    }
+
+    private static int expectedVineyardWeight(
+            ResourceKey<StructureTemplatePool> poolKey
+    ) {
+        String path = poolKey.identifier().getPath();
+
+        if (path.contains("/plains/")) {
+            return 8;
+        }
+        if (path.contains("/desert/")) {
+            return 19;
+        }
+        if (path.contains("/savanna/")) {
+            return 14;
+        }
+        if (path.contains("/snowy/")) {
+            return 6;
+        }
+        if (path.contains("/taiga/")) {
+            return 13;
+        }
+
+        throw new IllegalArgumentException(
+                "Unknown village culture pool: " + poolKey.identifier()
+        );
     }
 
     @GameTest(maxTicks = 40)
