@@ -1,5 +1,6 @@
 package com.zenith.vintner.test;
 
+import com.mojang.datafixers.util.Pair;
 import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.block.CellarGlassColor;
 import com.zenith.vintner.block.CellarCollectionBlock;
@@ -22,6 +23,7 @@ import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.registry.ModTrades;
+import com.zenith.vintner.registry.ModVillageStructures;
 import com.zenith.vintner.registry.ModVillagers;
 import com.zenith.vintner.wine.CellarConditions;
 import com.zenith.vintner.wine.CellarRating;
@@ -76,6 +78,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -301,6 +305,48 @@ public final class VintnerGameTests {
                             stand.defaultBlockState()
                     ),
                     "Every barrel stand variant must be a Cooper POI"
+            );
+        }
+
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void specialistHousesJoinEveryVillageCulture(
+            GameTestHelper helper
+    ) {
+        for (
+                ResourceKey<StructureTemplatePool> poolKey
+                : ModVillageStructures.housePools()
+        ) {
+            StructureTemplatePool pool = helper.getLevel()
+                    .registryAccess()
+                    .lookupOrThrow(Registries.TEMPLATE_POOL)
+                    .getValueOrThrow(poolKey);
+            List<Pair<StructurePoolElement, Integer>> houses =
+                    pool.getTemplates();
+
+            helper.assertTrue(
+                    ModVillageStructures.isInjected(
+                            helper.getLevel().registryAccess(),
+                            poolKey
+                    ),
+                    "Specialist houses must be injected into "
+                            + poolKey.identifier()
+            );
+            helper.assertTrue(
+                    houses.size() >= 2,
+                    "Every village culture must contain specialist houses"
+            );
+            helper.assertValueEqual(
+                    houses.get(houses.size() - 2).getSecond(),
+                    1,
+                    "Winemaker house weight"
+            );
+            helper.assertValueEqual(
+                    houses.get(houses.size() - 1).getSecond(),
+                    1,
+                    "Cooper house weight"
             );
         }
 

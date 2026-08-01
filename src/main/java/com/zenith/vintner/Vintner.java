@@ -8,6 +8,7 @@ import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.registry.ModLootTables;
 import com.zenith.vintner.registry.ModMobEffects;
 import com.zenith.vintner.registry.ModTrades;
+import com.zenith.vintner.registry.ModVillageStructures;
 import com.zenith.vintner.registry.ModVillagers;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ public final class Vintner implements ModInitializer {
         ModItems.initialize();
         ModBlocks.initialize();
         ModVillagers.initialize();
+        ModVillageStructures.initialize();
         ModCreativeTabs.initialize();
         ModBlockEntities.initialize();
         ModLootTables.initialize();
