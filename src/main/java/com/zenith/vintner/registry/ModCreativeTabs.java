@@ -51,6 +51,7 @@ public final class ModCreativeTabs {
                                 output.accept(ModItems.WHITE_WINE);
                                 ModBlocks.AGING_BARRELS.values()
                                         .forEach(output::accept);
+                                output.accept(ModItems.COOPERS_MALLET);
                                 output.accept(ModItems.TOASTING_KIT);
                                 output.accept(ModItems.SEASONING_KIT);
                                 output.accept(

@@ -44,8 +44,10 @@ for slower, gentler ageing.
 The ordinary ageing barrel is available in every supported wood family, but
 those wood choices are cosmetic and share the balanced standard profile. Once
 that loop is familiar, any ordinary barrel can become one of three clearly
-signposted specialist choices. Craft a cooperage kit, then use it on an empty
-placed barrel; the barrel keeps its original wood appearance:
+signposted specialist choices. Craft a reusable Cooper's Mallet and a
+cooperage treatment kit, hold one in each hand, then use either item on an
+empty placed barrel. The barrel keeps its original wood appearance, the kit
+is consumed, and the mallet uses one of its 64 durability points:
 
 - A Toasting Kit creates fast, bold, red-focused ageing with a little more
   risk.
@@ -54,10 +56,13 @@ placed barrel; the barrel keeps its original wood appearance:
 - A Cask Conversion Kit creates an eight-bottle vessel for slow bulk
   maturation.
 
-Breaking a specialised ordinary barrel returns both its wood-family barrel
-and the applied kit, so the treatment can be reused. Older standalone Toasted,
-Seasoned, and Cellar Cask blocks remain loadable for existing worlds, but new
-cellars use the kit system.
+Sneak-using the mallet on an empty specialised barrel removes the treatment
+and returns its kit. Breaking a specialised ordinary barrel also returns both
+its wood-family barrel and the applied kit. The mallet can rotate Vintner
+presses, barrels, stands, racks, crates, archives, shelves, and cabinets by
+right-clicking them. Older standalone Toasted, Seasoned, and Cellar Cask
+blocks remain loadable for existing worlds, but new cellars use this treatment
+system.
 
 These are parallel cellar strategies rather than simple power tiers. Use the
 Vintner's Almanac directly on any placed ageing vessel to compare its role,

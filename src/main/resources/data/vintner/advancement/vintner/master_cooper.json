@@ -1,6 +1,12 @@
 {
   "parent": "vintner:vintner/choose_aging_style",
   "criteria": {
+    "mallet": {
+      "conditions": {
+        "recipe_id": "vintner:coopers_mallet"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
     "toasted": {
       "conditions": {
         "recipe_id": "vintner:toasting_kit"
@@ -26,13 +32,16 @@
     },
     "frame": "challenge",
     "icon": {
-      "id": "vintner:cask_conversion_kit"
+      "id": "vintner:coopers_mallet"
     },
     "title": {
       "translate": "advancement.vintner.master_cooper.title"
     }
   },
   "requirements": [
+    [
+      "mallet"
+    ],
     [
       "toasted"
     ],

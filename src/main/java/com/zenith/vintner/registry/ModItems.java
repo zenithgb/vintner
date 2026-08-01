@@ -1,6 +1,7 @@
 package com.zenith.vintner.registry;
 
 import com.zenith.vintner.item.CompostItem;
+import com.zenith.vintner.item.CoopersMalletItem;
 import com.zenith.vintner.item.GrapeCuttingItem;
 import com.zenith.vintner.item.MustItem;
 import com.zenith.vintner.item.VintnerAlmanacItem;
@@ -130,6 +131,15 @@ public final class ModItems {
             VintnerAlmanacItem::new
     );
 
+    public static final Item COOPERS_MALLET = register(
+            "coopers_mallet",
+            properties -> new CoopersMalletItem(
+                    properties.durability(
+                            CoopersMalletItem.MAX_DAMAGE
+                    )
+            )
+    );
+
     public static final Item TOASTING_KIT = register(
             "toasting_kit",
             Item::new
@@ -174,6 +184,8 @@ public final class ModItems {
     }
 
     public static void initialize() {
+        CoopersMalletItem.initialize();
+
         CreativeModeTabEvents
                 .modifyOutputEvent(
                         CreativeModeTabs.INGREDIENTS
@@ -182,6 +194,7 @@ public final class ModItems {
                     output.accept(COMPOST);
                     output.accept(RED_GRAPE_CUTTING);
                     output.accept(WHITE_GRAPE_CUTTING);
+                    output.accept(COOPERS_MALLET);
                     output.accept(TOASTING_KIT);
                     output.accept(SEASONING_KIT);
                     output.accept(CASK_CONVERSION_KIT);

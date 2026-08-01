@@ -7,6 +7,7 @@ import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.WineCrateBlock;
+import com.zenith.vintner.block.WineRackBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.CellarCollectionBlockEntity;
@@ -3384,19 +3385,22 @@ public final class VintnerGameTests {
                 WoodVariant.CHERRY
         );
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack mallet = new ItemStack(ModItems.COOPERS_MALLET);
+        player.setItemInHand(InteractionHand.MAIN_HAND, mallet);
 
         for (int index = 0; index < profiles.length; index++) {
             BlockPos pos = new BlockPos(1 + index * 2, 1, 1);
             helper.setBlock(pos, barrelBlock);
             Item kitItem = kits[index];
             ItemStack kit = new ItemStack(kitItem);
-            player.setItemInHand(InteractionHand.MAIN_HAND, kit);
+            player.setItemInHand(InteractionHand.OFF_HAND, kit);
             BlockPos absolutePos = helper.absolutePos(pos);
 
             player.gameMode.useItemOn(
                     player,
                     helper.getLevel(),
-                    kit,
+                    mallet,
                     InteractionHand.MAIN_HAND,
                     new BlockHitResult(
                             Vec3.atCenterOf(absolutePos),
@@ -3420,6 +3424,16 @@ public final class VintnerGameTests {
                     barrel.getVessel(),
                     profiles[index],
                     "The applied kit should control barrel behaviour"
+            );
+            helper.assertValueEqual(
+                    kit.getCount(),
+                    0,
+                    "Applying a treatment should consume its kit"
+            );
+            helper.assertValueEqual(
+                    mallet.getDamageValue(),
+                    index + 1,
+                    "Each treatment should use one mallet durability"
             );
 
             List<ItemStack> drops = Block.getDrops(
@@ -3445,14 +3459,14 @@ public final class VintnerGameTests {
                 ModItems.SEASONING_KIT
         );
         player.setItemInHand(
-                InteractionHand.MAIN_HAND,
+                InteractionHand.OFF_HAND,
                 replacementKit
         );
         BlockPos absoluteToastedPos = helper.absolutePos(toastedPos);
         player.gameMode.useItemOn(
                 player,
                 helper.getLevel(),
-                replacementKit,
+                mallet,
                 InteractionHand.MAIN_HAND,
                 new BlockHitResult(
                         Vec3.atCenterOf(absoluteToastedPos),
@@ -3470,6 +3484,11 @@ public final class VintnerGameTests {
                 replacementKit.getCount(),
                 1,
                 "Refitting a treated barrel must not destroy either kit"
+        );
+        helper.assertValueEqual(
+                mallet.getDamageValue(),
+                profiles.length,
+                "A rejected refit must not damage the mallet"
         );
 
         helper.succeed();
@@ -3491,13 +3510,16 @@ public final class VintnerGameTests {
         );
 
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack mallet = new ItemStack(ModItems.COOPERS_MALLET);
         ItemStack kit = new ItemStack(ModItems.TOASTING_KIT);
-        player.setItemInHand(InteractionHand.MAIN_HAND, kit);
+        player.setItemInHand(InteractionHand.MAIN_HAND, mallet);
+        player.setItemInHand(InteractionHand.OFF_HAND, kit);
         BlockPos absolutePos = helper.absolutePos(pos);
         player.gameMode.useItemOn(
                 player,
                 helper.getLevel(),
-                kit,
+                mallet,
                 InteractionHand.MAIN_HAND,
                 new BlockHitResult(
                         Vec3.atCenterOf(absolutePos),
@@ -3521,6 +3543,116 @@ public final class VintnerGameTests {
                 barrel.getBottleCount(),
                 1,
                 "A rejected treatment must not disturb the batch"
+        );
+        helper.assertValueEqual(
+                mallet.getDamageValue(),
+                0,
+                "A rejected treatment must not damage the mallet"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void coopersMalletRemovesTreatmentsFromEmptyBarrels(
+            GameTestHelper helper
+    ) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, ModBlocks.agingBarrel(WoodVariant.OAK));
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack mallet = new ItemStack(ModItems.COOPERS_MALLET);
+        ItemStack kit = new ItemStack(ModItems.TOASTING_KIT);
+        player.setItemInHand(InteractionHand.MAIN_HAND, mallet);
+        player.setItemInHand(InteractionHand.OFF_HAND, kit);
+        BlockPos absolutePos = helper.absolutePos(pos);
+        BlockHitResult hit = new BlockHitResult(
+                Vec3.atCenterOf(absolutePos),
+                Direction.NORTH,
+                absolutePos,
+                false
+        );
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                mallet,
+                InteractionHand.MAIN_HAND,
+                hit
+        );
+        helper.assertBlockProperty(
+                pos,
+                AgingBarrelBlock.VESSEL,
+                AgingVessel.CHESTNUT
+        );
+
+        player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+        player.setShiftKeyDown(true);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                mallet,
+                InteractionHand.MAIN_HAND,
+                hit
+        );
+        player.setShiftKeyDown(false);
+
+        helper.assertBlockProperty(
+                pos,
+                AgingBarrelBlock.VESSEL,
+                AgingVessel.OAK
+        );
+        helper.assertValueEqual(
+                mallet.getDamageValue(),
+                2,
+                "Applying and removing should each damage the mallet"
+        );
+        helper.assertTrue(
+                player.getInventory().contains(
+                        stack -> stack.is(ModItems.TOASTING_KIT)
+                ),
+                "Removing a treatment should return its kit"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void coopersMalletRotatesCellarFixtures(
+            GameTestHelper helper
+    ) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(
+                pos,
+                ModBlocks.wineRack(WoodVariant.OAK).defaultBlockState()
+                        .setValue(WineRackBlock.FACING, Direction.NORTH)
+        );
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack mallet = new ItemStack(ModItems.COOPERS_MALLET);
+        player.setItemInHand(InteractionHand.MAIN_HAND, mallet);
+        BlockPos absolutePos = helper.absolutePos(pos);
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                mallet,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absolutePos),
+                        Direction.UP,
+                        absolutePos,
+                        false
+                )
+        );
+
+        helper.assertBlockProperty(
+                pos,
+                WineRackBlock.FACING,
+                Direction.EAST
+        );
+        helper.assertValueEqual(
+                mallet.getDamageValue(),
+                1,
+                "Rotating a fixture should use mallet durability"
         );
         helper.succeed();
     }
