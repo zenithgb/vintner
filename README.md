@@ -133,9 +133,23 @@ and can eventually spoil it.
 
 Starter cuttings remain renewable and accessible:
 
-- Farmers and wandering traders sell both varieties.
+- Winemakers sell both varieties and buy harvested grapes.
+- Farmers and wandering traders retain both varieties as a fallback.
 - Village house chests have a chance to contain one variety.
 - Established mature vines can be pruned with shears.
+
+## Village specialists
+
+An unemployed villager can become a **Winemaker** by claiming any Vintner
+grape press. Winemakers progress through five trade levels: novice trades
+cover grapes and cuttings; later levels add must, the Almanac, presses, wine
+purchasing, tasting cabinets, and Vintage Archives.
+
+An unemployed villager can become a **Cooper** by claiming any Vintner barrel
+stand. Coopers progress from wood supplies and the reusable Cooper's Mallet to
+barrel stands, fermentation and ageing equipment, cellar storage, treatment
+kits, and labelled cellar furniture. Every wood-family press and barrel stand
+is a valid workstation, so specialists fit naturally into themed villages.
 
 All three winemaking machines support comparator output. The grape press
 reports its stored must level. Fermentation and aging barrels progress from

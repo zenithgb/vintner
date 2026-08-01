@@ -1,5 +1,7 @@
 {
   "itemGroup.vintner.main": "Vintner",
+  "entity.vintner.villager.winemaker": "Winemaker",
+  "entity.vintner.villager.cooper": "Cooper",
   "block.vintner.oak_trellis": "Oak Trellis",
   "item.vintner.red_grapes": "Red Grapes",
   "item.vintner.white_grapes": "White Grapes",

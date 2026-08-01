@@ -21,6 +21,8 @@ import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.registry.ModTrades;
+import com.zenith.vintner.registry.ModVillagers;
 import com.zenith.vintner.wine.CellarConditions;
 import com.zenith.vintner.wine.CellarRating;
 import com.zenith.vintner.wine.AgingVessel;
@@ -42,8 +44,10 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
@@ -53,11 +57,17 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.ai.village.poi.PoiType;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.crafting.Recipe;
@@ -225,6 +235,165 @@ public final class VintnerGameTests {
                         ModBlocks.LARGE_CASK.defaultBlockState()
                 ),
                 "Every specialist ageing vessel should support barrel data"
+        );
+
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void villageProfessionsRecognizeEveryWorkstationVariant(
+            GameTestHelper helper
+    ) {
+        Holder<PoiType> winemakerPoi = BuiltInRegistries
+                .POINT_OF_INTEREST_TYPE
+                .get(ModVillagers.WINEMAKER_POI_KEY)
+                .orElseThrow();
+        Holder<PoiType> cooperPoi = BuiltInRegistries
+                .POINT_OF_INTEREST_TYPE
+                .get(ModVillagers.COOPER_POI_KEY)
+                .orElseThrow();
+
+        helper.assertTrue(
+                ModVillagers.WINEMAKER_PROFESSION
+                        .heldJobSite()
+                        .test(winemakerPoi),
+                "The Winemaker must claim grape presses"
+        );
+        helper.assertFalse(
+                ModVillagers.WINEMAKER_PROFESSION
+                        .heldJobSite()
+                        .test(cooperPoi),
+                "The Winemaker must not claim barrel stands"
+        );
+        helper.assertTrue(
+                ModVillagers.COOPER_PROFESSION
+                        .heldJobSite()
+                        .test(cooperPoi),
+                "The Cooper must claim barrel stands"
+        );
+        helper.assertFalse(
+                ModVillagers.COOPER_PROFESSION
+                        .heldJobSite()
+                        .test(winemakerPoi),
+                "The Cooper must not claim grape presses"
+        );
+
+        for (Block press : ModBlocks.grapePressBlocks()) {
+            helper.assertTrue(
+                    ModVillagers.WINEMAKER_POI.is(
+                            press.defaultBlockState()
+                    ),
+                    "Every grape press variant must be a Winemaker POI"
+            );
+        }
+
+        for (Block stand : ModBlocks.barrelStandBlocks()) {
+            helper.assertTrue(
+                    ModVillagers.COOPER_POI.is(
+                            stand.defaultBlockState()
+                    ),
+                    "Every barrel stand variant must be a Cooper POI"
+            );
+        }
+
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void specialistVillagerTradesUnlockAcrossFiveLevels(
+            GameTestHelper helper
+    ) {
+        Villager winemaker = specialistVillager(
+                helper,
+                ModVillagers.WINEMAKER,
+                5,
+                FIRST
+        );
+        Villager cooper = specialistVillager(
+                helper,
+                ModVillagers.COOPER,
+                5,
+                EAST
+        );
+
+        assertTradeProgression(
+                helper,
+                winemaker,
+                new int[]{4, 7, 9, 11, 13},
+                "Winemaker"
+        );
+        assertTradeProgression(
+                helper,
+                cooper,
+                new int[]{3, 5, 8, 11, 13},
+                "Cooper"
+        );
+
+        helper.assertValueEqual(
+                winemaker.getOffers().size(),
+                13,
+                "A master Winemaker should expose all five trade tiers"
+        );
+        helper.assertValueEqual(
+                cooper.getOffers().size(),
+                13,
+                "A master Cooper should expose all five trade tiers"
+        );
+
+        assertTrade(
+                helper,
+                winemaker.getOffers(),
+                ModItems.RED_GRAPES,
+                Items.EMERALD,
+                "Winemakers should buy grapes"
+        );
+        assertTrade(
+                helper,
+                winemaker.getOffers(),
+                Items.EMERALD,
+                ModItems.VINTNER_ALMANAC,
+                "Journeyman Winemakers should sell the almanac"
+        );
+        assertTrade(
+                helper,
+                winemaker.getOffers(),
+                Items.EMERALD,
+                ModBlocks.VINTAGE_ARCHIVE.asItem(),
+                "Master Winemakers should sell vintage archives"
+        );
+        assertTrade(
+                helper,
+                cooper.getOffers(),
+                Items.EMERALD,
+                ModItems.COOPERS_MALLET,
+                "Novice Coopers should sell their reusable mallet"
+        );
+        assertTrade(
+                helper,
+                cooper.getOffers(),
+                Items.EMERALD,
+                ModItems.CASK_CONVERSION_KIT,
+                "Expert Coopers should sell cask conversion kits"
+        );
+        assertTrade(
+                helper,
+                cooper.getOffers(),
+                Items.EMERALD,
+                ModBlocks.LABELLED_CELLAR_SHELF.asItem(),
+                "Master Coopers should sell labelled cellar shelves"
+        );
+
+        ModTrades.refreshVillagerOffers(winemaker);
+        ModTrades.refreshVillagerOffers(cooper);
+        helper.assertValueEqual(
+                winemaker.getOffers().size(),
+                13,
+                "Refreshing Winemaker trades must not create duplicates"
+        );
+        helper.assertValueEqual(
+                cooper.getOffers().size(),
+                13,
+                "Refreshing Cooper trades must not create duplicates"
         );
 
         helper.succeed();
@@ -4020,6 +4189,65 @@ public final class VintnerGameTests {
                 TrellisBlock.WEST,
                 TrellisBlock.RowConnection.NONE
         );
+    }
+
+    private static Villager specialistVillager(
+            GameTestHelper helper,
+            ResourceKey<VillagerProfession> professionKey,
+            int level,
+            BlockPos position
+    ) {
+        Holder<VillagerProfession> profession = BuiltInRegistries
+                .VILLAGER_PROFESSION
+                .get(professionKey)
+                .orElseThrow();
+        Villager villager = helper.spawnWithNoFreeWill(
+                EntityTypes.VILLAGER,
+                position
+        );
+
+        villager.setVillagerData(
+                villager.getVillagerData()
+                        .withProfession(profession)
+                        .withLevel(level)
+        );
+        villager.setOffers(new MerchantOffers());
+        return villager;
+    }
+
+    private static void assertTradeProgression(
+            GameTestHelper helper,
+            Villager villager,
+            int[] expectedCounts,
+            String professionName
+    ) {
+        for (int level = 1; level <= expectedCounts.length; level++) {
+            villager.setVillagerData(
+                    villager.getVillagerData().withLevel(level)
+            );
+            villager.setOffers(new MerchantOffers());
+            ModTrades.refreshVillagerOffers(villager);
+            helper.assertValueEqual(
+                    villager.getOffers().size(),
+                    expectedCounts[level - 1],
+                    professionName + " level " + level
+                            + " should expose the expected trade tier"
+            );
+        }
+    }
+
+    private static void assertTrade(
+            GameTestHelper helper,
+            MerchantOffers offers,
+            Item payment,
+            Item result,
+            String message
+    ) {
+        boolean present = offers.stream().anyMatch(offer ->
+                offer.getBaseCostA().is(payment)
+                        && offer.getResult().is(result)
+        );
+        helper.assertTrue(present, message);
     }
 
     private static BlockEntity reload(

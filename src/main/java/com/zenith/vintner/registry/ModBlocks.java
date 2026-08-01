@@ -320,6 +320,10 @@ public final class ModBlocks {
         return orderedBlocks(GRAPE_PRESSES);
     }
 
+    public static Block[] barrelStandBlocks() {
+        return orderedBlocks(BARREL_STANDS);
+    }
+
     public static Block[] fermentationBarrelBlocks() {
         return orderedBlocks(FERMENTATION_BARRELS);
     }
