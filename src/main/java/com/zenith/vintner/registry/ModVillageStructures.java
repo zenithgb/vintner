@@ -21,9 +21,11 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 public final class ModVillageStructures {
-    private static final int HOUSE_WEIGHT = 1;
+    private static final int SPECIALIST_HOUSE_WEIGHT = 1;
+    private static final int VINEYARD_WEIGHT = 4;
 
-    private static final List<HouseDefinition> HOUSES = List.of(
+    private static final List<VillageStructureDefinition>
+            VILLAGE_STRUCTURES = List.of(
             house(
                     "plains",
                     "plains_cartographer_1",
@@ -34,6 +36,7 @@ public final class ModVillageStructures {
                     "plains_tool_smith_1",
                     "cooper_oak"
             ),
+            vineyard("plains"),
             house(
                     "desert",
                     "desert_cartographer_house_1",
@@ -44,6 +47,7 @@ public final class ModVillageStructures {
                     "desert_tool_smith_1",
                     "cooper_acacia"
             ),
+            vineyard("desert"),
             house(
                     "savanna",
                     "savanna_cartographer_1",
@@ -54,6 +58,7 @@ public final class ModVillageStructures {
                     "savanna_tool_smith_1",
                     "cooper_acacia"
             ),
+            vineyard("savanna"),
             house(
                     "snowy",
                     "snowy_cartographer_house_1",
@@ -64,6 +69,7 @@ public final class ModVillageStructures {
                     "snowy_tool_smith_1",
                     "cooper_spruce"
             ),
+            vineyard("snowy"),
             house(
                     "taiga",
                     "taiga_cartographer_house_1",
@@ -73,7 +79,8 @@ public final class ModVillageStructures {
                     "taiga",
                     "taiga_tool_smith_1",
                     "cooper_spruce"
-            )
+            ),
+            vineyard("taiga")
     );
 
     private static final Set<StructureTemplatePool> INJECTED_POOLS =
@@ -96,9 +103,16 @@ public final class ModVillageStructures {
     }
 
     public static List<ResourceKey<StructureTemplatePool>> housePools() {
-        return HOUSES.stream()
-                .map(HouseDefinition::pool)
+        return VILLAGE_STRUCTURES.stream()
+                .map(VillageStructureDefinition::pool)
                 .distinct()
+                .toList();
+    }
+
+    public static List<Identifier> vineyardTemplates() {
+        return VILLAGE_STRUCTURES.stream()
+                .filter(definition -> definition.processor() == null)
+                .map(VillageStructureDefinition::template)
                 .toList();
     }
 
@@ -120,29 +134,40 @@ public final class ModVillageStructures {
                 .lookupOrThrow(Registries.PROCESSOR_LIST);
         int additions = 0;
 
-        for (HouseDefinition house : HOUSES) {
+        for (VillageStructureDefinition definition : VILLAGE_STRUCTURES) {
             StructureTemplatePool pool = pools.getValueOrThrow(
-                    house.pool()
+                    definition.pool()
             );
 
             if (INJECTED_POOLS.contains(pool)) {
                 continue;
             }
 
-            Holder<StructureProcessorList> processor = processors
-                    .getOrThrow(house.processor());
-            StructurePoolElement element = StructurePoolElement
-                    .legacy(house.template().toString(), processor)
-                    .apply(StructureTemplatePool.Projection.RIGID);
+            StructurePoolElement element;
+
+            if (definition.processor() == null) {
+                element = StructurePoolElement
+                        .legacy(definition.template().toString())
+                        .apply(StructureTemplatePool.Projection.RIGID);
+            } else {
+                Holder<StructureProcessorList> processor = processors
+                        .getOrThrow(definition.processor());
+                element = StructurePoolElement
+                        .legacy(
+                                definition.template().toString(),
+                                processor
+                        )
+                        .apply(StructureTemplatePool.Projection.RIGID);
+            }
             StructureTemplatePoolAccessor accessor =
                     (StructureTemplatePoolAccessor) pool;
 
             List<Pair<StructurePoolElement, Integer>> rawTemplates =
                     new ArrayList<>(accessor.vintner$getRawTemplates());
-            rawTemplates.add(Pair.of(element, HOUSE_WEIGHT));
+            rawTemplates.add(Pair.of(element, definition.weight()));
             accessor.vintner$setRawTemplates(List.copyOf(rawTemplates));
 
-            for (int index = 0; index < HOUSE_WEIGHT; index++) {
+            for (int index = 0; index < definition.weight(); index++) {
                 accessor.vintner$getTemplates().add(element);
             }
 
@@ -154,18 +179,18 @@ public final class ModVillageStructures {
         }
 
         Vintner.LOGGER.info(
-                "Added {} specialist houses to {} village cultures.",
+                "Added {} Vintner village structures to {} cultures.",
                 additions,
                 housePools().size()
         );
     }
 
-    private static HouseDefinition house(
+    private static VillageStructureDefinition house(
             String culture,
             String template,
             String processor
     ) {
-        return new HouseDefinition(
+        return new VillageStructureDefinition(
                 ResourceKey.create(
                         Registries.TEMPLATE_POOL,
                         minecraft("village/" + culture + "/houses")
@@ -176,7 +201,20 @@ public final class ModVillageStructures {
                 ResourceKey.create(
                         Registries.PROCESSOR_LIST,
                         vintner("village/" + processor)
-                )
+                ),
+                SPECIALIST_HOUSE_WEIGHT
+        );
+    }
+
+    private static VillageStructureDefinition vineyard(String culture) {
+        return new VillageStructureDefinition(
+                ResourceKey.create(
+                        Registries.TEMPLATE_POOL,
+                        minecraft("village/" + culture + "/houses")
+                ),
+                vintner("village/" + culture + "/vineyard"),
+                null,
+                VINEYARD_WEIGHT
         );
     }
 
@@ -188,10 +226,11 @@ public final class ModVillageStructures {
         return Identifier.fromNamespaceAndPath(Vintner.MOD_ID, path);
     }
 
-    private record HouseDefinition(
+    private record VillageStructureDefinition(
             ResourceKey<StructureTemplatePool> pool,
             Identifier template,
-            ResourceKey<StructureProcessorList> processor
+            ResourceKey<StructureProcessorList> processor,
+            int weight
     ) {
     }
 }

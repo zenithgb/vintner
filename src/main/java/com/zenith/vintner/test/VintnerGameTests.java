@@ -80,6 +80,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -312,7 +313,7 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void specialistHousesJoinEveryVillageCulture(
+    public void vintnerStructuresJoinEveryVillageCulture(
             GameTestHelper helper
     ) {
         for (
@@ -335,18 +336,117 @@ public final class VintnerGameTests {
                             + poolKey.identifier()
             );
             helper.assertTrue(
-                    houses.size() >= 2,
-                    "Every village culture must contain specialist houses"
+                    houses.size() >= 3,
+                    "Every village culture must contain Vintner structures"
             );
             helper.assertValueEqual(
-                    houses.get(houses.size() - 2).getSecond(),
+                    houses.get(houses.size() - 3).getSecond(),
                     1,
                     "Winemaker house weight"
             );
             helper.assertValueEqual(
-                    houses.get(houses.size() - 1).getSecond(),
+                    houses.get(houses.size() - 2).getSecond(),
                     1,
                     "Cooper house weight"
+            );
+            helper.assertValueEqual(
+                    houses.get(houses.size() - 1).getSecond(),
+                    4,
+                    "Vineyard farm weight"
+            );
+        }
+
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void villageVineyardsContainCompleteTrellisedRows(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                ModVillageStructures.vineyardTemplates().size(),
+                5,
+                "One vineyard template per vanilla village culture"
+        );
+
+        StructurePlaceSettings settings =
+                new StructurePlaceSettings();
+
+        for (Identifier templateId
+                : ModVillageStructures.vineyardTemplates()) {
+            var template = helper.getLevel()
+                    .getServer()
+                    .getStructureManager()
+                    .get(templateId)
+                    .orElse(null);
+
+            helper.assertTrue(
+                    template != null,
+                    "Vineyard template must load: " + templateId
+            );
+            helper.assertValueEqual(
+                    template.getSize().getX(),
+                    11,
+                    "Vineyard width"
+            );
+            helper.assertValueEqual(
+                    template.getSize().getY(),
+                    3,
+                    "Vineyard height"
+            );
+            helper.assertValueEqual(
+                    template.getSize().getZ(),
+                    9,
+                    "Vineyard depth"
+            );
+            helper.assertValueEqual(
+                    template.filterBlocks(
+                            BlockPos.ZERO,
+                            settings,
+                            ModBlocks.VINEYARD_SOIL
+                    ).size(),
+                    16,
+                    "Vineyard soil plots"
+            );
+
+            int grapevineBlocks = 0;
+            for (Block grapevine : ModBlocks.RED_GRAPEVINES.values()) {
+                grapevineBlocks += template.filterBlocks(
+                        BlockPos.ZERO,
+                        settings,
+                        grapevine
+                ).size();
+            }
+            for (Block grapevine : ModBlocks.WHITE_GRAPEVINES.values()) {
+                grapevineBlocks += template.filterBlocks(
+                        BlockPos.ZERO,
+                        settings,
+                        grapevine
+                ).size();
+            }
+
+            helper.assertValueEqual(
+                    grapevineBlocks,
+                    32,
+                    "Two complete two-block-tall grapevine rows"
+            );
+            helper.assertValueEqual(
+                    template.filterBlocks(
+                            BlockPos.ZERO,
+                            settings,
+                            Blocks.JIGSAW
+                    ).size(),
+                    1,
+                    "Village path connection"
+            );
+            helper.assertValueEqual(
+                    template.filterBlocks(
+                            BlockPos.ZERO,
+                            settings,
+                            Blocks.COMPOSTER
+                    ).size(),
+                    1,
+                    "Vineyard composter"
             );
         }
 
