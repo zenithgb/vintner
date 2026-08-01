@@ -1,0 +1,45 @@
+{
+  "parent": "vintner:vintner/age_wine",
+  "criteria": {
+    "toasted": {
+      "conditions": {
+        "recipe_id": "vintner:chestnut_aging_barrel"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "seasoned": {
+      "conditions": {
+        "recipe_id": "vintner:neutral_aging_barrel"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "cellar_cask": {
+      "conditions": {
+        "recipe_id": "vintner:large_cask"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.choose_aging_style.description"
+    },
+    "icon": {
+      "id": "vintner:chestnut_aging_barrel"
+    },
+    "title": {
+      "translate": "advancement.vintner.choose_aging_style.title"
+    }
+  },
+  "requirements": [
+    [
+      "toasted",
+      "seasoned",
+      "cellar_cask"
+    ]
+  ],
+  "rewards": {
+    "experience": 25
+  },
+  "sends_telemetry_event": false
+}

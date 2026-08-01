@@ -36,23 +36,26 @@ begins once the barrel is full and takes one minute; use an empty hand to
 inspect progress or collect finished wine.
 
 Ageing vessels begin only when full and produce wine with a recorded vessel
-identity. Oak barrels hold four bottles and provide the strongest classic oak
-contribution. Chestnut barrels work faster and favour red wine, neutral
-barrels preserve primary fruit character, and large casks hold eight bottles
+identity. Ordinary barrels hold four bottles and provide a balanced starting
+profile. Toasted barrels work faster and favour bold red wine, seasoned
+barrels preserve primary fruit character, and cellar casks hold eight bottles
 for slower, gentler ageing.
 
 The ordinary ageing barrel is available in every supported wood family, but
-those wood choices are cosmetic and share the balanced oak profile. Chestnut,
-Neutral Oak, and Large Cask are the three deliberate specialist upgrades:
+those wood choices are cosmetic and share the balanced standard profile. Once
+that loop is familiar, any ordinary barrel can become one of three clearly
+signposted specialist choices:
 
-- Re-cooper any ordinary ageing barrel with six dark oak planks and two iron
-  ingots to make a Chestnut Aging Barrel.
-- Season any ordinary ageing barrel with four honeycombs to make a Neutral Oak
-  Barrel.
-- Expand any ordinary ageing barrel with six spruce planks and two copper
-  ingots to make a Large Cask.
+- Toast any ordinary ageing barrel with four charcoal to make a Toasted Aging
+  Barrel: fast, bold, red-focused ageing with a little more risk.
+- Hydrate any ordinary ageing barrel with a water bucket to make a
+  Seasoned Aging Barrel: slow, gentle, fruit-preserving ageing with very low
+  risk.
+- Cooper two ordinary ageing barrels with six spruce planks and a copper ingot
+  to make a Cellar Cask: an eight-bottle vessel for slow bulk maturation.
 
-Use the Vintner's Almanac directly on any placed ageing vessel to compare its
+These are parallel cellar strategies rather than simple power tiers. Use the
+Vintner's Almanac directly on any placed ageing vessel to compare its role,
 capacity, ageing time, wine affinity, risk, and recipe before committing a
 batch.
 

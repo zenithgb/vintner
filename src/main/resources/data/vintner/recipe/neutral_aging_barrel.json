@@ -2,12 +2,11 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    " H ",
-    "HAH",
-    " H "
+    "W",
+    "A"
   ],
   "key": {
-    "H": "minecraft:honeycomb",
+    "W": "minecraft:water_bucket",
     "A": "#vintner:aging_barrels"
   },
   "result": {

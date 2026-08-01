@@ -2,13 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "DID",
-    "DAD",
-    "DID"
+    " C ",
+    "CAC",
+    " C "
   ],
   "key": {
-    "D": "minecraft:dark_oak_planks",
-    "I": "minecraft:iron_ingot",
+    "C": "minecraft:charcoal",
     "A": "#vintner:aging_barrels"
   },
   "result": {

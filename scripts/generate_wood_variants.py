@@ -410,20 +410,25 @@ def generate_cellar_fixture_base_models() -> None:
                 "particle": "minecraft:block/oak_planks",
             },
             "elements": [
-                # Four tall legs carry a barrel placed in the block above.
-                {"from": [1.5, 0, 2.5], "to": [2.75, 14.25, 3.75], "faces": copy.deepcopy(beam_faces)},
-                {"from": [13.25, 0, 2.5], "to": [14.5, 14.25, 3.75], "faces": copy.deepcopy(beam_faces)},
-                {"from": [1.5, 0, 12.25], "to": [2.75, 14.25, 13.5], "faces": copy.deepcopy(beam_faces)},
-                {"from": [13.25, 0, 12.25], "to": [14.5, 14.25, 13.5], "faces": copy.deepcopy(beam_faces)},
-                # Wide feet and mid braces keep the empty stand intentional.
-                {"from": [0.75, 0, 2], "to": [15.25, 1.25, 4], "faces": copy.deepcopy(wood_faces)},
-                {"from": [0.75, 0, 12], "to": [15.25, 1.25, 14], "faces": copy.deepcopy(wood_faces)},
-                {"from": [2, 6.5, 2.75], "to": [14, 7.5, 3.25], "faces": copy.deepcopy(wood_faces)},
-                {"from": [2, 6.5, 12.75], "to": [14, 7.5, 13.25], "faces": copy.deepcopy(wood_faces)},
-                # The two saddles reach the block boundary, eliminating the
-                # visible air gap without sharing a face with the barrel.
-                {"from": [3.25, 14.25, 3.25], "to": [12.75, 15.875, 4], "faces": copy.deepcopy(wood_faces)},
-                {"from": [3.25, 14.25, 12], "to": [12.75, 15.875, 12.75], "faces": copy.deepcopy(wood_faces)},
+                # A compact cooper's trestle: two substantial end frames are
+                # joined by low stretchers instead of a forest of thin posts.
+                {"from": [1.5, 0, 2], "to": [3.5, 13, 4], "faces": copy.deepcopy(beam_faces)},
+                {"from": [12.5, 0, 2], "to": [14.5, 13, 4], "faces": copy.deepcopy(beam_faces)},
+                {"from": [1.5, 0, 12], "to": [3.5, 13, 14], "faces": copy.deepcopy(beam_faces)},
+                {"from": [12.5, 0, 12], "to": [14.5, 13, 14], "faces": copy.deepcopy(beam_faces)},
+                # Broad feet and side stretchers make the empty trestle read
+                # as cellar furniture while keeping its centre visually open.
+                {"from": [0.75, 0, 1.5], "to": [15.25, 1.25, 4.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [0.75, 0, 11.5], "to": [15.25, 1.25, 14.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [2, 4.5, 3.5], "to": [4, 5.75, 12.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [12, 4.5, 3.5], "to": [14, 5.75, 12.5], "faces": copy.deepcopy(wood_faces)},
+                # Framed caps and inset bearer rails form a believable
+                # load-bearing platform. The bearers nearly meet the barrel
+                # above without introducing a coplanar flicker.
+                {"from": [0.75, 12.5, 1.5], "to": [15.25, 14.5, 4.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [0.75, 12.5, 11.5], "to": [15.25, 14.5, 14.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [3, 14.25, 3.5], "to": [5, 15.875, 12.5], "faces": copy.deepcopy(wood_faces)},
+                {"from": [11, 14.25, 3.5], "to": [13, 15.875, 12.5], "faces": copy.deepcopy(wood_faces)},
             ],
         },
     )
@@ -670,8 +675,8 @@ def generate_special_aging_vessels() -> None:
         return elements
 
     vessel_elements = {
-        # Chestnut contributes stronger tannin and is visually secured with a
-        # third central hoop and a copper cooper's plate.
+        # The toasted profile contributes stronger tannin and is visually
+        # secured with a third central hoop and a copper cooper's plate.
         "chestnut_aging_barrel": (
             copy.deepcopy(base_cask["elements"])
             + hoop(7.5, 8.5)
@@ -681,8 +686,8 @@ def generate_special_aging_vessels() -> None:
                 "faces": cube_faces("#label"),
             }]
         ),
-        # Neutral oak represents a seasoned, low-extraction barrel. Its broad
-        # pale cellar label differentiates it from fresh oak at a glance.
+        # The seasoned profile is a low-extraction barrel. Its broad pale
+        # cellar label differentiates it from a fresh barrel at a glance.
         "neutral_aging_barrel": (
             copy.deepcopy(base_cask["elements"])
             + [{
@@ -737,24 +742,23 @@ def generate_special_aging_vessels() -> None:
     })
     recipes = {
         "chestnut_aging_barrel": {
-            "pattern": ["DID", "DAD", "DID"],
+            "pattern": [" C ", "CAC", " C "],
             "key": {
-                "D": "minecraft:dark_oak_planks",
-                "I": "minecraft:iron_ingot",
+                "C": "minecraft:charcoal",
                 "A": "#vintner:aging_barrels",
             },
-            "unlock": "minecraft:dark_oak_planks",
+            "unlock": "minecraft:charcoal",
         },
         "neutral_aging_barrel": {
-            "pattern": [" H ", "HAH", " H "],
+            "pattern": ["W", "A"],
             "key": {
-                "H": "minecraft:honeycomb",
+                "W": "minecraft:water_bucket",
                 "A": "#vintner:aging_barrels",
             },
-            "unlock": "minecraft:honeycomb",
+            "unlock": "minecraft:water_bucket",
         },
         "large_cask": {
-            "pattern": ["PCP", "PAP", "PCP"],
+            "pattern": ["PAP", "PCP", "PAP"],
             "key": {
                 "P": "minecraft:spruce_planks",
                 "C": "minecraft:copper_ingot",
@@ -1342,18 +1346,19 @@ def generate_language() -> None:
     language["advancement.vintner.craft_trellis.description"] = (
         "Craft a trellis for your first vine"
     )
+    # Registry IDs stay unchanged so existing worlds remain compatible.
     language["block.vintner.chestnut_aging_barrel"] = (
-        "Chestnut Aging Barrel"
+        "Toasted Aging Barrel"
     )
     language["block.vintner.neutral_aging_barrel"] = (
-        "Neutral Oak Barrel"
+        "Seasoned Aging Barrel"
     )
-    language["block.vintner.large_cask"] = "Large Cask"
+    language["block.vintner.large_cask"] = "Cellar Cask"
     language["tag.item.vintner.aging_barrels"] = "Vintner Aging Barrels"
     language["aging_vessel.vintner.oak"] = "Oak barrel"
-    language["aging_vessel.vintner.chestnut"] = "Chestnut barrel"
-    language["aging_vessel.vintner.neutral"] = "Neutral oak barrel"
-    language["aging_vessel.vintner.large_cask"] = "Large cask"
+    language["aging_vessel.vintner.chestnut"] = "Toasted aging barrel"
+    language["aging_vessel.vintner.neutral"] = "Seasoned aging barrel"
+    language["aging_vessel.vintner.large_cask"] = "Cellar cask"
     language["message.vintner.almanac.vessel"] = (
         "Aged in: %s"
     )
@@ -1367,25 +1372,35 @@ def generate_language() -> None:
         "Balanced fresh-oak ageing with firm tannin, moderate oxygen, and low risk. Best for red wine."
     )
     language["aging_vessel.vintner.guide.chestnut"] = (
-        "Fast, bold ageing with high oxygen and warm spice, but greater spoilage risk. Best for red wine."
+        "Bold choice: fast ageing, warm spice, and firm structure for red wine, with greater spoilage risk."
     )
     language["aging_vessel.vintner.guide.neutral"] = (
-        "Slow, low-extraction ageing that preserves fruit and acidity with very low risk. Suits red or white wine."
+        "Gentle choice: slow, low-extraction ageing that preserves fruit and acidity with very low risk."
     )
     language["aging_vessel.vintner.guide.large_cask"] = (
-        "Very slow, gentle maturation for eight bottles, with very low oxygen and soft tannin. Suits red or white wine."
+        "Bulk choice: very slow, gentle maturation for eight bottles with very low oxygen and soft tannin."
     )
     language["aging_vessel.vintner.crafting.oak"] = (
-        "Craft from six matching planks and two iron ingots. Wood variants share this balanced profile."
+        "Start here. Wood variants share this balanced profile; later refit one with charcoal, water, or spruce and copper."
     )
     language["aging_vessel.vintner.crafting.chestnut"] = (
-        "Re-cooper any Aging Barrel with six dark oak planks and two iron ingots."
+        "Toast any ordinary Aging Barrel with four charcoal."
     )
     language["aging_vessel.vintner.crafting.neutral"] = (
-        "Season any Aging Barrel with four honeycombs to reduce wood extraction."
+        "Hydrate any ordinary Aging Barrel with one water bucket; the empty bucket is returned."
     )
     language["aging_vessel.vintner.crafting.large_cask"] = (
-        "Expand any Aging Barrel with six spruce planks and two copper ingots."
+        "Cooper two ordinary Aging Barrels with six spruce planks and one copper ingot."
+    )
+    language["advancement.vintner.choose_aging_style.title"] = (
+        "Choose an Aging Style"
+    )
+    language["advancement.vintner.choose_aging_style.description"] = (
+        "Refit an Aging Barrel for bold, gentle, or bulk maturation"
+    )
+    language["advancement.vintner.master_cooper.title"] = "Master Cooper"
+    language["advancement.vintner.master_cooper.description"] = (
+        "Craft all three specialist aging vessels"
     )
     language["wine_style.vintner.red"] = "Red"
     language["wine_style.vintner.white"] = "White"

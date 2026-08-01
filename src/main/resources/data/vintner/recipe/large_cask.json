@@ -2,9 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "PCP",
     "PAP",
-    "PCP"
+    "PCP",
+    "PAP"
   ],
   "key": {
     "P": "minecraft:spruce_planks",
