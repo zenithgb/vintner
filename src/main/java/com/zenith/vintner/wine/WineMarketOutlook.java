@@ -34,4 +34,21 @@ public record WineMarketOutlook(
                         : appraisal.totalValue() + bestAdjustment
         );
     }
+
+    public static WineMarketOutlook forBuyer(
+            ItemStack bottle,
+            WineAppraisal appraisal,
+            WineBuyerType buyer
+    ) {
+        int adjustment = appraisal.totalValue() == 0
+                ? 0
+                : buyer.preferenceAdjustment(bottle);
+        return new WineMarketOutlook(
+                buyer,
+                adjustment,
+                appraisal.totalValue() == 0
+                        ? 0
+                        : appraisal.totalValue() + adjustment
+        );
+    }
 }
