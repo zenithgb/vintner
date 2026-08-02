@@ -94,6 +94,9 @@ public final class ModCreativeTabs {
                                         .forEach(output::accept);
                                 ModBlocks.TASTING_CABINETS.values()
                                         .forEach(output::accept);
+                                output.accept(
+                                        ModBlocks.ESTATE_MANAGEMENT_DESK
+                                );
                                 output.accept(ModItems.SOIL_PROBE);
                                 output.accept(
                                         ModItems.VINTNER_ALMANAC

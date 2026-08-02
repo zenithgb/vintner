@@ -11,5 +11,9 @@ public final class ModNetworking {
                 AlmanacReportPayload.TYPE,
                 AlmanacReportPayload.CODEC
         );
+        PayloadTypeRegistry.clientboundPlay().register(
+                EstateDeskPayload.TYPE,
+                EstateDeskPayload.CODEC
+        );
     }
 }

@@ -7,6 +7,7 @@ import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.block.BarrelStandBlock;
 import com.zenith.vintner.block.CellarCollectionBlock;
 import com.zenith.vintner.block.CellarFixtureKind;
+import com.zenith.vintner.block.EstateManagementDeskBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapePressBlock;
 import com.zenith.vintner.block.NurseryBedBlock;
@@ -237,6 +238,12 @@ public final class ModBlocks {
                     .sound(SoundType.WOOD)
                     .noOcclusion()
                     .randomTicks()
+    );
+
+    public static final Block ESTATE_MANAGEMENT_DESK = registerWithItem(
+            "estate_management_desk",
+            EstateManagementDeskBlock::new,
+            machineProperties()
     );
 
     public static final Block RED_GRAPEVINE = registerWithoutItem(
@@ -580,6 +587,7 @@ public final class ModBlocks {
                 )
                 .register(output -> {
                     output.accept(NURSERY_BED);
+                    output.accept(ESTATE_MANAGEMENT_DESK);
                     TRELLISES.values().forEach(output::accept);
                     GRAPE_PRESSES.values().forEach(output::accept);
                     FERMENTATION_BARRELS.values()
