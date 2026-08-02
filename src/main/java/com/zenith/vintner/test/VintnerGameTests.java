@@ -56,6 +56,8 @@ import com.zenith.vintner.wine.WineQuality;
 import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.wine.WineAgeStage;
 import com.zenith.vintner.wine.WineAppraisal;
+import com.zenith.vintner.wine.WineBuyerType;
+import com.zenith.vintner.wine.WineMarketOutlook;
 import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
 import com.zenith.vintner.wine.WineStyle;
@@ -5766,6 +5768,75 @@ public final class VintnerGameTests {
                 spoiled.prestige(),
                 0,
                 "Spoiled wine should provide no settlement prestige"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void buyerProfilesIdentifyDistinctWineMarkets(
+            GameTestHelper helper
+    ) {
+        ItemStack tavernBottle = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.applyProfile(
+                tavernBottle,
+                0,
+                WineQualityProfile.legacy(WineQuality.TABLE)
+        );
+        WineMarketOutlook tavernMarket = WineMarketOutlook.bestFor(
+                tavernBottle,
+                WineAppraisal.independent(tavernBottle)
+        );
+        helper.assertValueEqual(
+                tavernMarket.bestBuyer(),
+                WineBuyerType.TAVERN_KEEPER,
+                "Young table wine should fit the dependable tavern market"
+        );
+
+        ItemStack coastalBottle = new ItemStack(ModItems.WHITE_WINE);
+        WineMetadata.applyProfile(
+                coastalBottle,
+                0,
+                WineQualityProfile.legacy(WineQuality.GOOD)
+        );
+        WineMarketOutlook coastalMarket = WineMarketOutlook.bestFor(
+                coastalBottle,
+                WineAppraisal.independent(coastalBottle)
+        );
+        helper.assertValueEqual(
+                coastalMarket.bestBuyer(),
+                WineBuyerType.COASTAL_SETTLEMENT,
+                "Fresh white wine should fit a coastal settlement"
+        );
+
+        ItemStack collectible = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.applyProfile(
+                collectible,
+                0,
+                WineQualityProfile.legacy(WineQuality.LEGENDARY)
+        );
+        WineMetadata.ageBottle(
+                collectible,
+                WineAgeStage.PEAK_AT,
+                CellarRating.IDEAL
+        );
+        WineAppraisal collectibleAppraisal = WineAppraisal.evaluate(
+                collectible,
+                EstateReputationTier.RENOWNED
+        );
+        WineMarketOutlook collectorMarket = WineMarketOutlook.bestFor(
+                collectible,
+                collectibleAppraisal
+        );
+        helper.assertValueEqual(
+                collectorMarket.bestBuyer(),
+                WineBuyerType.COLLECTOR,
+                "Peak legendary wine should fit the collector market"
+        );
+        helper.assertValueEqual(
+                collectorMarket.estimatedValue(),
+                collectibleAppraisal.totalValue()
+                        + collectorMarket.buyerAdjustment(),
+                "The market outlook should add only the buyer premium"
         );
         helper.succeed();
     }
