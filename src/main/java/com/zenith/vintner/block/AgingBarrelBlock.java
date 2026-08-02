@@ -7,6 +7,7 @@ import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.AgingVessel;
 import com.zenith.vintner.wine.WinemakingFeedback;
+import com.zenith.vintner.wine.AlmanacInspection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.ChatFormatting;
@@ -180,8 +181,13 @@ public class AgingBarrelBlock extends BaseEntityBlock {
         }
 
         if (heldStack.is(ModItems.VINTNER_ALMANAC)) {
-            if (level instanceof ServerLevel) {
-                showVesselGuide(player, state.getValue(VESSEL));
+            if (level instanceof ServerLevel serverLevel) {
+                AlmanacInspection.inspect(
+                        serverLevel,
+                        pos,
+                        player,
+                        heldStack
+                );
             }
             return InteractionResult.SUCCESS;
         }

@@ -6,8 +6,8 @@ import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
-import com.zenith.vintner.vineyard.TerroirEvaluator;
-import com.zenith.vintner.vineyard.TerroirMessages;
+import com.zenith.vintner.wine.AlmanacInspection;
+import com.zenith.vintner.vineyard.VineyardSurveyRecord;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -33,16 +33,12 @@ public final class VintnerAlmanacItem extends Item {
     public InteractionResult useOn(UseOnContext context) {
         if (context.getLevel() instanceof ServerLevel
                 && context.getPlayer() != null) {
-            TerroirMessages.sendFullReport(
+            AlmanacInspection.inspect(
+                    (ServerLevel) context.getLevel(),
+                    context.getClickedPos(),
                     context.getPlayer(),
-                    TerroirEvaluator.inspect(
-                            context.getLevel(),
-                            context.getClickedPos()
-                    )
+                    context.getItemInHand()
             );
-            if (context.getPlayer() instanceof ServerPlayer player) {
-                ModAdvancements.grantSurvey(player);
-            }
         }
         return InteractionResult.SUCCESS;
     }
@@ -60,11 +56,18 @@ public final class VintnerAlmanacItem extends Item {
 
         if (!(bottle.getItem() instanceof WineItem)) {
             if (level instanceof ServerLevel) {
-                player.sendSystemMessage(
-                        Component.translatable(
-                                "message.vintner.almanac.no_wine"
-                        ).withStyle(ChatFormatting.GRAY)
+                var survey = VineyardSurveyRecord.read(
+                        player.getItemInHand(hand)
                 );
+                if (survey.isPresent()) {
+                    sendSurveyBookmark(player, survey.get());
+                } else {
+                    player.sendSystemMessage(
+                            Component.translatable(
+                                    "message.vintner.almanac.no_wine"
+                            ).withStyle(ChatFormatting.GRAY)
+                    );
+                }
             }
             return InteractionResult.SUCCESS;
         }
@@ -219,5 +222,47 @@ public final class VintnerAlmanacItem extends Item {
                         "tooltip.vintner.almanac"
                 ).withStyle(ChatFormatting.GRAY)
         );
+        tooltip.accept(
+                Component.translatable(
+                        "tooltip.vintner.almanac.inspect"
+                ).withStyle(ChatFormatting.DARK_GRAY)
+        );
+        VineyardSurveyRecord.read(stack).ifPresent(record ->
+                tooltip.accept(Component.translatable(
+                        "tooltip.vintner.almanac.survey",
+                        record.position().getX(),
+                        record.position().getZ(),
+                        record.siteScore()
+                ).withStyle(ChatFormatting.DARK_GREEN))
+        );
+    }
+
+    private static void sendSurveyBookmark(
+            Player player,
+            VineyardSurveyRecord record
+    ) {
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.almanac.bookmark_title"
+        ).withStyle(ChatFormatting.GOLD));
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.almanac.bookmark_location",
+                record.position().getX(),
+                record.position().getY(),
+                record.position().getZ(),
+                record.dimension()
+        ).withStyle(ChatFormatting.GRAY));
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.almanac.bookmark_summary",
+                Component.translatable(
+                        "climate_band.vintner." + record.climate()
+                ),
+                Component.translatable(
+                        "soil_type.vintner." + record.soil()
+                ),
+                record.siteScore(),
+                Component.translatable(
+                        "terroir_rating.vintner." + record.rating()
+                )
+        ).withStyle(ChatFormatting.DARK_GREEN));
     }
 }

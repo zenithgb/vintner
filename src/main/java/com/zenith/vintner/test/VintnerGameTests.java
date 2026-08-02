@@ -26,6 +26,7 @@ import com.zenith.vintner.registry.ModTrades;
 import com.zenith.vintner.registry.ModVillageStructures;
 import com.zenith.vintner.registry.ModVillagers;
 import com.zenith.vintner.wine.CellarConditions;
+import com.zenith.vintner.wine.AlmanacInspection;
 import com.zenith.vintner.wine.CellarRating;
 import com.zenith.vintner.wine.AgingVessel;
 import com.zenith.vintner.wine.GrapeQualityEvaluator;
@@ -45,6 +46,7 @@ import com.zenith.vintner.vineyard.SoilProfile;
 import com.zenith.vintner.vineyard.SoilType;
 import com.zenith.vintner.vineyard.TerrainProfile;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
+import com.zenith.vintner.vineyard.VineyardSurveyRecord;
 import net.minecraft.advancements.AdvancementHolder;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -4965,5 +4967,125 @@ public final class VintnerGameTests {
         );
         restored.setLevel(helper.getLevel());
         return (WineCrateBlockEntity) restored;
+    }
+
+    @GameTest(maxTicks = 40)
+    public void almanacRoutesOnlyRecognizedInspectionTargets(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, Blocks.CALCITE);
+        helper.assertValueEqual(
+                AlmanacInspection.classify(
+                        helper.getLevel(),
+                        helper.absolutePos(FIRST)
+                ),
+                AlmanacInspection.Target.VINEYARD_SITE,
+                "Recognized soil should route to the vineyard survey"
+        );
+
+        helper.setBlock(FIRST, matureLowerVine());
+        helper.assertValueEqual(
+                AlmanacInspection.classify(
+                        helper.getLevel(),
+                        helper.absolutePos(FIRST)
+                ),
+                AlmanacInspection.Target.GRAPEVINE,
+                "Grapevines should route to the ripeness report"
+        );
+
+        helper.setBlock(FIRST, ModBlocks.FERMENTATION_BARREL);
+        helper.assertValueEqual(
+                AlmanacInspection.classify(
+                        helper.getLevel(),
+                        helper.absolutePos(FIRST)
+                ),
+                AlmanacInspection.Target.FERMENTATION,
+                "Fermentation barrels should route to the hydrometer report"
+        );
+
+        helper.setBlock(FIRST, ModBlocks.AGING_BARREL);
+        helper.assertValueEqual(
+                AlmanacInspection.classify(
+                        helper.getLevel(),
+                        helper.absolutePos(FIRST)
+                ),
+                AlmanacInspection.Target.AGEING,
+                "Aging barrels should route to the cellar report"
+        );
+
+        helper.setBlock(FIRST, Blocks.OAK_PLANKS);
+        helper.assertValueEqual(
+                AlmanacInspection.classify(
+                        helper.getLevel(),
+                        helper.absolutePos(FIRST)
+                ),
+                AlmanacInspection.Target.NONE,
+                "Unrelated construction blocks should not produce a land report"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void processInstrumentsExposeRealRemainingTime(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.FERMENTATION_BARREL);
+        FermentationBarrelBlockEntity fermentation =
+                helper.getBlockEntity(
+                        FIRST,
+                        FermentationBarrelBlockEntity.class
+                );
+        helper.assertValueEqual(
+                fermentation.getRemainingSeconds(),
+                FermentationBarrelBlockEntity.FERMENTATION_TIME / 20,
+                "An idle fermentation barrel should report its full process time"
+        );
+
+        helper.setBlock(EAST, ModBlocks.AGING_BARREL);
+        AgingBarrelBlockEntity ageing =
+                helper.getBlockEntity(
+                        EAST,
+                        AgingBarrelBlockEntity.class
+                );
+        helper.assertValueEqual(
+                ageing.getRemainingSeconds(),
+                ageing.getAgingTime() / 20,
+                "An idle aging barrel should report its vessel process time"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void almanacSurveyBookmarksPersistOnTheItem(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, Blocks.CALCITE);
+        BlockPos absolute = helper.absolutePos(FIRST);
+        ItemStack almanac = new ItemStack(ModItems.VINTNER_ALMANAC);
+        var report = TerroirEvaluator.inspect(
+                helper.getLevel(),
+                absolute
+        );
+        VineyardSurveyRecord captured = VineyardSurveyRecord.capture(
+                helper.getLevel(),
+                absolute,
+                report
+        );
+        captured.save(almanac);
+
+        VineyardSurveyRecord restored = VineyardSurveyRecord.read(
+                almanac.copy()
+        ).orElseThrow();
+        helper.assertValueEqual(
+                restored,
+                captured,
+                "A copied Almanac should retain its vineyard survey bookmark"
+        );
+        helper.assertValueEqual(
+                restored.siteScore(),
+                report.siteScore(),
+                "The bookmark should preserve the evaluated site score"
+        );
+        helper.succeed();
     }
 }

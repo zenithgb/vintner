@@ -6,6 +6,7 @@ import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.WinemakingFeedback;
+import com.zenith.vintner.wine.AlmanacInspection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -131,6 +132,18 @@ public final class FermentationBarrelBlock
             InteractionHand hand,
             BlockHitResult hitResult
     ) {
+        if (heldStack.is(ModItems.VINTNER_ALMANAC)) {
+            if (level instanceof ServerLevel serverLevel) {
+                AlmanacInspection.inspect(
+                        serverLevel,
+                        pos,
+                        player,
+                        heldStack
+                );
+            }
+            return InteractionResult.SUCCESS;
+        }
+
         if (!heldStack.is(ModItems.RED_MUST)
                 && !heldStack.is(ModItems.WHITE_MUST)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;

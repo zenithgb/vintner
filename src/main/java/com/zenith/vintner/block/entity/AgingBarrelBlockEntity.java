@@ -199,6 +199,16 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         );
     }
 
+    public int getRemainingSeconds() {
+        if (isReady()) {
+            return 0;
+        }
+        return Math.max(
+                0,
+                (getAgingTime() - agingProgress + 19) / 20
+        );
+    }
+
     public int getComparatorSignal() {
         if (wineType == 0 || bottleCount <= 0) {
             return 0;

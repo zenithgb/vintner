@@ -190,6 +190,16 @@ public final class FermentationBarrelBlockEntity
         );
     }
 
+    public int getRemainingSeconds() {
+        if (isReady()) {
+            return 0;
+        }
+        return Math.max(
+                0,
+                (FERMENTATION_TIME - fermentationProgress + 19) / 20
+        );
+    }
+
     public int getComparatorSignal() {
         if (batchType == 0 || bottleCount <= 0) {
             return 0;
