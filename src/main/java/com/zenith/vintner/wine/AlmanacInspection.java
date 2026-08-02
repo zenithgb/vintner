@@ -4,6 +4,7 @@ import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
+import com.zenith.vintner.estate.EstateInfrastructureReport;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
@@ -317,6 +318,36 @@ public final class AlmanacInspection {
                                 : "cellar_humidity.vintner.dry"
                 )
         ).withStyle(ChatFormatting.GRAY));
+        boolean mounted = EstateInfrastructureReport.hasBarrelStand(
+                level,
+                pos
+        );
+        int projectedContribution =
+                EstateInfrastructureReport.ageingContribution(
+                        conditions.rating(),
+                        mounted
+                );
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.almanac.ageing_facility",
+                mounted
+                        ? Component.translatable(
+                                "estate_facility.vintner.mounted"
+                        )
+                        : Component.translatable(
+                                "estate_facility.vintner.unmounted"
+                        ),
+                Component.literal(
+                        projectedContribution > 0
+                                ? "+" + projectedContribution
+                                : Integer.toString(projectedContribution)
+                )
+        ).withStyle(
+                projectedContribution > 0
+                        ? ChatFormatting.GREEN
+                        : projectedContribution < 0
+                        ? ChatFormatting.RED
+                        : ChatFormatting.DARK_GRAY
+        ));
 
         if (player.isShiftKeyDown()) {
             player.sendSystemMessage(

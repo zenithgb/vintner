@@ -1,6 +1,7 @@
 package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.block.AgingBarrelBlock;
+import com.zenith.vintner.estate.EstateInfrastructureReport;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.AgingVessel;
@@ -9,6 +10,7 @@ import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQuality;
 import com.zenith.vintner.wine.WineQualityProfile;
+import com.zenith.vintner.wine.CellarConditions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
@@ -34,6 +36,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
             WineQualityProfile.legacy(WineQuality.TABLE);
     private WineProvenance provenance = WineProvenance.legacy();
     private long batchId;
+    private int facilityContribution;
     private int lastComparatorSignal = -1;
 
     public AgingBarrelBlockEntity(
@@ -73,6 +76,14 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
 
         if (barrel.agingProgress >= barrel.getAgingTime()) {
             barrel.agingProgress = barrel.getAgingTime();
+            barrel.facilityContribution =
+                    EstateInfrastructureReport.ageingContribution(
+                            CellarConditions.evaluate(level, pos).rating(),
+                            EstateInfrastructureReport.hasBarrelStand(
+                                    level,
+                                    pos
+                            )
+                    );
             barrel.ready = true;
             barrel.markChangedAndSync();
 
@@ -199,6 +210,10 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         );
     }
 
+    public int getFacilityContribution() {
+        return facilityContribution;
+    }
+
     public int getRemainingSeconds() {
         if (isReady()) {
             return 0;
@@ -240,6 +255,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                 vintage,
                 qualityProfile.withAgeing(
                         getVessel().qualityContribution(wineType)
+                                + facilityContribution
                 )
         );
         WineMetadata.applyProvenance(result, provenance);
@@ -294,6 +310,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
                 ready
                         ? qualityProfile.withAgeing(
                                 getVessel().qualityContribution(wineType)
+                                        + facilityContribution
                         )
                         : qualityProfile
         );
@@ -325,6 +342,7 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         provenance = WineProvenance.legacy();
         batchId = 0L;
         bottlesTaken = 0;
+        facilityContribution = 0;
     }
 
     private void markChangedAndSync() {
@@ -417,6 +435,10 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         );
         batchId = input.getLongOr("BatchId", 0L);
         bottlesTaken = input.getIntOr("BottlesTaken", 0);
+        facilityContribution = input.getIntOr(
+                "FacilityContribution",
+                0
+        );
     }
 
     @Override
@@ -433,5 +455,6 @@ public final class AgingBarrelBlockEntity extends BlockEntity {
         provenance.save(output, "Provenance");
         output.putLong("BatchId", batchId);
         output.putInt("BottlesTaken", bottlesTaken);
+        output.putInt("FacilityContribution", facilityContribution);
     }
 }

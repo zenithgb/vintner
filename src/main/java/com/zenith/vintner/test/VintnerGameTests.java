@@ -19,6 +19,7 @@ import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.estate.EstateProfile;
+import com.zenith.vintner.estate.EstateInfrastructureReport;
 import com.zenith.vintner.estate.EstateLedgerEvent;
 import com.zenith.vintner.estate.EstateLedgerSavedData;
 import com.zenith.vintner.estate.EstateSavedData;
@@ -3349,6 +3350,136 @@ public final class VintnerGameTests {
                 "Plot "
                         + (EstateLedgerSavedData.MAX_EVENTS_PER_ESTATE + 3),
                 "Ledger review should present the newest event first"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void physicalEstateFacilitiesAreRecognized(
+            GameTestHelper helper
+    ) {
+        BlockPos secondStand = FIRST.east(2);
+        helper.setBlock(FIRST, ModBlocks.BARREL_STAND);
+        helper.setBlock(FIRST.above(), ModBlocks.AGING_BARREL);
+        helper.setBlock(secondStand, ModBlocks.BARREL_STAND);
+        helper.setBlock(secondStand.above(), ModBlocks.AGING_BARREL);
+        helper.setBlock(FIRST.south(2), ModBlocks.WINE_RACK);
+        helper.setBlock(FIRST.south(3), ModBlocks.WINE_CRATE);
+        helper.setBlock(FIRST.south(4), ModBlocks.LABELLED_CELLAR_SHELF);
+        helper.setBlock(FIRST.south(5), ModBlocks.TASTING_CABINET);
+        helper.setBlock(secondStand.south(5), ModBlocks.VINTAGE_ARCHIVE);
+
+        EstateInfrastructureReport report =
+                EstateInfrastructureReport.survey(
+                        helper.getLevel(),
+                        helper.absolutePos(FIRST)
+                );
+
+        helper.assertTrue(
+                report.hasBarrelWorkshop(),
+                "Two mounted aging barrels should form a barrel workshop"
+        );
+        helper.assertTrue(
+                report.hasWarehouse(),
+                "Four physical storage fixtures should form a warehouse"
+        );
+        helper.assertTrue(
+                report.hasTastingRoom(),
+                "A tasting cabinet and archive should form a tasting room"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void physicalCellarUpgradesAffectAgeingQuality(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                EstateInfrastructureReport.ageingContribution(
+                        CellarRating.IDEAL,
+                        true
+                ),
+                3,
+                "An ideal cellar and barrel stand should stack their benefits"
+        );
+        helper.assertValueEqual(
+                EstateInfrastructureReport.ageingContribution(
+                        CellarRating.GOOD,
+                        true
+                ),
+                2,
+                "A mounted barrel in a good cellar should gain two quality"
+        );
+        helper.assertValueEqual(
+                EstateInfrastructureReport.ageingContribution(
+                        CellarRating.POOR,
+                        false
+                ),
+                0,
+                "An unmounted barrel should preserve legacy ageing quality"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void mountedBarrelLocksFacilityBonusAtCompletion(
+            GameTestHelper helper
+    ) {
+        BlockPos barrelPos = FIRST.above();
+        helper.setBlock(FIRST, ModBlocks.BARREL_STAND);
+        helper.setBlock(barrelPos, ModBlocks.AGING_BARREL);
+        AgingBarrelBlockEntity barrel = helper.getBlockEntity(
+                barrelPos,
+                AgingBarrelBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.apply(wine, 3, WineQuality.TABLE);
+        for (int bottle = 0;
+                bottle < AgingBarrelBlockEntity.CAPACITY;
+                bottle++) {
+            helper.assertTrue(
+                    barrel.insertOne(wine),
+                    "A mounted barrel should accept a matching full batch"
+            );
+        }
+
+        for (int tick = 0;
+                tick < AgingBarrelBlockEntity.AGING_TIME;
+                tick++) {
+            AgingBarrelBlockEntity.serverTick(
+                    helper.getLevel(),
+                    helper.absolutePos(barrelPos),
+                    helper.getBlockState(barrelPos),
+                    barrel
+            );
+        }
+
+        int expectedFacility =
+                EstateInfrastructureReport.ageingContribution(
+                        CellarConditions.evaluate(
+                                helper.getLevel(),
+                                helper.absolutePos(barrelPos)
+                        ).rating(),
+                        true
+                );
+        helper.assertValueEqual(
+                barrel.getFacilityContribution(),
+                expectedFacility,
+                "The completed batch should lock in its physical facility bonus"
+        );
+        AgingBarrelBlockEntity restored =
+                (AgingBarrelBlockEntity) reload(helper, barrel);
+        helper.assertValueEqual(
+                restored.getFacilityContribution(),
+                expectedFacility,
+                "The locked facility bonus should survive save/load"
+        );
+        ItemStack aged = restored.takeOneAgedWine();
+        helper.assertValueEqual(
+                WineMetadata.qualityProfile(aged).ageing(),
+                AgingVessel.OAK.qualityContribution(1)
+                        + expectedFacility,
+                "The locked facility bonus should reach bottle metadata"
         );
         helper.succeed();
     }
