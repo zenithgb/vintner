@@ -16,13 +16,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-/** Persistent yield strategy for grapevine root blocks in one dimension. */
+/** Persistent management choices for grapevine root blocks in one dimension. */
 public final class VineManagementSavedData extends SavedData {
     private record Entry(
             long position,
             String mode,
             String rootstock,
-            String cultivar
+            String cultivar,
+            boolean netted
     ) {
         private static final Codec<Entry> CODEC = RecordCodecBuilder.create(
                 instance -> instance.group(
@@ -37,7 +38,11 @@ public final class VineManagementSavedData extends SavedData {
                         Codec.STRING.optionalFieldOf(
                                 "cultivar",
                                 ""
-                        ).forGetter(Entry::cultivar)
+                        ).forGetter(Entry::cultivar),
+                        Codec.BOOL.optionalFieldOf(
+                                "netted",
+                                false
+                        ).forGetter(Entry::netted)
                 ).apply(instance, Entry::new)
         );
     }
@@ -65,6 +70,7 @@ public final class VineManagementSavedData extends SavedData {
     private final Map<Long, VineYieldMode> modes = new HashMap<>();
     private final Map<Long, VineRootstock> rootstocks = new HashMap<>();
     private final Map<Long, GrapeCultivar> cultivars = new HashMap<>();
+    private final HashSet<Long> nettedVines = new HashSet<>();
 
     public VineManagementSavedData() {
     }
@@ -89,6 +95,9 @@ public final class VineManagementSavedData extends SavedData {
                                 GrapeVariety.RED
                         )
                 );
+            }
+            if (entry.netted()) {
+                nettedVines.add(entry.position());
             }
         }
     }
@@ -130,6 +139,20 @@ public final class VineManagementSavedData extends SavedData {
                 cultivar
         );
         if (previous != cultivar) {
+            setDirty();
+        }
+    }
+
+    public boolean netted(BlockPos rootPos) {
+        return nettedVines.contains(rootPos.asLong());
+    }
+
+    public void setNetted(BlockPos rootPos, boolean netted) {
+        long key = rootPos.asLong();
+        boolean changed = netted
+                ? nettedVines.add(key)
+                : nettedVines.remove(key);
+        if (changed) {
             setDirty();
         }
     }
@@ -177,7 +200,8 @@ public final class VineManagementSavedData extends SavedData {
         long key = rootPos.asLong();
         if (modes.remove(key) != null
                 | rootstocks.remove(key) != null
-                | cultivars.remove(key) != null) {
+                | cultivars.remove(key) != null
+                | nettedVines.remove(key)) {
             setDirty();
         }
     }
@@ -186,6 +210,7 @@ public final class VineManagementSavedData extends SavedData {
         HashSet<Long> positions = new HashSet<>(modes.keySet());
         positions.addAll(rootstocks.keySet());
         positions.addAll(cultivars.keySet());
+        positions.addAll(nettedVines);
         List<Entry> entries = new ArrayList<>(positions.size());
         positions.forEach(position -> entries.add(new Entry(
                 position,
@@ -199,7 +224,8 @@ public final class VineManagementSavedData extends SavedData {
                 ).serializedName(),
                 cultivars.containsKey(position)
                         ? cultivars.get(position).serializedName()
-                        : ""
+                        : "",
+                nettedVines.contains(position)
         )));
         return entries;
     }

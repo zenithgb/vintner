@@ -10,7 +10,9 @@ public enum VineyardThreat {
     FROST_DAMAGE(1),
     HEAT_STRESS(2),
     MILDEW_RISK(3),
-    ROT_RISK(1);
+    ROT_RISK(1),
+    PEST_PRESSURE(3),
+    BIRD_PRESSURE(2);
 
     private final int healthPoints;
 
@@ -62,5 +64,37 @@ public enum VineyardThreat {
             }
             default -> HEALTHY;
         };
+    }
+
+    public static VineyardThreat assess(
+            boolean preparedSoil,
+            boolean matureVine,
+            boolean ripeVine,
+            boolean managedCanopy,
+            boolean netted,
+            TerroirReport terroir,
+            VineyardWeatherEvent weather,
+            SeasonalContext season
+    ) {
+        VineyardThreat environmental = assess(
+                preparedSoil,
+                matureVine,
+                terroir,
+                weather
+        );
+        if (environmental != HEALTHY) {
+            return environmental;
+        }
+        if (ripeVine
+                && season.season() == VineyardSeason.AUTUMN
+                && !netted) {
+            return BIRD_PRESSURE;
+        }
+        if (matureVine
+                && season.season() == VineyardSeason.SUMMER
+                && !managedCanopy) {
+            return PEST_PRESSURE;
+        }
+        return HEALTHY;
     }
 }

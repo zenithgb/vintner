@@ -98,6 +98,8 @@ public final class GrapeQualityEvaluator {
                 level,
                 vinePos
         );
+        boolean netted = level instanceof ServerLevel serverLevel
+                && VineManagementSavedData.get(serverLevel).netted(vinePos);
         VineyardWeatherEvent weatherEvent = level instanceof ServerLevel serverLevel
                 ? VineyardWeatherEvent.at(
                         serverLevel,
@@ -113,8 +115,12 @@ public final class GrapeQualityEvaluator {
         VineyardThreat threat = VineyardThreat.assess(
                 preparedSoil,
                 matureVine,
+                ripeHarvest,
+                managedYield,
+                netted,
                 terroir,
-                weatherEvent
+                weatherEvent,
+                seasonalContext
         );
         int vineHealthPoints = terroir.siteScore() >= 45
                 ? threat.healthPoints()
@@ -168,7 +174,8 @@ public final class GrapeQualityEvaluator {
                 weatherEvent,
                 harvestWeatherPoints,
                 protectedCultivation,
-                irrigated
+                irrigated,
+                netted
         );
     }
 

@@ -34,6 +34,7 @@ public record VineyardConditionReport(
         VineyardWeatherEvent weatherEvent,
         int harvestWeatherPoints,
         boolean protectedCultivation,
-        boolean irrigated
+        boolean irrigated,
+        boolean netted
 ) {
 }

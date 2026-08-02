@@ -7,6 +7,7 @@ import com.zenith.vintner.item.GraftingKnifeItem;
 import com.zenith.vintner.item.MustItem;
 import com.zenith.vintner.item.SoilProbeItem;
 import com.zenith.vintner.item.VintnerAlmanacItem;
+import com.zenith.vintner.item.VineyardNettingItem;
 
 import com.zenith.vintner.item.WineConsumables;
 import com.zenith.vintner.item.WineEffectProfile;
@@ -160,6 +161,13 @@ public final class ModItems {
             "grafting_knife",
             properties -> new GraftingKnifeItem(
                     properties.durability(GraftingKnifeItem.MAX_DAMAGE)
+            )
+    );
+
+    public static final Item VINEYARD_NETTING = register(
+            "vineyard_netting",
+            properties -> new VineyardNettingItem(
+                    properties.stacksTo(16)
             )
     );
 

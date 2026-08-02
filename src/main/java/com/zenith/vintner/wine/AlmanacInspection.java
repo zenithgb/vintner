@@ -180,6 +180,15 @@ public final class AlmanacInspection {
                 report.rootstock().displayName()
         ).withStyle(ChatFormatting.DARK_GREEN));
         player.sendSystemMessage(Component.translatable(
+                report.netted()
+                        ? "message.vintner.almanac.netting.installed"
+                        : "message.vintner.almanac.netting.absent"
+        ).withStyle(
+                report.netted()
+                        ? ChatFormatting.DARK_GREEN
+                        : ChatFormatting.DARK_GRAY
+        ));
+        player.sendSystemMessage(Component.translatable(
                 "message.vintner.almanac.vine_health",
                 report.threat().displayName(),
                 report.vineHealthPoints()

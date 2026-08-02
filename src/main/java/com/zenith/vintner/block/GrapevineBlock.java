@@ -1,6 +1,7 @@
 package com.zenith.vintner.block;
 
 import com.zenith.vintner.registry.ModBlocks;
+import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.vineyard.GrapeCultivar;
 import com.zenith.vintner.vineyard.GraftedCuttingData;
@@ -481,6 +482,19 @@ public abstract class GrapevineBlock
             BlockHitResult hitResult
     ) {
         if (stack.is(Items.SHEARS)) {
+            InteractionResult nettingRemoval = tryRemoveNetting(
+                    stack,
+                    state,
+                    level,
+                    pos,
+                    player,
+                    hand
+            );
+
+            if (nettingRemoval.consumesAction()) {
+                return nettingRemoval;
+            }
+
             InteractionResult management = tryAdjustYield(
                     stack,
                     state,
@@ -531,6 +545,59 @@ public abstract class GrapevineBlock
                 hand,
                 hitResult
         );
+    }
+
+    private InteractionResult tryRemoveNetting(
+            ItemStack shears,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand
+    ) {
+        if (!state.getValue(UPPER)) {
+            return InteractionResult.PASS;
+        }
+
+        BlockPos rootPos = pos.below();
+        BlockState rootState = level.getBlockState(rootPos);
+        if (!(rootState.getBlock() instanceof GrapevineBlock)
+                || rootState.getValue(UPPER)
+                || rootState.getValue(AGE) < 2) {
+            return InteractionResult.PASS;
+        }
+
+        if (level instanceof ServerLevel serverLevel) {
+            VineManagementSavedData management =
+                    VineManagementSavedData.get(serverLevel);
+            if (!management.netted(rootPos)) {
+                return InteractionResult.PASS;
+            }
+
+            management.setNetted(rootPos, false);
+            if (!player.getAbilities().instabuild) {
+                ItemStack recovered = new ItemStack(
+                        ModItems.VINEYARD_NETTING
+                );
+                if (!player.addItem(recovered)) {
+                    popResource(serverLevel, rootPos.above(), recovered);
+                }
+                shears.hurtAndBreak(1, player, hand);
+            }
+            serverLevel.playSound(
+                    null,
+                    rootPos.above(),
+                    SoundEvents.WOOL_BREAK,
+                    SoundSource.BLOCKS,
+                    0.8F,
+                    1.15F
+            );
+            player.sendSystemMessage(Component.translatable(
+                    "message.vintner.netting.removed"
+            ));
+        }
+
+        return InteractionResult.SUCCESS;
     }
 
     private InteractionResult tryAdjustYield(

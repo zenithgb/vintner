@@ -121,7 +121,9 @@ public enum GrapeCultivar {
                             || threat == VineyardThreat.DROUGHT_STRESS ? 2 : 0;
             case NIGHTBERRY, RIVER_GARNET, GREENWAKE ->
                     threat == VineyardThreat.MILDEW_RISK
-                            || threat == VineyardThreat.ROT_RISK ? resilience : 0;
+                            || threat == VineyardThreat.ROT_RISK
+                            || threat == VineyardThreat.PEST_PRESSURE
+                            ? resilience : 0;
             case STONEFLOWER -> threat == VineyardThreat.NUTRIENT_IMBALANCE ? 2 : 0;
             default -> resilience >= 2 ? 1 : 0;
         };

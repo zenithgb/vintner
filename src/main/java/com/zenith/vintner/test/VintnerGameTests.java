@@ -5770,6 +5770,186 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void seasonalBioticThreatsHaveReadableCounters(
+            GameTestHelper helper
+    ) {
+        TerroirReport healthySite = new TerroirReport(
+                ClimateProfile.evaluate(
+                        0.65F,
+                        false,
+                        false,
+                        72,
+                        false
+                ),
+                SoilProfile.of(SoilType.LOAM),
+                TerrainProfile.evaluate(
+                        72,
+                        1,
+                        Direction.SOUTH,
+                        true,
+                        3,
+                        55,
+                        false,
+                        false
+                ),
+                70
+        );
+
+        helper.assertValueEqual(
+                VineyardThreat.assess(
+                        true,
+                        true,
+                        true,
+                        false,
+                        false,
+                        healthySite,
+                        VineyardWeatherEvent.CALM,
+                        SeasonalContext.atDay(18L, 8)
+                ),
+                VineyardThreat.BIRD_PRESSURE,
+                "Unnetted ripe fruit should attract birds in autumn"
+        );
+        helper.assertValueEqual(
+                VineyardThreat.assess(
+                        true,
+                        true,
+                        true,
+                        false,
+                        true,
+                        healthySite,
+                        VineyardWeatherEvent.CALM,
+                        SeasonalContext.atDay(18L, 8)
+                ),
+                VineyardThreat.HEALTHY,
+                "Vineyard netting should counter autumn bird pressure"
+        );
+        helper.assertValueEqual(
+                VineyardThreat.assess(
+                        true,
+                        true,
+                        false,
+                        false,
+                        false,
+                        healthySite,
+                        VineyardWeatherEvent.CALM,
+                        SeasonalContext.atDay(10L, 8)
+                ),
+                VineyardThreat.PEST_PRESSURE,
+                "An unmanaged mature canopy should attract summer pests"
+        );
+        helper.assertValueEqual(
+                VineyardThreat.assess(
+                        true,
+                        true,
+                        false,
+                        true,
+                        false,
+                        healthySite,
+                        VineyardWeatherEvent.CALM,
+                        SeasonalContext.atDay(10L, 8)
+                ),
+                VineyardThreat.HEALTHY,
+                "Yield management should counter summer pest pressure"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void vineyardNettingInstallsAndRecoversWithShears(
+            GameTestHelper helper
+    ) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        Block vine = ModBlocks.redGrapevine(WoodVariant.OAK);
+        BlockPos absoluteRoot = helper.absolutePos(FIRST);
+
+        helper.setBlock(
+                FIRST,
+                vine.defaultBlockState()
+                        .setValue(GrapevineBlock.AGE, 3)
+        );
+        helper.setBlock(
+                UPPER,
+                vine.defaultBlockState()
+                        .setValue(GrapevineBlock.UPPER, true)
+                        .setValue(GrapevineBlock.AGE, 3)
+        );
+
+        VineManagementSavedData management =
+                VineManagementSavedData.get(helper.getLevel());
+        management.remove(absoluteRoot);
+        ItemStack netting = new ItemStack(ModItems.VINEYARD_NETTING);
+        player.setItemInHand(InteractionHand.MAIN_HAND, netting);
+        BlockHitResult hit = new BlockHitResult(
+                Vec3.atCenterOf(absoluteRoot),
+                Direction.NORTH,
+                absoluteRoot,
+                false
+        );
+
+        helper.assertValueEqual(
+                player.gameMode.useItemOn(
+                        player,
+                        helper.getLevel(),
+                        netting,
+                        InteractionHand.MAIN_HAND,
+                        hit
+                ),
+                InteractionResult.SUCCESS,
+                "A trained vine should accept vineyard netting"
+        );
+        helper.assertTrue(
+                management.netted(absoluteRoot),
+                "Installed netting should persist on the vine root"
+        );
+        helper.assertValueEqual(
+                netting.getCount(),
+                0,
+                "Installing netting in survival should consume one item"
+        );
+
+        ItemStack shears = new ItemStack(Items.SHEARS);
+        player.setItemInHand(InteractionHand.MAIN_HAND, shears);
+        BlockPos absoluteUpper = helper.absolutePos(UPPER);
+        BlockHitResult upperHit = new BlockHitResult(
+                Vec3.atCenterOf(absoluteUpper),
+                Direction.NORTH,
+                absoluteUpper,
+                false
+        );
+        helper.assertValueEqual(
+                player.gameMode.useItemOn(
+                        player,
+                        helper.getLevel(),
+                        shears,
+                        InteractionHand.MAIN_HAND,
+                        upperHit
+                ),
+                InteractionResult.SUCCESS,
+                "Using shears on the canopy should remove installed netting"
+        );
+
+        helper.assertFalse(
+                management.netted(absoluteRoot),
+                "Removed netting must clear its persistent state"
+        );
+        helper.assertValueEqual(
+                shears.getDamageValue(),
+                1,
+                "Recovering netting should consume one shears durability"
+        );
+        helper.assertTrue(
+                player.getInventory().contains(
+                        stack -> stack.is(ModItems.VINEYARD_NETTING)
+                ),
+                "Survival removal should recover the vineyard netting"
+        );
+
+        management.remove(absoluteRoot);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void nurseryBedPropagatesEitherCutting(
             GameTestHelper helper
     ) {
