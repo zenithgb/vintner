@@ -4,6 +4,9 @@ import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.estate.EstateProfile;
 import com.zenith.vintner.estate.EstateSavedData;
+import com.zenith.vintner.estate.VineyardPlot;
+import com.zenith.vintner.estate.VineyardPlotReport;
+import com.zenith.vintner.estate.VineyardPlotSavedData;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQualityProfile;
@@ -11,8 +14,10 @@ import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
 import com.zenith.vintner.wine.WineVintageConditions;
 import com.zenith.vintner.wine.AlmanacInspection;
+import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.vineyard.VineyardSurveyRecord;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -51,14 +56,24 @@ public final class VintnerAlmanacItem extends Item {
             return InteractionResult.SUCCESS;
         }
 
-        if (context.getLevel() instanceof ServerLevel
-                && context.getPlayer() != null) {
+        if (context.getLevel() instanceof ServerLevel serverLevel
+                && context.getPlayer() instanceof ServerPlayer player) {
+            if (tryRegisterPlot(serverLevel, player, context)) {
+                return InteractionResult.SUCCESS;
+            }
             AlmanacInspection.inspect(
-                    (ServerLevel) context.getLevel(),
+                    serverLevel,
                     context.getClickedPos(),
-                    context.getPlayer(),
+                    player,
                     context.getItemInHand()
             );
+            if (!player.isShiftKeyDown()) {
+                sendContainingPlot(
+                        serverLevel,
+                        player,
+                        context.getClickedPos()
+                );
+            }
         }
         return InteractionResult.SUCCESS;
     }
@@ -347,6 +362,139 @@ public final class VintnerAlmanacItem extends Item {
                 Component.translatable(
                         "color.minecraft." + profile.crestColor()
                 )
+        ).withStyle(ChatFormatting.DARK_GRAY));
+        if (player instanceof ServerPlayer serverPlayer) {
+            var plots = VineyardPlotSavedData.get(
+                    (ServerLevel) serverPlayer.level()
+            ).plots(serverPlayer.getUUID());
+            int totalArea = plots.stream()
+                    .mapToInt(VineyardPlot::area)
+                    .sum();
+            player.sendSystemMessage(Component.translatable(
+                    "message.vintner.estate.plots",
+                    plots.size(),
+                    totalArea
+            ).withStyle(ChatFormatting.DARK_GREEN));
+        }
+    }
+
+    private static boolean tryRegisterPlot(
+            ServerLevel level,
+            ServerPlayer player,
+            UseOnContext context
+    ) {
+        if (!player.isShiftKeyDown()
+                || context.getItemInHand().getCustomName() == null
+                || AlmanacInspection.classify(
+                        level,
+                        context.getClickedPos()
+                ) != AlmanacInspection.Target.VINEYARD_SITE
+                || EstateSavedData.get(level)
+                        .find(player.getUUID())
+                        .isEmpty()) {
+            return false;
+        }
+
+        var firstCorner = VineyardSurveyRecord.read(
+                context.getItemInHand()
+        );
+        if (firstCorner.isEmpty()) {
+            return false;
+        }
+
+        String dimension = level.dimension().identifier().toString();
+        if (!firstCorner.get().dimension().equals(dimension)) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.vintner.plot.dimension_mismatch"
+            ).withStyle(ChatFormatting.RED));
+            return true;
+        }
+
+        BlockPos secondCorner = TerroirEvaluator.resolveSitePosition(
+                level,
+                context.getClickedPos()
+        );
+        VineyardPlotSavedData.Registration registration =
+                VineyardPlotSavedData.get(level).register(
+                        player,
+                        level,
+                        firstCorner.get().position(),
+                        secondCorner,
+                        context.getItemInHand()
+                                .getCustomName()
+                                .getString()
+                );
+
+        if (!registration.successful()) {
+            String key = registration.status()
+                    == VineyardPlotSavedData.Status.TOO_LARGE
+                    ? "message.vintner.plot.too_large"
+                    : "message.vintner.plot.full";
+            player.sendSystemMessage(Component.translatable(
+                    key,
+                    VineyardPlot.MAX_SIDE,
+                    VineyardPlotSavedData.MAX_PLOTS_PER_ESTATE
+            ).withStyle(ChatFormatting.RED));
+            return true;
+        }
+
+        VineyardSurveyRecord.clear(context.getItemInHand());
+        VineyardPlot plot = registration.plot();
+        player.sendSystemMessage(Component.translatable(
+                registration.status()
+                        == VineyardPlotSavedData.Status.UPDATED
+                        ? "message.vintner.plot.updated"
+                        : "message.vintner.plot.created",
+                plot.name(),
+                plot.area(),
+                plot.width(),
+                plot.depth()
+        ).withStyle(ChatFormatting.GREEN));
+        sendPlotReport(level, player, plot);
+        return true;
+    }
+
+    private static void sendContainingPlot(
+            ServerLevel level,
+            ServerPlayer player,
+            BlockPos pos
+    ) {
+        VineyardPlotSavedData.get(level)
+                .findContaining(player.getUUID(), level, pos)
+                .ifPresent(plot -> sendPlotReport(level, player, plot));
+    }
+
+    private static void sendPlotReport(
+            ServerLevel level,
+            Player player,
+            VineyardPlot plot
+    ) {
+        VineyardPlotReport report = VineyardPlotReport.analyze(level, plot);
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.plot.summary",
+                plot.name(),
+                report.area()
+        ).withStyle(ChatFormatting.GOLD));
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.plot.vines",
+                report.vineCount(),
+                report.varietySummary(),
+                report.averageAgeDays()
+        ).withStyle(ChatFormatting.GRAY));
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.plot.conditions",
+                Component.translatable(
+                        "soil_type.vintner." + report.soil()
+                ),
+                Component.translatable(
+                        "climate_band.vintner." + report.climate()
+                ),
+                report.healthPercent()
+        ).withStyle(ChatFormatting.DARK_GREEN));
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.plot.projection",
+                report.projectedYield(),
+                report.projectedQuality()
         ).withStyle(ChatFormatting.DARK_GRAY));
     }
 }

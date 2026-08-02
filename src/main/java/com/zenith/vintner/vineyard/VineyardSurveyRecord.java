@@ -89,4 +89,13 @@ public record VineyardSurveyRecord(
                 tag.getStringOr(RATING, "very_low")
         ));
     }
+
+    public static void clear(ItemStack almanac) {
+        CompoundTag tag = almanac.getOrDefault(
+                DataComponents.CUSTOM_DATA,
+                CustomData.EMPTY
+        ).copyTag();
+        tag.remove(PRESENT);
+        almanac.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
 }

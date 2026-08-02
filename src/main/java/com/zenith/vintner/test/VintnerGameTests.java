@@ -20,6 +20,9 @@ import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.estate.EstateProfile;
 import com.zenith.vintner.estate.EstateSavedData;
+import com.zenith.vintner.estate.VineyardPlot;
+import com.zenith.vintner.estate.VineyardPlotReport;
+import com.zenith.vintner.estate.VineyardPlotSavedData;
 import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.item.GraftingKnifeItem;
 import com.zenith.vintner.registry.ModAttachments;
@@ -3109,6 +3112,131 @@ public final class VintnerGameTests {
                 renamed.crestColor(),
                 founded.crestColor(),
                 "Renaming without a banner must preserve the crest"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void namedPlotsTrackBoundariesAndLiveVines(
+            GameTestHelper helper
+    ) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        EstateSavedData.get(helper.getLevel()).register(
+                owner,
+                helper.getLevel(),
+                helper.absolutePos(new BlockPos(1, 1, 1)),
+                "Stone Hill Estate",
+                DyeColor.BLUE
+        );
+
+        BlockPos firstGround = new BlockPos(1, 0, 1);
+        BlockPos secondGround = new BlockPos(5, 0, 5);
+        helper.setBlock(firstGround, Blocks.CALCITE);
+        helper.setBlock(secondGround, Blocks.CALCITE);
+        BlockPos firstCorner = TerroirEvaluator.resolveSitePosition(
+                helper.getLevel(),
+                helper.absolutePos(firstGround)
+        );
+        ItemStack almanac = new ItemStack(ModItems.VINTNER_ALMANAC);
+        almanac.set(
+                DataComponents.CUSTOM_NAME,
+                Component.literal("Upper Slope")
+        );
+        VineyardSurveyRecord.capture(
+                helper.getLevel(),
+                firstCorner,
+                TerroirEvaluator.inspect(helper.getLevel(), firstCorner)
+        ).save(almanac);
+        owner.setItemInHand(InteractionHand.MAIN_HAND, almanac);
+        owner.setShiftKeyDown(true);
+        BlockPos absoluteSecond = helper.absolutePos(secondGround);
+        owner.gameMode.useItemOn(
+                owner,
+                helper.getLevel(),
+                almanac,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteSecond),
+                        Direction.UP,
+                        absoluteSecond,
+                        false
+                )
+        );
+        owner.setShiftKeyDown(false);
+
+        var plots = VineyardPlotSavedData.get(helper.getLevel())
+                .plots(owner.getUUID());
+        helper.assertValueEqual(
+                plots.size(),
+                1,
+                "Completing two corners should register one named plot"
+        );
+        VineyardPlot plot = plots.getFirst();
+        helper.assertValueEqual(
+                plot.name(),
+                "Upper Slope",
+                "The renamed Almanac should become the plot name"
+        );
+        helper.assertValueEqual(
+                plot.area(),
+                25,
+                "Inclusive plot corners should produce the expected area"
+        );
+        helper.assertTrue(
+                VineyardSurveyRecord.read(almanac).isEmpty(),
+                "Completing a plot should clear the corner bookmark"
+        );
+
+        BlockPos redPos = new BlockPos(2, 1, 2);
+        BlockPos whitePos = new BlockPos(4, 1, 3);
+        helper.setBlock(redPos.below(), ModBlocks.VINEYARD_SOIL);
+        helper.setBlock(whitePos.below(), ModBlocks.VINEYARD_SOIL);
+        helper.setBlock(
+                redPos,
+                ModBlocks.RED_GRAPEVINE.defaultBlockState()
+                        .setValue(GrapevineBlock.UPPER, false)
+                        .setValue(
+                                GrapevineBlock.AGE,
+                                GrapevineBlock.MAX_AGE
+                        )
+        );
+        helper.setBlock(
+                whitePos,
+                ModBlocks.WHITE_GRAPEVINE.defaultBlockState()
+                        .setValue(GrapevineBlock.UPPER, false)
+                        .setValue(
+                                GrapevineBlock.AGE,
+                                GrapevineBlock.MAX_AGE
+                        )
+        );
+
+        VineyardPlotReport report = VineyardPlotReport.analyze(
+                helper.getLevel(),
+                plot
+        );
+        helper.assertValueEqual(
+                report.vineCount(),
+                2,
+                "The plot report should count root vines inside its boundary"
+        );
+        helper.assertValueEqual(
+                report.redVines(),
+                1,
+                "The plot report should count red vines"
+        );
+        helper.assertValueEqual(
+                report.whiteVines(),
+                1,
+                "The plot report should count white vines"
+        );
+        helper.assertValueEqual(
+                report.varietySummary(),
+                "Mixed",
+                "A red and white planting should report a mixed plot"
+        );
+        helper.assertTrue(
+                report.projectedYield() > 0,
+                "Mature vines should contribute to projected yield"
         );
         helper.succeed();
     }
