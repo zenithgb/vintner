@@ -19,6 +19,7 @@ import net.minecraft.core.component.DataComponents;
 import com.zenith.vintner.Vintner;
 import com.zenith.vintner.item.GrapeItem;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.registry.FuelValueEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -57,6 +58,15 @@ public final class ModItems {
     public static final Item GRAPE_SEEDS = register(
             "grape_seeds",
             Item::new
+    );
+
+    public static final Item GRAPE_SEED_OIL = register(
+            "grape_seed_oil",
+            properties -> new Item(
+                    properties
+                            .stacksTo(16)
+                            .craftRemainder(Items.GLASS_BOTTLE)
+            )
     );
 
     public static final Item RAISINS = register(
@@ -276,6 +286,27 @@ public final class ModItems {
 
         ComposterBlock.COMPOSTABLES.put(POMACE, 0.85F);
         ComposterBlock.COMPOSTABLES.put(GRAPE_SEEDS, 0.50F);
+        ComposterBlock.COMPOSTABLES.put(RED_GRAPE_CUTTING, 0.65F);
+        ComposterBlock.COMPOSTABLES.put(WHITE_GRAPE_CUTTING, 0.65F);
+        ComposterBlock.COMPOSTABLES.put(ROOTSTOCK_CUTTING, 0.65F);
+        ComposterBlock.COMPOSTABLES.put(
+                RESISTANT_ROOTSTOCK_CUTTING,
+                0.65F
+        );
+
+        FuelValueEvents.BUILD.register((builder, context) -> {
+            int cuttingBurnTime = Math.max(
+                    1,
+                    context.baseSmeltTime() / 2
+            );
+            builder.add(RED_GRAPE_CUTTING, cuttingBurnTime);
+            builder.add(WHITE_GRAPE_CUTTING, cuttingBurnTime);
+            builder.add(ROOTSTOCK_CUTTING, cuttingBurnTime);
+            builder.add(
+                    RESISTANT_ROOTSTOCK_CUTTING,
+                    cuttingBurnTime
+            );
+        });
 
         CreativeModeTabEvents
                 .modifyOutputEvent(
@@ -285,6 +316,7 @@ public final class ModItems {
                     output.accept(COMPOST);
                     output.accept(POMACE);
                     output.accept(GRAPE_SEEDS);
+                    output.accept(GRAPE_SEED_OIL);
                     for (GrapeCultivar cultivar : GrapeCultivar.values()) {
                         output.accept(cultivarCutting(cultivar));
                     }
@@ -309,6 +341,7 @@ public final class ModItems {
                     output.accept(RAISINS);
                     output.accept(VINEYARD_BREAD);
                     output.accept(GRAPE_TART);
+                    output.accept(GRAPE_SEED_OIL);
                     output.accept(RED_MUST);
                     output.accept(WHITE_MUST);
                     output.accept(RED_WINE);

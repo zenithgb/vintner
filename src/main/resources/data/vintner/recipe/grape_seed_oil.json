@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "vintner:grape_seeds",
+    "vintner:grape_seeds",
+    "minecraft:glass_bottle"
+  ],
+  "result": {
+    "id": "vintner:grape_seed_oil"
+  }
+}

@@ -55,6 +55,7 @@ public final class ModCreativeTabs {
                                 output.accept(ModItems.WHITE_GRAPES);
                                 output.accept(ModItems.POMACE);
                                 output.accept(ModItems.GRAPE_SEEDS);
+                                output.accept(ModItems.GRAPE_SEED_OIL);
                                 output.accept(ModItems.RAISINS);
                                 output.accept(ModItems.VINEYARD_BREAD);
                                 output.accept(ModItems.GRAPE_TART);

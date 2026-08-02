@@ -84,6 +84,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -106,6 +107,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
@@ -1652,6 +1654,55 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void wineryByproductsSupportCircularUses(
+            GameTestHelper helper
+    ) {
+        ItemStack seedOilRemainder = ModItems.GRAPE_SEED_OIL
+                .getCraftingRemainder()
+                .create();
+
+        helper.assertTrue(
+                seedOilRemainder.is(Items.GLASS_BOTTLE),
+                "Cooking with grape seed oil should return its bottle"
+        );
+        helper.assertTrue(
+                new ItemStack(ModItems.GRAPE_SEEDS)
+                        .is(ItemTags.CHICKEN_FOOD),
+                "Grape seeds should feed chickens"
+        );
+        helper.assertTrue(
+                new ItemStack(ModItems.POMACE).is(ItemTags.COW_FOOD)
+                        && new ItemStack(ModItems.POMACE)
+                        .is(ItemTags.SHEEP_FOOD),
+                "Pomace should feed cows and sheep"
+        );
+        helper.assertTrue(
+                ComposterBlock.COMPOSTABLES.getFloat(
+                        ModItems.RED_GRAPE_CUTTING
+                ) > 0.0F
+                        && ComposterBlock.COMPOSTABLES.getFloat(
+                        ModItems.RESISTANT_ROOTSTOCK_CUTTING
+                ) > 0.0F,
+                "Spent vine cuttings should be compostable"
+        );
+
+        int cuttingBurnTime = helper.getLevel()
+                .fuelValues()
+                .burnDuration(
+                        new ItemStack(ModItems.RED_GRAPE_CUTTING)
+                );
+        int stickBurnTime = helper.getLevel()
+                .fuelValues()
+                .burnDuration(new ItemStack(Items.STICK));
+        helper.assertValueEqual(
+                cuttingBurnTime,
+                stickBurnTime,
+                "A vine cutting should provide a small stick-like fuel use"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void survivalIngredientsUnlockVintnerRecipes(
             GameTestHelper helper
     ) {
@@ -1667,6 +1718,7 @@ public final class VintnerGameTests {
         triggerInventoryChange(player, ModItems.RED_GRAPES);
         triggerInventoryChange(player, ModItems.WHITE_GRAPES);
         triggerInventoryChange(player, ModItems.POMACE);
+        triggerInventoryChange(player, ModItems.GRAPE_SEEDS);
         triggerInventoryChange(player, ModItems.RAISINS);
         triggerInventoryChange(player, Items.BOOK);
         triggerInventoryChange(player, Items.COPPER_INGOT);
@@ -1713,6 +1765,11 @@ public final class VintnerGameTests {
                     helper,
                     player,
                     "compost_from_pomace"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "grape_seed_oil"
             );
             assertRecipeKnown(
                     helper,

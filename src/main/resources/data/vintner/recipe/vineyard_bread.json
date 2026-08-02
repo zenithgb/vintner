@@ -4,7 +4,7 @@
     "minecraft:bread",
     "vintner:raisins",
     "vintner:raisins",
-    "vintner:grape_seeds"
+    "vintner:grape_seed_oil"
   ],
   "result": {
     "id": "vintner:vineyard_bread"
