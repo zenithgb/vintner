@@ -75,36 +75,38 @@ public final class WinemakingFeedback {
             Player player,
             FermentationBarrelBlockEntity barrel
     ) {
+        show(player, fermentationStatus(barrel));
+    }
+
+    public static Component fermentationStatus(
+            FermentationBarrelBlockEntity barrel
+    ) {
         if (barrel.getBottleCount() <= 0) {
-            show(player, "message.vintner.fermentation.empty");
-            return;
+            return Component.translatable(
+                    "message.vintner.fermentation.empty"
+            );
         }
 
         if (barrel.isReady()) {
-            show(
-                    player,
+            return Component.translatable(
                     "message.vintner.fermentation.ready",
                     wineType(barrel.getBatchType()),
                     barrel.getBottleCount(),
                     FermentationBarrelBlockEntity.CAPACITY
             );
-            return;
         }
 
         if (barrel.getBottleCount()
                 < FermentationBarrelBlockEntity.CAPACITY) {
-            show(
-                    player,
+            return Component.translatable(
                     "message.vintner.fermentation.waiting",
                     wineType(barrel.getBatchType()),
                     barrel.getBottleCount(),
                     FermentationBarrelBlockEntity.CAPACITY
             );
-            return;
         }
 
-        show(
-                player,
+        return Component.translatable(
                 "message.vintner.fermentation.progress",
                 wineType(barrel.getBatchType()),
                 barrel.getBottleCount(),
@@ -137,36 +139,36 @@ public final class WinemakingFeedback {
             Player player,
             AgingBarrelBlockEntity barrel
     ) {
+        show(player, agingStatus(barrel));
+    }
+
+    public static Component agingStatus(
+            AgingBarrelBlockEntity barrel
+    ) {
         if (barrel.getBottleCount() <= 0) {
-            show(player, "message.vintner.aging.empty");
-            return;
+            return Component.translatable("message.vintner.aging.empty");
         }
 
         if (barrel.isReady()) {
-            show(
-                    player,
+            return Component.translatable(
                     "message.vintner.aging.ready",
                     wineType(barrel.getWineType()),
                     barrel.getBottleCount(),
                     barrel.getCapacity()
             );
-            return;
         }
 
         if (barrel.getBottleCount()
                 < barrel.getCapacity()) {
-            show(
-                    player,
+            return Component.translatable(
                     "message.vintner.aging.waiting",
                     wineType(barrel.getWineType()),
                     barrel.getBottleCount(),
                     barrel.getCapacity()
             );
-            return;
         }
 
-        show(
-                player,
+        return Component.translatable(
                 "message.vintner.aging.progress",
                 wineType(barrel.getWineType()),
                 barrel.getBottleCount(),
@@ -202,9 +204,13 @@ public final class WinemakingFeedback {
             String key,
             Object... arguments
     ) {
+        show(player, Component.translatable(key, arguments));
+    }
+
+    private static void show(Player player, Component message) {
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.sendSystemMessage(
-                    Component.translatable(key, arguments),
+                    message,
                     true
             );
         }

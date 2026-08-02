@@ -11,6 +11,7 @@ import com.zenith.vintner.registry.ModMobEffects;
 import com.zenith.vintner.registry.ModTrades;
 import com.zenith.vintner.registry.ModVillageStructures;
 import com.zenith.vintner.registry.ModVillagers;
+import com.zenith.vintner.network.ModNetworking;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ public final class Vintner implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        ModNetworking.initialize();
         ModGameRules.initialize();
         ModMobEffects.initialize();
         ModAttachments.initialize();

@@ -2436,6 +2436,101 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void fermentationCombinesCompatiblePressLots(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.FERMENTATION_BARREL);
+        FermentationBarrelBlockEntity barrel = helper.getBlockEntity(
+                FIRST,
+                FermentationBarrelBlockEntity.class
+        );
+        ItemStack firstLot = new ItemStack(ModItems.RED_MUST);
+        ItemStack secondLot = new ItemStack(ModItems.RED_MUST);
+        WineMetadata.apply(firstLot, 3, WineQuality.GOOD);
+        WineMetadata.apply(secondLot, 3, WineQuality.GOOD);
+        WineMetadata.ensureBatchIdentity(firstLot, 101L);
+        WineMetadata.ensureBatchIdentity(secondLot, 202L);
+
+        helper.assertTrue(
+                barrel.insertOne(firstLot) && barrel.insertOne(firstLot),
+                "The first two-bottle press lot should be accepted"
+        );
+        helper.assertTrue(
+                barrel.insertOne(secondLot) && barrel.insertOne(secondLot),
+                "A compatible second press lot should complete fermentation"
+        );
+        helper.assertValueEqual(
+                barrel.getBottleCount(),
+                FermentationBarrelBlockEntity.CAPACITY,
+                "Compatible press lots should fill one fermentation batch"
+        );
+        long fermentationBatch = WineMetadata.batchId(
+                barrel.getStoredContentsCopy()
+        );
+        helper.assertTrue(
+                fermentationBatch != 101L && fermentationBatch != 202L,
+                "Fermentation should assign the combined finished batch id"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void fermentationRejectsDifferentVineyardProvenance(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.FERMENTATION_BARREL);
+        FermentationBarrelBlockEntity barrel = helper.getBlockEntity(
+                FIRST,
+                FermentationBarrelBlockEntity.class
+        );
+        ItemStack estateLot = new ItemStack(ModItems.RED_MUST);
+        ItemStack otherEstateLot = new ItemStack(ModItems.RED_MUST);
+        WineMetadata.apply(estateLot, 3, WineQuality.GOOD);
+        WineMetadata.apply(otherEstateLot, 3, WineQuality.GOOD);
+        WineMetadata.applyProvenance(
+                estateLot,
+                new WineProvenance(
+                        "red",
+                        24000L,
+                        "minecraft:overworld",
+                        1,
+                        64,
+                        1,
+                        "estate-a",
+                        "Estate A"
+                )
+        );
+        WineMetadata.applyProvenance(
+                otherEstateLot,
+                new WineProvenance(
+                        "red",
+                        24000L,
+                        "minecraft:overworld",
+                        2,
+                        64,
+                        2,
+                        "estate-b",
+                        "Estate B"
+                )
+        );
+
+        helper.assertTrue(
+                barrel.insertOne(estateLot),
+                "The first vineyard lot should establish provenance"
+        );
+        helper.assertFalse(
+                barrel.canInsert(otherEstateLot),
+                "Must from a different vineyard must not be blended"
+        );
+        helper.assertValueEqual(
+                barrel.getBottleCount(),
+                1,
+                "Rejected provenance must not change the batch"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void barrelsWaitForFullBatchBeforeProcessing(
             GameTestHelper helper
     ) {
@@ -2917,11 +3012,11 @@ public final class VintnerGameTests {
         );
         helper.assertTrue(press.press(), "Grapes should press");
         ItemStack must = press.bottleOneMust();
-        long batchId = WineMetadata.batchId(must);
+        long pressBatchId = WineMetadata.batchId(must);
 
         helper.assertTrue(
-                batchId != 0L,
-                "Pressing should establish a stable batch identity"
+                pressBatchId != 0L,
+                "Pressing should establish a press-lot identity"
         );
 
         FermentationBarrelBlockEntity fermentation =
@@ -2950,10 +3045,11 @@ public final class VintnerGameTests {
         }
 
         ItemStack wine = fermentation.takeOneWine();
-        helper.assertValueEqual(
-                WineMetadata.batchId(wine),
-                batchId,
-                "Fermentation must preserve batch identity"
+        long fermentationBatchId = WineMetadata.batchId(wine);
+        helper.assertTrue(
+                fermentationBatchId != 0L
+                        && fermentationBatchId != pressBatchId,
+                "Fermentation should establish the combined wine batch"
         );
 
         AgingBarrelBlockEntity aging = helper.getBlockEntity(
@@ -2983,7 +3079,7 @@ public final class VintnerGameTests {
         ItemStack agedWine = aging.takeOneAgedWine();
         helper.assertValueEqual(
                 WineMetadata.batchId(agedWine),
-                batchId,
+                fermentationBatchId,
                 "Barrel aging must preserve batch identity"
         );
         helper.assertValueEqual(
@@ -5870,7 +5966,7 @@ public final class VintnerGameTests {
                 WineMarketRegion.classify(
                         com.zenith.vintner.vineyard.ClimateBand.WARM,
                         20,
-                        110,
+                        132,
                         com.zenith.vintner.vineyard.SlopeClass.MODERATE
                 ),
                 WineMarketRegion.MINING,

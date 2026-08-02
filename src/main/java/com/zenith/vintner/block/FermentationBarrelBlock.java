@@ -133,13 +133,14 @@ public final class FermentationBarrelBlock
             BlockHitResult hitResult
     ) {
         if (heldStack.is(ModItems.VINTNER_ALMANAC)) {
-            if (level instanceof ServerLevel serverLevel) {
+            if (level instanceof ServerLevel serverLevel
+                    && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
                 AlmanacInspection.inspect(
                         serverLevel,
                         pos,
-                        player,
+                        serverPlayer,
                         heldStack
-                );
+                ).open(serverPlayer);
             }
             return InteractionResult.SUCCESS;
         }

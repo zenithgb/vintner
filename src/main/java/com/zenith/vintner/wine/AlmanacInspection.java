@@ -4,34 +4,32 @@ import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
-import com.zenith.vintner.estate.EstateInfrastructureReport;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
+import com.zenith.vintner.estate.EstateInfrastructureReport;
+import com.zenith.vintner.item.AlmanacReport;
 import com.zenith.vintner.registry.ModBlocks;
+import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.vineyard.TerroirMessages;
 import com.zenith.vintner.vineyard.TerroirReport;
-import com.zenith.vintner.vineyard.VineyardSurveyRecord;
-import com.zenith.vintner.vineyard.VineyardThreat;
-import com.zenith.vintner.vineyard.SeasonalContext;
-import com.zenith.vintner.vineyard.VineyardWeatherEvent;
-import com.zenith.vintner.vineyard.VineyardProtection;
 import com.zenith.vintner.vineyard.VineyardIrrigation;
 import com.zenith.vintner.vineyard.VineyardManagementAdvice;
+import com.zenith.vintner.vineyard.VineyardProtection;
+import com.zenith.vintner.vineyard.VineyardSurveyRecord;
+import com.zenith.vintner.vineyard.VineyardThreat;
+import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-/**
- * Routes the Almanac to a concise report appropriate for the block being
- * inspected. This deliberately consolidates several roadmap instruments into
- * one vanilla-style field book instead of adding single-purpose item clutter.
- */
+import java.util.List;
+
+/** Builds concise, paged Almanac reports for inspected blocks. */
 public final class AlmanacInspection {
     private AlmanacInspection() {
     }
@@ -58,42 +56,85 @@ public final class AlmanacInspection {
         return Target.NONE;
     }
 
-    public static void inspect(
+    public static AlmanacReport inspect(
             ServerLevel level,
             BlockPos pos,
-            Player player,
+            ServerPlayer player,
             ItemStack almanac
     ) {
+        AlmanacReport report = new AlmanacReport();
         switch (classify(level, pos)) {
-            case FERMENTATION -> inspectFermentation(level, pos, player);
-            case AGEING -> inspectAgeing(level, pos, player);
-            case GRAPEVINE -> inspectGrapevine(level, pos, player);
+            case FERMENTATION -> inspectFermentation(
+                    level,
+                    pos,
+                    report
+            );
+            case AGEING -> inspectAgeing(level, pos, player, report);
+            case GRAPEVINE -> inspectGrapevine(
+                    level,
+                    pos,
+                    player,
+                    report
+            );
             case VINEYARD_SITE -> inspectLand(
                     level,
                     pos,
                     player,
-                    almanac
+                    almanac,
+                    report
             );
-            case NONE -> player.sendSystemMessage(
+            case NONE -> report.page(
+                    Component.translatable("item.vintner.vintner_almanac"),
                     Component.translatable(
                             "message.vintner.almanac.no_reading"
                     ).withStyle(ChatFormatting.GRAY)
             );
         }
+        return report;
     }
 
     private static void inspectLand(
             ServerLevel level,
             BlockPos pos,
-            Player player,
-            ItemStack almanac
+            ServerPlayer player,
+            ItemStack almanac,
+            AlmanacReport almanacReport
     ) {
         TerroirReport report = TerroirEvaluator.inspect(level, pos);
-        TerroirMessages.sendFullReport(
-                player,
-                report
+        List<Component> entries = TerroirMessages.fullReportEntries(report);
+        almanacReport.page(
+                Component.translatable("message.vintner.terroir.title"),
+                entries.get(0),
+                entries.get(1),
+                entries.get(2)
         );
-        sendSeasonalOutlook(level, pos, player, report);
+
+        SeasonalContext context = SeasonalContext.current(level);
+        boolean protectedCultivation = VineyardProtection.isProtected(
+                level,
+                pos
+        );
+        boolean irrigated = VineyardIrrigation.isIrrigated(level, pos);
+        VineyardWeatherEvent weather = VineyardWeatherEvent.at(
+                level,
+                pos,
+                report.climate(),
+                context
+        ).mitigatedBy(protectedCultivation, irrigated);
+        almanacReport.page(
+                Component.translatable("message.vintner.almanac.season"),
+                entries.get(3),
+                entries.get(4),
+                season(context),
+                weather(
+                        weather,
+                        weather.harvestQualityPoints(
+                                level.isRainingAt(pos.above())
+                        )
+                ),
+                cultivation(protectedCultivation, irrigated)
+        );
+
         if (player.isShiftKeyDown()) {
             VineyardSurveyRecord record = VineyardSurveyRecord.capture(
                     level,
@@ -101,16 +142,15 @@ public final class AlmanacInspection {
                     report
             );
             record.save(almanac);
-            player.sendSystemMessage(Component.translatable(
-                    "message.vintner.almanac.survey_recorded",
-                    record.position().getX(),
-                    record.position().getY(),
-                    record.position().getZ()
-            ).withStyle(ChatFormatting.GREEN));
-        } else {
-            player.sendSystemMessage(Component.translatable(
-                    "message.vintner.almanac.sneak_to_record"
-            ).withStyle(ChatFormatting.DARK_GRAY));
+            player.sendSystemMessage(
+                    Component.translatable(
+                            "message.vintner.almanac.survey_recorded",
+                            record.position().getX(),
+                            record.position().getY(),
+                            record.position().getZ()
+                    ).withStyle(ChatFormatting.GREEN),
+                    true
+            );
         }
         grantSurvey(player);
     }
@@ -118,7 +158,8 @@ public final class AlmanacInspection {
     private static void inspectGrapevine(
             ServerLevel level,
             BlockPos pos,
-            Player player
+            ServerPlayer player,
+            AlmanacReport almanac
     ) {
         BlockState clicked = level.getBlockState(pos);
         BlockPos rootPos = clicked.getValue(GrapevineBlock.UPPER)
@@ -127,9 +168,12 @@ public final class AlmanacInspection {
         BlockState root = level.getBlockState(rootPos);
 
         if (!(root.getBlock() instanceof GrapevineBlock)) {
-            player.sendSystemMessage(Component.translatable(
-                    "message.vintner.almanac.no_reading"
-            ).withStyle(ChatFormatting.GRAY));
+            almanac.page(
+                    Component.translatable("item.vintner.vintner_almanac"),
+                    Component.translatable(
+                            "message.vintner.almanac.no_reading"
+                    ).withStyle(ChatFormatting.GRAY)
+            );
             return;
         }
 
@@ -138,96 +182,65 @@ public final class AlmanacInspection {
                 level,
                 rootPos
         );
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.ripeness_title",
-                report.cultivar().displayName()
-        ).withStyle(ChatFormatting.GOLD));
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.cultivar_profile",
-                report.cultivar().ripeningDisplayName(),
-                report.cultivar().minimumHarvest(),
-                report.cultivar().maximumHarvest(),
-                report.cultivar().wineStyleDisplayName(),
-                report.cultivar().benefitDisplayName()
-        ).withStyle(ChatFormatting.DARK_GREEN));
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.cultivar_fit",
-                report.cultivar().siteSuitability(report.terroir()),
-                report.cultivar().ageingPotential()
-        ).withStyle(ChatFormatting.DARK_GRAY));
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.ripeness_stage",
+        almanac.page(
                 Component.translatable(
-                        "vine_stage.vintner." + age
+                        "message.vintner.almanac.ripeness_title",
+                        report.cultivar().displayName()
                 ),
-                age,
-                GrapevineBlock.MAX_AGE
-        ).withStyle(ChatFormatting.GRAY));
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.vine_age",
-                report.vineAgeStage().displayName(),
-                report.vineAgeDays(),
-                report.vineAgeStage().harvestAdjustment(),
-                report.vineAgeStage().qualityPoints()
-        ).withStyle(ChatFormatting.DARK_GREEN));
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.yield_mode",
-                report.yieldMode().displayName(),
-                report.yieldMode().harvestAdjustment(),
-                report.yieldMode().qualityPoints()
-        ).withStyle(ChatFormatting.DARK_GREEN));
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.rootstock",
-                report.rootstock().displayName()
-        ).withStyle(ChatFormatting.DARK_GREEN));
-        player.sendSystemMessage(Component.translatable(
-                report.netted()
-                        ? "message.vintner.almanac.netting.installed"
-                        : "message.vintner.almanac.netting.absent"
-        ).withStyle(
-                report.netted()
-                        ? ChatFormatting.DARK_GREEN
-                        : ChatFormatting.DARK_GRAY
-        ));
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.vine_health",
-                report.threat().displayName(),
-                report.vineHealthPoints()
-        ).withStyle(
-                report.threat() == VineyardThreat.HEALTHY
-                        ? ChatFormatting.DARK_GREEN
-                        : ChatFormatting.YELLOW
-        ));
-        if (report.threat() != VineyardThreat.HEALTHY) {
-            player.sendSystemMessage(
-                    report.threat().advice().copy()
-                            .withStyle(ChatFormatting.AQUA)
-            );
-        }
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.ripeness_quality",
-                report.predictedQuality().displayName(),
-                report.qualityScore(),
-                report.terroir().siteScore()
-        ).withStyle(ChatFormatting.DARK_GREEN));
-        player.sendSystemMessage(Component.translatable(
-                report.ripeHarvest()
-                        ? "message.vintner.almanac.ripeness_ready"
-                        : "message.vintner.almanac.ripeness_wait"
-        ).withStyle(
-                report.ripeHarvest()
-                        ? ChatFormatting.GREEN
-                        : ChatFormatting.DARK_GRAY
-        ));
-        sendSeasonalOutlook(
-                player,
-                report.seasonalContext(),
-                report.weatherEvent(),
-                report.harvestWeatherPoints(),
-                report.protectedCultivation(),
-                report.irrigated()
+                Component.translatable(
+                        "message.vintner.almanac.cultivar_profile",
+                        report.cultivar().ripeningDisplayName(),
+                        report.cultivar().minimumHarvest(),
+                        report.cultivar().maximumHarvest(),
+                        report.cultivar().wineStyleDisplayName(),
+                        report.cultivar().benefitDisplayName()
+                ).withStyle(ChatFormatting.DARK_GREEN),
+                Component.translatable(
+                        "message.vintner.almanac.cultivar_fit",
+                        report.cultivar().siteSuitability(report.terroir()),
+                        report.cultivar().ageingPotential()
+                ).withStyle(ChatFormatting.DARK_GRAY),
+                Component.translatable(
+                        "message.vintner.almanac.ripeness_stage",
+                        Component.translatable("vine_stage.vintner." + age),
+                        age,
+                        GrapevineBlock.MAX_AGE
+                ).withStyle(ChatFormatting.GRAY),
+                Component.translatable(
+                        "message.vintner.almanac.vine_age",
+                        report.vineAgeStage().displayName(),
+                        report.vineAgeDays(),
+                        report.vineAgeStage().harvestAdjustment(),
+                        report.vineAgeStage().qualityPoints()
+                ).withStyle(ChatFormatting.DARK_GREEN)
         );
-        player.sendSystemMessage(
+        almanac.page(
+                Component.translatable("message.vintner.almanac.vine_health"),
+                Component.translatable(
+                        "message.vintner.almanac.yield_mode",
+                        report.yieldMode().displayName(),
+                        report.yieldMode().harvestAdjustment(),
+                        report.yieldMode().qualityPoints()
+                ).withStyle(ChatFormatting.DARK_GREEN),
+                Component.translatable(
+                        "message.vintner.almanac.rootstock",
+                        report.rootstock().displayName()
+                ).withStyle(ChatFormatting.DARK_GREEN),
+                Component.translatable(
+                        "message.vintner.almanac.vine_health",
+                        report.threat().displayName(),
+                        report.vineHealthPoints()
+                ).withStyle(
+                        report.threat() == VineyardThreat.HEALTHY
+                                ? ChatFormatting.DARK_GREEN
+                                : ChatFormatting.YELLOW
+                ),
+                Component.translatable(
+                        "message.vintner.almanac.ripeness_quality",
+                        report.predictedQuality().displayName(),
+                        report.qualityScore(),
+                        report.terroir().siteScore()
+                ).withStyle(ChatFormatting.DARK_GREEN),
                 VineyardManagementAdvice.recommend(
                         report.preparedSoil(),
                         report.weatherEvent(),
@@ -242,199 +255,166 @@ public final class AlmanacInspection {
     private static void inspectFermentation(
             ServerLevel level,
             BlockPos pos,
-            Player player
+            AlmanacReport almanac
     ) {
         if (!(level.getBlockEntity(pos)
                 instanceof FermentationBarrelBlockEntity barrel)) {
             return;
         }
 
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.hydrometer_title"
-        ).withStyle(ChatFormatting.GOLD));
-        WinemakingFeedback.showFermentationStatus(player, barrel);
-
-        if (barrel.getBottleCount()
+        Component process = barrel.getBottleCount()
                 == FermentationBarrelBlockEntity.CAPACITY
-                && !barrel.isReady()) {
-            player.sendSystemMessage(Component.translatable(
-                    "message.vintner.almanac.process_time",
-                    barrel.getProgressPercent(),
-                    barrel.getRemainingSeconds()
-            ).withStyle(ChatFormatting.DARK_GRAY));
-        } else if (barrel.getBottleCount()
-                < FermentationBarrelBlockEntity.CAPACITY) {
-            player.sendSystemMessage(Component.translatable(
-                    "message.vintner.almanac.fill_to_start",
-                    FermentationBarrelBlockEntity.CAPACITY
-            ).withStyle(ChatFormatting.DARK_GRAY));
-        }
+                && !barrel.isReady()
+                ? Component.translatable(
+                        "message.vintner.almanac.process_time",
+                        barrel.getProgressPercent(),
+                        barrel.getRemainingSeconds()
+                )
+                : Component.translatable(
+                        "message.vintner.almanac.fill_to_start",
+                        FermentationBarrelBlockEntity.CAPACITY
+                );
+        almanac.page(
+                Component.translatable(
+                        "message.vintner.almanac.hydrometer_title"
+                ),
+                WinemakingFeedback.fermentationStatus(barrel),
+                process.copy().withStyle(ChatFormatting.DARK_GRAY)
+        );
     }
 
     private static void inspectAgeing(
             ServerLevel level,
             BlockPos pos,
-            Player player
+            ServerPlayer player,
+            AlmanacReport almanac
     ) {
         if (!(level.getBlockEntity(pos)
                 instanceof AgingBarrelBlockEntity barrel)) {
             return;
         }
 
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.ageing_title",
-                barrel.getVessel().displayName()
-        ).withStyle(ChatFormatting.GOLD));
-        WinemakingFeedback.showAgingStatus(player, barrel);
-
-        if (barrel.getBottleCount() == barrel.getCapacity()
-                && !barrel.isReady()) {
-            player.sendSystemMessage(Component.translatable(
-                    "message.vintner.almanac.process_time",
-                    barrel.getProgressPercent(),
-                    barrel.getRemainingSeconds()
-            ).withStyle(ChatFormatting.DARK_GRAY));
-        } else if (barrel.getBottleCount() < barrel.getCapacity()) {
-            player.sendSystemMessage(Component.translatable(
-                    "message.vintner.almanac.fill_to_start",
-                    barrel.getCapacity()
-            ).withStyle(ChatFormatting.DARK_GRAY));
-        }
-
         CellarConditions conditions = CellarConditions.evaluate(level, pos);
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.cellar_conditions",
-                conditions.rating().displayName(),
-                Component.translatable(
-                        conditions.stableTemperature()
-                                ? "cellar_temperature.vintner.stable"
-                                : conditions.heatSource()
-                                ? "cellar_temperature.vintner.warm"
-                                : "cellar_temperature.vintner.variable"
-                ),
-                Component.translatable(
-                        conditions.humid()
-                                ? "cellar_humidity.vintner.humid"
-                                : "cellar_humidity.vintner.dry"
-                )
-        ).withStyle(ChatFormatting.GRAY));
         boolean mounted = EstateInfrastructureReport.hasBarrelStand(
                 level,
                 pos
         );
-        int projectedContribution =
-                EstateInfrastructureReport.ageingContribution(
-                        conditions.rating(),
-                        mounted
-                );
-        player.sendSystemMessage(Component.translatable(
-                "message.vintner.almanac.ageing_facility",
+        int contribution = EstateInfrastructureReport.ageingContribution(
+                conditions.rating(),
                 mounted
-                        ? Component.translatable(
-                                "estate_facility.vintner.mounted"
-                        )
-                        : Component.translatable(
-                                "estate_facility.vintner.unmounted"
-                        ),
-                Component.literal(
-                        projectedContribution > 0
-                                ? "+" + projectedContribution
-                                : Integer.toString(projectedContribution)
+        );
+        Component process = barrel.getBottleCount() == barrel.getCapacity()
+                && !barrel.isReady()
+                ? Component.translatable(
+                        "message.vintner.almanac.process_time",
+                        barrel.getProgressPercent(),
+                        barrel.getRemainingSeconds()
                 )
-        ).withStyle(
-                projectedContribution > 0
+                : Component.translatable(
+                        "message.vintner.almanac.fill_to_start",
+                        barrel.getCapacity()
+                );
+        almanac.page(
+                Component.translatable(
+                        "message.vintner.almanac.ageing_title",
+                        barrel.getVessel().displayName()
+                ),
+                WinemakingFeedback.agingStatus(barrel),
+                process.copy().withStyle(ChatFormatting.DARK_GRAY),
+                Component.translatable(
+                        "message.vintner.almanac.cellar_conditions",
+                        conditions.rating().displayName(),
+                        Component.translatable(
+                                conditions.stableTemperature()
+                                        ? "cellar_temperature.vintner.stable"
+                                        : conditions.heatSource()
+                                        ? "cellar_temperature.vintner.warm"
+                                        : "cellar_temperature.vintner.variable"
+                        ),
+                        Component.translatable(
+                                conditions.humid()
+                                        ? "cellar_humidity.vintner.humid"
+                                        : "cellar_humidity.vintner.dry"
+                        )
+                ).withStyle(ChatFormatting.GRAY),
+                Component.translatable(
+                        "message.vintner.almanac.ageing_facility",
+                        Component.translatable(
+                                mounted
+                                        ? "estate_facility.vintner.mounted"
+                                        : "estate_facility.vintner.unmounted"
+                        ),
+                        Component.literal(
+                                contribution > 0
+                                        ? "+" + contribution
+                                        : Integer.toString(contribution)
+                        )
+                ).withStyle(contribution > 0
                         ? ChatFormatting.GREEN
-                        : projectedContribution < 0
-                        ? ChatFormatting.RED
-                        : ChatFormatting.DARK_GRAY
-        ));
-
+                        : ChatFormatting.DARK_GRAY)
+        );
         if (player.isShiftKeyDown()) {
-            player.sendSystemMessage(
-                    barrel.getVessel().guide()
-                            .copy()
-                            .withStyle(ChatFormatting.GRAY)
-            );
-            player.sendSystemMessage(
+            almanac.page(
+                    barrel.getVessel().displayName(),
+                    barrel.getVessel().guide(),
                     barrel.getVessel().craftingHint()
-                            .copy()
-                            .withStyle(ChatFormatting.DARK_GRAY)
             );
-        } else {
-            player.sendSystemMessage(Component.translatable(
-                    "message.vintner.almanac.sneak_for_vessel_guide"
-            ).withStyle(ChatFormatting.DARK_GRAY));
         }
     }
 
-    private static void grantSurvey(Player player) {
-        if (player instanceof ServerPlayer serverPlayer) {
-            ModAdvancements.grantSurvey(serverPlayer);
-        }
-    }
-
-    private static void sendSeasonalOutlook(
-            ServerLevel level,
-            BlockPos pos,
-            Player player,
-            TerroirReport report
-    ) {
-        SeasonalContext context = SeasonalContext.current(level);
-        boolean protectedCultivation = VineyardProtection.isProtected(
-                level,
-                pos
-        );
-        boolean irrigated = VineyardIrrigation.isIrrigated(level, pos);
-        VineyardWeatherEvent weather = VineyardWeatherEvent.at(
-                level,
-                pos,
-                report.climate(),
-                context
-        ).mitigatedBy(protectedCultivation, irrigated);
-        sendSeasonalOutlook(
-                player,
-                context,
-                weather,
-                weather.harvestQualityPoints(level.isRainingAt(pos.above())),
-                protectedCultivation,
-                irrigated
-        );
-    }
-
-    private static void sendSeasonalOutlook(
-            Player player,
-            SeasonalContext context,
-            VineyardWeatherEvent weather,
-            int weatherPoints,
-            boolean protectedCultivation,
-            boolean irrigated
-    ) {
-        player.sendSystemMessage(Component.translatable(
+    private static Component season(SeasonalContext context) {
+        return Component.translatable(
                 "message.vintner.almanac.season",
                 context.season().displayName(),
                 context.year(),
                 context.dayInSeason(),
                 context.seasonLengthDays()
-        ).withStyle(ChatFormatting.GRAY));
-        player.sendSystemMessage(Component.translatable(
+        ).withStyle(ChatFormatting.GRAY);
+    }
+
+    private static Component weather(
+            VineyardWeatherEvent weather,
+            int points
+    ) {
+        return Component.translatable(
                 "message.vintner.almanac.weather_outlook",
                 weather.displayName(),
-                weatherPoints
-        ).withStyle(
-                weatherPoints >= 5
-                        ? ChatFormatting.DARK_GREEN
-                        : ChatFormatting.GOLD
-        ));
-        if (protectedCultivation) {
-            player.sendSystemMessage(Component.translatable(
+                points
+        ).withStyle(points >= 5
+                ? ChatFormatting.DARK_GREEN
+                : ChatFormatting.GOLD);
+    }
+
+    private static Component cultivation(
+            boolean protectedCultivation,
+            boolean irrigated
+    ) {
+        if (protectedCultivation && irrigated) {
+            return Component.translatable(
                     "message.vintner.almanac.protected_cultivation"
-            ).withStyle(ChatFormatting.AQUA));
+            ).append(Component.literal("\n")).append(
+                    Component.translatable(
+                            "message.vintner.almanac.irrigated"
+                    )
+            ).withStyle(ChatFormatting.AQUA);
+        }
+        if (protectedCultivation) {
+            return Component.translatable(
+                    "message.vintner.almanac.protected_cultivation"
+            ).withStyle(ChatFormatting.AQUA);
         }
         if (irrigated) {
-            player.sendSystemMessage(Component.translatable(
+            return Component.translatable(
                     "message.vintner.almanac.irrigated"
-            ).withStyle(ChatFormatting.AQUA));
+            ).withStyle(ChatFormatting.AQUA);
         }
+        return Component.translatable(
+                "message.vintner.almanac.sneak_to_record"
+        ).withStyle(ChatFormatting.DARK_GRAY);
+    }
+
+    private static void grantSurvey(ServerPlayer player) {
+        ModAdvancements.grantSurvey(player);
     }
 
     public enum Target {

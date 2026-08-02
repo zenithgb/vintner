@@ -4,6 +4,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.List;
+
 public final class TerroirMessages {
     private TerroirMessages() {
     }
@@ -41,12 +43,15 @@ public final class TerroirMessages {
             Player player,
             TerroirReport report
     ) {
-        player.sendSystemMessage(
-                Component.translatable(
-                        "message.vintner.terroir.title"
-                ).withStyle(ChatFormatting.GOLD)
-        );
-        player.sendSystemMessage(
+        for (Component entry : fullReportEntries(report)) {
+            player.sendSystemMessage(entry);
+        }
+    }
+
+    public static List<Component> fullReportEntries(
+            TerroirReport report
+    ) {
+        return List.of(
                 Component.translatable(
                         "message.vintner.terroir.climate",
                         report.climate().band().displayName(),
@@ -55,9 +60,7 @@ public final class TerroirMessages {
                         report.climate().frostRiskRating().displayName(),
                         report.climate().heatStressRating().displayName(),
                         report.climate().growingSeasonDays()
-                ).withStyle(ChatFormatting.GRAY)
-        );
-        player.sendSystemMessage(
+                ).withStyle(ChatFormatting.GRAY),
                 Component.translatable(
                         "message.vintner.terroir.soil",
                         report.soil().type().displayName(),
@@ -65,9 +68,7 @@ public final class TerroirMessages {
                         report.soil().fertilityRating().displayName(),
                         report.soil().rootDepthRating().displayName(),
                         report.soil().mineralRating().displayName()
-                ).withStyle(ChatFormatting.GRAY)
-        );
-        player.sendSystemMessage(
+                ).withStyle(ChatFormatting.GRAY),
                 Component.translatable(
                         "message.vintner.terroir.terrain",
                         report.terrain().elevation(),
@@ -78,30 +79,32 @@ public final class TerroirMessages {
                         report.terrain().windRating().displayName(),
                         yesNo(report.terrain().terraced()),
                         yesNo(report.terrain().frostPocket())
-                ).withStyle(ChatFormatting.DARK_GRAY)
-        );
-        player.sendSystemMessage(
+                ).withStyle(ChatFormatting.DARK_GRAY),
                 Component.translatable(
                         "message.vintner.terroir.potential",
                         report.siteScore(),
                         report.siteRating().displayName()
-                ).withStyle(ChatFormatting.DARK_GREEN)
+                ).withStyle(ChatFormatting.DARK_GREEN),
+                varietyRecommendation(report)
         );
-        sendVarietyRecommendation(player, report);
     }
 
     private static void sendVarietyRecommendation(
             Player player,
             TerroirReport report
     ) {
-        player.sendSystemMessage(
-                Component.translatable(
-                        "message.vintner.terroir.variety_recommendation",
-                        report.recommendedVariety().displayName(),
-                        GrapeVariety.RED.siteSuitability(report),
-                        GrapeVariety.WHITE.siteSuitability(report)
-                ).withStyle(ChatFormatting.DARK_GREEN)
-        );
+        player.sendSystemMessage(varietyRecommendation(report));
+    }
+
+    private static Component varietyRecommendation(
+            TerroirReport report
+    ) {
+        return Component.translatable(
+                "message.vintner.terroir.variety_recommendation",
+                report.recommendedVariety().displayName(),
+                GrapeVariety.RED.siteSuitability(report),
+                GrapeVariety.WHITE.siteSuitability(report)
+        ).withStyle(ChatFormatting.DARK_GREEN);
     }
 
     private static Component directionName(

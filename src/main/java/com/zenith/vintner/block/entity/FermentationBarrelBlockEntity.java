@@ -134,7 +134,7 @@ public final class FermentationBarrelBlockEntity
                 && qualityProfile.equals(
                         WineMetadata.qualityProfile(stack)
                 )
-                && batchMatches(stack);
+                && provenanceMatches(stack);
     }
 
     public boolean insertOne(ItemStack stack) {
@@ -159,7 +159,16 @@ public final class FermentationBarrelBlockEntity
             vintage = WineMetadata.vintage(stack);
             qualityProfile = WineMetadata.qualityProfile(stack);
             provenance = WineMetadata.provenance(stack);
-            batchId = WineMetadata.batchId(stack);
+            /*
+             * Pressed must arrives as small traceable lots. Fermentation
+             * combines compatible lots into the finished wine batch, so
+             * the barrel owns the new batch identity instead of requiring
+             * all four must bottles to share one press-lot id.
+             */
+            batchId = WineMetadata.createBatchId(
+                    level == null ? 0L : level.getGameTime(),
+                    worldPosition
+            );
         }
 
         bottleCount++;
@@ -289,12 +298,15 @@ public final class FermentationBarrelBlockEntity
         return result;
     }
 
-    private boolean batchMatches(ItemStack stack) {
-        long offeredBatch = WineMetadata.batchId(stack);
+    private boolean provenanceMatches(ItemStack stack) {
+        WineProvenance offered = WineMetadata.provenance(stack);
 
-        return batchId == 0L
-                || offeredBatch == 0L
-                || batchId == offeredBatch;
+        if (!provenance.known() || !offered.known()) {
+            return true;
+        }
+
+        return provenance.variety().equals(offered.variety())
+                && provenance.producerId().equals(offered.producerId());
     }
 
     private void resetBatch() {
