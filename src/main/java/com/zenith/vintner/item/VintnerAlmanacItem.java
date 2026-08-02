@@ -3,6 +3,7 @@ package com.zenith.vintner.item;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.estate.EstateProfile;
+import com.zenith.vintner.estate.EstateInfrastructureReport;
 import com.zenith.vintner.estate.EstateLedgerSavedData;
 import com.zenith.vintner.estate.EstateSavedData;
 import com.zenith.vintner.estate.LedgerEventType;
@@ -377,6 +378,51 @@ public final class VintnerAlmanacItem extends Item {
                     plots.size(),
                     totalArea
             ).withStyle(ChatFormatting.DARK_GREEN));
+            EstateInfrastructureReport infrastructure =
+                    EstateInfrastructureReport.survey(
+                            serverPlayer.level(),
+                            serverPlayer.blockPosition()
+                    );
+            player.sendSystemMessage(Component.translatable(
+                    "message.vintner.estate.infrastructure",
+                    infrastructure.hasBarrelWorkshop()
+                            ? Component.translatable(
+                                    "estate_facility.vintner.ready"
+                            )
+                            : Component.literal(
+                                    infrastructure.mountedBarrels()
+                                            + "/"
+                                            + EstateInfrastructureReport
+                                            .WORKSHOP_BARRELS
+                            ),
+                    infrastructure.hasControlledCellar()
+                            ? Component.translatable(
+                                    "estate_facility.vintner.ready"
+                            )
+                            : Component.literal(
+                                    infrastructure.idealCellarStations()
+                                            + "/"
+                                            + EstateInfrastructureReport
+                                            .CONTROLLED_CELLAR_STATIONS
+                            ),
+                    infrastructure.hasWarehouse()
+                            ? Component.translatable(
+                                    "estate_facility.vintner.ready"
+                            )
+                            : Component.literal(
+                                    infrastructure.storageFixtures()
+                                            + "/"
+                                            + EstateInfrastructureReport
+                                            .WAREHOUSE_FIXTURES
+                            ),
+                    infrastructure.hasTastingRoom()
+                            ? Component.translatable(
+                                    "estate_facility.vintner.ready"
+                            )
+                            : Component.translatable(
+                                    "estate_facility.vintner.incomplete"
+                            )
+            ).withStyle(ChatFormatting.DARK_AQUA));
         }
     }
 
