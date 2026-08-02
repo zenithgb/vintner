@@ -37,6 +37,7 @@
     },
     {
       "when": {
+        "facing": "north",
         "status": "1",
         "wine_type": "1"
       },
@@ -46,6 +47,40 @@
     },
     {
       "when": {
+        "facing": "east",
+        "status": "1",
+        "wine_type": "1"
+      },
+      "apply": {
+        "model": "vintner:block/aging_barrel_red_aging",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "status": "1",
+        "wine_type": "1"
+      },
+      "apply": {
+        "model": "vintner:block/aging_barrel_red_aging",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "status": "1",
+        "wine_type": "1"
+      },
+      "apply": {
+        "model": "vintner:block/aging_barrel_red_aging",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
         "status": "1",
         "wine_type": "2"
       },
@@ -55,6 +90,40 @@
     },
     {
       "when": {
+        "facing": "east",
+        "status": "1",
+        "wine_type": "2"
+      },
+      "apply": {
+        "model": "vintner:block/aging_barrel_white_aging",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "status": "1",
+        "wine_type": "2"
+      },
+      "apply": {
+        "model": "vintner:block/aging_barrel_white_aging",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "status": "1",
+        "wine_type": "2"
+      },
+      "apply": {
+        "model": "vintner:block/aging_barrel_white_aging",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
         "status": "2",
         "wine_type": "1"
       },
@@ -64,11 +133,78 @@
     },
     {
       "when": {
+        "facing": "east",
+        "status": "2",
+        "wine_type": "1"
+      },
+      "apply": {
+        "model": "vintner:block/aging_barrel_red_ready",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "status": "2",
+        "wine_type": "1"
+      },
+      "apply": {
+        "model": "vintner:block/aging_barrel_red_ready",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "status": "2",
+        "wine_type": "1"
+      },
+      "apply": {
+        "model": "vintner:block/aging_barrel_red_ready",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
         "status": "2",
         "wine_type": "2"
       },
       "apply": {
         "model": "vintner:block/aging_barrel_white_ready"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "status": "2",
+        "wine_type": "2"
+      },
+      "apply": {
+        "model": "vintner:block/aging_barrel_white_ready",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "status": "2",
+        "wine_type": "2"
+      },
+      "apply": {
+        "model": "vintner:block/aging_barrel_white_ready",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "status": "2",
+        "wine_type": "2"
+      },
+      "apply": {
+        "model": "vintner:block/aging_barrel_white_ready",
+        "y": 270
       }
     }
   ]

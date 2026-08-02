@@ -429,13 +429,18 @@ def aging_barrel_blockstate(
         (2, 2, "aging_barrel_white_ready"),
     )
     for status, wine_type, model in overlays:
-        multipart.append({
-            "when": {
-                "status": str(status),
-                "wine_type": str(wine_type),
-            },
-            "apply": {"model": f"vintner:block/{model}"},
-        })
+        for facing, rotation in rotations.items():
+            apply = {"model": f"vintner:block/{model}"}
+            if rotation:
+                apply["y"] = rotation
+            multipart.append({
+                "when": {
+                    "facing": facing,
+                    "status": str(status),
+                    "wine_type": str(wine_type),
+                },
+                "apply": apply,
+            })
 
     return {"multipart": multipart}
 
