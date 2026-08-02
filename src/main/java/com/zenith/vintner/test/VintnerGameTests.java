@@ -56,6 +56,7 @@ import com.zenith.vintner.wine.WineAgeStage;
 import com.zenith.vintner.wine.WineAppraisal;
 import com.zenith.vintner.wine.WineBuyerType;
 import com.zenith.vintner.wine.WineMarketOutlook;
+import com.zenith.vintner.wine.WineMarketRegion;
 import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
 import com.zenith.vintner.wine.WineStyle;
@@ -5317,6 +5318,75 @@ public final class VintnerGameTests {
                 collectibleAppraisal.totalValue()
                         + collectorMarket.buyerAdjustment(),
                 "The market outlook should add only the buyer premium"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void regionalMarketsFollowRealClimateAndTerrain(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                WineMarketRegion.classify(
+                        com.zenith.vintner.vineyard.ClimateBand.COLD,
+                        2,
+                        140,
+                        com.zenith.vintner.vineyard.SlopeClass.STEEP
+                ),
+                WineMarketRegion.COLD,
+                "Cold climates should create cold-region demand"
+        );
+        helper.assertValueEqual(
+                WineMarketRegion.classify(
+                        com.zenith.vintner.vineyard.ClimateBand.TEMPERATE,
+                        4,
+                        64,
+                        com.zenith.vintner.vineyard.SlopeClass.FLAT
+                ),
+                WineMarketRegion.COASTAL,
+                "Temperate sites beside water should create coastal demand"
+        );
+        helper.assertValueEqual(
+                WineMarketRegion.classify(
+                        com.zenith.vintner.vineyard.ClimateBand.WARM,
+                        20,
+                        110,
+                        com.zenith.vintner.vineyard.SlopeClass.MODERATE
+                ),
+                WineMarketRegion.MINING,
+                "High inland sites should create mining-settlement demand"
+        );
+        helper.assertValueEqual(
+                WineMarketRegion.classify(
+                        com.zenith.vintner.vineyard.ClimateBand.TEMPERATE,
+                        20,
+                        64,
+                        com.zenith.vintner.vineyard.SlopeClass.GENTLE
+                ),
+                WineMarketRegion.AGRICULTURAL,
+                "Ordinary temperate lowlands should use agricultural demand"
+        );
+
+        ItemStack whiteWine = new ItemStack(ModItems.WHITE_WINE);
+        WineMetadata.applyProfile(
+                whiteWine,
+                0,
+                WineQualityProfile.legacy(WineQuality.GOOD)
+        );
+        WineAppraisal appraisal = WineAppraisal.independent(whiteWine);
+        WineMarketOutlook coastalQuote = WineMarketOutlook.forBuyer(
+                whiteWine,
+                appraisal,
+                WineMarketRegion.COASTAL.buyerType()
+        );
+        WineMarketOutlook miningQuote = WineMarketOutlook.forBuyer(
+                whiteWine,
+                appraisal,
+                WineMarketRegion.MINING.buyerType()
+        );
+        helper.assertTrue(
+                coastalQuote.estimatedValue() > miningQuote.estimatedValue(),
+                "Fresh white wine should be worth more in a coastal market"
         );
         helper.succeed();
     }

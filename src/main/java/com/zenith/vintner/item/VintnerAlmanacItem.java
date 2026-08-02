@@ -16,6 +16,7 @@ import com.zenith.vintner.estate.VineyardPlotSavedData;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineAppraisal;
 import com.zenith.vintner.wine.WineMarketOutlook;
+import com.zenith.vintner.wine.WineMarketRegion;
 import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.wine.WineReadiness;
@@ -259,6 +260,26 @@ public final class VintnerAlmanacItem extends Item {
                                 market.bestBuyer().displayName(),
                                 signed(market.buyerAdjustment()),
                                 market.estimatedValue()
+                        ).withStyle(ChatFormatting.DARK_GRAY)
+                );
+                WineMarketRegion localRegion = WineMarketRegion.from(
+                        TerroirEvaluator.inspect(
+                                level,
+                                player.blockPosition()
+                        )
+                );
+                WineMarketOutlook localMarket =
+                        WineMarketOutlook.forBuyer(
+                                bottle,
+                                appraisal,
+                                localRegion.buyerType()
+                        );
+                player.sendSystemMessage(
+                        Component.translatable(
+                                "message.vintner.almanac.local_market",
+                                localRegion.displayName(),
+                                signed(localMarket.buyerAdjustment()),
+                                localMarket.estimatedValue()
                         ).withStyle(ChatFormatting.DARK_GRAY)
                 );
             }
