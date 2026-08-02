@@ -19,7 +19,10 @@ import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.estate.EstateProfile;
+import com.zenith.vintner.estate.EstateLedgerEvent;
+import com.zenith.vintner.estate.EstateLedgerSavedData;
 import com.zenith.vintner.estate.EstateSavedData;
+import com.zenith.vintner.estate.LedgerEventType;
 import com.zenith.vintner.estate.VineyardPlot;
 import com.zenith.vintner.estate.VineyardPlotReport;
 import com.zenith.vintner.estate.VineyardPlotSavedData;
@@ -3605,10 +3608,29 @@ public final class VintnerGameTests {
                 press.press(producer),
                 "A registered producer should be able to press grapes"
         );
+        ItemStack estateMust = press.bottleOneMust();
         helper.assertValueEqual(
-                WineMetadata.estateName(press.bottleOneMust()),
+                WineMetadata.estateName(estateMust),
                 founded.estateName(),
                 "New batches should inherit the registered estate name"
+        );
+        List<EstateLedgerEvent> foundingHistory =
+                EstateLedgerSavedData.get(helper.getLevel())
+                        .entries(producer.getUUID());
+        helper.assertTrue(
+                foundingHistory.stream().anyMatch(event ->
+                        event.eventType() == LedgerEventType.FOUNDING),
+                "Founding through the archive should enter the estate ledger"
+        );
+        helper.assertTrue(
+                foundingHistory.stream().anyMatch(event ->
+                        event.eventType()
+                                == LedgerEventType.BATCH_PRESSED
+                                && event.batchId()
+                                == WineMetadata.batchId(
+                                        estateMust
+                                )),
+                "Pressing should record the real batch in the estate ledger"
         );
 
         EstateProfile renamed = estates.register(
@@ -3706,6 +3728,16 @@ public final class VintnerGameTests {
                 VineyardSurveyRecord.read(almanac).isEmpty(),
                 "Completing a plot should clear the corner bookmark"
         );
+        helper.assertTrue(
+                EstateLedgerSavedData.get(helper.getLevel())
+                        .entries(owner.getUUID())
+                        .stream()
+                        .anyMatch(event -> event.eventType()
+                                == LedgerEventType.PLOT_REGISTERED
+                                && event.detail().equals("Upper Slope")
+                                && event.amount() == 25),
+                "Registering a plot should record its name and area"
+        );
 
         BlockPos redPos = new BlockPos(2, 1, 2);
         BlockPos whitePos = new BlockPos(4, 1, 3);
@@ -3757,6 +3789,86 @@ public final class VintnerGameTests {
         helper.assertTrue(
                 report.projectedYield() > 0,
                 "Mature vines should contribute to projected yield"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void estateLedgerAggregatesAndBoundsHistory(
+            GameTestHelper helper
+    ) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        EstateSavedData.get(helper.getLevel()).register(
+                owner,
+                helper.getLevel(),
+                helper.absolutePos(new BlockPos(1, 1, 1)),
+                "Stone Hill Estate",
+                DyeColor.BLUE
+        );
+        ItemStack wine = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.applyProfile(
+                wine,
+                8,
+                WineQualityProfile.vineyard(82)
+        );
+        WineMetadata.ensureBatchIdentity(wine, 8675309L);
+
+        EstateLedgerSavedData ledger =
+                EstateLedgerSavedData.get(helper.getLevel());
+        ledger.recordWine(
+                owner,
+                LedgerEventType.BOTTLING,
+                wine,
+                1
+        );
+        ledger.recordWine(
+                owner,
+                LedgerEventType.BOTTLING,
+                wine,
+                1
+        );
+
+        List<EstateLedgerEvent> aggregated =
+                ledger.entries(owner.getUUID());
+        helper.assertValueEqual(
+                aggregated.size(),
+                1,
+                "Identical same-day events should aggregate"
+        );
+        helper.assertValueEqual(
+                aggregated.getFirst().amount(),
+                2,
+                "Aggregated bottling should retain the total amount"
+        );
+        helper.assertValueEqual(
+                ledger.bestVintage(owner.getUUID()).batchId(),
+                WineMetadata.batchId(wine),
+                "The ledger should identify the best recorded vintage"
+        );
+
+        for (int index = 0;
+                index < EstateLedgerSavedData.MAX_EVENTS_PER_ESTATE + 4;
+                index++) {
+            ledger.record(
+                    owner,
+                    LedgerEventType.PLOT_UPDATED,
+                    "Plot " + index,
+                    1,
+                    0L,
+                    0
+            );
+        }
+        List<EstateLedgerEvent> bounded = ledger.entries(owner.getUUID());
+        helper.assertValueEqual(
+                bounded.size(),
+                EstateLedgerSavedData.MAX_EVENTS_PER_ESTATE,
+                "The estate ledger should discard only its oldest events"
+        );
+        helper.assertValueEqual(
+                bounded.getFirst().detail(),
+                "Plot "
+                        + (EstateLedgerSavedData.MAX_EVENTS_PER_ESTATE + 3),
+                "Ledger review should present the newest event first"
         );
         helper.succeed();
     }

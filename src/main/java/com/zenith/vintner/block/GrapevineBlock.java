@@ -1,5 +1,8 @@
 package com.zenith.vintner.block;
 
+import com.zenith.vintner.estate.EstateLedgerSavedData;
+import com.zenith.vintner.estate.LedgerEventType;
+import com.zenith.vintner.estate.VineyardPlotSavedData;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.vineyard.GrapeVariety;
@@ -20,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -820,6 +824,41 @@ public abstract class GrapevineBlock
                     )
             );
             WineMetadata.applyCultivar(grapes, cultivar);
+            if (player instanceof ServerPlayer harvester) {
+                String plotName = VineyardPlotSavedData.get(serverLevel)
+                        .findContaining(
+                                harvester.getUUID(),
+                                serverLevel,
+                                rootPos
+                        )
+                        .map(plot -> plot.name() + " / ")
+                        .orElse("");
+                String harvestDetail = plotName
+                        + cultivar.serializedName();
+                EstateLedgerSavedData ledger =
+                        EstateLedgerSavedData.get(serverLevel);
+                ledger.record(
+                        harvester,
+                        LedgerEventType.HARVEST,
+                        harvestDetail,
+                        grapeCount,
+                        0L,
+                        report.qualityScore()
+                );
+                if (report.threat()
+                        != com.zenith.vintner.vineyard.VineyardThreat
+                                .HEALTHY) {
+                    ledger.record(
+                            harvester,
+                            LedgerEventType.VINEYARD_PROBLEM,
+                            plotName + report.threat().name()
+                                    .toLowerCase(java.util.Locale.ROOT),
+                            1,
+                            0L,
+                            0
+                    );
+                }
+            }
             Block.popResource(
                     serverLevel,
                     pos,

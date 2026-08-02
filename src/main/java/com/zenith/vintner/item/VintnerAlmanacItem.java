@@ -3,7 +3,9 @@ package com.zenith.vintner.item;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.estate.EstateProfile;
+import com.zenith.vintner.estate.EstateLedgerSavedData;
 import com.zenith.vintner.estate.EstateSavedData;
+import com.zenith.vintner.estate.LedgerEventType;
 import com.zenith.vintner.estate.VineyardPlot;
 import com.zenith.vintner.estate.VineyardPlotReport;
 import com.zenith.vintner.estate.VineyardPlotSavedData;
@@ -440,6 +442,17 @@ public final class VintnerAlmanacItem extends Item {
 
         VineyardSurveyRecord.clear(context.getItemInHand());
         VineyardPlot plot = registration.plot();
+        EstateLedgerSavedData.get(level).record(
+                player,
+                registration.status()
+                        == VineyardPlotSavedData.Status.UPDATED
+                        ? LedgerEventType.PLOT_UPDATED
+                        : LedgerEventType.PLOT_REGISTERED,
+                plot.name(),
+                plot.area(),
+                0L,
+                0
+        );
         player.sendSystemMessage(Component.translatable(
                 registration.status()
                         == VineyardPlotSavedData.Status.UPDATED

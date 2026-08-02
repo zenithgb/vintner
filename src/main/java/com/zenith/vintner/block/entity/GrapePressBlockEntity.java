@@ -1,6 +1,8 @@
 package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.estate.EstateSavedData;
+import com.zenith.vintner.estate.EstateLedgerSavedData;
+import com.zenith.vintner.estate.LedgerEventType;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQualityProfile;
@@ -224,6 +226,16 @@ public final class GrapePressBlockEntity extends BlockEntity {
             );
         } else {
             output.grow(1);
+        }
+
+        if (producer instanceof ServerPlayer serverPlayer
+                && level instanceof ServerLevel serverLevel) {
+            EstateLedgerSavedData.get(serverLevel).recordWine(
+                    serverPlayer,
+                    LedgerEventType.BATCH_PRESSED,
+                    getOutput(),
+                    GRAPES_PER_PRESS
+            );
         }
 
         recoverByproducts(producer);

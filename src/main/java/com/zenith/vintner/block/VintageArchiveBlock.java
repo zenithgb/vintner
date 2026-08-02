@@ -3,7 +3,10 @@ package com.zenith.vintner.block;
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.estate.EstateProfile;
+import com.zenith.vintner.estate.EstateLedgerEvent;
+import com.zenith.vintner.estate.EstateLedgerSavedData;
 import com.zenith.vintner.estate.EstateSavedData;
+import com.zenith.vintner.estate.LedgerEventType;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
@@ -160,6 +163,17 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
         VintageArchiveBlockEntity.RecordResult result =
                 archive.record(heldStack);
 
+        if (result == VintageArchiveBlockEntity.RecordResult.ADDED
+                && player instanceof net.minecraft.server.level.ServerPlayer
+                        owner) {
+            EstateLedgerSavedData.get(serverLevel).recordWine(
+                    owner,
+                    LedgerEventType.ARCHIVED,
+                    heldStack,
+                    1
+            );
+        }
+
         player.sendSystemMessage(
                 Component.translatable(
                         result.translationKey(),
@@ -221,6 +235,16 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
                 customName.getString(),
                 crest
         );
+        EstateLedgerSavedData.get(level).record(
+                owner,
+                updating
+                        ? LedgerEventType.ESTATE_RENAMED
+                        : LedgerEventType.FOUNDING,
+                profile.estateName(),
+                1,
+                0L,
+                0
+        );
 
         player.sendSystemMessage(Component.translatable(
                 updating
@@ -248,7 +272,12 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
             Player player,
             BlockHitResult hitResult
     ) {
-        if (level instanceof ServerLevel
+        if (level instanceof ServerLevel serverLevel
+                && player instanceof net.minecraft.server.level.ServerPlayer
+                        owner
+                && player.isShiftKeyDown()) {
+            sendLedgerSummary(serverLevel, owner);
+        } else if (level instanceof ServerLevel
                 && level.getBlockEntity(pos)
                 instanceof VintageArchiveBlockEntity archive) {
             player.sendSystemMessage(
@@ -261,6 +290,80 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
         }
 
         return InteractionResult.SUCCESS;
+    }
+
+    private static void sendLedgerSummary(
+            ServerLevel level,
+            net.minecraft.server.level.ServerPlayer owner
+    ) {
+        if (EstateSavedData.get(level).find(owner.getUUID()).isEmpty()) {
+            owner.sendSystemMessage(Component.translatable(
+                    "message.vintner.ledger.unregistered"
+            ));
+            return;
+        }
+
+        EstateLedgerSavedData ledger = EstateLedgerSavedData.get(level);
+        List<EstateLedgerEvent> entries = ledger.entries(owner.getUUID());
+        owner.sendSystemMessage(Component.translatable(
+                "message.vintner.ledger.summary",
+                entries.size(),
+                EstateLedgerSavedData.MAX_EVENTS_PER_ESTATE
+        ));
+        if (entries.isEmpty()) {
+            owner.sendSystemMessage(Component.translatable(
+                    "message.vintner.ledger.empty"
+            ));
+            return;
+        }
+
+        EstateLedgerEvent best = ledger.bestVintage(owner.getUUID());
+        if (best != null) {
+            owner.sendSystemMessage(Component.translatable(
+                    "message.vintner.ledger.best",
+                    best.detail(),
+                    best.quality()
+            ));
+        }
+
+        entries.stream().limit(5).forEach(event -> {
+            Component type = Component.translatable(
+                    event.eventType().translationKey()
+            );
+            if (event.quality() > 0 && event.amount() > 1) {
+                owner.sendSystemMessage(Component.translatable(
+                        "message.vintner.ledger.entry.amount_quality",
+                        event.day(),
+                        type,
+                        event.detail(),
+                        event.amount(),
+                        event.quality()
+                ));
+            } else if (event.quality() > 0) {
+                owner.sendSystemMessage(Component.translatable(
+                        "message.vintner.ledger.entry.quality",
+                        event.day(),
+                        type,
+                        event.detail(),
+                        event.quality()
+                ));
+            } else if (event.amount() > 1) {
+                owner.sendSystemMessage(Component.translatable(
+                        "message.vintner.ledger.entry.amount",
+                        event.day(),
+                        type,
+                        event.detail(),
+                        event.amount()
+                ));
+            } else {
+                owner.sendSystemMessage(Component.translatable(
+                        "message.vintner.ledger.entry",
+                        event.day(),
+                        type,
+                        event.detail()
+                ));
+            }
+        });
     }
 
     @Override
