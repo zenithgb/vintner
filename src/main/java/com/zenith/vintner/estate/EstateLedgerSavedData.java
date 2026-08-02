@@ -90,6 +90,13 @@ public final class EstateLedgerSavedData extends SavedData {
                         existing.withAdditionalAmount(amount, quality)
                 );
                 setDirty();
+                recordReputation(
+                        owner,
+                        type,
+                        amount,
+                        batchId,
+                        quality
+                );
                 return;
             }
             break;
@@ -106,6 +113,7 @@ public final class EstateLedgerSavedData extends SavedData {
         ));
         trim(owner.getUUID());
         setDirty();
+        recordReputation(owner, type, amount, batchId, quality);
     }
 
     public void recordWine(
@@ -165,6 +173,24 @@ public final class EstateLedgerSavedData extends SavedData {
                 }
             }
         }
+    }
+
+    private void recordReputation(
+            ServerPlayer owner,
+            LedgerEventType type,
+            int amount,
+            long batchId,
+            int quality
+    ) {
+        EstateReputationSavedData.get((ServerLevel) owner.level())
+                .recordEvent(
+                        owner.getUUID(),
+                        type,
+                        amount,
+                        batchId,
+                        quality,
+                        entries(owner.getUUID())
+                );
     }
 
     private List<EstateLedgerEvent> allEvents() {

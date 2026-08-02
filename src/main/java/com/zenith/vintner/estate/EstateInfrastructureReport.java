@@ -31,6 +31,10 @@ public record EstateInfrastructureReport(
     public static final int WORKSHOP_BARRELS = 2;
     public static final int CONTROLLED_CELLAR_STATIONS = 2;
     public static final int WAREHOUSE_FIXTURES = 4;
+    public static final int BARREL_WORKSHOP_MASK = 1;
+    public static final int CONTROLLED_CELLAR_MASK = 1 << 1;
+    public static final int WAREHOUSE_MASK = 1 << 2;
+    public static final int TASTING_ROOM_MASK = 1 << 3;
 
     public static EstateInfrastructureReport survey(
             Level level,
@@ -141,5 +145,22 @@ public record EstateInfrastructureReport(
 
     public boolean hasTastingRoom() {
         return tastingCabinets > 0 && archives > 0;
+    }
+
+    public int facilityMask() {
+        int result = 0;
+        if (hasBarrelWorkshop()) {
+            result |= BARREL_WORKSHOP_MASK;
+        }
+        if (hasControlledCellar()) {
+            result |= CONTROLLED_CELLAR_MASK;
+        }
+        if (hasWarehouse()) {
+            result |= WAREHOUSE_MASK;
+        }
+        if (hasTastingRoom()) {
+            result |= TASTING_ROOM_MASK;
+        }
+        return result;
     }
 }
