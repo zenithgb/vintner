@@ -4,6 +4,9 @@ import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.WoodVariant;
+import com.zenith.vintner.estate.EstateLedgerSavedData;
+import com.zenith.vintner.estate.LedgerEventType;
+import com.zenith.vintner.estate.VineyardPlotSavedData;
 import com.zenith.vintner.vineyard.GraftedCuttingData;
 import com.zenith.vintner.vineyard.GrapeCultivar;
 import com.zenith.vintner.vineyard.GrapeVariety;
@@ -134,6 +137,25 @@ public final class GrapeCuttingItem extends Item {
             );
 
             if (player instanceof ServerPlayer serverPlayer) {
+                String plotName = VineyardPlotSavedData.get(serverLevel)
+                        .findContaining(
+                                serverPlayer.getUUID(),
+                                serverLevel,
+                                plantingPos
+                        )
+                        .map(plot -> plot.name() + " / ")
+                        .orElse("");
+                EstateLedgerSavedData.get(serverLevel).record(
+                        serverPlayer,
+                        LedgerEventType.PLANTING,
+                        plotName + GraftedCuttingData.cultivar(
+                                context.getItemInHand(),
+                                variety
+                        ).serializedName(),
+                        1,
+                        0L,
+                        0
+                );
                 ModAdvancements.grantPlanting(
                         serverPlayer,
                         grapevine

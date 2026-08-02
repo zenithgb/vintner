@@ -3,6 +3,8 @@ package com.zenith.vintner.block;
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
+import com.zenith.vintner.estate.EstateLedgerSavedData;
+import com.zenith.vintner.estate.LedgerEventType;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.AgingVessel;
@@ -524,6 +526,12 @@ public class AgingBarrelBlock extends BaseEntityBlock {
         }
 
         if (player instanceof ServerPlayer serverPlayer) {
+            EstateLedgerSavedData.get(serverLevel).recordWine(
+                    serverPlayer,
+                    LedgerEventType.BOTTLING,
+                    agedWine,
+                    1
+            );
             ModAdvancements.grantAging(
                     serverPlayer,
                     agedWine

@@ -3,6 +3,8 @@ package com.zenith.vintner.block;
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
+import com.zenith.vintner.estate.EstateLedgerSavedData;
+import com.zenith.vintner.estate.LedgerEventType;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
@@ -183,6 +185,15 @@ public final class WineCrateBlock extends BaseEntityBlock {
 
         if (!crate.insertOne(heldStack)) {
             return InteractionResult.SUCCESS;
+        }
+
+        if (player instanceof ServerPlayer owner) {
+            EstateLedgerSavedData.get(serverLevel).recordWine(
+                    owner,
+                    LedgerEventType.STORAGE,
+                    heldStack,
+                    1
+            );
         }
 
         if (!player.getAbilities().instabuild) {
