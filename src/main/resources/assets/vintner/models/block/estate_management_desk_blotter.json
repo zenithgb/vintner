@@ -1,0 +1,41 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "blotter": "minecraft:block/green_wool",
+    "particle": "minecraft:block/dark_oak_planks"
+  },
+  "elements": [
+    {
+      "from": [
+        3.25,
+        11.65,
+        3
+      ],
+      "to": [
+        12.75,
+        11.72,
+        9.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#blotter"
+        },
+        "east": {
+          "texture": "#blotter"
+        },
+        "south": {
+          "texture": "#blotter"
+        },
+        "west": {
+          "texture": "#blotter"
+        },
+        "down": {
+          "texture": "#blotter"
+        },
+        "up": {
+          "texture": "#blotter"
+        }
+      }
+    }
+  ]
+}

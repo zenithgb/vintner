@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.block.CellarGlassColor;
 import com.zenith.vintner.block.CellarCollectionBlock;
+import com.zenith.vintner.block.DeskBlotterColor;
 import com.zenith.vintner.block.EstateManagementDeskBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
@@ -166,6 +167,24 @@ public final class VintnerGameTests {
                 Direction.NORTH,
                 "The estate desk should have a stable default facing"
         );
+        helper.assertValueEqual(
+                ModBlocks.ESTATE_MANAGEMENT_DESK.defaultBlockState()
+                        .getValue(
+                                EstateManagementDeskBlock.BLOTTER_COLOR
+                        ),
+                DeskBlotterColor.GREEN,
+                "The estate desk should begin with a green blotter"
+        );
+        helper.assertFalse(
+                ModBlocks.ESTATE_MANAGEMENT_DESK.defaultBlockState()
+                        .getValue(EstateManagementDeskBlock.HAS_LEDGER),
+                "The estate desk should begin without an installed ledger"
+        );
+        helper.assertFalse(
+                ModBlocks.ESTATE_MANAGEMENT_DESK.defaultBlockState()
+                        .getValue(EstateManagementDeskBlock.HAS_MAP),
+                "The estate desk should begin without an installed map"
+        );
         helper.setBlock(
                 FIRST,
                 ModBlocks.ESTATE_MANAGEMENT_DESK.defaultBlockState()
@@ -187,6 +206,106 @@ public final class VintnerGameTests {
                         .isEmpty(),
                 "The estate desk should expose a usable outline"
         );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void estateManagementDeskAccessoriesPersistAndReturn(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.ESTATE_MANAGEMENT_DESK);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        BlockPos absolutePos = helper.absolutePos(FIRST);
+        BlockHitResult hit = new BlockHitResult(
+                Vec3.atCenterOf(absolutePos),
+                Direction.UP,
+                absolutePos,
+                false
+        );
+
+        ItemStack dye = new ItemStack(Items.DYE.pick(DyeColor.RED));
+        player.setItemInHand(InteractionHand.MAIN_HAND, dye);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                dye,
+                InteractionHand.MAIN_HAND,
+                hit
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                EstateManagementDeskBlock.BLOTTER_COLOR,
+                DeskBlotterColor.RED
+        );
+        helper.assertTrue(
+                dye.isEmpty(),
+                "Recoloring a desk should consume one dye in survival"
+        );
+
+        ItemStack ledger = new ItemStack(Items.WRITABLE_BOOK);
+        player.setItemInHand(InteractionHand.MAIN_HAND, ledger);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                ledger,
+                InteractionHand.MAIN_HAND,
+                hit
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                EstateManagementDeskBlock.HAS_LEDGER,
+                true
+        );
+
+        ItemStack map = new ItemStack(Items.MAP);
+        player.setItemInHand(InteractionHand.MAIN_HAND, map);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                map,
+                InteractionHand.MAIN_HAND,
+                hit
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                EstateManagementDeskBlock.HAS_MAP,
+                true
+        );
+
+        List<ItemStack> drops = Block.getDrops(
+                helper.getBlockState(FIRST),
+                helper.getLevel(),
+                absolutePos,
+                null
+        );
+        helper.assertTrue(
+                drops.stream().anyMatch(stack ->
+                        stack.is(Items.WRITABLE_BOOK)
+                ),
+                "Breaking a customized desk should return its ledger"
+        );
+        helper.assertTrue(
+                drops.stream().anyMatch(stack -> stack.is(Items.MAP)),
+                "Breaking a customized desk should return its map"
+        );
+
+        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        player.setShiftKeyDown(true);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                ItemStack.EMPTY,
+                InteractionHand.MAIN_HAND,
+                hit
+        );
+        player.setShiftKeyDown(false);
+        helper.assertBlockProperty(
+                FIRST,
+                EstateManagementDeskBlock.HAS_MAP,
+                false
+        );
+        helper.assertItemEntityPresent(Items.MAP, FIRST, 2.0);
         helper.succeed();
     }
 

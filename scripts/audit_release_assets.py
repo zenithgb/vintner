@@ -649,6 +649,95 @@ def audit_estate_management_desk() -> None:
             f"{expected_model}"
         )
 
+    require_file(ROOT / "scripts/generate_estate_desk_assets.py")
+    colors = {
+        "white",
+        "orange",
+        "magenta",
+        "light_blue",
+        "yellow",
+        "lime",
+        "pink",
+        "gray",
+        "light_gray",
+        "cyan",
+        "purple",
+        "blue",
+        "brown",
+        "green",
+        "red",
+        "black",
+    }
+    overlay_colors = colors - {"green"}
+    for color in overlay_colors:
+        require_file(
+            ASSETS
+            / "models/block"
+            / f"{block_id}_blotter_{color}.json"
+        )
+    require_file(ASSETS / f"models/block/{block_id}_ledger.json")
+    require_file(ASSETS / f"models/block/{block_id}_map.json")
+
+    blockstate = load_json(paths["blockstate"])
+    if not isinstance(blockstate, dict):
+        return
+    multipart = blockstate.get("multipart", [])
+    if not isinstance(multipart, list):
+        fail(f"{block_id}: blockstate must use multipart models")
+        return
+
+    facings = {"north", "east", "south", "west"}
+    base_coverage: set[str] = set()
+    ledger_coverage: set[str] = set()
+    map_coverage: set[str] = set()
+    blotter_coverage: set[tuple[str, str]] = set()
+    for part in multipart:
+        if not isinstance(part, dict):
+            continue
+        when = part.get("when")
+        apply = part.get("apply")
+        if not isinstance(when, dict) or not isinstance(apply, dict):
+            continue
+        facing = when.get("facing")
+        model = apply.get("model")
+        if facing not in facings:
+            continue
+        if model == f"vintner:block/{block_id}" and len(when) == 1:
+            base_coverage.add(facing)
+        if (
+            model == f"vintner:block/{block_id}_ledger"
+            and when.get("has_ledger") == "true"
+        ):
+            ledger_coverage.add(facing)
+        if (
+            model == f"vintner:block/{block_id}_map"
+            and when.get("has_map") == "true"
+        ):
+            map_coverage.add(facing)
+        color = when.get("blotter_color")
+        if (
+            color in overlay_colors
+            and model == f"vintner:block/{block_id}_blotter_{color}"
+        ):
+            blotter_coverage.add((facing, color))
+
+    if base_coverage != facings:
+        fail(f"{block_id}: base model is missing a facing")
+    if ledger_coverage != facings:
+        fail(f"{block_id}: ledger model is missing a facing")
+    if map_coverage != facings:
+        fail(f"{block_id}: map model is missing a facing")
+    expected_blotters = {
+        (facing, color)
+        for facing in facings
+        for color in overlay_colors
+    }
+    if blotter_coverage != expected_blotters:
+        fail(
+            f"{block_id}: dyeable blotter is missing one or more "
+            "color/facing combinations"
+        )
+
 
 def main() -> int:
     audit_all_json()

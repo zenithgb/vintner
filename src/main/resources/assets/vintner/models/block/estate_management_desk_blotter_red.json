@@ -1,0 +1,6 @@
+{
+  "parent": "vintner:block/estate_management_desk_blotter",
+  "textures": {
+    "blotter": "minecraft:block/red_wool"
+  }
+}
