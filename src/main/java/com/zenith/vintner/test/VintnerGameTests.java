@@ -1725,6 +1725,71 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void pressingRecoversWineryByproducts(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.GRAPE_PRESS);
+
+        GrapePressBlockEntity press = helper.getBlockEntity(
+                FIRST,
+                GrapePressBlockEntity.class
+        );
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ItemStack grapes = new ItemStack(
+                ModItems.WHITE_GRAPES,
+                GrapePressBlockEntity.GRAPES_PER_PRESS
+        );
+
+        press.insert(grapes, grapes.getCount());
+
+        helper.assertTrue(
+                press.press(player),
+                "A complete grape batch should press"
+        );
+        helper.assertTrue(
+                player.getInventory().contains(
+                        new ItemStack(ModItems.POMACE)
+                ),
+                "Pressing should recover pomace"
+        );
+        helper.assertTrue(
+                player.getInventory().contains(
+                        new ItemStack(ModItems.GRAPE_SEEDS)
+                ),
+                "Pressing should recover grape seeds"
+        );
+        helper.assertFalse(
+                press.press(player),
+                "An empty press must not create extra byproducts"
+        );
+
+        long pomaceCount = player.getInventory()
+                .getNonEquipmentItems()
+                .stream()
+                .filter(stack -> stack.is(ModItems.POMACE))
+                .mapToInt(ItemStack::getCount)
+                .sum();
+        long seedCount = player.getInventory()
+                .getNonEquipmentItems()
+                .stream()
+                .filter(stack -> stack.is(ModItems.GRAPE_SEEDS))
+                .mapToInt(ItemStack::getCount)
+                .sum();
+
+        helper.assertValueEqual(
+                pomaceCount,
+                1L,
+                "One press cycle should recover one pomace"
+        );
+        helper.assertValueEqual(
+                seedCount,
+                1L,
+                "One press cycle should recover one packet of seeds"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void pressPreservesFinalBatchMetadata(
             GameTestHelper helper
     ) {

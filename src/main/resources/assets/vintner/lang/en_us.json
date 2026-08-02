@@ -234,6 +234,8 @@
   "message.vintner.aging.incompatible": "That wine does not match this batch",
   "block.vintner.vineyard_soil": "Prepared Vineyard Soil",
   "item.vintner.compost": "Compost",
+  "item.vintner.pomace": "Pomace",
+  "item.vintner.grape_seeds": "Grape Seeds",
   "advancement.vintner.root.title": "A New Vintage",
   "advancement.vintner.root.description": "Acquire a red or white grape cutting and begin your vineyard",
   "advancement.vintner.craft_trellis.title": "Lay the Groundwork",

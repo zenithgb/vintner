@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "vintner:pomace",
+    "vintner:pomace"
+  ],
+  "result": {
+    "id": "vintner:compost"
+  }
+}

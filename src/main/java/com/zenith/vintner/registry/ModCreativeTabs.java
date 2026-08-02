@@ -53,6 +53,8 @@ public final class ModCreativeTabs {
                                 output.accept(ModBlocks.NURSERY_BED);
                                 output.accept(ModItems.RED_GRAPES);
                                 output.accept(ModItems.WHITE_GRAPES);
+                                output.accept(ModItems.POMACE);
+                                output.accept(ModItems.GRAPE_SEEDS);
                                 ModBlocks.GRAPE_PRESSES.values()
                                         .forEach(output::accept);
                                 output.accept(ModItems.RED_MUST);

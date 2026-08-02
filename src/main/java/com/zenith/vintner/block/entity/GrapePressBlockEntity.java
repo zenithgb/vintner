@@ -214,8 +214,28 @@ public final class GrapePressBlockEntity extends BlockEntity {
             output.grow(1);
         }
 
+        recoverByproducts(producer);
+
         markChangedAndSync();
         return true;
+    }
+
+    private void recoverByproducts(@Nullable Player producer) {
+        recoverByproduct(producer, new ItemStack(ModItems.POMACE));
+        recoverByproduct(producer, new ItemStack(ModItems.GRAPE_SEEDS));
+    }
+
+    private void recoverByproduct(
+            @Nullable Player producer,
+            ItemStack byproduct
+    ) {
+        if (producer != null && producer.addItem(byproduct)) {
+            return;
+        }
+
+        if (level != null && !level.isClientSide()) {
+            Block.popResource(level, worldPosition, byproduct);
+        }
     }
 
     public boolean hasMust() {

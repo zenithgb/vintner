@@ -28,6 +28,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.ComposterBlock;
 
 import java.util.function.Function;
 
@@ -45,6 +46,16 @@ public final class ModItems {
     public static final Item WHITE_GRAPES = register(
             "white_grapes",
             GrapeItem::new
+    );
+
+    public static final Item POMACE = register(
+            "pomace",
+            Item::new
+    );
+
+    public static final Item GRAPE_SEEDS = register(
+            "grape_seeds",
+            Item::new
     );
 
     public static final Item RED_GRAPE_CUTTING = register(
@@ -226,12 +237,17 @@ public final class ModItems {
     public static void initialize() {
         CoopersMalletItem.initialize();
 
+        ComposterBlock.COMPOSTABLES.put(POMACE, 0.85F);
+        ComposterBlock.COMPOSTABLES.put(GRAPE_SEEDS, 0.50F);
+
         CreativeModeTabEvents
                 .modifyOutputEvent(
                         CreativeModeTabs.INGREDIENTS
                 )
                 .register(output -> {
                     output.accept(COMPOST);
+                    output.accept(POMACE);
+                    output.accept(GRAPE_SEEDS);
                     for (GrapeCultivar cultivar : GrapeCultivar.values()) {
                         output.accept(cultivarCutting(cultivar));
                     }
