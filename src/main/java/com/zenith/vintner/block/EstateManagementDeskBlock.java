@@ -1,6 +1,7 @@
 package com.zenith.vintner.block;
 
 import com.mojang.serialization.MapCodec;
+import com.zenith.vintner.block.entity.EstateManagementDeskBlockEntity;
 import com.zenith.vintner.estate.EstateDeskReport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,13 +16,17 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.BlockHitResult;
@@ -33,7 +38,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class EstateManagementDeskBlock
-        extends HorizontalDirectionalBlock {
+        extends BaseEntityBlock {
+    public static final EnumProperty<Direction> FACING =
+            BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<DeskBlotterColor> BLOTTER_COLOR =
             EnumProperty.create("blotter_color", DeskBlotterColor.class);
     public static final BooleanProperty HAS_LEDGER =
@@ -109,22 +116,50 @@ public final class EstateManagementDeskBlock
                     HAS_LEDGER
             );
         }
-        if (heldStack.is(Items.MAP)) {
-            return installAccessory(
-                    heldStack,
-                    state,
-                    level,
-                    pos,
-                    player,
-                    HAS_MAP
-            );
+        if (heldStack.is(Items.FILLED_MAP)) {
+            if (state.getValue(HAS_MAP)) {
+                return InteractionResult.SUCCESS;
+            }
+            if (level instanceof ServerLevel serverLevel
+                    && serverLevel.getBlockEntity(pos)
+                    instanceof EstateManagementDeskBlockEntity desk) {
+                desk.setMap(heldStack);
+                serverLevel.setBlockAndUpdate(
+                        pos,
+                        state.setValue(HAS_MAP, true)
+                );
+                consumeOne(player, heldStack);
+                serverLevel.playSound(
+                        null,
+                        pos,
+                        SoundEvents.ITEM_FRAME_ADD_ITEM,
+                        SoundSource.BLOCKS,
+                        0.8F,
+                        1.0F
+                );
+            }
+            return InteractionResult.SUCCESS;
         }
         return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+    public MapCodec<EstateManagementDeskBlock> codec() {
         return CODEC;
+    }
+
+    @Override
+    protected RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
+    }
+
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(
+            BlockPos pos,
+            BlockState state
+    ) {
+        return new EstateManagementDeskBlockEntity(pos, state);
     }
 
     @Nullable
@@ -158,7 +193,15 @@ public final class EstateManagementDeskBlock
             ItemStack recovered = ItemStack.EMPTY;
             BlockState updated = state;
             if (state.getValue(HAS_MAP)) {
-                recovered = new ItemStack(Items.MAP);
+                if (level.getBlockEntity(pos)
+                        instanceof EstateManagementDeskBlockEntity desk) {
+                    recovered = desk.takeMap();
+                }
+                if (recovered.isEmpty()) {
+                    // Compatibility for desks using the earlier decorative
+                    // empty-map state.
+                    recovered = new ItemStack(Items.MAP);
+                }
                 updated = state.setValue(HAS_MAP, false);
             } else if (state.getValue(HAS_LEDGER)) {
                 recovered = new ItemStack(Items.WRITABLE_BOOK);
@@ -234,7 +277,18 @@ public final class EstateManagementDeskBlock
             drops.add(new ItemStack(Items.WRITABLE_BOOK));
         }
         if (state.getValue(HAS_MAP)) {
-            drops.add(new ItemStack(Items.MAP));
+            BlockEntity blockEntity = params.getOptionalParameter(
+                    LootContextParams.BLOCK_ENTITY
+            );
+            if (blockEntity
+                    instanceof EstateManagementDeskBlockEntity desk) {
+                ItemStack storedMap = desk.getMapCopy();
+                drops.add(storedMap.isEmpty()
+                        ? new ItemStack(Items.MAP)
+                        : storedMap);
+            } else {
+                drops.add(new ItemStack(Items.MAP));
+            }
         }
         return drops;
     }

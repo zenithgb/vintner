@@ -10,78 +10,78 @@
   "elements": [
     {
       "from": [
-        3.6,
+        8.75,
         11.72,
-        4.1
-      ],
-      "to": [
-        7.45,
-        12.05,
-        8.75
-      ],
-      "faces": {
-        "north": {
-          "texture": "#cover"
-        },
-        "east": {
-          "texture": "#cover"
-        },
-        "south": {
-          "texture": "#cover"
-        },
-        "west": {
-          "texture": "#cover"
-        },
-        "down": {
-          "texture": "#cover"
-        },
-        "up": {
-          "texture": "#cover"
-        }
-      }
-    },
-    {
-      "from": [
-        3.9,
-        12.05,
         4.35
       ],
       "to": [
-        7.2,
-        12.22,
-        8.5
+        12.35,
+        11.98,
+        8.55
       ],
       "faces": {
         "north": {
-          "texture": "#pages"
+          "texture": "#cover"
         },
         "east": {
-          "texture": "#pages"
+          "texture": "#cover"
         },
         "south": {
-          "texture": "#pages"
+          "texture": "#cover"
         },
         "west": {
-          "texture": "#pages"
+          "texture": "#cover"
         },
         "down": {
-          "texture": "#pages"
+          "texture": "#cover"
         },
         "up": {
-          "texture": "#pages"
+          "texture": "#cover"
         }
       }
     },
     {
       "from": [
-        3.45,
-        11.72,
-        4.1
+        9.0,
+        11.98,
+        4.6
       ],
       "to": [
-        4.05,
-        12.22,
-        8.75
+        12.1,
+        12.1,
+        8.3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pages"
+        },
+        "east": {
+          "texture": "#pages"
+        },
+        "south": {
+          "texture": "#pages"
+        },
+        "west": {
+          "texture": "#pages"
+        },
+        "down": {
+          "texture": "#pages"
+        },
+        "up": {
+          "texture": "#pages"
+        }
+      }
+    },
+    {
+      "from": [
+        8.55,
+        11.72,
+        4.35
+      ],
+      "to": [
+        9.05,
+        12.1,
+        8.55
       ],
       "faces": {
         "north": {
@@ -106,13 +106,13 @@
     },
     {
       "from": [
-        6.85,
-        12.22,
+        11.75,
+        12.1,
         6.05
       ],
       "to": [
-        7.35,
-        12.34,
+        12.2,
+        12.2,
         6.8
       ],
       "faces": {

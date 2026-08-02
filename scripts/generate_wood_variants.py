@@ -165,6 +165,14 @@ def cabinet_id(wood: str) -> str:
     )
 
 
+def estate_desk_id(wood: str) -> str:
+    return (
+        "estate_management_desk"
+        if wood == "oak"
+        else f"{wood}_estate_management_desk"
+    )
+
+
 def grapevine_id(wood: str, color: str) -> str:
     return (
         f"{color}_grapevine"
@@ -361,6 +369,20 @@ def generate_machine_models() -> None:
                     "parent": "vintner:block/vintage_archive",
                     "textures": {
                         "wood": textures["wood"],
+                        "particle": textures["particle"],
+                    },
+                },
+            )
+
+        desk = estate_desk_id(wood)
+        if desk != "estate_management_desk":
+            write_json(
+                ASSETS / f"models/block/{desk}.json",
+                {
+                    "parent": "vintner:block/estate_management_desk",
+                    "textures": {
+                        "frame": textures["wood"],
+                        "writing": textures["wood"],
                         "particle": textures["particle"],
                     },
                 },
@@ -1218,6 +1240,10 @@ def generate_items() -> None:
                 cabinet_id(wood),
                 f"vintner:block/{cabinet_id(wood)}",
             ),
+            (
+                estate_desk_id(wood),
+                f"vintner:block/{estate_desk_id(wood)}",
+            ),
         )
 
         for block_id, parent in ids_and_models:
@@ -1321,6 +1347,7 @@ def generate_survival_data() -> None:
             stand_id(wood),
             shelf_id(wood),
             cabinet_id(wood),
+            estate_desk_id(wood),
         )
         axe_blocks.extend(f"vintner:{block_id}" for block_id in ids)
 
@@ -1466,6 +1493,22 @@ def generate_survival_data() -> None:
                 "key": {"P": planks, "G": "minecraft:glass_pane", "B": "minecraft:book"},
                 "result": {"id": f"vintner:{cabinet_id(wood)}", "count": 1},
             },
+            estate_desk_id(wood): {
+                "type": "minecraft:crafting_shaped",
+                "category": "misc",
+                "pattern": ["BKG", "PPP", "S S"],
+                "key": {
+                    "B": "minecraft:writable_book",
+                    "K": "minecraft:green_carpet",
+                    "G": "minecraft:gold_nugget",
+                    "P": planks,
+                    "S": f"minecraft:{wood}_slab",
+                },
+                "result": {
+                    "id": f"vintner:{estate_desk_id(wood)}",
+                    "count": 1,
+                },
+            },
         }
 
         for recipe_id, recipe in recipes.items():
@@ -1554,6 +1597,9 @@ def generate_language() -> None:
         )
         language[f"block.vintner.{cabinet_id(wood)}"] = (
             f"{title} Tasting Cabinet"
+        )
+        language[f"block.vintner.{estate_desk_id(wood)}"] = (
+            f"{title} Estate Management Desk"
         )
         language[
             f"block.vintner.{grapevine_id(wood, 'red')}"

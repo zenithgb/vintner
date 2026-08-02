@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BKG",
+    "PPP",
+    "S S"
+  ],
+  "key": {
+    "B": "minecraft:writable_book",
+    "K": "minecraft:green_carpet",
+    "G": "minecraft:gold_nugget",
+    "P": "minecraft:pale_oak_planks",
+    "S": "minecraft:pale_oak_slab"
+  },
+  "result": {
+    "id": "vintner:pale_oak_estate_management_desk",
+    "count": 1
+  }
+}

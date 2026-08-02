@@ -6,11 +6,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from generate_wood_variants import WOODS
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "src/main/resources/assets/vintner"
 MODEL_DIR = ASSETS / "models/block"
-BLOCKSTATE = ASSETS / "blockstates/estate_management_desk.json"
 
 COLORS = (
     "white",
@@ -119,16 +120,17 @@ def base_model() -> dict[str, object]:
         "#blotter",
     ))
 
-    # A small inkwell and quill make the base desk recognizable when bare.
+    # A compact inkwell and quill sit in the back-left stationery well. Keeping
+    # them behind the blotter prevents either from intersecting the ledger.
     elements.extend((
-        cube([1.9, 11.5, 9.8], [3.2, 12.4, 11.1], "#ink"),
-        cube([2.1, 12.4, 10], [3, 12.65, 10.9], "#brass"),
+        cube([1.45, 11.5, 10.15], [2.55, 12.15, 11.25], "#ink"),
+        cube([1.65, 12.15, 10.35], [2.35, 12.35, 11.05], "#brass"),
         cube(
-            [2.45, 12.35, 10.35],
-            [2.75, 15.25, 10.65],
+            [2.05, 12.2, 10.55],
+            [2.3, 14.35, 10.8],
             "#quill",
             rotation={
-                "origin": [2.6, 12.35, 10.5],
+                "origin": [2.175, 12.2, 10.675],
                 "axis": "z",
                 "angle": -22.5,
             },
@@ -138,13 +140,13 @@ def base_model() -> dict[str, object]:
     return {
         "parent": "minecraft:block/block",
         "textures": {
-            "frame": "minecraft:block/dark_oak_planks",
+            "frame": "minecraft:block/oak_planks",
             "writing": "minecraft:block/oak_planks",
             "blotter": "minecraft:block/green_wool",
             "brass": "minecraft:block/raw_gold_block",
             "ink": "minecraft:block/black_wool",
             "quill": "minecraft:block/light_gray_wool",
-            "particle": "minecraft:block/dark_oak_planks",
+            "particle": "minecraft:block/oak_planks",
         },
         "elements": elements,
         "display": {
@@ -189,54 +191,34 @@ def ledger_model() -> dict[str, object]:
             "particle": "minecraft:block/dark_oak_planks",
         },
         "elements": [
-            cube([3.6, 11.72, 4.1], [7.45, 12.05, 8.75], "#cover"),
-            cube([3.9, 12.05, 4.35], [7.2, 12.22, 8.5], "#pages"),
-            cube([3.45, 11.72, 4.1], [4.05, 12.22, 8.75], "#spine"),
-            cube([6.85, 12.22, 6.05], [7.35, 12.34, 6.8], "#brass"),
+            cube([8.75, 11.72, 4.35], [12.35, 11.98, 8.55], "#cover"),
+            cube([9.0, 11.98, 4.6], [12.1, 12.1, 8.3], "#pages"),
+            cube([8.55, 11.72, 4.35], [9.05, 12.1, 8.55], "#spine"),
+            cube([11.75, 12.1, 6.05], [12.2, 12.2, 6.8], "#brass"),
         ],
     }
 
 
-def map_model() -> dict[str, object]:
-    return {
-        "parent": "minecraft:block/block",
-        "textures": {
-            "paper": "minecraft:block/bone_block_side",
-            "edge": "minecraft:block/stripped_birch_log",
-            "water": "minecraft:block/blue_wool",
-            "land": "minecraft:block/green_wool",
-            "mark": "minecraft:block/red_wool",
-            "particle": "minecraft:block/dark_oak_planks",
-        },
-        "elements": [
-            cube([8, 11.72, 4], [12.85, 11.86, 9.2], "#paper"),
-            cube([8, 11.86, 4], [12.85, 11.92, 4.25], "#edge"),
-            cube([8, 11.86, 8.95], [12.85, 11.92, 9.2], "#edge"),
-            cube([8, 11.86, 4.25], [8.25, 11.92, 8.95], "#edge"),
-            cube([12.6, 11.86, 4.25], [12.85, 11.92, 8.95], "#edge"),
-            cube([8.6, 11.92, 4.8], [9.4, 11.98, 7.7], "#water"),
-            cube([9.35, 11.92, 6.9], [11.7, 11.98, 8.45], "#land"),
-            cube([11.4, 11.92, 5.2], [12.1, 11.98, 6.3], "#land"),
-            cube([10.55, 11.98, 7.25], [10.85, 12.04, 7.55], "#mark"),
-        ],
-    }
+def desk_id(wood: str) -> str:
+    return (
+        "estate_management_desk"
+        if wood == "oak"
+        else f"{wood}_estate_management_desk"
+    )
 
 
-def blockstate() -> dict[str, object]:
+def blockstate(base_model: str) -> dict[str, object]:
     multipart: list[dict[str, object]] = []
     for facing, rotation in ROTATIONS.items():
         apply: dict[str, object] = {
-            "model": "vintner:block/estate_management_desk",
+            "model": f"vintner:block/{base_model}",
             "uvlock": True,
         }
         if rotation:
             apply["y"] = rotation
         multipart.append({"when": {"facing": facing}, "apply": apply})
 
-    for prop, model in (
-        ("has_ledger", "estate_management_desk_ledger"),
-        ("has_map", "estate_management_desk_map"),
-    ):
+    for prop, model in (("has_ledger", "estate_management_desk_ledger"),):
         for facing, rotation in ROTATIONS.items():
             apply = {
                 "model": f"vintner:block/{model}",
@@ -281,9 +263,10 @@ def main() -> None:
         MODEL_DIR / "estate_management_desk_ledger.json",
         ledger_model(),
     )
-    write_json(
-        MODEL_DIR / "estate_management_desk_map.json",
-        map_model(),
+    # Filled maps are rendered from their actual MapItemSavedData by the desk
+    # block-entity renderer, so no painted placeholder model is generated.
+    (MODEL_DIR / "estate_management_desk_map.json").unlink(
+        missing_ok=True
     )
     for color in COLORS:
         if color == "green":
@@ -297,8 +280,28 @@ def main() -> None:
                 },
             },
         )
-    write_json(BLOCKSTATE, blockstate())
-    print("Generated the modular Estate Management Desk assets.")
+    for wood in WOODS:
+        block_id = desk_id(wood)
+        if wood != "oak":
+            write_json(
+                MODEL_DIR / f"{block_id}.json",
+                {
+                    "parent": "vintner:block/estate_management_desk",
+                    "textures": {
+                        "frame": f"minecraft:block/{wood}_planks",
+                        "writing": f"minecraft:block/{wood}_planks",
+                        "particle": f"minecraft:block/{wood}_planks",
+                    },
+                },
+            )
+        write_json(
+            ASSETS / f"blockstates/{block_id}.json",
+            blockstate(block_id),
+        )
+    print(
+        "Generated the modular Estate Management Desk assets for "
+        f"{len(WOODS)} wood families."
+    )
 
 
 if __name__ == "__main__":

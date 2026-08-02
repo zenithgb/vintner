@@ -16,6 +16,7 @@ import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.CellarCollectionBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
+import com.zenith.vintner.block.entity.EstateManagementDeskBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
@@ -112,6 +113,7 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Items;
@@ -258,7 +260,15 @@ public final class VintnerGameTests {
                 true
         );
 
-        ItemStack map = new ItemStack(Items.MAP);
+        ItemStack map = MapItem.create(
+                helper.getLevel(),
+                absolutePos.getX(),
+                absolutePos.getZ(),
+                (byte) 0,
+                true,
+                false
+        );
+        var mapId = map.get(DataComponents.MAP_ID);
         player.setItemInHand(InteractionHand.MAIN_HAND, map);
         player.gameMode.useItemOn(
                 player,
@@ -272,12 +282,21 @@ public final class VintnerGameTests {
                 EstateManagementDeskBlock.HAS_MAP,
                 true
         );
+        helper.assertTrue(
+                helper.getLevel().getBlockEntity(absolutePos)
+                        instanceof EstateManagementDeskBlockEntity desk
+                        && mapId != null
+                        && mapId.equals(
+                        desk.getMapCopy().get(DataComponents.MAP_ID)
+                ),
+                "The desk should retain the installed filled map data"
+        );
 
         List<ItemStack> drops = Block.getDrops(
                 helper.getBlockState(FIRST),
                 helper.getLevel(),
                 absolutePos,
-                null
+                helper.getLevel().getBlockEntity(absolutePos)
         );
         helper.assertTrue(
                 drops.stream().anyMatch(stack ->
@@ -286,8 +305,14 @@ public final class VintnerGameTests {
                 "Breaking a customized desk should return its ledger"
         );
         helper.assertTrue(
-                drops.stream().anyMatch(stack -> stack.is(Items.MAP)),
-                "Breaking a customized desk should return its map"
+                drops.stream().anyMatch(stack ->
+                        stack.is(Items.FILLED_MAP)
+                                && mapId != null
+                                && mapId.equals(stack.get(
+                                DataComponents.MAP_ID
+                        ))
+                ),
+                "Breaking a customized desk should return its exact map"
         );
 
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
@@ -305,7 +330,7 @@ public final class VintnerGameTests {
                 EstateManagementDeskBlock.HAS_MAP,
                 false
         );
-        helper.assertItemEntityPresent(Items.MAP, FIRST, 2.0);
+        helper.assertItemEntityPresent(Items.FILLED_MAP, FIRST, 2.0);
         helper.succeed();
     }
 
@@ -364,6 +389,11 @@ public final class VintnerGameTests {
                 ModBlocks.TASTING_CABINETS.size(),
                 expected,
                 "Every wood family should have a tasting cabinet"
+        );
+        helper.assertValueEqual(
+                ModBlocks.ESTATE_MANAGEMENT_DESKS.size(),
+                expected,
+                "Every wood family should have an estate desk"
         );
         helper.assertValueEqual(
                 ModBlocks.RED_GRAPEVINES.size(),
@@ -440,6 +470,14 @@ public final class VintnerGameTests {
                     ),
                     woodVariant.id()
                             + " tasting cabinet should support its block entity"
+            );
+            helper.assertTrue(
+                    ModBlockEntities.ESTATE_MANAGEMENT_DESK.isValid(
+                            ModBlocks.estateManagementDesk(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " estate desk should support its block entity"
             );
         }
 

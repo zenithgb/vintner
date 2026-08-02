@@ -1,13 +1,13 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "frame": "minecraft:block/dark_oak_planks",
+    "frame": "minecraft:block/oak_planks",
     "writing": "minecraft:block/oak_planks",
     "blotter": "minecraft:block/green_wool",
     "brass": "minecraft:block/raw_gold_block",
     "ink": "minecraft:block/black_wool",
     "quill": "minecraft:block/light_gray_wool",
-    "particle": "minecraft:block/dark_oak_planks"
+    "particle": "minecraft:block/oak_planks"
   },
   "elements": [
     {
@@ -844,14 +844,14 @@
     },
     {
       "from": [
-        1.9,
+        1.45,
         11.5,
-        9.8
+        10.15
       ],
       "to": [
-        3.2,
-        12.4,
-        11.1
+        2.55,
+        12.15,
+        11.25
       ],
       "faces": {
         "north": {
@@ -876,46 +876,46 @@
     },
     {
       "from": [
-        2.1,
-        12.4,
-        10
-      ],
-      "to": [
-        3,
-        12.65,
-        10.9
-      ],
-      "faces": {
-        "north": {
-          "texture": "#brass"
-        },
-        "east": {
-          "texture": "#brass"
-        },
-        "south": {
-          "texture": "#brass"
-        },
-        "west": {
-          "texture": "#brass"
-        },
-        "down": {
-          "texture": "#brass"
-        },
-        "up": {
-          "texture": "#brass"
-        }
-      }
-    },
-    {
-      "from": [
-        2.45,
-        12.35,
+        1.65,
+        12.15,
         10.35
       ],
       "to": [
-        2.75,
-        15.25,
-        10.65
+        2.35,
+        12.35,
+        11.05
+      ],
+      "faces": {
+        "north": {
+          "texture": "#brass"
+        },
+        "east": {
+          "texture": "#brass"
+        },
+        "south": {
+          "texture": "#brass"
+        },
+        "west": {
+          "texture": "#brass"
+        },
+        "down": {
+          "texture": "#brass"
+        },
+        "up": {
+          "texture": "#brass"
+        }
+      }
+    },
+    {
+      "from": [
+        2.05,
+        12.2,
+        10.55
+      ],
+      "to": [
+        2.3,
+        14.35,
+        10.8
       ],
       "faces": {
         "north": {
@@ -939,9 +939,9 @@
       },
       "rotation": {
         "origin": [
-          2.6,
-          12.35,
-          10.5
+          2.175,
+          12.2,
+          10.675
         ],
         "axis": "z",
         "angle": -22.5
