@@ -5,13 +5,17 @@ import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.vineyard.GraftedCuttingData;
+import com.zenith.vintner.vineyard.GrapeCultivar;
+import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.vineyard.VineManagementSavedData;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -22,13 +26,28 @@ import java.util.function.Function;
 
 public final class GrapeCuttingItem extends Item {
     private final Function<WoodVariant, Block> grapevineFactory;
+    private final GrapeVariety variety;
 
     public GrapeCuttingItem(
             Function<WoodVariant, Block> grapevineFactory,
+            GrapeVariety variety,
             Properties properties
     ) {
         super(properties);
         this.grapevineFactory = grapevineFactory;
+        this.variety = variety;
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        GrapeCultivar cultivar = GraftedCuttingData.cultivar(
+                stack,
+                variety
+        );
+        return Component.translatable(
+                "item.vintner.cultivar_cutting",
+                cultivar.displayName()
+        );
     }
 
     @Override
@@ -99,6 +118,13 @@ public final class GrapeCuttingItem extends Item {
                     plantingPos,
                     GraftedCuttingData.rootstock(
                             context.getItemInHand()
+                    )
+            );
+            VineManagementSavedData.get(serverLevel).setCultivar(
+                    plantingPos,
+                    GraftedCuttingData.cultivar(
+                            context.getItemInHand(),
+                            variety
                     )
             );
             serverLevel.gameEvent(

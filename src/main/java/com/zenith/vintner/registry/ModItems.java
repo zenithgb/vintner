@@ -11,6 +11,9 @@ import com.zenith.vintner.item.VintnerAlmanacItem;
 import com.zenith.vintner.item.WineConsumables;
 import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.item.WineItem;
+import com.zenith.vintner.vineyard.GrapeCultivar;
+import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.vineyard.GraftedCuttingData;
 import net.minecraft.core.component.DataComponents;
 import com.zenith.vintner.Vintner;
 import com.zenith.vintner.item.GrapeItem;
@@ -22,6 +25,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.function.Function;
@@ -46,6 +50,7 @@ public final class ModItems {
             "red_grape_cutting",
             properties -> new GrapeCuttingItem(
                     ModBlocks::redGrapevine,
+                    GrapeVariety.RED,
                     properties
             )
     );
@@ -54,6 +59,7 @@ public final class ModItems {
             "white_grape_cutting",
             properties -> new GrapeCuttingItem(
                     ModBlocks::whiteGrapevine,
+                    GrapeVariety.WHITE,
                     properties
             )
     );
@@ -218,8 +224,9 @@ public final class ModItems {
                 )
                 .register(output -> {
                     output.accept(COMPOST);
-                    output.accept(RED_GRAPE_CUTTING);
-                    output.accept(WHITE_GRAPE_CUTTING);
+                    for (GrapeCultivar cultivar : GrapeCultivar.values()) {
+                        output.accept(cultivarCutting(cultivar));
+                    }
                     output.accept(ROOTSTOCK_CUTTING);
                     output.accept(RESISTANT_ROOTSTOCK_CUTTING);
                     output.accept(COOPERS_MALLET);
@@ -245,5 +252,15 @@ public final class ModItems {
                     output.accept(AGED_RED_WINE);
                     output.accept(AGED_WHITE_WINE);
                 });
+    }
+
+    public static ItemStack cultivarCutting(GrapeCultivar cultivar) {
+        ItemStack cutting = new ItemStack(
+                cultivar.variety() == GrapeVariety.RED
+                        ? RED_GRAPE_CUTTING
+                        : WHITE_GRAPE_CUTTING
+        );
+        GraftedCuttingData.applyCultivar(cutting, cultivar);
+        return cutting;
     }
 }

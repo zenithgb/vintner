@@ -7,6 +7,7 @@ import com.zenith.vintner.vineyard.VineAgeStage;
 import com.zenith.vintner.vineyard.VineYieldMode;
 import com.zenith.vintner.vineyard.VineRootstock;
 import com.zenith.vintner.vineyard.VineyardThreat;
+import com.zenith.vintner.vineyard.GrapeCultivar;
 
 public record VineyardConditionReport(
         boolean openSky,
@@ -22,6 +23,7 @@ public record VineyardConditionReport(
         long vineAgeDays,
         VineYieldMode yieldMode,
         VineRootstock rootstock,
+        GrapeCultivar cultivar,
         VineyardThreat threat,
         int vineHealthPoints,
         int qualityScore,

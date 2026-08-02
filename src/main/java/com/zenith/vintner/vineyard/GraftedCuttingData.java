@@ -8,6 +8,7 @@ import net.minecraft.world.item.component.CustomData;
 /** Minimal metadata carried from a nursery graft into the planted vine. */
 public final class GraftedCuttingData {
     private static final String ROOTSTOCK_KEY = "vintner_rootstock";
+    private static final String CULTIVAR_KEY = "vintner_cultivar";
 
     private GraftedCuttingData() {
     }
@@ -31,6 +32,32 @@ public final class GraftedCuttingData {
         ).copyTag();
         return VineRootstock.fromName(
                 tag.getString(ROOTSTOCK_KEY).orElse("")
+        );
+    }
+
+    public static void applyCultivar(
+            ItemStack cutting,
+            GrapeCultivar cultivar
+    ) {
+        CompoundTag tag = cutting.getOrDefault(
+                DataComponents.CUSTOM_DATA,
+                CustomData.EMPTY
+        ).copyTag();
+        tag.putString(CULTIVAR_KEY, cultivar.serializedName());
+        cutting.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
+    public static GrapeCultivar cultivar(
+            ItemStack cutting,
+            GrapeVariety fallback
+    ) {
+        CompoundTag tag = cutting.getOrDefault(
+                DataComponents.CUSTOM_DATA,
+                CustomData.EMPTY
+        ).copyTag();
+        return GrapeCultivar.fromName(
+                tag.getString(CULTIVAR_KEY).orElse(""),
+                fallback
         );
     }
 }

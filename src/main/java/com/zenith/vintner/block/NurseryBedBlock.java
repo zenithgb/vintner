@@ -2,6 +2,10 @@ package com.zenith.vintner.block;
 
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.vineyard.NurseryPlant;
+import com.zenith.vintner.vineyard.GraftedCuttingData;
+import com.zenith.vintner.vineyard.GrapeCultivar;
+import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.vineyard.VineManagementSavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -13,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -102,12 +107,21 @@ public final class NurseryBedBlock extends Block {
             );
         }
 
-        if (!level.isClientSide()) {
+        if (level instanceof ServerLevel serverLevel) {
             level.setBlock(
                     pos,
                     plantedState(state, plant),
                     Block.UPDATE_ALL
             );
+            if (!plant.isRootstock()) {
+                GrapeVariety variety = plant == NurseryPlant.RED_GRAPE
+                        ? GrapeVariety.RED
+                        : GrapeVariety.WHITE;
+                VineManagementSavedData.get(serverLevel).setCultivar(
+                        pos,
+                        GraftedCuttingData.cultivar(stack, variety)
+                );
+            }
             level.playSound(
                     null,
                     pos,
@@ -142,15 +156,27 @@ public final class NurseryBedBlock extends Block {
             );
         }
 
-        if (!level.isClientSide()) {
+        if (level instanceof ServerLevel serverLevel) {
+            NurseryPlant plant = state.getValue(PLANT);
+            ItemStack harvest = new ItemStack(
+                    plant.item(),
+                    HARVEST_COUNT
+            );
+            if (!plant.isRootstock()) {
+                GrapeVariety variety = plant == NurseryPlant.RED_GRAPE
+                        ? GrapeVariety.RED
+                        : GrapeVariety.WHITE;
+                GrapeCultivar cultivar = VineManagementSavedData
+                        .get(serverLevel)
+                        .cultivar(pos, variety);
+                GraftedCuttingData.applyCultivar(harvest, cultivar);
+            }
             popResource(
                     level,
                     pos.above(),
-                    new ItemStack(
-                            state.getValue(PLANT).item(),
-                            HARVEST_COUNT
-                    )
+                    harvest
             );
+            VineManagementSavedData.get(serverLevel).remove(pos);
             level.setBlock(pos, emptiedState(state), Block.UPDATE_ALL);
             level.playSound(
                     null,
@@ -173,6 +199,18 @@ public final class NurseryBedBlock extends Block {
             CollisionContext context
     ) {
         return SHAPE;
+    }
+
+    @Override
+    public void destroy(
+            LevelAccessor level,
+            BlockPos pos,
+            BlockState state
+    ) {
+        if (level instanceof ServerLevel serverLevel) {
+            VineManagementSavedData.get(serverLevel).remove(pos);
+        }
+        super.destroy(level, pos, state);
     }
 
     @Override

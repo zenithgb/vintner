@@ -29,6 +29,17 @@ public record TerroirReport(
         );
     }
 
+    public int vineyardQualityPoints(GrapeCultivar cultivar) {
+        int adjustedSiteScore = (
+                siteScore * 2 + cultivar.siteSuitability(this)
+        ) / 3;
+        return Math.clamp(
+                Math.round(adjustedSiteScore * 28.0F / 100.0F),
+                0,
+                28
+        );
+    }
+
     public GrapeVariety recommendedVariety() {
         int red = GrapeVariety.RED.siteSuitability(this);
         int white = GrapeVariety.WHITE.siteSuitability(this);

@@ -47,6 +47,7 @@ import com.zenith.vintner.wine.WineStyle;
 import com.zenith.vintner.wine.WineVintageConditions;
 import com.zenith.vintner.vineyard.ClimateProfile;
 import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.vineyard.GrapeCultivar;
 import com.zenith.vintner.vineyard.GraftedCuttingData;
 import com.zenith.vintner.vineyard.NurseryPlant;
 import com.zenith.vintner.vineyard.SoilProfile;
@@ -642,7 +643,7 @@ public final class VintnerGameTests {
         assertTradeProgression(
                 helper,
                 winemaker,
-                new int[]{4, 7, 9, 11, 13},
+                new int[]{4, 9, 15, 19, 23},
                 "Winemaker"
         );
         assertTradeProgression(
@@ -654,7 +655,7 @@ public final class VintnerGameTests {
 
         helper.assertValueEqual(
                 winemaker.getOffers().size(),
-                13,
+                23,
                 "A master Winemaker should expose all five trade tiers"
         );
         helper.assertValueEqual(
@@ -710,7 +711,7 @@ public final class VintnerGameTests {
         ModTrades.refreshVillagerOffers(cooper);
         helper.assertValueEqual(
                 winemaker.getOffers().size(),
-                13,
+                23,
                 "Refreshing Winemaker trades must not create duplicates"
         );
         helper.assertValueEqual(
@@ -3055,7 +3056,7 @@ public final class VintnerGameTests {
         );
         helper.assertValueEqual(
                 provenance.variety(),
-                "red",
+                GrapeCultivar.EMBER_NOIR.serializedName(),
                 "Batch provenance should identify the grape variety"
         );
         helper.assertValueEqual(
@@ -5980,6 +5981,208 @@ public final class VintnerGameTests {
                 ),
                 0,
                 "Own-root vines should remain the simple baseline"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void expandedCultivarRosterHasDistinctStrategies(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                GrapeCultivar.values().length,
+                12,
+                "The expanded roster should contain twelve cultivars"
+        );
+        helper.assertTrue(
+                GrapeCultivar.SUNCREST.maximumHarvest()
+                        > GrapeCultivar.EMBER_NOIR.maximumHarvest(),
+                "Suncrest should trade cellar potential for higher yield"
+        );
+        helper.assertTrue(
+                GrapeCultivar.IRONWOOD_RED.ageingPotential()
+                        > GrapeCultivar.SUNCREST.ageingPotential(),
+                "Ironwood Red should be the stronger cellaring choice"
+        );
+        helper.assertTrue(
+                GrapeCultivar.FROSTLING.healthBonus(
+                        VineyardThreat.FROST_DAMAGE
+                ) > GrapeCultivar.HONEYCREST.healthBonus(
+                        VineyardThreat.FROST_DAMAGE
+                ),
+                "Frostling should reward cold-climate planting"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cultivarCuttingPlantsPersistentIdentity(
+            GameTestHelper helper
+    ) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        BlockPos absoluteRoot = helper.absolutePos(FIRST);
+        VineManagementSavedData management =
+                VineManagementSavedData.get(helper.getLevel());
+        management.remove(absoluteRoot);
+        helper.setBlock(FIRST, ModBlocks.OAK_TRELLIS);
+
+        ItemStack cutting = ModItems.cultivarCutting(
+                GrapeCultivar.NIGHTBERRY
+        );
+        player.setItemInHand(InteractionHand.MAIN_HAND, cutting);
+        helper.assertValueEqual(
+                player.gameMode.useItemOn(
+                        player,
+                        helper.getLevel(),
+                        cutting,
+                        InteractionHand.MAIN_HAND,
+                        new BlockHitResult(
+                                Vec3.atCenterOf(absoluteRoot),
+                                Direction.UP,
+                                absoluteRoot,
+                                false
+                        )
+                ),
+                InteractionResult.SUCCESS,
+                "A named cultivar cutting should plant normally"
+        );
+        helper.assertValueEqual(
+                management.cultivar(absoluteRoot, GrapeVariety.RED),
+                GrapeCultivar.NIGHTBERRY,
+                "Planting should preserve cultivar identity"
+        );
+        management.remove(absoluteRoot);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void nurseryPropagationPreservesCultivar(
+            GameTestHelper helper
+    ) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        BlockPos absoluteBed = helper.absolutePos(FIRST);
+        helper.setBlock(FIRST, ModBlocks.NURSERY_BED);
+        ItemStack cutting = ModItems.cultivarCutting(
+                GrapeCultivar.SILVERLEAF
+        );
+        player.setItemInHand(InteractionHand.MAIN_HAND, cutting);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                cutting,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteBed),
+                        Direction.UP,
+                        absoluteBed,
+                        false
+                )
+        );
+        helper.setBlock(
+                FIRST,
+                helper.getBlockState(FIRST).setValue(
+                        NurseryBedBlock.AGE,
+                        NurseryBedBlock.MAX_AGE
+                )
+        );
+        helper.useBlock(FIRST, player);
+
+        helper.assertEntityPresent(
+                EntityTypes.ITEM,
+                FIRST.above(),
+                2.0
+        );
+        boolean found = helper.getEntities(
+                EntityTypes.ITEM,
+                FIRST.above(),
+                2.0
+        ).stream().map(ItemEntity::getItem).anyMatch(stack ->
+                stack.is(ModItems.WHITE_GRAPE_CUTTING)
+                        && stack.getCount() == NurseryBedBlock.HARVEST_COUNT
+                        && GraftedCuttingData.cultivar(
+                                stack,
+                                GrapeVariety.WHITE
+                        ) == GrapeCultivar.SILVERLEAF
+        );
+        helper.assertTrue(
+                found,
+                "Nursery propagation should preserve the named cultivar"
+        );
+        VineManagementSavedData.get(helper.getLevel()).remove(absoluteBed);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cultivarIdentityStacksAndReachesWineProvenance(
+            GameTestHelper helper
+    ) {
+        ItemStack first = new ItemStack(ModItems.RED_GRAPES, 3);
+        ItemStack second = new ItemStack(ModItems.RED_GRAPES, 4);
+        ItemStack different = new ItemStack(ModItems.RED_GRAPES, 4);
+        WineMetadata.applyProfile(first, 2, WineQualityProfile.vineyard(55));
+        WineMetadata.applyProfile(second, 2, WineQualityProfile.vineyard(55));
+        WineMetadata.applyProfile(different, 2, WineQualityProfile.vineyard(55));
+        WineMetadata.applyCultivar(first, GrapeCultivar.IRONWOOD_RED);
+        WineMetadata.applyCultivar(second, GrapeCultivar.IRONWOOD_RED);
+        WineMetadata.applyCultivar(different, GrapeCultivar.VALE_PINOT);
+        helper.assertTrue(
+                ItemStack.isSameItemSameComponents(first, second),
+                "Matching cultivar harvests should remain stackable"
+        );
+        helper.assertFalse(
+                ItemStack.isSameItemSameComponents(first, different),
+                "Different cultivars should retain distinct harvest identity"
+        );
+
+        helper.setBlock(FIRST, ModBlocks.GRAPE_PRESS);
+        ItemStack pressLoad = first.copy();
+        pressLoad.setCount(GrapePressBlockEntity.GRAPES_PER_PRESS);
+        GrapePressBlockEntity press = helper.getBlockEntity(
+                FIRST,
+                GrapePressBlockEntity.class
+        );
+        press.insert(pressLoad, pressLoad.getCount());
+        helper.assertTrue(
+                press.press(helper.makeMockServerPlayerInLevel()),
+                "Cultivar grapes should press normally"
+        );
+        helper.assertValueEqual(
+                WineMetadata.provenance(press.bottleOneMust()).variety(),
+                GrapeCultivar.IRONWOOD_RED.serializedName(),
+                "Pressing should establish cultivar-specific provenance"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cultivarAgeingPotentialChangesWineTimeline(
+            GameTestHelper helper
+    ) {
+        long cellarAge = 50L * 24000L;
+        WineAgeStage fastAgeing = WineAgeStage.from(
+                cellarAge,
+                0,
+                WineQuality.TABLE,
+                GrapeCultivar.SUNCREST.ageingMultiplier()
+        );
+        WineAgeStage cellarWorthy = WineAgeStage.from(
+                cellarAge,
+                0,
+                WineQuality.TABLE,
+                GrapeCultivar.IRONWOOD_RED.ageingMultiplier()
+        );
+
+        helper.assertValueEqual(
+                fastAgeing,
+                WineAgeStage.PEAK,
+                "Low-ageing-potential cultivars should reach their peak sooner"
+        );
+        helper.assertValueEqual(
+                cellarWorthy,
+                WineAgeStage.MATURE,
+                "Cellar-worthy cultivars should develop more slowly"
         );
         helper.succeed();
     }

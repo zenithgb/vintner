@@ -2,6 +2,8 @@ package com.zenith.vintner.block;
 
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.vineyard.GrapeCultivar;
+import com.zenith.vintner.vineyard.GraftedCuttingData;
 import com.zenith.vintner.wine.GrapeQualityEvaluator;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineVintageConditions;
@@ -258,10 +260,12 @@ public abstract class GrapevineBlock
         }
 
         SeasonalContext seasonalContext = SeasonalContext.current(level);
+        GrapeCultivar cultivar = VineManagementSavedData.get(level)
+                .cultivar(pos, variety);
         if (age < MAX_AGE
                 && seasonalContext.season().shouldGrow(
                         random,
-                        variety.growthChanceDenominator(),
+                        cultivar.growthChanceDenominator(),
                         VineyardProtection.isProtected(level, pos)
                 )
                 && level.getRawBrightness(pos.above(2), 0) >= 9) {
@@ -631,10 +635,16 @@ public abstract class GrapevineBlock
                     prunedUpper,
                     Block.UPDATE_ALL
             );
+            ItemStack cutting = new ItemStack(getCuttingItem());
+            GraftedCuttingData.applyCultivar(
+                    cutting,
+                    VineManagementSavedData.get(serverLevel)
+                            .cultivar(rootPos, variety)
+            );
             Block.popResource(
                     serverLevel,
                     rootPos.above(),
-                    new ItemStack(getCuttingItem())
+                    cutting
             );
             serverLevel.playSound(
                     null,
@@ -710,12 +720,13 @@ public abstract class GrapevineBlock
                             serverLevel,
                             rootPos
                     );
-            int harvestRange = variety.maximumHarvest()
-                    - variety.minimumHarvest()
+            GrapeCultivar cultivar = report.cultivar();
+            int harvestRange = cultivar.maximumHarvest()
+                    - cultivar.minimumHarvest()
                     + 1;
             int grapeCount = Math.max(
                     1,
-                    variety.minimumHarvest()
+                    cultivar.minimumHarvest()
                             + serverLevel.getRandom().nextInt(harvestRange)
                             + report.vineAgeStage().harvestAdjustment()
                             + report.yieldMode().harvestAdjustment()
@@ -741,6 +752,7 @@ public abstract class GrapevineBlock
                             report.irrigated()
                     )
             );
+            WineMetadata.applyCultivar(grapes, cultivar);
             Block.popResource(
                     serverLevel,
                     pos,

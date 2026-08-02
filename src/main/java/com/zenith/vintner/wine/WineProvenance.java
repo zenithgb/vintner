@@ -1,6 +1,7 @@
 package com.zenith.vintner.wine;
 
 import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.vineyard.GrapeCultivar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.storage.ValueInput;
@@ -78,8 +79,26 @@ public record WineProvenance(
             UUID producerId,
             String producerName
     ) {
+        return batched(
+                GrapeCultivar.defaultFor(variety),
+                gameTime,
+                dimension,
+                origin,
+                producerId,
+                producerName
+        );
+    }
+
+    public static WineProvenance batched(
+            GrapeCultivar cultivar,
+            long gameTime,
+            String dimension,
+            BlockPos origin,
+            UUID producerId,
+            String producerName
+    ) {
         return new WineProvenance(
-                variety.name().toLowerCase(Locale.ROOT),
+                cultivar.serializedName(),
                 gameTime,
                 dimension,
                 origin.getX(),
@@ -199,6 +218,7 @@ public record WineProvenance(
 
         return normalized.equals("red")
                 || normalized.equals("white")
+                || GrapeCultivar.isCultivarName(normalized)
                 ? normalized
                 : UNKNOWN;
     }

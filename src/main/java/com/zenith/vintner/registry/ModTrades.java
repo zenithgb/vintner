@@ -12,6 +12,7 @@ import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.ItemLike;
+import com.zenith.vintner.vineyard.GrapeCultivar;
 
 public final class ModTrades {
     private static final int FALLBACK_MAX_USES = 4;
@@ -84,29 +85,23 @@ public final class ModTrades {
         if (level >= 1) {
             addBuyOffer(offers, ModItems.RED_GRAPES, 16, 1, 2);
             addBuyOffer(offers, ModItems.WHITE_GRAPES, 16, 1, 2);
-            addSellOffer(
-                    offers,
-                    1,
-                    ModItems.RED_GRAPE_CUTTING,
-                    2,
-                    2
-            );
-            addSellOffer(
-                    offers,
-                    1,
-                    ModItems.WHITE_GRAPE_CUTTING,
-                    2,
-                    2
-            );
+            addCultivarOffer(offers, 1, GrapeCultivar.EMBER_NOIR, 2);
+            addCultivarOffer(offers, 1, GrapeCultivar.GOLDEN_VALE, 2);
         }
 
         if (level >= 2) {
+            addCultivarOffer(offers, 2, GrapeCultivar.VALE_PINOT, 10);
+            addCultivarOffer(offers, 2, GrapeCultivar.FROSTLING, 10);
             addBuyOffer(offers, Items.GLASS_BOTTLE, 12, 1, 10);
             addSellOffer(offers, 2, ModItems.RED_MUST, 1, 10);
             addSellOffer(offers, 2, ModItems.WHITE_MUST, 1, 10);
         }
 
         if (level >= 3) {
+            addCultivarOffer(offers, 3, GrapeCultivar.SUNCREST, 15);
+            addCultivarOffer(offers, 3, GrapeCultivar.GREENWAKE, 15);
+            addCultivarOffer(offers, 3, GrapeCultivar.IRONWOOD_RED, 15);
+            addCultivarOffer(offers, 3, GrapeCultivar.SILVERLEAF, 15);
             addSellOffer(
                     offers,
                     5,
@@ -124,11 +119,15 @@ public final class ModTrades {
         }
 
         if (level >= 4) {
+            addCultivarOffer(offers, 4, GrapeCultivar.NIGHTBERRY, 20);
+            addCultivarOffer(offers, 4, GrapeCultivar.HONEYCREST, 20);
             addBuyOffer(offers, ModItems.RED_WINE, 1, 3, 20);
             addBuyOffer(offers, ModItems.WHITE_WINE, 1, 3, 20);
         }
 
         if (level >= 5) {
+            addCultivarOffer(offers, 6, GrapeCultivar.RIVER_GARNET, 30);
+            addCultivarOffer(offers, 6, GrapeCultivar.STONEFLOWER, 30);
             addSellOffer(
                     offers,
                     12,
@@ -282,6 +281,33 @@ public final class ModTrades {
                         REPUTATION_DISCOUNT
                 )
         );
+    }
+
+    private static void addCultivarOffer(
+            MerchantOffers offers,
+            int emeraldCount,
+            GrapeCultivar cultivar,
+            int xp
+    ) {
+        ItemStack result = ModItems.cultivarCutting(cultivar);
+        result.setCount(2);
+        boolean exists = offers.stream().anyMatch(offer ->
+                offer.getBaseCostA().is(Items.EMERALD)
+                        && ItemStack.isSameItemSameComponents(
+                                offer.getResult(),
+                                result
+                        )
+        );
+        if (exists) {
+            return;
+        }
+        offers.add(new MerchantOffer(
+                new ItemCost(Items.EMERALD, emeraldCount),
+                result,
+                STANDARD_MAX_USES,
+                xp,
+                REPUTATION_DISCOUNT
+        ));
     }
 
     private static boolean hasOffer(

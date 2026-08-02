@@ -50,11 +50,21 @@ public enum WineAgeStage {
             int damage,
             WineQuality quality
     ) {
+        return from(age, damage, quality, 1.0F);
+    }
+
+    public static WineAgeStage from(
+            long age,
+            int damage,
+            WineQuality quality,
+            float cultivarPotential
+    ) {
         if (damage >= SPOILED_DAMAGE) {
             return SPOILED;
         }
 
-        float potential = quality.ageingPotential();
+        float potential = quality.ageingPotential()
+                * Math.clamp(cultivarPotential, 0.75F, 1.25F);
         long adjusted = Math.round(age / potential);
 
         if (adjusted >= DECLINING_AT) {

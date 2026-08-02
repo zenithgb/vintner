@@ -3,6 +3,8 @@ package com.zenith.vintner.item;
 import com.zenith.vintner.wine.WineMetadata;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.vineyard.GrapeVariety;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -13,6 +15,17 @@ import java.util.function.Consumer;
 public final class GrapeItem extends Item {
     public GrapeItem(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        GrapeVariety fallback = stack.is(ModItems.WHITE_GRAPES)
+                ? GrapeVariety.WHITE
+                : GrapeVariety.RED;
+        return Component.translatable(
+                "item.vintner.cultivar_grapes",
+                WineMetadata.cultivar(stack, fallback).displayName()
+        );
     }
 
     @Override

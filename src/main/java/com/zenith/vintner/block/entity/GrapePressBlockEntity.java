@@ -8,6 +8,7 @@ import com.zenith.vintner.block.GrapePressBlock;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.vineyard.GrapeCultivar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.ContainerHelper;
@@ -154,10 +155,15 @@ public final class GrapePressBlockEntity extends BlockEntity {
         if (!provenance.known()
                 && producer != null
                 && level != null) {
+            GrapeVariety baseVariety = input.is(ModItems.RED_GRAPES)
+                    ? GrapeVariety.RED
+                    : GrapeVariety.WHITE;
+            GrapeCultivar cultivar = WineMetadata.cultivar(
+                    input,
+                    baseVariety
+            );
             provenance = WineProvenance.batched(
-                    input.is(ModItems.RED_GRAPES)
-                            ? GrapeVariety.RED
-                            : GrapeVariety.WHITE,
+                    cultivar,
                     level.getGameTime(),
                     level.dimension().identifier().toString(),
                     worldPosition,

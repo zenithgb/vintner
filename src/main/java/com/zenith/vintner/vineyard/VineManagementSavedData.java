@@ -21,7 +21,8 @@ public final class VineManagementSavedData extends SavedData {
     private record Entry(
             long position,
             String mode,
-            String rootstock
+            String rootstock,
+            String cultivar
     ) {
         private static final Codec<Entry> CODEC = RecordCodecBuilder.create(
                 instance -> instance.group(
@@ -32,7 +33,11 @@ public final class VineManagementSavedData extends SavedData {
                         Codec.STRING.optionalFieldOf(
                                 "rootstock",
                                 VineRootstock.OWN_ROOTS.serializedName()
-                        ).forGetter(Entry::rootstock)
+                        ).forGetter(Entry::rootstock),
+                        Codec.STRING.optionalFieldOf(
+                                "cultivar",
+                                ""
+                        ).forGetter(Entry::cultivar)
                 ).apply(instance, Entry::new)
         );
     }
@@ -59,6 +64,7 @@ public final class VineManagementSavedData extends SavedData {
 
     private final Map<Long, VineYieldMode> modes = new HashMap<>();
     private final Map<Long, VineRootstock> rootstocks = new HashMap<>();
+    private final Map<Long, GrapeCultivar> cultivars = new HashMap<>();
 
     public VineManagementSavedData() {
     }
@@ -74,6 +80,15 @@ public final class VineManagementSavedData extends SavedData {
             );
             if (rootstock != VineRootstock.OWN_ROOTS) {
                 rootstocks.put(entry.position(), rootstock);
+            }
+            if (GrapeCultivar.isCultivarName(entry.cultivar())) {
+                cultivars.put(
+                        entry.position(),
+                        GrapeCultivar.fromName(
+                                entry.cultivar(),
+                                GrapeVariety.RED
+                        )
+                );
             }
         }
     }
@@ -94,6 +109,29 @@ public final class VineManagementSavedData extends SavedData {
                 rootPos.asLong(),
                 VineRootstock.OWN_ROOTS
         );
+    }
+
+    public GrapeCultivar cultivar(
+            BlockPos rootPos,
+            GrapeVariety fallback
+    ) {
+        return cultivars.getOrDefault(
+                rootPos.asLong(),
+                GrapeCultivar.defaultFor(fallback)
+        );
+    }
+
+    public void setCultivar(
+            BlockPos rootPos,
+            GrapeCultivar cultivar
+    ) {
+        GrapeCultivar previous = cultivars.put(
+                rootPos.asLong(),
+                cultivar
+        );
+        if (previous != cultivar) {
+            setDirty();
+        }
     }
 
     public void setRootstock(
@@ -138,7 +176,8 @@ public final class VineManagementSavedData extends SavedData {
     public void remove(BlockPos rootPos) {
         long key = rootPos.asLong();
         if (modes.remove(key) != null
-                | rootstocks.remove(key) != null) {
+                | rootstocks.remove(key) != null
+                | cultivars.remove(key) != null) {
             setDirty();
         }
     }
@@ -146,6 +185,7 @@ public final class VineManagementSavedData extends SavedData {
     private List<Entry> entries() {
         HashSet<Long> positions = new HashSet<>(modes.keySet());
         positions.addAll(rootstocks.keySet());
+        positions.addAll(cultivars.keySet());
         List<Entry> entries = new ArrayList<>(positions.size());
         positions.forEach(position -> entries.add(new Entry(
                 position,
@@ -156,7 +196,10 @@ public final class VineManagementSavedData extends SavedData {
                 rootstocks.getOrDefault(
                         position,
                         VineRootstock.OWN_ROOTS
-                ).serializedName()
+                ).serializedName(),
+                cultivars.containsKey(position)
+                        ? cultivars.get(position).serializedName()
+                        : ""
         )));
         return entries;
     }

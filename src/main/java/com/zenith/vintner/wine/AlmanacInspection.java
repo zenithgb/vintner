@@ -6,7 +6,6 @@ import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.registry.ModBlocks;
-import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.vineyard.TerroirMessages;
 import com.zenith.vintner.vineyard.TerroirReport;
@@ -126,7 +125,7 @@ public final class AlmanacInspection {
                 : pos;
         BlockState root = level.getBlockState(rootPos);
 
-        if (!(root.getBlock() instanceof GrapevineBlock grapevine)) {
+        if (!(root.getBlock() instanceof GrapevineBlock)) {
             player.sendSystemMessage(Component.translatable(
                     "message.vintner.almanac.no_reading"
             ).withStyle(ChatFormatting.GRAY));
@@ -138,16 +137,23 @@ public final class AlmanacInspection {
                 level,
                 rootPos
         );
-        GrapeVariety variety = grapevine.getVariety();
-
         player.sendSystemMessage(Component.translatable(
                 "message.vintner.almanac.ripeness_title",
-                Component.translatable(
-                        variety == GrapeVariety.RED
-                                ? "grape_variety.vintner.red"
-                                : "grape_variety.vintner.white"
-                )
+                report.cultivar().displayName()
         ).withStyle(ChatFormatting.GOLD));
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.almanac.cultivar_profile",
+                report.cultivar().ripeningDisplayName(),
+                report.cultivar().minimumHarvest(),
+                report.cultivar().maximumHarvest(),
+                report.cultivar().wineStyleDisplayName(),
+                report.cultivar().benefitDisplayName()
+        ).withStyle(ChatFormatting.DARK_GREEN));
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.almanac.cultivar_fit",
+                report.cultivar().siteSuitability(report.terroir()),
+                report.cultivar().ageingPotential()
+        ).withStyle(ChatFormatting.DARK_GRAY));
         player.sendSystemMessage(Component.translatable(
                 "message.vintner.almanac.ripeness_stage",
                 Component.translatable(

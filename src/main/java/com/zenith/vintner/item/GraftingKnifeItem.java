@@ -7,9 +7,11 @@ import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.vineyard.GrapeCultivar;
 import com.zenith.vintner.vineyard.GraftedCuttingData;
 import com.zenith.vintner.vineyard.NurseryPlant;
 import com.zenith.vintner.vineyard.VineRootstock;
+import com.zenith.vintner.vineyard.VineManagementSavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -102,6 +104,7 @@ public final class GraftingKnifeItem extends Item {
                     NurseryBedBlock.emptiedState(state),
                     Block.UPDATE_ALL
             );
+            VineManagementSavedData.get(serverLevel).remove(clickedPos);
             if (!player.getAbilities().instabuild) {
                 cutting.shrink(1);
                 knife.hurtAndBreak(1, player, knifeHand);
@@ -160,22 +163,31 @@ public final class GraftingKnifeItem extends Item {
 
         if (!(rootState.getBlock() instanceof GrapevineBlock rootVine)
                 || rootState.getValue(GrapevineBlock.UPPER)
-                || !isMatchingUpper(rootVine, upperState)
-                || rootVine.getVariety() == targetVariety) {
+                || !isMatchingUpper(rootVine, upperState)) {
+            return InteractionResult.FAIL;
+        }
+
+        GrapeCultivar targetCultivar = GraftedCuttingData.cultivar(
+                cutting,
+                targetVariety
+        );
+        GrapeCultivar currentCultivar = level instanceof ServerLevel serverLevel
+                ? VineManagementSavedData.get(serverLevel)
+                        .cultivar(rootPos, rootVine.getVariety())
+                : GrapeCultivar.defaultFor(rootVine.getVariety());
+        if (rootVine.getVariety() == targetVariety
+                && currentCultivar == targetCultivar) {
             return InteractionResult.FAIL;
         }
 
         if (level instanceof ServerLevel serverLevel) {
-            BlockState graftedRoot = graftedState(
-                    rootState,
-                    targetVariety,
-                    false
-            );
-            BlockState graftedUpper = graftedState(
-                    upperState,
-                    targetVariety,
-                    true
-            );
+            boolean changesColour = rootVine.getVariety() != targetVariety;
+            BlockState graftedRoot = changesColour
+                    ? graftedState(rootState, targetVariety, false)
+                    : rootState.setValue(GrapevineBlock.AGE, 2);
+            BlockState graftedUpper = changesColour
+                    ? graftedState(upperState, targetVariety, true)
+                    : upperState.setValue(GrapevineBlock.AGE, 2);
 
             int atomicFlags = Block.UPDATE_CLIENTS
                     | Block.UPDATE_KNOWN_SHAPE;
@@ -193,6 +205,10 @@ public final class GraftingKnifeItem extends Item {
             serverLevel.updateNeighborsAt(
                     rootPos.above(),
                     graftedUpper.getBlock()
+            );
+            VineManagementSavedData.get(serverLevel).setCultivar(
+                    rootPos,
+                    targetCultivar
             );
             serverLevel.playSound(
                     null,

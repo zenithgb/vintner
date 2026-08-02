@@ -1,5 +1,7 @@
 package com.zenith.vintner.wine;
 
+import com.zenith.vintner.vineyard.GrapeCultivar;
+import com.zenith.vintner.vineyard.GrapeVariety;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -295,6 +297,26 @@ public final class WineMetadata {
         );
     }
 
+    /** Records cultivar identity without beginning batch provenance. */
+    public static void applyCultivar(
+            ItemStack stack,
+            GrapeCultivar cultivar
+    ) {
+        CompoundTag tag = getTagCopy(stack);
+        tag.putString(VARIETY_KEY, cultivar.serializedName());
+        setTag(stack, tag);
+    }
+
+    public static GrapeCultivar cultivar(
+            ItemStack stack,
+            GrapeVariety fallback
+    ) {
+        return GrapeCultivar.fromName(
+                getTagCopy(stack).getStringOr(VARIETY_KEY, ""),
+                fallback
+        );
+    }
+
     public static void applyVintageConditions(
             ItemStack stack,
             WineVintageConditions conditions
@@ -553,10 +575,18 @@ public final class WineMetadata {
     }
 
     public static WineAgeStage ageStage(ItemStack stack) {
+        String variety = provenance(stack).variety();
+        float cultivarPotential = GrapeCultivar.isCultivarName(variety)
+                ? GrapeCultivar.fromName(
+                        variety,
+                        GrapeVariety.RED
+                ).ageingMultiplier()
+                : 1.0F;
         return WineAgeStage.from(
                 bottleAge(stack),
                 storageDamage(stack),
-                quality(stack)
+                quality(stack),
+                cultivarPotential
         );
     }
 

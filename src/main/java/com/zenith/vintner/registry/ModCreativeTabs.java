@@ -10,6 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import com.zenith.vintner.vineyard.GrapeCultivar;
 
 public final class ModCreativeTabs {
     private static final ResourceKey<CreativeModeTab> VINTNER_TAB_KEY =
@@ -37,8 +38,12 @@ public final class ModCreativeTabs {
                                 output.accept(ModBlocks.VINEYARD_SOIL);
                                 ModBlocks.TRELLISES.values()
                                         .forEach(output::accept);
-                                output.accept(ModItems.RED_GRAPE_CUTTING);
-                                output.accept(ModItems.WHITE_GRAPE_CUTTING);
+                                for (GrapeCultivar cultivar
+                                        : GrapeCultivar.values()) {
+                                    output.accept(
+                                            ModItems.cultivarCutting(cultivar)
+                                    );
+                                }
                                 output.accept(ModItems.ROOTSTOCK_CUTTING);
                                 output.accept(
                                         ModItems.RESISTANT_ROOTSTOCK_CUTTING

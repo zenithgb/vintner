@@ -15,6 +15,7 @@ import com.zenith.vintner.vineyard.VineManagementSavedData;
 import com.zenith.vintner.vineyard.VineYieldMode;
 import com.zenith.vintner.vineyard.VineRootstock;
 import com.zenith.vintner.vineyard.VineyardThreat;
+import com.zenith.vintner.vineyard.GrapeCultivar;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -81,6 +82,10 @@ public final class GrapeQualityEvaluator {
                 ? VineManagementSavedData.get(serverLevel)
                         .rootstock(vinePos)
                 : VineRootstock.OWN_ROOTS;
+        GrapeCultivar cultivar = level instanceof ServerLevel serverLevel
+                ? VineManagementSavedData.get(serverLevel)
+                        .cultivar(vinePos, variety)
+                : GrapeCultivar.defaultFor(variety);
         boolean managedYield = yieldMode != VineYieldMode.HIGH_YIELD;
         SeasonalContext seasonalContext = level instanceof ServerLevel serverLevel
                 ? SeasonalContext.current(serverLevel)
@@ -116,7 +121,9 @@ public final class GrapeQualityEvaluator {
                 : Math.min(2, threat.healthPoints());
         vineHealthPoints = Math.min(
                 6,
-                vineHealthPoints + rootstock.healthBonus(threat)
+                vineHealthPoints
+                        + rootstock.healthBonus(threat)
+                        + cultivar.healthBonus(threat)
         );
         boolean healthyVine = vineHealthPoints == 6;
         int harvestWeatherPoints = weatherEvent.harvestQualityPoints(
@@ -124,7 +131,7 @@ public final class GrapeQualityEvaluator {
         );
 
         int score = scoreWithTerroirAgeWeatherYieldAndHealth(
-                terroir.vineyardQualityPoints(variety),
+                terroir.vineyardQualityPoints(cultivar),
                 vineAgeStage.qualityPoints(),
                 vineHealthPoints,
                 yieldMode.qualityPoints(),
@@ -150,6 +157,7 @@ public final class GrapeQualityEvaluator {
                 vineAgeDays,
                 yieldMode,
                 rootstock,
+                cultivar,
                 threat,
                 vineHealthPoints,
                 score,
