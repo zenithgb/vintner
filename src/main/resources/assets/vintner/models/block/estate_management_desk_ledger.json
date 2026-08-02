@@ -1,0 +1,140 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "cover": "minecraft:block/red_wool",
+    "pages": "minecraft:block/bone_block_side",
+    "spine": "minecraft:block/brown_wool",
+    "brass": "minecraft:block/raw_gold_block",
+    "particle": "minecraft:block/dark_oak_planks"
+  },
+  "elements": [
+    {
+      "from": [
+        3.6,
+        11.72,
+        4.1
+      ],
+      "to": [
+        7.45,
+        12.05,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cover"
+        },
+        "east": {
+          "texture": "#cover"
+        },
+        "south": {
+          "texture": "#cover"
+        },
+        "west": {
+          "texture": "#cover"
+        },
+        "down": {
+          "texture": "#cover"
+        },
+        "up": {
+          "texture": "#cover"
+        }
+      }
+    },
+    {
+      "from": [
+        3.9,
+        12.05,
+        4.35
+      ],
+      "to": [
+        7.2,
+        12.22,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pages"
+        },
+        "east": {
+          "texture": "#pages"
+        },
+        "south": {
+          "texture": "#pages"
+        },
+        "west": {
+          "texture": "#pages"
+        },
+        "down": {
+          "texture": "#pages"
+        },
+        "up": {
+          "texture": "#pages"
+        }
+      }
+    },
+    {
+      "from": [
+        3.45,
+        11.72,
+        4.1
+      ],
+      "to": [
+        4.05,
+        12.22,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#spine"
+        },
+        "east": {
+          "texture": "#spine"
+        },
+        "south": {
+          "texture": "#spine"
+        },
+        "west": {
+          "texture": "#spine"
+        },
+        "down": {
+          "texture": "#spine"
+        },
+        "up": {
+          "texture": "#spine"
+        }
+      }
+    },
+    {
+      "from": [
+        6.85,
+        12.22,
+        6.05
+      ],
+      "to": [
+        7.35,
+        12.34,
+        6.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#brass"
+        },
+        "east": {
+          "texture": "#brass"
+        },
+        "south": {
+          "texture": "#brass"
+        },
+        "west": {
+          "texture": "#brass"
+        },
+        "down": {
+          "texture": "#brass"
+        },
+        "up": {
+          "texture": "#brass"
+        }
+      }
+    }
+  ]
+}
