@@ -85,6 +85,7 @@ public final class ModTrades {
         if (level >= 1) {
             addBuyOffer(offers, ModItems.RED_GRAPES, 16, 1, 2);
             addBuyOffer(offers, ModItems.WHITE_GRAPES, 16, 1, 2);
+            addBuyOffer(offers, ModItems.POMACE, 12, 1, 2);
             addCultivarOffer(offers, 1, GrapeCultivar.EMBER_NOIR, 2);
             addCultivarOffer(offers, 1, GrapeCultivar.GOLDEN_VALE, 2);
         }
@@ -92,6 +93,7 @@ public final class ModTrades {
         if (level >= 2) {
             addCultivarOffer(offers, 2, GrapeCultivar.VALE_PINOT, 10);
             addCultivarOffer(offers, 2, GrapeCultivar.FROSTLING, 10);
+            addBuyOffer(offers, ModItems.GRAPE_SEEDS, 16, 1, 10);
             addBuyOffer(offers, Items.GLASS_BOTTLE, 12, 1, 10);
             addSellOffer(offers, 2, ModItems.RED_MUST, 1, 10);
             addSellOffer(offers, 2, ModItems.WHITE_MUST, 1, 10);

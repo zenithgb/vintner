@@ -646,7 +646,7 @@ public final class VintnerGameTests {
         assertTradeProgression(
                 helper,
                 winemaker,
-                new int[]{4, 9, 15, 19, 23},
+                new int[]{5, 11, 17, 21, 25},
                 "Winemaker"
         );
         assertTradeProgression(
@@ -658,7 +658,7 @@ public final class VintnerGameTests {
 
         helper.assertValueEqual(
                 winemaker.getOffers().size(),
-                23,
+                25,
                 "A master Winemaker should expose all five trade tiers"
         );
         helper.assertValueEqual(
@@ -673,6 +673,20 @@ public final class VintnerGameTests {
                 ModItems.RED_GRAPES,
                 Items.EMERALD,
                 "Winemakers should buy grapes"
+        );
+        assertTrade(
+                helper,
+                winemaker.getOffers(),
+                ModItems.POMACE,
+                Items.EMERALD,
+                "Winemakers should buy useful pomace"
+        );
+        assertTrade(
+                helper,
+                winemaker.getOffers(),
+                ModItems.GRAPE_SEEDS,
+                Items.EMERALD,
+                "Winemakers should buy grape seeds"
         );
         assertTrade(
                 helper,
@@ -714,7 +728,7 @@ public final class VintnerGameTests {
         ModTrades.refreshVillagerOffers(cooper);
         helper.assertValueEqual(
                 winemaker.getOffers().size(),
-                23,
+                25,
                 "Refreshing Winemaker trades must not create duplicates"
         );
         helper.assertValueEqual(
@@ -1900,6 +1914,11 @@ public final class VintnerGameTests {
                     helper,
                     player,
                     "compost_from_pomace"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "purple_dye_from_pomace"
             );
             assertRecipeKnown(
                     helper,
