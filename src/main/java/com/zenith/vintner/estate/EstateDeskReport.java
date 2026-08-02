@@ -1,5 +1,6 @@
 package com.zenith.vintner.estate;
 
+import com.zenith.vintner.block.entity.EstateManagementDeskBlockEntity;
 import com.zenith.vintner.network.EstateDeskPayload;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.wine.WineMarketRegion;
@@ -8,11 +9,17 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /** Builds a fresh, read-only estate snapshot when a desk is opened. */
 public final class EstateDeskReport {
@@ -63,7 +70,14 @@ public final class EstateDeskReport {
                 cellar(infrastructure),
                 markets(market),
                 contracts(),
-                ledger(entries)
+                ledger(entries),
+                map()
+        );
+
+        Optional<EstateDeskPayload.MapInfo> map = mapInfo(
+                level,
+                deskPos,
+                player
         );
 
         ServerPlayNetworking.send(
@@ -75,7 +89,9 @@ public final class EstateDeskReport {
                                 profile.foundingYear(),
                                 profile.homeRegionDisplayName()
                         ),
-                        sections
+                        sections,
+                        map,
+                        plotSummaries(level, plots)
                 )
         );
     }
@@ -91,7 +107,8 @@ public final class EstateDeskReport {
                 "cellar",
                 "markets",
                 "contracts",
-                "ledger"
+                "ledger",
+                "map"
         )) {
             sections.add(new EstateDeskPayload.Section(
                     Component.translatable(
@@ -107,7 +124,9 @@ public final class EstateDeskReport {
                 Component.translatable(
                         "screen.vintner.estate_desk.unregistered_subtitle"
                 ),
-                sections
+                sections,
+                Optional.empty(),
+                List.of()
         );
     }
 
@@ -245,6 +264,90 @@ public final class EstateDeskReport {
             }
         }
         return new EstateDeskPayload.Section(tab("ledger"), lines);
+    }
+
+    private static EstateDeskPayload.Section map() {
+        return new EstateDeskPayload.Section(tab("map"), List.of());
+    }
+
+    private static Optional<EstateDeskPayload.MapInfo> mapInfo(
+            ServerLevel level,
+            BlockPos deskPos,
+            ServerPlayer player
+    ) {
+        if (!(level.getBlockEntity(deskPos)
+                instanceof EstateManagementDeskBlockEntity desk)) {
+            return Optional.empty();
+        }
+
+        ItemStack stack = desk.getMapCopy();
+        MapId id = stack.get(DataComponents.MAP_ID);
+        if (id == null) {
+            return Optional.empty();
+        }
+        MapItemSavedData data = level.getMapData(id);
+        if (data == null) {
+            return Optional.empty();
+        }
+
+        // Send a complete vanilla map update because an installed desk map
+        // is no longer carried and therefore is not covered by normal map
+        // inventory synchronization.
+        var decorations = new ArrayList<
+                net.minecraft.world.level.saveddata.maps.MapDecoration
+                >();
+        data.getDecorations().forEach(decorations::add);
+        player.connection.send(new ClientboundMapItemDataPacket(
+                id,
+                data.scale,
+                data.locked,
+                decorations,
+                new MapItemSavedData.MapPatch(
+                        0,
+                        0,
+                        128,
+                        128,
+                        data.colors.clone()
+                )
+        ));
+
+        return Optional.of(new EstateDeskPayload.MapInfo(
+                id.id(),
+                data.centerX,
+                data.centerZ,
+                data.scale,
+                data.dimension.identifier().toString()
+        ));
+    }
+
+    private static List<EstateDeskPayload.PlotSummary> plotSummaries(
+            ServerLevel level,
+            List<VineyardPlot> plots
+    ) {
+        return plots.stream()
+                .limit(32)
+                .map(plot -> {
+                    VineyardPlotReport report = VineyardPlotReport.analyze(
+                            level,
+                            plot
+                    );
+                    return new EstateDeskPayload.PlotSummary(
+                            plot.name(),
+                            plot.dimension(),
+                            plot.minX(),
+                            plot.minZ(),
+                            plot.maxX(),
+                            plot.maxZ(),
+                            plot.area(),
+                            report.vineCount(),
+                            report.varietySummary(),
+                            report.healthPercent(),
+                            report.projectedYield(),
+                            report.projectedQuality(),
+                            report.irrigationPercent()
+                    );
+                })
+                .toList();
     }
 
     private static EstateDeskPayload.Section section(

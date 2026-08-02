@@ -10,15 +10,19 @@ import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /** A bounded, server-authored snapshot for the Estate Management Desk. */
 public record EstateDeskPayload(
         Component estateName,
         Component subtitle,
-        List<Section> sections
+        List<Section> sections,
+        Optional<MapInfo> map,
+        List<PlotSummary> plots
 ) implements CustomPacketPayload {
     private static final int MAX_SECTIONS = 8;
     private static final int MAX_LINES = 32;
+    private static final int MAX_PLOTS = 32;
 
     public static final Type<EstateDeskPayload> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(
@@ -62,10 +66,44 @@ public record EstateDeskPayload(
                 }
                 sections.add(new Section(title, lines));
             }
+            Optional<MapInfo> map = buffer.readBoolean()
+                    ? Optional.of(new MapInfo(
+                            buffer.readVarInt(),
+                            buffer.readInt(),
+                            buffer.readInt(),
+                            buffer.readByte(),
+                            buffer.readUtf(128)
+                    ))
+                    : Optional.empty();
+            int plotCount = readBoundedCount(
+                    buffer,
+                    MAX_PLOTS,
+                    "plots"
+            );
+            List<PlotSummary> plots = new ArrayList<>(plotCount);
+            for (int index = 0; index < plotCount; index++) {
+                plots.add(new PlotSummary(
+                        buffer.readUtf(64),
+                        buffer.readUtf(128),
+                        buffer.readInt(),
+                        buffer.readInt(),
+                        buffer.readInt(),
+                        buffer.readInt(),
+                        buffer.readVarInt(),
+                        buffer.readVarInt(),
+                        buffer.readUtf(32),
+                        buffer.readVarInt(),
+                        buffer.readVarInt(),
+                        buffer.readVarInt(),
+                        buffer.readVarInt()
+                ));
+            }
             return new EstateDeskPayload(
                     estateName,
                     subtitle,
-                    sections
+                    sections,
+                    map,
+                    plots
             );
         }
 
@@ -93,12 +131,40 @@ public record EstateDeskPayload(
                     ComponentSerialization.STREAM_CODEC.encode(buffer, line);
                 }
             }
+            buffer.writeBoolean(payload.map().isPresent());
+            payload.map().ifPresent(map -> {
+                buffer.writeVarInt(map.id());
+                buffer.writeInt(map.centerX());
+                buffer.writeInt(map.centerZ());
+                buffer.writeByte(map.scale());
+                buffer.writeUtf(map.dimension(), 128);
+            });
+            buffer.writeVarInt(payload.plots().size());
+            for (PlotSummary plot : payload.plots()) {
+                buffer.writeUtf(plot.name(), 64);
+                buffer.writeUtf(plot.dimension(), 128);
+                buffer.writeInt(plot.minX());
+                buffer.writeInt(plot.minZ());
+                buffer.writeInt(plot.maxX());
+                buffer.writeInt(plot.maxZ());
+                buffer.writeVarInt(plot.area());
+                buffer.writeVarInt(plot.vineCount());
+                buffer.writeUtf(plot.variety(), 32);
+                buffer.writeVarInt(plot.health());
+                buffer.writeVarInt(plot.projectedYield());
+                buffer.writeVarInt(plot.projectedQuality());
+                buffer.writeVarInt(plot.irrigation());
+            }
         }
     };
 
     public EstateDeskPayload {
         sections = List.copyOf(sections).stream()
                 .limit(MAX_SECTIONS)
+                .toList();
+        map = map == null ? Optional.empty() : map;
+        plots = List.copyOf(plots).stream()
+                .limit(MAX_PLOTS)
                 .toList();
     }
 
@@ -129,6 +195,60 @@ public record EstateDeskPayload(
             lines = List.copyOf(lines).stream()
                     .limit(MAX_LINES)
                     .toList();
+        }
+    }
+
+    public record MapInfo(
+            int id,
+            int centerX,
+            int centerZ,
+            byte scale,
+            String dimension
+    ) {
+        public MapInfo {
+            scale = (byte) Math.clamp(scale, 0, 4);
+            dimension = dimension == null
+                    ? "minecraft:overworld"
+                    : dimension;
+        }
+    }
+
+    /** Compact, read-only operational data used by the map workspace. */
+    public record PlotSummary(
+            String name,
+            String dimension,
+            int minX,
+            int minZ,
+            int maxX,
+            int maxZ,
+            int area,
+            int vineCount,
+            String variety,
+            int health,
+            int projectedYield,
+            int projectedQuality,
+            int irrigation
+    ) {
+        public PlotSummary {
+            name = name == null ? "Vineyard" : name;
+            dimension = dimension == null
+                    ? "minecraft:overworld"
+                    : dimension;
+            variety = variety == null ? "Unplanted" : variety;
+            area = Math.max(0, area);
+            vineCount = Math.max(0, vineCount);
+            health = Math.clamp(health, 0, 100);
+            projectedYield = Math.max(0, projectedYield);
+            projectedQuality = Math.clamp(projectedQuality, 0, 100);
+            irrigation = Math.clamp(irrigation, 0, 100);
+        }
+
+        public int width() {
+            return maxX - minX + 1;
+        }
+
+        public int depth() {
+            return maxZ - minZ + 1;
         }
     }
 }
