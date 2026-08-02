@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "#vintner:wines",
+    "minecraft:bowl",
+    "minecraft:beetroot",
+    "minecraft:potato",
+    "minecraft:brown_mushroom"
+  ],
+  "result": {
+    "id": "vintner:vineyard_soup"
+  }
+}

@@ -1709,17 +1709,27 @@ public final class VintnerGameTests {
         ItemStack stew = new ItemStack(ModItems.RED_WINE_STEW);
         ItemStack fish = new ItemStack(ModItems.WHITE_WINE_FISH);
         ItemStack fruit = new ItemStack(ModItems.POACHED_FRUIT);
+        ItemStack braisedMeat = new ItemStack(ModItems.BRAISED_MEAT);
+        ItemStack vineyardSoup = new ItemStack(ModItems.VINEYARD_SOUP);
 
         helper.assertTrue(
                 stew.has(DataComponents.FOOD)
                         && fish.has(DataComponents.FOOD)
-                        && fruit.has(DataComponents.FOOD),
+                        && fruit.has(DataComponents.FOOD)
+                        && braisedMeat.has(DataComponents.FOOD)
+                        && vineyardSoup.has(DataComponents.FOOD),
                 "Every wine-cooked meal should be edible"
         );
         helper.assertTrue(
                 stew.is(ModItemTags.PAIRS_WITH_RED_WINE)
+                        && braisedMeat.is(
+                        ModItemTags.PAIRS_WITH_RED_WINE
+                )
                         && fish.is(ModItemTags.PAIRS_WITH_WHITE_WINE)
-                        && fruit.is(ModItemTags.PAIRS_WITH_WHITE_WINE),
+                        && fruit.is(ModItemTags.PAIRS_WITH_WHITE_WINE)
+                        && vineyardSoup.is(
+                        ModItemTags.PAIRS_WITH_WHITE_WINE
+                ),
                 "Wine-cooked meals should use the matching pairing tags"
         );
         helper.assertTrue(
@@ -1730,7 +1740,11 @@ public final class VintnerGameTests {
                         && new ItemStack(ModItems.WHITE_WINE)
                         .is(ModItemTags.WHITE_WINES)
                         && new ItemStack(ModItems.AGED_WHITE_WINE)
-                        .is(ModItemTags.WHITE_WINES),
+                        .is(ModItemTags.WHITE_WINES)
+                        && new ItemStack(ModItems.RED_WINE)
+                        .is(ModItemTags.WINES)
+                        && new ItemStack(ModItems.WHITE_WINE)
+                        .is(ModItemTags.WINES),
                 "Fresh and aged bottles should work in matching recipes"
         );
 
@@ -1855,6 +1869,16 @@ public final class VintnerGameTests {
                     helper,
                     player,
                     "poached_fruit"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "braised_meat"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "vineyard_soup"
             );
             assertRecipeKnown(
                     helper,

@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "#vintner:red_wines",
+    "#vintner:white_wines"
+  ]
+}

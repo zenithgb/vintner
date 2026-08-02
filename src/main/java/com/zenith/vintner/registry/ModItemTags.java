@@ -7,6 +7,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
 public final class ModItemTags {
+    public static final TagKey<Item> WINES = create("wines");
     public static final TagKey<Item> RED_WINES = create("red_wines");
     public static final TagKey<Item> WHITE_WINES = create("white_wines");
     public static final TagKey<Item> PAIRS_WITH_RED_WINE = create(

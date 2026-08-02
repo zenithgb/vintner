@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "#vintner:red_wines",
+    "minecraft:cooked_porkchop",
+    "minecraft:carrot",
+    "minecraft:brown_mushroom"
+  ],
+  "result": {
+    "id": "vintner:braised_meat"
+  }
+}
