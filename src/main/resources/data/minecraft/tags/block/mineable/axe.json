@@ -123,6 +123,7 @@
     "vintner:warped_tasting_cabinet",
     "vintner:chestnut_aging_barrel",
     "vintner:neutral_aging_barrel",
-    "vintner:large_cask"
+    "vintner:large_cask",
+    "vintner:estate_management_desk"
   ]
 }

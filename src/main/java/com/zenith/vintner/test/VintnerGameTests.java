@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.block.CellarGlassColor;
 import com.zenith.vintner.block.CellarCollectionBlock;
+import com.zenith.vintner.block.EstateManagementDeskBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.NurseryBedBlock;
@@ -144,6 +145,50 @@ public final class VintnerGameTests {
     private static final BlockPos FIRST = new BlockPos(2, 1, 2);
     private static final BlockPos EAST = FIRST.east();
     private static final BlockPos UPPER = FIRST.above();
+
+    @GameTest(maxTicks = 40)
+    public void estateManagementDeskIsDirectionalAndRegistered(
+            GameTestHelper helper
+    ) {
+        helper.assertTrue(
+                ModBlocks.ESTATE_MANAGEMENT_DESK
+                        instanceof EstateManagementDeskBlock,
+                "The estate desk should use its interactive block type"
+        );
+        helper.assertTrue(
+                ModBlocks.ESTATE_MANAGEMENT_DESK.asItem()
+                        != Items.AIR,
+                "The estate desk should have a registered block item"
+        );
+        helper.assertValueEqual(
+                ModBlocks.ESTATE_MANAGEMENT_DESK.defaultBlockState()
+                        .getValue(EstateManagementDeskBlock.FACING),
+                Direction.NORTH,
+                "The estate desk should have a stable default facing"
+        );
+        helper.setBlock(
+                FIRST,
+                ModBlocks.ESTATE_MANAGEMENT_DESK.defaultBlockState()
+                        .setValue(
+                                EstateManagementDeskBlock.FACING,
+                                Direction.EAST
+                        )
+        );
+        helper.assertValueEqual(
+                helper.getBlockState(FIRST).getValue(
+                        EstateManagementDeskBlock.FACING
+                ),
+                Direction.EAST,
+                "The estate desk should retain horizontal orientation"
+        );
+        helper.assertFalse(
+                helper.getBlockState(FIRST)
+                        .getShape(helper.getLevel(), helper.absolutePos(FIRST))
+                        .isEmpty(),
+                "The estate desk should expose a usable outline"
+        );
+        helper.succeed();
+    }
 
     @GameTest(maxTicks = 40)
     public void allWoodVariantRegistriesAreComplete(
