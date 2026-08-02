@@ -53,6 +53,7 @@ import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQuality;
 import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.wine.WineAgeStage;
+import com.zenith.vintner.wine.WineAppraisal;
 import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
 import com.zenith.vintner.wine.WineStyle;
@@ -5174,6 +5175,77 @@ public final class VintnerGameTests {
         helper.assertTrue(
                 WineTastingProfile.from(bottle).body() != null,
                 "The tasting profile should include body as well as notes"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void dynamicWineAppraisalPreservesBaselineAndAppliesRealFactors(
+            GameTestHelper helper
+    ) {
+        ItemStack bottle = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.applyProfile(
+                bottle,
+                0,
+                WineQualityProfile.legacy(WineQuality.TABLE)
+        );
+
+        WineAppraisal baseline = WineAppraisal.independent(bottle);
+        helper.assertValueEqual(
+                baseline.totalValue(),
+                WineQuality.TABLE.tradeValue(),
+                "An undamaged independent bottle should retain its legacy value"
+        );
+        helper.assertValueEqual(
+                WineMetadata.estimatedTradeValue(bottle),
+                baseline.totalValue(),
+                "The compatibility API should use the independent appraisal"
+        );
+
+        WineAppraisal renowned = WineAppraisal.evaluate(
+                bottle,
+                EstateReputationTier.RENOWNED
+        );
+        helper.assertValueEqual(
+                renowned.producerAdjustment(),
+                EstateReputationTier.RENOWNED.ordinal(),
+                "A renowned producer should add its reputation premium"
+        );
+        helper.assertValueEqual(
+                renowned.totalValue() - baseline.totalValue(),
+                EstateReputationTier.RENOWNED.ordinal(),
+                "Producer reputation should change only the producer factor"
+        );
+
+        WineMetadata.ageBottle(bottle, 20L, CellarRating.POOR);
+        WineAppraisal damaged = WineAppraisal.independent(bottle);
+        helper.assertTrue(
+                damaged.conditionAdjustment() < 0,
+                "Poor storage should create a visible condition penalty"
+        );
+        helper.assertTrue(
+                damaged.totalValue() < baseline.totalValue(),
+                "Bottle damage should reduce the appraisal"
+        );
+
+        WineMetadata.ageBottle(
+                bottle,
+                WineAgeStage.SPOILED_DAMAGE * 20L,
+                CellarRating.POOR
+        );
+        WineAppraisal spoiled = WineAppraisal.evaluate(
+                bottle,
+                EstateReputationTier.CELEBRATED
+        );
+        helper.assertValueEqual(
+                spoiled.totalValue(),
+                0,
+                "Spoiled wine should have no appraisal value"
+        );
+        helper.assertValueEqual(
+                spoiled.prestige(),
+                0,
+                "Spoiled wine should provide no settlement prestige"
         );
         helper.succeed();
     }
