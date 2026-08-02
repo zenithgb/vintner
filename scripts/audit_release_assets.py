@@ -521,6 +521,78 @@ def audit_fermentation_airlock_bounds() -> None:
                 )
 
 
+def audit_barrel_status_indicators() -> None:
+    indicator_path = (
+        ASSETS / "models/block/barrel_status_indicator.json"
+    )
+    indicator = load_json(indicator_path)
+    if isinstance(indicator, dict):
+        elements = indicator.get("elements", [])
+        if len(elements) != 1 or not isinstance(elements[0], dict):
+            fail("barrel status indicator must contain one flush element")
+        else:
+            start = elements[0].get("from")
+            end = elements[0].get("to")
+            if (
+                not isinstance(start, list)
+                or not isinstance(end, list)
+                or len(start) != 3
+                or len(end) != 3
+                or start[2] < -0.25
+                or end[2] != 0
+                or start[1] < 6
+                or end[1] > 7
+            ):
+                fail(
+                    "barrel status indicator must sit flush below the "
+                    f"front tap handle: from={start}, to={end}"
+                )
+
+    aliases = (
+        "cask_bung",
+        "fermentation_airlock_indicator",
+    )
+    for alias in aliases:
+        path = ASSETS / f"models/block/{alias}.json"
+        data = load_json(path)
+        if (
+            isinstance(data, dict)
+            and data.get("parent")
+            != "vintner:block/barrel_status_indicator"
+        ):
+            fail(f"{alias} does not use the shared front indicator")
+
+    rotations = {"north", "east", "south", "west"}
+    fermentation_overlays = {
+        "vintner:block/fermentation_barrel_red_fermenting",
+        "vintner:block/fermentation_barrel_white_fermenting",
+        "vintner:block/fermentation_barrel_ready",
+    }
+    for wood in WOODS:
+        block_id = fermentation_id(wood)
+        data = load_json(ASSETS / f"blockstates/{block_id}.json")
+        if not isinstance(data, dict):
+            continue
+        coverage = {
+            (apply.get("model"), when.get("facing"))
+            for part in data.get("multipart", [])
+            if isinstance(part, dict)
+            and isinstance((when := part.get("when")), dict)
+            and isinstance((apply := part.get("apply")), dict)
+            and apply.get("model") in fermentation_overlays
+        }
+        expected = {
+            (model, facing)
+            for model in fermentation_overlays
+            for facing in rotations
+        }
+        if coverage != expected:
+            fail(
+                f"{block_id}: fermenting status indicator is missing "
+                "one or more facing/state combinations"
+            )
+
+
 def main() -> int:
     audit_all_json()
     reachable_models = audit_model_references()
@@ -531,6 +603,7 @@ def main() -> int:
     audit_translations()
     audit_young_grapevine_wires(grapevines)
     audit_fermentation_airlock_bounds()
+    audit_barrel_status_indicators()
 
     if errors:
         print(

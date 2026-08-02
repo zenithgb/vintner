@@ -1,0 +1,19 @@
+{
+  "textures": {
+    "particle": "#indicator"
+  },
+  "elements": [
+    {
+      "from": [7.25, 6.25, -0.125],
+      "to": [8.75, 6.75, 0],
+      "faces": {
+        "north": {"texture": "#indicator"},
+        "east": {"texture": "#indicator"},
+        "south": {"texture": "#indicator"},
+        "west": {"texture": "#indicator"},
+        "up": {"texture": "#indicator"},
+        "down": {"texture": "#indicator"}
+      }
+    }
+  ]
+}
