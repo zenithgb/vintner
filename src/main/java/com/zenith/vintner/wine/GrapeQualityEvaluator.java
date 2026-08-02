@@ -8,6 +8,7 @@ import com.zenith.vintner.vineyard.TerroirReport;
 import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import com.zenith.vintner.vineyard.VineyardProtection;
+import com.zenith.vintner.vineyard.VineyardIrrigation;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -60,6 +61,10 @@ public final class GrapeQualityEvaluator {
                 level,
                 vinePos
         );
+        boolean irrigated = VineyardIrrigation.isIrrigated(
+                level,
+                vinePos
+        );
         VineyardWeatherEvent weatherEvent = level instanceof ServerLevel serverLevel
                 ? VineyardWeatherEvent.at(
                         serverLevel,
@@ -68,7 +73,10 @@ public final class GrapeQualityEvaluator {
                         seasonalContext
                 )
                 : VineyardWeatherEvent.CALM;
-        weatherEvent = weatherEvent.mitigatedBy(protectedCultivation);
+        weatherEvent = weatherEvent.mitigatedBy(
+                protectedCultivation,
+                irrigated
+        );
         int harvestWeatherPoints = weatherEvent.harvestQualityPoints(
                 !dryHarvestWeather
         );
@@ -103,7 +111,8 @@ public final class GrapeQualityEvaluator {
                 seasonalContext,
                 weatherEvent,
                 harvestWeatherPoints,
-                protectedCultivation
+                protectedCultivation,
+                irrigated
         );
     }
 

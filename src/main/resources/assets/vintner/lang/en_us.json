@@ -458,5 +458,7 @@
   "message.vintner.almanac.protected_cultivation": "Protected cultivation: overhead glass shelters this vine.",
   "message.vintner.almanac.vintage_conditions": "Vintage conditions: %s, Year %s | %s",
   "message.vintner.almanac.vintage_protected": "Vintage protection: harvested beneath glass cover.",
+  "message.vintner.almanac.irrigated": "Irrigation: a nearby water channel protects this site from drought.",
+  "message.vintner.almanac.vintage_irrigated": "Vintage management: irrigated during the growing season.",
   "gamerule.vintner.season_length_days": "Vintner season length (days)"
 }

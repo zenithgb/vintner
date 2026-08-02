@@ -623,7 +623,8 @@ public abstract class GrapevineBlock
                     WineVintageConditions.harvested(
                             report.seasonalContext(),
                             report.weatherEvent(),
-                            report.protectedCultivation()
+                            report.protectedCultivation(),
+                            report.irrigated()
                     )
             );
             Block.popResource(

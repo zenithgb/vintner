@@ -14,6 +14,7 @@ import com.zenith.vintner.vineyard.VineyardSurveyRecord;
 import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import com.zenith.vintner.vineyard.VineyardProtection;
+import com.zenith.vintner.vineyard.VineyardIrrigation;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -173,7 +174,8 @@ public final class AlmanacInspection {
                 report.seasonalContext(),
                 report.weatherEvent(),
                 report.harvestWeatherPoints(),
-                report.protectedCultivation()
+                report.protectedCultivation(),
+                report.irrigated()
         );
         grantSurvey(player);
     }
@@ -293,18 +295,20 @@ public final class AlmanacInspection {
                 level,
                 pos
         );
+        boolean irrigated = VineyardIrrigation.isIrrigated(level, pos);
         VineyardWeatherEvent weather = VineyardWeatherEvent.at(
                 level,
                 pos,
                 report.climate(),
                 context
-        ).mitigatedBy(protectedCultivation);
+        ).mitigatedBy(protectedCultivation, irrigated);
         sendSeasonalOutlook(
                 player,
                 context,
                 weather,
                 weather.harvestQualityPoints(level.isRainingAt(pos.above())),
-                protectedCultivation
+                protectedCultivation,
+                irrigated
         );
     }
 
@@ -313,7 +317,8 @@ public final class AlmanacInspection {
             SeasonalContext context,
             VineyardWeatherEvent weather,
             int weatherPoints,
-            boolean protectedCultivation
+            boolean protectedCultivation,
+            boolean irrigated
     ) {
         player.sendSystemMessage(Component.translatable(
                 "message.vintner.almanac.season",
@@ -334,6 +339,11 @@ public final class AlmanacInspection {
         if (protectedCultivation) {
             player.sendSystemMessage(Component.translatable(
                     "message.vintner.almanac.protected_cultivation"
+            ).withStyle(ChatFormatting.AQUA));
+        }
+        if (irrigated) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.vintner.almanac.irrigated"
             ).withStyle(ChatFormatting.AQUA));
         }
     }

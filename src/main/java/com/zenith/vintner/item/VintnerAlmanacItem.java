@@ -127,6 +127,13 @@ public final class VintnerAlmanacItem extends Item {
                                 ).withStyle(ChatFormatting.DARK_GRAY)
                         );
                     }
+                    if (conditions.irrigated()) {
+                        player.sendSystemMessage(
+                                Component.translatable(
+                                        "message.vintner.almanac.vintage_irrigated"
+                                ).withStyle(ChatFormatting.DARK_GRAY)
+                        );
+                    }
                 }
             } else {
                 player.sendSystemMessage(

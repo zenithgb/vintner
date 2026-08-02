@@ -48,6 +48,16 @@ public enum VineyardWeatherEvent {
     }
 
     public VineyardWeatherEvent mitigatedBy(boolean protectedCultivation) {
+        return mitigatedBy(protectedCultivation, false);
+    }
+
+    public VineyardWeatherEvent mitigatedBy(
+            boolean protectedCultivation,
+            boolean irrigated
+    ) {
+        if (irrigated && this == DROUGHT) {
+            return CALM;
+        }
         if (!protectedCultivation) {
             return this;
         }

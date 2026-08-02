@@ -21,6 +21,7 @@ public record VineyardConditionReport(
         SeasonalContext seasonalContext,
         VineyardWeatherEvent weatherEvent,
         int harvestWeatherPoints,
-        boolean protectedCultivation
+        boolean protectedCultivation,
+        boolean irrigated
 ) {
 }

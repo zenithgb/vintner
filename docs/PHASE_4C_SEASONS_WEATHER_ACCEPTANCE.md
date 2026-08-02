@@ -17,9 +17,15 @@
 - Glass placed two to six blocks above a vine counts as protected cultivation.
   It permits slow winter growth and shelters the crop from late frost, hail,
   and heavy rain. It does not remove heatwave or drought pressure.
+- A water channel within four blocks of a vine counts as irrigation and
+  mitigates drought pressure. It does not shelter vines from frost, hail,
+  heat, or heavy rain.
 - Use the Vintner's Almanac on vineyard land or a grapevine to see the current
   season, vintage year, day within the season, local outlook, and its current
   harvest-quality contribution.
+- Harvested grapes retain their season, year, effective weather outlook, and
+  protected or irrigated management. The record follows the batch through
+  pressing, fermentation, ageing, and bottling and is read with the Almanac.
 
 ## Automated acceptance
 
@@ -28,8 +34,12 @@
 - Winter dormancy blocks growth without mutating vine blocks.
 - Protected vines can grow slowly in winter and mitigate only shelter-relevant
   weather events.
+- Nearby water channels mitigate drought within the intended four-block
+  radius without affecting unrelated weather events.
 - Seasonal outlooks are deterministic for the same world, region, year, and
   season.
+- Native vintage conditions survive the complete winemaking pipeline, while
+  matching grapes from different vines remain stackable.
 - All weather outcomes stay within the existing 0–7 harvest-weather budget,
   retaining the established 60-point maximum vineyard contribution.
 

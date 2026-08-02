@@ -18,6 +18,7 @@ public record WineVintageConditions(
         int year,
         VineyardWeatherEvent weatherEvent,
         boolean protectedCultivation,
+        boolean irrigated,
         boolean known
 ) {
     private static final String VERSION_KEY = "VintnerVintageConditionsVersion";
@@ -25,6 +26,7 @@ public record WineVintageConditions(
     private static final String YEAR_KEY = "VintnerHarvestYear";
     private static final String WEATHER_KEY = "VintnerHarvestWeather";
     private static final String PROTECTED_KEY = "VintnerProtectedHarvest";
+    private static final String IRRIGATED_KEY = "VintnerIrrigatedHarvest";
 
     public WineVintageConditions {
         season = season == null ? VineyardSeason.SPRING : season;
@@ -40,6 +42,7 @@ public record WineVintageConditions(
                 1,
                 VineyardWeatherEvent.CALM,
                 false,
+                false,
                 false
         );
     }
@@ -49,11 +52,26 @@ public record WineVintageConditions(
             VineyardWeatherEvent weatherEvent,
             boolean protectedCultivation
     ) {
+        return harvested(
+                context,
+                weatherEvent,
+                protectedCultivation,
+                false
+        );
+    }
+
+    public static WineVintageConditions harvested(
+            SeasonalContext context,
+            VineyardWeatherEvent weatherEvent,
+            boolean protectedCultivation,
+            boolean irrigated
+    ) {
         return new WineVintageConditions(
                 context.season(),
                 context.year(),
                 weatherEvent,
                 protectedCultivation,
+                irrigated,
                 true
         );
     }
@@ -70,6 +88,7 @@ public record WineVintageConditions(
                 weatherEvent.name().toLowerCase(Locale.ROOT)
         );
         tag.putBoolean(PROTECTED_KEY, protectedCultivation);
+        tag.putBoolean(IRRIGATED_KEY, irrigated);
     }
 
     static WineVintageConditions read(CompoundTag tag) {
@@ -81,6 +100,7 @@ public record WineVintageConditions(
                 tag.getIntOr(YEAR_KEY, 1),
                 parseWeather(tag.getStringOr(WEATHER_KEY, "calm")),
                 tag.getBooleanOr(PROTECTED_KEY, false),
+                tag.getBooleanOr(IRRIGATED_KEY, false),
                 true
         );
     }
@@ -103,6 +123,7 @@ public record WineVintageConditions(
                 prefix + "ProtectedHarvest",
                 protectedCultivation
         );
+        output.putBoolean(prefix + "IrrigatedHarvest", irrigated);
     }
 
     static WineVintageConditions load(ValueInput input, String prefix) {
@@ -124,6 +145,10 @@ public record WineVintageConditions(
                 )),
                 input.getBooleanOr(
                         prefix + "ProtectedHarvest",
+                        false
+                ),
+                input.getBooleanOr(
+                        prefix + "IrrigatedHarvest",
                         false
                 ),
                 true

@@ -53,6 +53,7 @@ import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.VineyardSeason;
 import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import com.zenith.vintner.vineyard.VineyardProtection;
+import com.zenith.vintner.vineyard.VineyardIrrigation;
 import net.minecraft.advancements.AdvancementHolder;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -3012,6 +3013,7 @@ public final class VintnerGameTests {
                 WineVintageConditions.harvested(
                         SeasonalContext.atDay(20L, 8),
                         VineyardWeatherEvent.COOL_RIPENING,
+                        true,
                         true
                 );
         WineMetadata.applyVintageConditions(
@@ -4966,6 +4968,42 @@ public final class VintnerGameTests {
                 ),
                 60,
                 "Ideal seasonal weather should preserve the sixty-point cap"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void nearbyWaterChannelsMitigateDrought(
+            GameTestHelper helper
+    ) {
+        BlockPos channel = FIRST.offset(4, -1, 0);
+        helper.setBlock(channel, Blocks.WATER);
+        helper.assertTrue(
+                VineyardIrrigation.isIrrigated(
+                        helper.getLevel(),
+                        helper.absolutePos(FIRST)
+                ),
+                "A water channel within four blocks should irrigate a vine"
+        );
+        helper.assertValueEqual(
+                VineyardWeatherEvent.DROUGHT.mitigatedBy(false, true),
+                VineyardWeatherEvent.CALM,
+                "Irrigation should mitigate drought pressure"
+        );
+        helper.assertValueEqual(
+                VineyardWeatherEvent.HAIL.mitigatedBy(false, true),
+                VineyardWeatherEvent.HAIL,
+                "Irrigation should not shelter vines from hail"
+        );
+
+        helper.setBlock(channel, Blocks.AIR);
+        helper.setBlock(FIRST.offset(5, -1, 0), Blocks.WATER);
+        helper.assertFalse(
+                VineyardIrrigation.isIrrigated(
+                        helper.getLevel(),
+                        helper.absolutePos(FIRST)
+                ),
+                "Water beyond the four-block channel radius should not count"
         );
         helper.succeed();
     }
