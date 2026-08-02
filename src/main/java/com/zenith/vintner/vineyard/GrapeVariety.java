@@ -1,8 +1,9 @@
 package com.zenith.vintner.vineyard;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.StringRepresentable;
 
-public enum GrapeVariety {
+public enum GrapeVariety implements StringRepresentable {
     RED(
             6,
             3,
@@ -45,6 +46,11 @@ public enum GrapeVariety {
                 "grape_variety.vintner."
                         + name().toLowerCase(java.util.Locale.ROOT)
         );
+    }
+
+    @Override
+    public String getSerializedName() {
+        return name().toLowerCase(java.util.Locale.ROOT);
     }
 
     /**

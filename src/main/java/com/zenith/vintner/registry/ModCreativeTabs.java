@@ -40,6 +40,7 @@ public final class ModCreativeTabs {
                                 output.accept(ModItems.RED_GRAPE_CUTTING);
                                 output.accept(ModItems.WHITE_GRAPE_CUTTING);
                                 output.accept(ModItems.GRAFTING_KNIFE);
+                                output.accept(ModBlocks.NURSERY_BED);
                                 output.accept(ModItems.RED_GRAPES);
                                 output.accept(ModItems.WHITE_GRAPES);
                                 ModBlocks.GRAPE_PRESSES.values()

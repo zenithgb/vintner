@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "P P",
+    "PVP",
+    "PPP"
+  ],
+  "key": {
+    "P": "minecraft:oak_planks",
+    "V": "vintner:vineyard_soil"
+  },
+  "result": {
+    "id": "vintner:nursery_bed",
+    "count": 1
+  }
+}

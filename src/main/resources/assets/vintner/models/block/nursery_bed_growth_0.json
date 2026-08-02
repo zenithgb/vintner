@@ -1,0 +1,22 @@
+{
+  "ambientocclusion": false,
+  "textures": {"particle": "#plant"},
+  "elements": [
+    {
+      "from": [3, 3, 7.9],
+      "to": [13, 7, 8.1],
+      "faces": {
+        "north": {"texture": "#plant"},
+        "south": {"texture": "#plant"}
+      }
+    },
+    {
+      "from": [7.9, 3, 3],
+      "to": [8.1, 7, 13],
+      "faces": {
+        "east": {"texture": "#plant"},
+        "west": {"texture": "#plant"}
+      }
+    }
+  ]
+}

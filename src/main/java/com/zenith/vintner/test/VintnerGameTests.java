@@ -6,6 +6,7 @@ import com.zenith.vintner.block.CellarGlassColor;
 import com.zenith.vintner.block.CellarCollectionBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
+import com.zenith.vintner.block.NurseryBedBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.block.WineRackBlock;
@@ -5760,6 +5761,56 @@ public final class VintnerGameTests {
                 VineyardThreat.HEALTHY.healthPoints()
                         > VineyardThreat.ROT_RISK.healthPoints(),
                 "Threat pressure should lower the vine-health contribution"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void nurseryBedPropagatesEitherCutting(
+            GameTestHelper helper
+    ) {
+        BlockState empty = ModBlocks.NURSERY_BED.defaultBlockState();
+        helper.assertFalse(
+                empty.getValue(NurseryBedBlock.OCCUPIED),
+                "A placed nursery bed should begin empty"
+        );
+
+        BlockState planted = NurseryBedBlock.plantedState(
+                empty,
+                GrapeVariety.WHITE
+        );
+        helper.assertTrue(
+                planted.getValue(NurseryBedBlock.OCCUPIED),
+                "Inserting a cutting should occupy the nursery bed"
+        );
+        helper.assertValueEqual(
+                planted.getValue(NurseryBedBlock.VARIETY),
+                GrapeVariety.WHITE,
+                "The bed should remember the inserted cutting variety"
+        );
+
+        BlockState mature = planted.setValue(
+                NurseryBedBlock.AGE,
+                NurseryBedBlock.MAX_AGE
+        );
+        helper.assertTrue(
+                NurseryBedBlock.readyToHarvest(mature),
+                "A fully rooted cutting should be harvestable"
+        );
+        helper.assertValueEqual(
+                NurseryBedBlock.cuttingItem(GrapeVariety.WHITE),
+                ModItems.WHITE_GRAPE_CUTTING,
+                "Harvesting should preserve the propagated variety"
+        );
+        helper.assertValueEqual(
+                NurseryBedBlock.HARVEST_COUNT,
+                3,
+                "One rooted cutting should produce three cuttings"
+        );
+        helper.assertFalse(
+                NurseryBedBlock.emptiedState(mature)
+                        .getValue(NurseryBedBlock.OCCUPIED),
+                "Harvesting should leave the nursery bed reusable"
         );
         helper.succeed();
     }

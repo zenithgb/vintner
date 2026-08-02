@@ -9,6 +9,7 @@ import com.zenith.vintner.block.CellarCollectionBlock;
 import com.zenith.vintner.block.CellarFixtureKind;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapePressBlock;
+import com.zenith.vintner.block.NurseryBedBlock;
 import com.zenith.vintner.block.RedGrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.VintageArchiveBlock;
@@ -227,6 +228,16 @@ public final class ModBlocks {
                             .strength(0.6F)
                             .sound(SoundType.ROOTED_DIRT)
             );
+
+    public static final Block NURSERY_BED = registerWithItem(
+            "nursery_bed",
+            NurseryBedBlock::new,
+            BlockBehaviour.Properties.of()
+                    .strength(1.0F)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion()
+                    .randomTicks()
+    );
 
     public static final Block RED_GRAPEVINE = registerWithoutItem(
             "red_grapevine",
@@ -568,6 +579,7 @@ public final class ModBlocks {
                         CreativeModeTabs.FUNCTIONAL_BLOCKS
                 )
                 .register(output -> {
+                    output.accept(NURSERY_BED);
                     TRELLISES.values().forEach(output::accept);
                     GRAPE_PRESSES.values().forEach(output::accept);
                     FERMENTATION_BARRELS.values()

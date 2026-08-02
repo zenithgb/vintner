@@ -1,0 +1,89 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "vintner:block/nursery_bed"
+      }
+    },
+    {
+      "when": {
+        "occupied": "true",
+        "age": "0",
+        "variety": "red"
+      },
+      "apply": {
+        "model": "vintner:block/nursery_bed_red_0"
+      }
+    },
+    {
+      "when": {
+        "occupied": "true",
+        "age": "1",
+        "variety": "red"
+      },
+      "apply": {
+        "model": "vintner:block/nursery_bed_red_1"
+      }
+    },
+    {
+      "when": {
+        "occupied": "true",
+        "age": "2",
+        "variety": "red"
+      },
+      "apply": {
+        "model": "vintner:block/nursery_bed_red_2"
+      }
+    },
+    {
+      "when": {
+        "occupied": "true",
+        "age": "3",
+        "variety": "red"
+      },
+      "apply": {
+        "model": "vintner:block/nursery_bed_red_3"
+      }
+    },
+    {
+      "when": {
+        "occupied": "true",
+        "age": "0",
+        "variety": "white"
+      },
+      "apply": {
+        "model": "vintner:block/nursery_bed_white_0"
+      }
+    },
+    {
+      "when": {
+        "occupied": "true",
+        "age": "1",
+        "variety": "white"
+      },
+      "apply": {
+        "model": "vintner:block/nursery_bed_white_1"
+      }
+    },
+    {
+      "when": {
+        "occupied": "true",
+        "age": "2",
+        "variety": "white"
+      },
+      "apply": {
+        "model": "vintner:block/nursery_bed_white_2"
+      }
+    },
+    {
+      "when": {
+        "occupied": "true",
+        "age": "3",
+        "variety": "white"
+      },
+      "apply": {
+        "model": "vintner:block/nursery_bed_white_3"
+      }
+    }
+  ]
+}

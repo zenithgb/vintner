@@ -1,0 +1,21 @@
+{
+  "parent": "vintner:block/nursery_bed_growth_0",
+  "elements": [
+    {
+      "from": [3, 3, 7.9],
+      "to": [13, 10, 8.1],
+      "faces": {
+        "north": {"texture": "#plant"},
+        "south": {"texture": "#plant"}
+      }
+    },
+    {
+      "from": [7.9, 3, 3],
+      "to": [8.1, 10, 13],
+      "faces": {
+        "east": {"texture": "#plant"},
+        "west": {"texture": "#plant"}
+      }
+    }
+  ]
+}
