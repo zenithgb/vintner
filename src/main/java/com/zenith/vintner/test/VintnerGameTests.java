@@ -97,7 +97,6 @@ import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
@@ -111,6 +110,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
@@ -373,27 +373,33 @@ public final class VintnerGameTests {
                     houses.size() >= 3,
                     "Every village culture must contain Vintner structures"
             );
-            helper.assertValueEqual(
-                    houses.get(houses.size() - 3).getSecond(),
-                    1,
-                    "Winemaker house weight"
-            );
-            helper.assertValueEqual(
-                    houses.get(houses.size() - 2).getSecond(),
-                    1,
-                    "Cooper house weight"
-            );
-            helper.assertValueEqual(
-                    houses.get(houses.size() - 1).getSecond(),
-                    24,
-                    "Vineyard farm weight"
-            );
+            for (
+                    Pair<Identifier, Integer> expected
+                    : ModVillageStructures.expectedStructures(poolKey)
+            ) {
+                boolean present = houses.stream()
+                        .filter(entry -> entry.getFirst()
+                                instanceof SinglePoolElement single
+                                && single.getTemplateLocation()
+                                .equals(expected.getFirst()))
+                        .anyMatch(entry -> entry.getSecond()
+                                .equals(expected.getSecond()));
 
-            StructurePoolElement vineyard = houses
-                    .get(houses.size() - 1)
-                    .getFirst();
+                helper.assertTrue(
+                        present,
+                        "Missing Vintner structure " + expected.getFirst()
+                                + " with weight " + expected.getSecond()
+                                + " in " + poolKey.identifier()
+                );
+            }
+
+            StructurePoolElement vineyard = houses.stream()
+                    .map(Pair::getFirst)
+                    .filter(ModVillageStructures::isVineyardElement)
+                    .findFirst()
+                    .orElse(null);
             helper.assertTrue(
-                    ModVillageStructures.isVineyardElement(vineyard),
+                    vineyard != null,
                     "Vineyard pool entries must be identifiable for the "
                             + "one-per-village placement guard"
             );
@@ -1909,6 +1915,22 @@ public final class VintnerGameTests {
                 "Every wine-cooked meal should be edible"
         );
         helper.assertTrue(
+                stew.is(ModItemTags.COMMON_FOODS_SOUP)
+                        && vineyardSoup.is(
+                        ModItemTags.COMMON_FOODS_SOUP
+                )
+                        && fish.is(
+                        ModItemTags.COMMON_FOODS_COOKED_FISH
+                )
+                        && braisedMeat.is(
+                        ModItemTags.COMMON_FOODS_COOKED_MEAT
+                )
+                        && fruit.is(
+                        ModItemTags.COMMON_FOODS_FRUIT
+                ),
+                "Wine cooking should publish conventional food tags"
+        );
+        helper.assertTrue(
                 stew.is(ModItemTags.PAIRS_WITH_RED_WINE)
                         && braisedMeat.is(
                         ModItemTags.PAIRS_WITH_RED_WINE
@@ -1947,6 +1969,23 @@ public final class VintnerGameTests {
                             .create()
                             .is(Items.GLASS_BOTTLE),
                     "Cooking with wine should return its Glass Bottle"
+            );
+        }
+        for (Item bowlMeal : List.of(
+                ModItems.RED_WINE_STEW,
+                ModItems.WHITE_WINE_FISH,
+                ModItems.VINEYARD_SOUP
+        )) {
+            ItemStack meal = new ItemStack(bowlMeal);
+            var useRemainder = meal.get(DataComponents.USE_REMAINDER);
+            helper.assertTrue(
+                    useRemainder != null,
+                    "A bowl meal should declare a use remainder"
+            );
+            ItemStack remainder = useRemainder.convertInto().create();
+            helper.assertTrue(
+                    remainder.is(Items.BOWL),
+                    "Eating a bowl meal should return its Bowl"
             );
         }
         helper.succeed();

@@ -120,6 +120,18 @@ public final class ModVillageStructures {
                 .toList();
     }
 
+    public static List<Pair<Identifier, Integer>> expectedStructures(
+            ResourceKey<StructureTemplatePool> poolKey
+    ) {
+        return VILLAGE_STRUCTURES.stream()
+                .filter(definition -> definition.pool().equals(poolKey))
+                .map(definition -> Pair.of(
+                        definition.template(),
+                        definition.weight()
+                ))
+                .toList();
+    }
+
     public static boolean isVineyardElement(
             StructurePoolElement element
     ) {

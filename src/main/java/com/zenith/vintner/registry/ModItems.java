@@ -110,6 +110,7 @@ public final class ModItems {
             properties -> new Item(
                     properties
                             .stacksTo(1)
+                            .usingConvertsTo(Items.BOWL)
                             .food(
                                     new FoodProperties.Builder()
                                             .nutrition(10)
@@ -124,6 +125,7 @@ public final class ModItems {
             properties -> new Item(
                     properties
                             .stacksTo(1)
+                            .usingConvertsTo(Items.BOWL)
                             .food(
                                     new FoodProperties.Builder()
                                             .nutrition(8)
@@ -162,6 +164,7 @@ public final class ModItems {
             properties -> new Item(
                     properties
                             .stacksTo(1)
+                            .usingConvertsTo(Items.BOWL)
                             .food(
                                     new FoodProperties.Builder()
                                             .nutrition(9)
