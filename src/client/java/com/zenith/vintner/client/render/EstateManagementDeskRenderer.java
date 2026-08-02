@@ -22,7 +22,7 @@ public final class EstateManagementDeskRenderer implements
                 EstateManagementDeskBlockEntity,
                 EstateManagementDeskRenderState
                 > {
-    private static final float MAP_SCALE = 0.00235F;
+    private static final float MAP_SCALE = 0.00275F;
     private final MapRenderer mapRenderer;
 
     public EstateManagementDeskRenderer(
@@ -84,12 +84,13 @@ public final class EstateManagementDeskRenderer implements
         poseStack.pushPose();
         poseStack.translate(0.5F, 0.754F, 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(
-                -state.facing.toYRot()
+                state.facing.toYRot() + 180.0F
         ));
 
-        // The left half of the blotter is a proper item-frame-like map
-        // surface; the ledger occupies the right half without overlap.
-        poseStack.translate(-0.165F, 0.002F, -0.055F);
+        // Match the multipart model convention (north = zero rotation) and
+        // fill the framed left-hand document well. The ledger remains on the
+        // other half of the blotter without sharing any surface area.
+        poseStack.translate(-0.15625F, 0.004F, -0.109375F);
         poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
         poseStack.scale(MAP_SCALE, MAP_SCALE, MAP_SCALE);
         poseStack.translate(-64.0F, -64.0F, -1.0F);

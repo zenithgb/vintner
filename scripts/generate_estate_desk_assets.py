@@ -191,10 +191,32 @@ def ledger_model() -> dict[str, object]:
             "particle": "minecraft:block/dark_oak_planks",
         },
         "elements": [
-            cube([8.75, 11.72, 4.35], [12.35, 11.98, 8.55], "#cover"),
-            cube([9.0, 11.98, 4.6], [12.1, 12.1, 8.3], "#pages"),
-            cube([8.55, 11.72, 4.35], [9.05, 12.1, 8.55], "#spine"),
-            cube([11.75, 12.1, 6.05], [12.2, 12.2, 6.8], "#brass"),
+            cube([9.25, 11.72, 4.55], [12.4, 11.98, 8.35], "#cover"),
+            cube([9.5, 11.98, 4.8], [12.15, 12.1, 8.1], "#pages"),
+            cube([9.05, 11.72, 4.55], [9.55, 12.1, 8.35], "#spine"),
+            cube([11.8, 12.1, 5.95], [12.25, 12.2, 6.7], "#brass"),
+        ],
+    }
+
+
+def map_frame_model() -> dict[str, object]:
+    return {
+        "parent": "minecraft:block/block",
+        "textures": {
+            "paper": "minecraft:block/bone_block_side",
+            "leather": "minecraft:block/brown_wool",
+            "brass": "minecraft:block/raw_gold_block",
+            "particle": "minecraft:block/dark_oak_planks",
+        },
+        "elements": [
+            # A parchment backing prevents the live map from visually melting
+            # into the blotter. The thin leather rim reads like an item frame.
+            cube([2.35, 11.72, 3.0], [8.75, 11.79, 9.45], "#paper"),
+            cube([2.2, 11.79, 2.85], [8.9, 11.94, 3.15], "#leather"),
+            cube([2.2, 11.79, 9.3], [8.9, 11.94, 9.6], "#leather"),
+            cube([2.2, 11.79, 3.15], [2.5, 11.94, 9.3], "#leather"),
+            cube([8.6, 11.79, 3.15], [8.9, 11.94, 9.3], "#leather"),
+            cube([5.4, 11.94, 2.75], [5.7, 12.04, 3.05], "#brass"),
         ],
     }
 
@@ -218,7 +240,10 @@ def blockstate(base_model: str) -> dict[str, object]:
             apply["y"] = rotation
         multipart.append({"when": {"facing": facing}, "apply": apply})
 
-    for prop, model in (("has_ledger", "estate_management_desk_ledger"),):
+    for prop, model in (
+        ("has_ledger", "estate_management_desk_ledger"),
+        ("has_map", "estate_management_desk_map_frame"),
+    ):
         for facing, rotation in ROTATIONS.items():
             apply = {
                 "model": f"vintner:block/{model}",
@@ -262,6 +287,10 @@ def main() -> None:
     write_json(
         MODEL_DIR / "estate_management_desk_ledger.json",
         ledger_model(),
+    )
+    write_json(
+        MODEL_DIR / "estate_management_desk_map_frame.json",
+        map_frame_model(),
     )
     # Filled maps are rendered from their actual MapItemSavedData by the desk
     # block-entity renderer, so no painted placeholder model is generated.

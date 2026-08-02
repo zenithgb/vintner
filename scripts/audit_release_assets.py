@@ -678,6 +678,7 @@ def audit_estate_management_desk() -> None:
             / f"{block_id}_blotter_{color}.json"
         )
     require_file(ASSETS / f"models/block/{block_id}_ledger.json")
+    require_file(ASSETS / f"models/block/{block_id}_map_frame.json")
     if (ASSETS / f"models/block/{block_id}_map.json").exists():
         fail(
             f"{block_id}: obsolete painted map model should be removed"
@@ -694,6 +695,7 @@ def audit_estate_management_desk() -> None:
     facings = {"north", "east", "south", "west"}
     base_coverage: set[str] = set()
     ledger_coverage: set[str] = set()
+    map_frame_coverage: set[str] = set()
     blotter_coverage: set[tuple[str, str]] = set()
     for part in multipart:
         if not isinstance(part, dict):
@@ -713,6 +715,11 @@ def audit_estate_management_desk() -> None:
             and when.get("has_ledger") == "true"
         ):
             ledger_coverage.add(facing)
+        if (
+            model == f"vintner:block/{block_id}_map_frame"
+            and when.get("has_map") == "true"
+        ):
+            map_frame_coverage.add(facing)
         color = when.get("blotter_color")
         if (
             color in overlay_colors
@@ -724,6 +731,8 @@ def audit_estate_management_desk() -> None:
         fail(f"{block_id}: base model is missing a facing")
     if ledger_coverage != facings:
         fail(f"{block_id}: ledger model is missing a facing")
+    if map_frame_coverage != facings:
+        fail(f"{block_id}: live map frame is missing a facing")
     expected_blotters = {
         (facing, color)
         for facing in facings
@@ -754,7 +763,7 @@ def audit_estate_management_desk() -> None:
         if coverage != facings:
             fail(f"{variant_id}: desk base model is missing a facing")
         if any(
-            "estate_management_desk_map" in strings(part)
+            f"vintner:block/{block_id}_map" in strings(part)
             for part in variant_state.get("multipart", [])
         ):
             fail(f"{variant_id}: still references the painted map model")
