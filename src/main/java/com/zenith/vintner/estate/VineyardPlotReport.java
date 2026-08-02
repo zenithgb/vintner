@@ -6,6 +6,7 @@ import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.vineyard.TerroirReport;
 import com.zenith.vintner.vineyard.VineAgeSavedData;
+import com.zenith.vintner.vineyard.VineyardIrrigation;
 import com.zenith.vintner.wine.GrapeQualityEvaluator;
 import com.zenith.vintner.wine.VineyardConditionReport;
 import net.minecraft.core.BlockPos;
@@ -20,6 +21,7 @@ public record VineyardPlotReport(
         int vineCount,
         int redVines,
         int whiteVines,
+        int irrigatedVines,
         long averageAgeDays,
         String soil,
         String climate,
@@ -28,6 +30,8 @@ public record VineyardPlotReport(
         int healthPercent
 ) {
     private static final int MAX_CONDITION_SAMPLES = 32;
+    public static final int IMPROVED_IRRIGATION_MINIMUM_VINES = 4;
+    public static final int IMPROVED_IRRIGATION_PERCENT = 75;
 
     public static VineyardPlotReport analyze(
             ServerLevel level,
@@ -36,6 +40,7 @@ public record VineyardPlotReport(
         int vines = 0;
         int red = 0;
         int white = 0;
+        int irrigatedVines = 0;
         long totalAge = 0L;
         int projectedYield = 0;
         int qualityTotal = 0;
@@ -67,6 +72,9 @@ public record VineyardPlotReport(
                     } else {
                         white++;
                     }
+                    if (VineyardIrrigation.isIrrigated(level, pos)) {
+                        irrigatedVines++;
+                    }
                     if (state.getValue(GrapevineBlock.AGE)
                             >= GrapevineBlock.MAX_AGE) {
                         projectedYield += variety.maximumHarvest();
@@ -93,6 +101,7 @@ public record VineyardPlotReport(
                 vines,
                 red,
                 white,
+                irrigatedVines,
                 vines == 0 ? 0L : totalAge / vines,
                 terroir.soil().type().name().toLowerCase(Locale.ROOT),
                 terroir.climate().band().name().toLowerCase(Locale.ROOT),
@@ -122,5 +131,16 @@ public record VineyardPlotReport(
             return "White";
         }
         return "Unplanted";
+    }
+
+    public int irrigationPercent() {
+        return vineCount == 0
+                ? 0
+                : Math.clamp(irrigatedVines * 100 / vineCount, 0, 100);
+    }
+
+    public boolean hasImprovedIrrigation() {
+        return vineCount >= IMPROVED_IRRIGATION_MINIMUM_VINES
+                && irrigationPercent() >= IMPROVED_IRRIGATION_PERCENT;
     }
 }

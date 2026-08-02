@@ -593,5 +593,24 @@ public final class VintnerAlmanacItem extends Item {
                 report.projectedYield(),
                 report.projectedQuality()
         ).withStyle(ChatFormatting.DARK_GRAY));
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.plot.irrigation",
+                report.irrigatedVines(),
+                report.vineCount(),
+                report.irrigationPercent(),
+                report.hasImprovedIrrigation()
+                        ? Component.translatable(
+                                "estate_upgrade.vintner.irrigation.ready"
+                        )
+                        : Component.translatable(
+                                "estate_upgrade.vintner.irrigation.incomplete",
+                                VineyardPlotReport
+                                        .IMPROVED_IRRIGATION_MINIMUM_VINES,
+                                VineyardPlotReport
+                                        .IMPROVED_IRRIGATION_PERCENT
+                        )
+        ).withStyle(report.hasImprovedIrrigation()
+                ? ChatFormatting.AQUA
+                : ChatFormatting.DARK_GRAY));
     }
 }
