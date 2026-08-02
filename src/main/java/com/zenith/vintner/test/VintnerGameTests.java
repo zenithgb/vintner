@@ -22,6 +22,9 @@ import com.zenith.vintner.estate.EstateProfile;
 import com.zenith.vintner.estate.EstateInfrastructureReport;
 import com.zenith.vintner.estate.EstateLedgerEvent;
 import com.zenith.vintner.estate.EstateLedgerSavedData;
+import com.zenith.vintner.estate.EstateReputationProfile;
+import com.zenith.vintner.estate.EstateReputationSavedData;
+import com.zenith.vintner.estate.EstateReputationTier;
 import com.zenith.vintner.estate.EstateSavedData;
 import com.zenith.vintner.estate.LedgerEventType;
 import com.zenith.vintner.estate.VineyardPlot;
@@ -130,6 +133,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class VintnerGameTests {
@@ -3480,6 +3484,186 @@ public final class VintnerGameTests {
                 AgingVessel.OAK.qualityContribution(1)
                         + expectedFacility,
                 "The locked facility bonus should reach bottle metadata"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void estateReputationUsesVerifiedAchievements(
+            GameTestHelper helper
+    ) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        EstateSavedData.get(helper.getLevel()).register(
+                owner,
+                helper.getLevel(),
+                helper.absolutePos(FIRST),
+                "Stone Hill Estate",
+                DyeColor.BLUE
+        );
+        EstateLedgerSavedData ledger =
+                EstateLedgerSavedData.get(helper.getLevel());
+        ledger.record(
+                owner,
+                LedgerEventType.PLOT_REGISTERED,
+                "Upper Slope",
+                64,
+                0L,
+                0
+        );
+        ledger.record(
+                owner,
+                LedgerEventType.PLOT_REGISTERED,
+                "Lower Terrace",
+                64,
+                0L,
+                0
+        );
+        ledger.record(
+                owner,
+                LedgerEventType.PLANTING,
+                "red",
+                160,
+                0L,
+                0
+        );
+        ledger.record(
+                owner,
+                LedgerEventType.HARVEST,
+                "red",
+                320,
+                0L,
+                0
+        );
+        ItemStack wine = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.applyProfile(
+                wine,
+                9,
+                new WineQualityProfile(20, 60, 4, 3, 5, 0)
+        );
+        WineMetadata.ensureBatchIdentity(wine, 711L);
+        ledger.recordWine(owner, LedgerEventType.BOTTLING, wine, 4);
+        ledger.recordWine(owner, LedgerEventType.ARCHIVED, wine, 1);
+
+        EstateReputationSavedData reputationData =
+                EstateReputationSavedData.get(helper.getLevel());
+        EstateReputationProfile earned = reputationData.profile(
+                owner.getUUID()
+        );
+        helper.assertValueEqual(
+                earned.score(),
+                100,
+                "Verified vineyard and vintage achievements should score"
+        );
+        helper.assertValueEqual(
+                earned.tier(),
+                EstateReputationTier.RESPECTED,
+                "One exceptional first vintage should establish respect"
+        );
+
+        ledger.recordWine(owner, LedgerEventType.BOTTLING, wine, 1);
+        helper.assertValueEqual(
+                reputationData.profile(owner.getUUID()).score(),
+                100,
+                "Repeated bottles from one batch must not farm reputation"
+        );
+
+        EstateInfrastructureReport completeFacilities =
+                new EstateInfrastructureReport(2, 2, 2, 4, 1, 1);
+        EstateReputationProfile upgraded =
+                reputationData.recordInfrastructure(
+                        owner.getUUID(),
+                        completeFacilities
+                );
+        helper.assertValueEqual(
+                upgraded.score(),
+                140,
+                "Four physical facilities should add forty reputation"
+        );
+        helper.assertValueEqual(
+                upgraded.tier(),
+                EstateReputationTier.RENOWNED,
+                "A complete working estate should become renowned"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void estateReputationBatchEvidenceIsBounded(
+            GameTestHelper helper
+    ) {
+        String ownerId = java.util.UUID.randomUUID().toString();
+        List<EstateLedgerEvent> events = new ArrayList<>();
+        for (int batch = 1;
+                batch <= EstateReputationProfile.MAX_TRACKED_BATCHES + 8;
+                batch++) {
+            events.addFirst(new EstateLedgerEvent(
+                    ownerId,
+                    LedgerEventType.BOTTLING.serializedName(),
+                    batch,
+                    "Batch " + batch,
+                    4,
+                    batch,
+                    80
+            ));
+        }
+        EstateReputationProfile profile =
+                EstateReputationProfile.empty(ownerId).sync(events);
+
+        helper.assertValueEqual(
+                profile.bottledBatches().size(),
+                EstateReputationProfile.MAX_TRACKED_BATCHES,
+                "Reputation evidence should remain bounded per estate"
+        );
+        helper.assertValueEqual(
+                profile.bottledBatches().getFirst(),
+                9L,
+                "Bounded evidence should retain the newest batch identities"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void estateReputationOutlivesTheLedgerWindow(
+            GameTestHelper helper
+    ) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        EstateSavedData.get(helper.getLevel()).register(
+                owner,
+                helper.getLevel(),
+                helper.absolutePos(FIRST),
+                "Stone Hill Estate",
+                DyeColor.BLUE
+        );
+        EstateLedgerSavedData ledger =
+                EstateLedgerSavedData.get(helper.getLevel());
+        for (int vine = 0; vine < 160; vine++) {
+            ledger.record(
+                    owner,
+                    LedgerEventType.PLANTING,
+                    "Vine " + vine,
+                    1,
+                    0L,
+                    0
+            );
+        }
+
+        helper.assertValueEqual(
+                ledger.entries(owner.getUUID()).size(),
+                EstateLedgerSavedData.MAX_EVENTS_PER_ESTATE,
+                "The operating ledger should remain bounded"
+        );
+        EstateReputationProfile reputation =
+                EstateReputationSavedData.get(helper.getLevel())
+                        .profile(owner.getUUID());
+        helper.assertValueEqual(
+                reputation.plantedVines(),
+                160,
+                "Persistent reputation counters must outlive ledger trimming"
+        );
+        helper.assertValueEqual(
+                reputation.score(),
+                25,
+                "One hundred sixty plantings should earn the capped 20 points"
         );
         helper.succeed();
     }

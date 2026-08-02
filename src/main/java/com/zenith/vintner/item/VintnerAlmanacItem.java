@@ -5,6 +5,9 @@ import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.estate.EstateProfile;
 import com.zenith.vintner.estate.EstateInfrastructureReport;
 import com.zenith.vintner.estate.EstateLedgerSavedData;
+import com.zenith.vintner.estate.EstateReputationProfile;
+import com.zenith.vintner.estate.EstateReputationSavedData;
+import com.zenith.vintner.estate.EstateReputationTier;
 import com.zenith.vintner.estate.EstateSavedData;
 import com.zenith.vintner.estate.LedgerEventType;
 import com.zenith.vintner.estate.VineyardPlot;
@@ -423,6 +426,41 @@ public final class VintnerAlmanacItem extends Item {
                                     "estate_facility.vintner.incomplete"
                             )
             ).withStyle(ChatFormatting.DARK_AQUA));
+            EstateReputationSavedData reputationData =
+                    EstateReputationSavedData.get(
+                            (ServerLevel) serverPlayer.level()
+                    );
+            EstateReputationProfile reputation =
+                    reputationData.syncFromLedger(
+                            serverPlayer.getUUID(),
+                            EstateLedgerSavedData.get(
+                                    (ServerLevel) serverPlayer.level()
+                            ).entries(serverPlayer.getUUID())
+                    );
+            reputation = reputationData.recordInfrastructure(
+                    serverPlayer.getUUID(),
+                    infrastructure
+            );
+            EstateReputationTier next = reputation.tier().next();
+            Component reputationSummary = next == null
+                    ? Component.translatable(
+                            "message.vintner.estate.reputation.max",
+                            Component.translatable(
+                                    reputation.tier().translationKey()
+                            ),
+                            reputation.score()
+                    )
+                    : Component.translatable(
+                            "message.vintner.estate.reputation.progress",
+                            Component.translatable(
+                                    reputation.tier().translationKey()
+                            ),
+                            reputation.score(),
+                            next.minimumScore()
+                    );
+            player.sendSystemMessage(reputationSummary.copy().withStyle(
+                    ChatFormatting.LIGHT_PURPLE
+            ));
         }
     }
 
