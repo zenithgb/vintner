@@ -8,6 +8,9 @@
     "minecraft:suspicious_stew",
     "minecraft:bread",
     "minecraft:apple",
-    "minecraft:carrot"
+    "minecraft:carrot",
+    "vintner:raisins",
+    "vintner:vineyard_bread",
+    "vintner:grape_tart"
   ]
 }

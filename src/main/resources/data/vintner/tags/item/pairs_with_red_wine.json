@@ -7,6 +7,7 @@
     "minecraft:cooked_chicken",
     "minecraft:cooked_rabbit",
     "minecraft:rabbit_stew",
-    "minecraft:baked_potato"
+    "minecraft:baked_potato",
+    "vintner:vineyard_bread"
   ]
 }

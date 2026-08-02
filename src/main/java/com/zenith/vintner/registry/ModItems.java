@@ -28,6 +28,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.level.block.ComposterBlock;
 
 import java.util.function.Function;
@@ -56,6 +57,42 @@ public final class ModItems {
     public static final Item GRAPE_SEEDS = register(
             "grape_seeds",
             Item::new
+    );
+
+    public static final Item RAISINS = register(
+            "raisins",
+            properties -> new Item(
+                    properties.food(
+                            new FoodProperties.Builder()
+                                    .nutrition(2)
+                                    .saturationModifier(0.25F)
+                                    .build()
+                    )
+            )
+    );
+
+    public static final Item VINEYARD_BREAD = register(
+            "vineyard_bread",
+            properties -> new Item(
+                    properties.food(
+                            new FoodProperties.Builder()
+                                    .nutrition(7)
+                                    .saturationModifier(0.70F)
+                                    .build()
+                    )
+            )
+    );
+
+    public static final Item GRAPE_TART = register(
+            "grape_tart",
+            properties -> new Item(
+                    properties.food(
+                            new FoodProperties.Builder()
+                                    .nutrition(8)
+                                    .saturationModifier(0.55F)
+                                    .build()
+                    )
+            )
     );
 
     public static final Item RED_GRAPE_CUTTING = register(
@@ -269,6 +306,9 @@ public final class ModItems {
                 .register(output -> {
                     output.accept(RED_GRAPES);
                     output.accept(WHITE_GRAPES);
+                    output.accept(RAISINS);
+                    output.accept(VINEYARD_BREAD);
+                    output.accept(GRAPE_TART);
                     output.accept(RED_MUST);
                     output.accept(WHITE_MUST);
                     output.accept(RED_WINE);

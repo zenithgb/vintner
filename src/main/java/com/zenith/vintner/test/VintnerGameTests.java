@@ -24,6 +24,7 @@ import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.registry.ModItemTags;
 import com.zenith.vintner.registry.ModGameRules;
 import com.zenith.vintner.registry.ModTrades;
 import com.zenith.vintner.registry.ModVillageStructures;
@@ -1602,6 +1603,55 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void pantryFoodsAreEdibleAndWinePairable(
+            GameTestHelper helper
+    ) {
+        ItemStack raisins = new ItemStack(ModItems.RAISINS);
+        ItemStack bread = new ItemStack(ModItems.VINEYARD_BREAD);
+        ItemStack tart = new ItemStack(ModItems.GRAPE_TART);
+
+        helper.assertTrue(
+                raisins.has(DataComponents.FOOD)
+                        && bread.has(DataComponents.FOOD)
+                        && tart.has(DataComponents.FOOD),
+                "Every pantry food should be edible"
+        );
+        helper.assertTrue(
+                bread.is(ModItemTags.PAIRS_WITH_RED_WINE)
+                        && bread.is(ModItemTags.PAIRS_WITH_WHITE_WINE),
+                "Vineyard bread should pair with both core wine styles"
+        );
+        helper.assertTrue(
+                raisins.is(ModItemTags.PAIRS_WITH_WHITE_WINE)
+                        && tart.is(ModItemTags.PAIRS_WITH_WHITE_WINE),
+                "Fruit pantry foods should pair with white wine"
+        );
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.RED,
+                WineQuality.TABLE
+        );
+        int originalDuration =
+                WineEffectProfile.RED.remainingDuration(player);
+
+        WinePairingManager.onMealConsumed(
+                helper.getLevel(),
+                player,
+                bread
+        );
+
+        helper.assertTrue(
+                WineEffectProfile.RED.remainingDuration(player)
+                        > originalDuration,
+                "Vineyard bread should activate a red wine pairing"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void survivalIngredientsUnlockVintnerRecipes(
             GameTestHelper helper
     ) {
@@ -1616,6 +1666,8 @@ public final class VintnerGameTests {
         triggerInventoryChange(player, Items.BONE_MEAL);
         triggerInventoryChange(player, ModItems.RED_GRAPES);
         triggerInventoryChange(player, ModItems.WHITE_GRAPES);
+        triggerInventoryChange(player, ModItems.POMACE);
+        triggerInventoryChange(player, ModItems.RAISINS);
         triggerInventoryChange(player, Items.BOOK);
         triggerInventoryChange(player, Items.COPPER_INGOT);
 
@@ -1656,6 +1708,31 @@ public final class VintnerGameTests {
                     helper,
                     player,
                     "compost"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "compost_from_pomace"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "raisins_from_red_grapes"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "raisins_from_white_grapes"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "vineyard_bread"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "grape_tart"
             );
             assertRecipeKnown(
                     helper,

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:wheat",
+    "minecraft:sugar",
+    "#minecraft:eggs",
+    "vintner:raisins",
+    "vintner:raisins"
+  ],
+  "result": {
+    "id": "vintner:grape_tart",
+    "count": 2
+  }
+}

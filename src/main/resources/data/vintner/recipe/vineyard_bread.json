@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:bread",
+    "vintner:raisins",
+    "vintner:raisins",
+    "vintner:grape_seeds"
+  ],
+  "result": {
+    "id": "vintner:vineyard_bread"
+  }
+}
