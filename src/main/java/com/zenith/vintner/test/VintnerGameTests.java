@@ -4735,6 +4735,38 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void soilProbeRejectsUnrelatedBlocksWithoutWear(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, Blocks.OAK_PLANKS);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack probe = new ItemStack(ModItems.SOIL_PROBE);
+        player.setItemInHand(InteractionHand.MAIN_HAND, probe);
+        BlockPos absolute = helper.absolutePos(FIRST);
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                probe,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absolute),
+                        Direction.UP,
+                        absolute,
+                        false
+                )
+        );
+
+        helper.assertValueEqual(
+                probe.getDamageValue(),
+                0,
+                "Invalid soil-survey targets must not use durability"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void terroirUsesExistingVineyardQualityBudget(
             GameTestHelper helper
     ) {

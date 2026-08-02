@@ -28,6 +28,22 @@ public final class SoilProbeItem extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
+        if (!TerroirEvaluator.canProbe(
+                context.getLevel().getBlockState(
+                        context.getClickedPos()
+                )
+        )) {
+            if (!context.getLevel().isClientSide()
+                    && context.getPlayer() != null) {
+                context.getPlayer().sendSystemMessage(
+                        Component.translatable(
+                                "message.vintner.soil_probe.invalid_target"
+                        ).withStyle(ChatFormatting.GRAY)
+                );
+            }
+            return InteractionResult.FAIL;
+        }
+
         if (context.getLevel() instanceof ServerLevel serverLevel) {
             TerroirReport report = TerroirEvaluator.inspect(
                     serverLevel,

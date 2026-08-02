@@ -118,6 +118,7 @@
   "vineyard_condition.vintner.poor": "Poor",
   "message.vintner.vineyard_conditions": "Site: sky %s, temperature %s, rainfall %s, soil %s | Vine: maturity %s, health %s, yield %s | Harvest: ripeness %s, weather %s | Predicted quality: %s (%s/60)",
   "message.vintner.vineyard_quick_status": "Predicted quality: %s (%s/60) | Site potential: %s/100. Use a Soil Probe or Almanac for details.",
+  "message.vintner.soil_probe.invalid_target": "The Soil Probe must be used directly on soil or suitable ground.",
   "terroir_rating.vintner.very_low": "very low",
   "terroir_rating.vintner.low": "low",
   "terroir_rating.vintner.moderate": "moderate",

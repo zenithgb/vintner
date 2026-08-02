@@ -181,6 +181,11 @@ public final class TerroirEvaluator {
         return null;
     }
 
+    public static boolean canProbe(BlockState state) {
+        return state.is(ModBlocks.VINEYARD_SOIL)
+                || classifySoil(state) != null;
+    }
+
     private static SoilType findSoilInColumn(
             Level level,
             BlockPos column
