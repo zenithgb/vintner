@@ -48,6 +48,7 @@ public final class WinePairingManager {
                         && matches(mealTypes, activeProfile)
         ) {
             applyPairing(
+                    level,
                     consumer,
                     activeProfile,
                     pairingMultiplier(activeProfile, consumer)
@@ -78,6 +79,7 @@ public final class WinePairingManager {
 
         if (matches(current.recentMealTypes(), profile)) {
             applyPairing(
+                    level,
                     consumer,
                     profile,
                     quality.pairingMultiplier()
@@ -125,6 +127,7 @@ public final class WinePairingManager {
     }
 
     private static void applyPairing(
+            ServerLevel level,
             LivingEntity consumer,
             WineEffectProfile profile,
             float durationMultiplier
@@ -133,6 +136,7 @@ public final class WinePairingManager {
                 consumer,
                 durationMultiplier
         );
+        WineFeastManager.tryStartSharedFeast(level, consumer);
 
         if (consumer instanceof Player player) {
             player.sendOverlayMessage(

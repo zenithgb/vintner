@@ -36,6 +36,7 @@ import com.zenith.vintner.wine.AgingVessel;
 import com.zenith.vintner.wine.GrapeQualityEvaluator;
 import com.zenith.vintner.wine.WineConsumptionManager;
 import com.zenith.vintner.wine.WineConsumptionState;
+import com.zenith.vintner.wine.WineFeastManager;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WinePairingManager;
 import com.zenith.vintner.wine.WineProvenance;
@@ -1657,6 +1658,108 @@ public final class VintnerGameTests {
                         helper.getLevel().getGameTime()
                 ).paired(),
                 "A mismatched meal must not consume the pairing"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void sharedPairingAtTastingCabinetStartsFeast(
+            GameTestHelper helper
+    ) {
+        ServerPlayer host = helper.makeMockServerPlayerInLevel();
+        ServerPlayer guest = helper.makeMockServerPlayerInLevel();
+        BlockPos cabinetPos = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(cabinetPos);
+
+        helper.setBlock(cabinetPos, ModBlocks.TASTING_CABINET);
+        host.teleportTo(
+                absolute.getX() + 0.5,
+                absolute.getY() + 1.0,
+                absolute.getZ() + 0.5
+        );
+        guest.teleportTo(
+                absolute.getX() + 2.5,
+                absolute.getY() + 1.0,
+                absolute.getZ() + 0.5
+        );
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                host,
+                WineEffectProfile.RED,
+                WineQuality.TABLE
+        );
+        WinePairingManager.onMealConsumed(
+                helper.getLevel(),
+                host,
+                new ItemStack(Items.COOKED_BEEF)
+        );
+
+        long gameTime = helper.getLevel().getGameTime();
+        helper.assertTrue(
+                WineFeastManager.state(host, gameTime)
+                        .isActiveAt(gameTime)
+                        && WineFeastManager.state(guest, gameTime)
+                        .isActiveAt(gameTime),
+                "A shared cabinet pairing should grant feast morale"
+        );
+        helper.assertValueEqual(
+                WineConsumptionManager.adjustGeneralExhaustion(
+                        guest,
+                        1.0F
+                ),
+                WineFeastManager.EXHAUSTION_MULTIPLIER,
+                "Feast morale should reduce a guest's exhaustion"
+        );
+        helper.assertValueEqual(
+                WineConsumptionManager.adjustMeleeExhaustion(
+                        host,
+                        1.0F
+                ),
+                0.5F * WineFeastManager.EXHAUSTION_MULTIPLIER,
+                "Feast morale should combine with wine benefits"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void sharedPairingNeedsTastingCabinet(
+            GameTestHelper helper
+    ) {
+        ServerPlayer host = helper.makeMockServerPlayerInLevel();
+        ServerPlayer guest = helper.makeMockServerPlayerInLevel();
+        BlockPos absolute = helper.absolutePos(new BlockPos(1, 1, 1));
+
+        host.teleportTo(
+                absolute.getX() + 0.5,
+                absolute.getY() + 1.0,
+                absolute.getZ() + 0.5
+        );
+        guest.teleportTo(
+                absolute.getX() + 2.5,
+                absolute.getY() + 1.0,
+                absolute.getZ() + 0.5
+        );
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                host,
+                WineEffectProfile.WHITE,
+                WineQuality.TABLE
+        );
+        WinePairingManager.onMealConsumed(
+                helper.getLevel(),
+                host,
+                new ItemStack(Items.COOKED_COD)
+        );
+
+        long gameTime = helper.getLevel().getGameTime();
+        helper.assertFalse(
+                WineFeastManager.state(host, gameTime)
+                        .isActiveAt(gameTime)
+                        || WineFeastManager.state(guest, gameTime)
+                        .isActiveAt(gameTime),
+                "Ordinary nearby dining should not count as a feast"
         );
         helper.succeed();
     }

@@ -272,6 +272,7 @@
   "message.vintner.wine_impaired": "You are beginning to feel unsteady.",
   "message.vintner.wine_overindulged": "You have seriously overindulged.",
   "message.vintner.wine_pairing": "The pairing lets the wine linger.",
+  "message.vintner.shared_feast": "Shared food and wine lift everyone's spirits.",
   "tooltip.vintner.wine_benefit.red": "Steady footing; agile travel; easier combat",
   "tooltip.vintner.wine_benefit.white": "Efficient work; water confidence; slower hunger drain",
   "tooltip.vintner.wine_benefit.aged_red": "Armoured footing; far less tiring combat",

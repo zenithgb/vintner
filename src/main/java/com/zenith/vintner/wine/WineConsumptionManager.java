@@ -126,42 +126,38 @@ public final class WineConsumptionManager {
             LivingEntity consumer,
             float amount
     ) {
+        float adjusted = amount;
         if (WineEffectProfile.AGED_WHITE.isActive(consumer)) {
-            return amount * qualityAdjustedMultiplier(
+            adjusted *= qualityAdjustedMultiplier(
                     0.6F,
                     WineEffectProfile.AGED_WHITE.amplifier(consumer)
             );
-        }
-
-        if (WineEffectProfile.WHITE.isActive(consumer)) {
-            return amount * qualityAdjustedMultiplier(
+        } else if (WineEffectProfile.WHITE.isActive(consumer)) {
+            adjusted *= qualityAdjustedMultiplier(
                     0.75F,
                     WineEffectProfile.WHITE.amplifier(consumer)
             );
         }
-
-        return amount;
+        return WineFeastManager.adjustExhaustion(consumer, adjusted);
     }
 
     public static float adjustMeleeExhaustion(
             LivingEntity consumer,
             float amount
     ) {
+        float adjusted = amount;
         if (WineEffectProfile.AGED_RED.isActive(consumer)) {
-            return amount * qualityAdjustedMultiplier(
+            adjusted *= qualityAdjustedMultiplier(
                     0.25F,
                     WineEffectProfile.AGED_RED.amplifier(consumer)
             );
-        }
-
-        if (WineEffectProfile.RED.isActive(consumer)) {
-            return amount * qualityAdjustedMultiplier(
+        } else if (WineEffectProfile.RED.isActive(consumer)) {
+            adjusted *= qualityAdjustedMultiplier(
                     0.5F,
                     WineEffectProfile.RED.amplifier(consumer)
             );
         }
-
-        return amount;
+        return WineFeastManager.adjustExhaustion(consumer, adjusted);
     }
 
     private static float benefitMultiplier(int drinkCount) {
