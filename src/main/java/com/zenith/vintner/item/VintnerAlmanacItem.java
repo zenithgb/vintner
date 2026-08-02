@@ -1,6 +1,9 @@
 package com.zenith.vintner.item;
 
 import com.zenith.vintner.advancement.ModAdvancements;
+import com.zenith.vintner.block.VintageArchiveBlock;
+import com.zenith.vintner.estate.EstateProfile;
+import com.zenith.vintner.estate.EstateSavedData;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQualityProfile;
@@ -32,6 +35,22 @@ public final class VintnerAlmanacItem extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
+        if (context.getLevel() instanceof ServerLevel serverLevel
+                && context.getPlayer() != null
+                && context.getPlayer().isShiftKeyDown()
+                && context.getLevel().getBlockState(
+                        context.getClickedPos()
+                ).getBlock() instanceof VintageArchiveBlock) {
+            VintageArchiveBlock.registerEstate(
+                    serverLevel,
+                    context.getClickedPos(),
+                    context.getPlayer(),
+                    context.getHand(),
+                    context.getItemInHand()
+            );
+            return InteractionResult.SUCCESS;
+        }
+
         if (context.getLevel() instanceof ServerLevel
                 && context.getPlayer() != null) {
             AlmanacInspection.inspect(
@@ -57,6 +76,14 @@ public final class VintnerAlmanacItem extends Item {
 
         if (!(bottle.getItem() instanceof WineItem)) {
             if (level instanceof ServerLevel) {
+                if (player.isShiftKeyDown()) {
+                    var estate = EstateSavedData.get((ServerLevel) level)
+                            .find(player.getUUID());
+                    if (estate.isPresent()) {
+                        sendEstateProfile(player, estate.get());
+                        return InteractionResult.SUCCESS;
+                    }
+                }
                 var survey = VineyardSurveyRecord.read(
                         player.getItemInHand(hand)
                 );
@@ -254,6 +281,13 @@ public final class VintnerAlmanacItem extends Item {
                         "tooltip.vintner.almanac.inspect"
                 ).withStyle(ChatFormatting.DARK_GRAY)
         );
+        if (stack.getCustomName() != null) {
+            tooltip.accept(
+                    Component.translatable(
+                            "tooltip.vintner.almanac.estate"
+                    ).withStyle(ChatFormatting.DARK_GRAY)
+            );
+        }
         VineyardSurveyRecord.read(stack).ifPresent(record ->
                 tooltip.accept(Component.translatable(
                         "tooltip.vintner.almanac.survey",
@@ -291,5 +325,28 @@ public final class VintnerAlmanacItem extends Item {
                         "terroir_rating.vintner." + record.rating()
                 )
         ).withStyle(ChatFormatting.DARK_GREEN));
+    }
+
+    private static void sendEstateProfile(
+            Player player,
+            EstateProfile profile
+    ) {
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.estate.summary",
+                profile.estateName(),
+                profile.foundingYear()
+        ).withStyle(ChatFormatting.GOLD));
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.estate.vineyard",
+                profile.vineyardName(),
+                profile.homeRegionDisplayName()
+        ).withStyle(ChatFormatting.GRAY));
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.estate.identity",
+                profile.bottleLabel(),
+                Component.translatable(
+                        "color.minecraft." + profile.crestColor()
+                )
+        ).withStyle(ChatFormatting.DARK_GRAY));
     }
 }

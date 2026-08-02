@@ -2,6 +2,8 @@ package com.zenith.vintner.block;
 
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
+import com.zenith.vintner.estate.EstateProfile;
+import com.zenith.vintner.estate.EstateSavedData;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
@@ -16,7 +18,9 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -121,7 +125,16 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
         }
 
         if (heldStack.is(ModItems.VINTNER_ALMANAC)) {
-            if (level instanceof ServerLevel) {
+            if (level instanceof ServerLevel serverLevel
+                    && player.isShiftKeyDown()) {
+                registerEstate(
+                        serverLevel,
+                        pos,
+                        player,
+                        hand,
+                        heldStack
+                );
+            } else if (level instanceof ServerLevel) {
                 archive.reportNext(player);
             }
             return InteractionResult.SUCCESS;
@@ -173,6 +186,58 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
         }
 
         return InteractionResult.SUCCESS;
+    }
+
+    public static void registerEstate(
+            ServerLevel level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand,
+            ItemStack almanac
+    ) {
+        Component customName = almanac.getCustomName();
+
+        if (!(player instanceof net.minecraft.server.level.ServerPlayer owner)
+                || customName == null) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.vintner.estate.rename_almanac"
+            ));
+            return;
+        }
+
+        InteractionHand otherHand = hand == InteractionHand.MAIN_HAND
+                ? InteractionHand.OFF_HAND
+                : InteractionHand.MAIN_HAND;
+        ItemStack crestStack = player.getItemInHand(otherHand);
+        DyeColor crest = crestStack.getItem() instanceof BannerItem banner
+                ? banner.getColor()
+                : null;
+        EstateSavedData estates = EstateSavedData.get(level);
+        boolean updating = estates.find(owner.getUUID()).isPresent();
+        EstateProfile profile = estates.register(
+                owner,
+                level,
+                pos,
+                customName.getString(),
+                crest
+        );
+
+        player.sendSystemMessage(Component.translatable(
+                updating
+                        ? "message.vintner.estate.updated"
+                        : "message.vintner.estate.registered",
+                profile.estateName(),
+                profile.foundingYear(),
+                profile.homeRegionDisplayName()
+        ));
+        level.playSound(
+                null,
+                pos,
+                SoundEvents.BOOK_PAGE_TURN,
+                SoundSource.BLOCKS,
+                1.0F,
+                updating ? 1.2F : 0.9F
+        );
     }
 
     @Override
