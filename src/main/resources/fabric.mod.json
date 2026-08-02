@@ -36,5 +36,8 @@
     "minecraft": "~26.2",
     "java": ">=25",
     "fabric-api": "*"
+  },
+  "suggests": {
+    "sereneseasons": ">=26.1.2.0.4"
   }
 }

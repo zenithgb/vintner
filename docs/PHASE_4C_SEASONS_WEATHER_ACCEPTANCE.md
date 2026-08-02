@@ -45,7 +45,13 @@
 
 ## Compatibility boundary
 
-This milestone is the native fallback requested by the roadmap and has no hard
-dependency on another season mod. A Serene Seasons adapter remains optional and
-must only be enabled when a compatible Minecraft 26.2 API is available; Vintner
-continues to run standalone meanwhile.
+Vintner has no hard dependency on another season mod. When Serene Seasons
+26.1.2.0.4 or newer is installed on Minecraft 26.2, Vintner reads its active
+season, configured day length, and configured season length through the public
+Serene Seasons API. Vintner still derives the numbered vintage year from the
+world's monotonic clock because the external API exposes a repeating cycle.
+
+Without Serene Seasons, or if its API cannot provide a season state, Vintner
+continues with its native gamerule-driven calendar. The optional compatibility
+dependency is exercised by a separate `-PsereneSeasonsTest` GameTest run so the
+normal standalone test continues to prove that no season mod is required.

@@ -4869,6 +4869,41 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void externalSeasonCycleMapsToVintnerCalendar(
+            GameTestHelper helper
+    ) {
+        SeasonalContext context = SeasonalContext.fromExternalCycle(
+                VineyardSeason.AUTUMN,
+                800_000L,
+                410_000,
+                24_000,
+                192_000,
+                768_000
+        );
+        helper.assertValueEqual(
+                context.season(),
+                VineyardSeason.AUTUMN,
+                "An external season should retain its Vintner equivalent"
+        );
+        helper.assertValueEqual(
+                context.dayInSeason(),
+                2,
+                "Cycle position should map to the correct day within the season"
+        );
+        helper.assertValueEqual(
+                context.seasonLengthDays(),
+                8,
+                "External season duration should determine the displayed season length"
+        );
+        helper.assertValueEqual(
+                context.year(),
+                2,
+                "The monotonic world clock should advance the vintage year"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void seasonsControlGrowthWithoutDestroyingVines(
             GameTestHelper helper
     ) {
