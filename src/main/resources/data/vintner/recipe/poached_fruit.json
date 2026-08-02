@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "#vintner:white_wines",
+    "minecraft:apple",
+    "minecraft:sugar"
+  ],
+  "result": {
+    "id": "vintner:poached_fruit",
+    "count": 2
+  }
+}

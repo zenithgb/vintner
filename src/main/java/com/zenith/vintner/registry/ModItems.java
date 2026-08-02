@@ -105,6 +105,46 @@ public final class ModItems {
             )
     );
 
+    public static final Item RED_WINE_STEW = register(
+            "red_wine_stew",
+            properties -> new Item(
+                    properties
+                            .stacksTo(1)
+                            .food(
+                                    new FoodProperties.Builder()
+                                            .nutrition(10)
+                                            .saturationModifier(0.80F)
+                                            .build()
+                            )
+            )
+    );
+
+    public static final Item WHITE_WINE_FISH = register(
+            "white_wine_fish",
+            properties -> new Item(
+                    properties
+                            .stacksTo(1)
+                            .food(
+                                    new FoodProperties.Builder()
+                                            .nutrition(8)
+                                            .saturationModifier(0.75F)
+                                            .build()
+                            )
+            )
+    );
+
+    public static final Item POACHED_FRUIT = register(
+            "poached_fruit",
+            properties -> new Item(
+                    properties.food(
+                            new FoodProperties.Builder()
+                                    .nutrition(6)
+                                    .saturationModifier(0.60F)
+                                    .build()
+                    )
+            )
+    );
+
     public static final Item RED_GRAPE_CUTTING = register(
             "red_grape_cutting",
             properties -> new GrapeCuttingItem(
@@ -154,6 +194,7 @@ public final class ModItems {
                                     WineConsumables.WINE
                             )
                             .usingConvertsTo(Items.GLASS_BOTTLE)
+                            .craftRemainder(Items.GLASS_BOTTLE)
                             .useCooldown(12.0F)
             )
     );
@@ -169,6 +210,7 @@ public final class ModItems {
                                     WineConsumables.WINE
                             )
                             .usingConvertsTo(Items.GLASS_BOTTLE)
+                            .craftRemainder(Items.GLASS_BOTTLE)
                             .useCooldown(12.0F)
             )
     );
@@ -184,6 +226,7 @@ public final class ModItems {
                                     WineConsumables.WINE
                             )
                             .usingConvertsTo(Items.GLASS_BOTTLE)
+                            .craftRemainder(Items.GLASS_BOTTLE)
                             .useCooldown(18.0F)
             )
     );
@@ -199,6 +242,7 @@ public final class ModItems {
                                     WineConsumables.WINE
                             )
                             .usingConvertsTo(Items.GLASS_BOTTLE)
+                            .craftRemainder(Items.GLASS_BOTTLE)
                             .useCooldown(18.0F)
             )
     );
@@ -341,6 +385,9 @@ public final class ModItems {
                     output.accept(RAISINS);
                     output.accept(VINEYARD_BREAD);
                     output.accept(GRAPE_TART);
+                    output.accept(RED_WINE_STEW);
+                    output.accept(WHITE_WINE_FISH);
+                    output.accept(POACHED_FRUIT);
                     output.accept(GRAPE_SEED_OIL);
                     output.accept(RED_MUST);
                     output.accept(WHITE_MUST);

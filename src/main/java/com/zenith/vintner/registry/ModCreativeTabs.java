@@ -59,6 +59,9 @@ public final class ModCreativeTabs {
                                 output.accept(ModItems.RAISINS);
                                 output.accept(ModItems.VINEYARD_BREAD);
                                 output.accept(ModItems.GRAPE_TART);
+                                output.accept(ModItems.RED_WINE_STEW);
+                                output.accept(ModItems.WHITE_WINE_FISH);
+                                output.accept(ModItems.POACHED_FRUIT);
                                 ModBlocks.GRAPE_PRESSES.values()
                                         .forEach(output::accept);
                                 output.accept(ModItems.RED_MUST);

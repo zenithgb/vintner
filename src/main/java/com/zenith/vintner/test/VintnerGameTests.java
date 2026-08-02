@@ -1703,6 +1703,54 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void wineCookingConsumesWineAndReturnsBottles(
+            GameTestHelper helper
+    ) {
+        ItemStack stew = new ItemStack(ModItems.RED_WINE_STEW);
+        ItemStack fish = new ItemStack(ModItems.WHITE_WINE_FISH);
+        ItemStack fruit = new ItemStack(ModItems.POACHED_FRUIT);
+
+        helper.assertTrue(
+                stew.has(DataComponents.FOOD)
+                        && fish.has(DataComponents.FOOD)
+                        && fruit.has(DataComponents.FOOD),
+                "Every wine-cooked meal should be edible"
+        );
+        helper.assertTrue(
+                stew.is(ModItemTags.PAIRS_WITH_RED_WINE)
+                        && fish.is(ModItemTags.PAIRS_WITH_WHITE_WINE)
+                        && fruit.is(ModItemTags.PAIRS_WITH_WHITE_WINE),
+                "Wine-cooked meals should use the matching pairing tags"
+        );
+        helper.assertTrue(
+                new ItemStack(ModItems.RED_WINE)
+                        .is(ModItemTags.RED_WINES)
+                        && new ItemStack(ModItems.AGED_RED_WINE)
+                        .is(ModItemTags.RED_WINES)
+                        && new ItemStack(ModItems.WHITE_WINE)
+                        .is(ModItemTags.WHITE_WINES)
+                        && new ItemStack(ModItems.AGED_WHITE_WINE)
+                        .is(ModItemTags.WHITE_WINES),
+                "Fresh and aged bottles should work in matching recipes"
+        );
+
+        for (Item wine : List.of(
+                ModItems.RED_WINE,
+                ModItems.WHITE_WINE,
+                ModItems.AGED_RED_WINE,
+                ModItems.AGED_WHITE_WINE
+        )) {
+            helper.assertTrue(
+                    wine.getCraftingRemainder()
+                            .create()
+                            .is(Items.GLASS_BOTTLE),
+                    "Cooking with wine should return its Glass Bottle"
+            );
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void survivalIngredientsUnlockVintnerRecipes(
             GameTestHelper helper
     ) {
@@ -1720,6 +1768,8 @@ public final class VintnerGameTests {
         triggerInventoryChange(player, ModItems.POMACE);
         triggerInventoryChange(player, ModItems.GRAPE_SEEDS);
         triggerInventoryChange(player, ModItems.RAISINS);
+        triggerInventoryChange(player, ModItems.RED_WINE);
+        triggerInventoryChange(player, ModItems.WHITE_WINE);
         triggerInventoryChange(player, Items.BOOK);
         triggerInventoryChange(player, Items.COPPER_INGOT);
 
@@ -1790,6 +1840,21 @@ public final class VintnerGameTests {
                     helper,
                     player,
                     "grape_tart"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "red_wine_stew"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "white_wine_fish"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "poached_fruit"
             );
             assertRecipeKnown(
                     helper,

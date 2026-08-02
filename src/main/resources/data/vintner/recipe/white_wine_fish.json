@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "#vintner:white_wines",
+    "minecraft:bowl",
+    "minecraft:cooked_cod",
+    "minecraft:carrot",
+    "minecraft:baked_potato"
+  ],
+  "result": {
+    "id": "vintner:white_wine_fish"
+  }
+}
