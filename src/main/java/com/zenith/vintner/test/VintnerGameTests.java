@@ -18,6 +18,7 @@ import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.item.WineEffectProfile;
+import com.zenith.vintner.item.GraftingKnifeItem;
 import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
@@ -91,6 +92,7 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
@@ -5552,6 +5554,72 @@ public final class VintnerGameTests {
                 60,
                 "Ancient vines should complete, not exceed, the vineyard budget"
         );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void graftingChangesVarietyButPreservesOldRoots(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        Block redRoot = ModBlocks.redGrapevine(WoodVariant.SPRUCE);
+        Block redUpper = ModBlocks.redGrapevine(WoodVariant.MANGROVE);
+        Block whiteRoot = ModBlocks.whiteGrapevine(WoodVariant.SPRUCE);
+        Block whiteUpper = ModBlocks.whiteGrapevine(WoodVariant.MANGROVE);
+        BlockPos absoluteRoot = helper.absolutePos(FIRST);
+
+        helper.setBlock(
+                FIRST,
+                redRoot.defaultBlockState()
+                        .setValue(GrapevineBlock.AGE, 3)
+        );
+        helper.setBlock(
+                UPPER,
+                redUpper.defaultBlockState()
+                        .setValue(GrapevineBlock.UPPER, true)
+                        .setValue(GrapevineBlock.AGE, 3)
+        );
+
+        VineAgeSavedData ages = VineAgeSavedData.get(helper.getLevel());
+        ages.remove(absoluteRoot);
+        ages.plant(absoluteRoot, 12L);
+
+        ItemStack knife = new ItemStack(ModItems.GRAFTING_KNIFE);
+        ItemStack cutting = new ItemStack(ModItems.WHITE_GRAPE_CUTTING);
+
+        helper.assertValueEqual(
+                GraftingKnifeItem.graft(
+                        helper.getLevel(),
+                        absoluteRoot,
+                        player,
+                        knife,
+                        InteractionHand.MAIN_HAND,
+                        cutting
+                ),
+                InteractionResult.SUCCESS,
+                "A different cutting should graft onto a trained vine"
+        );
+        helper.assertBlockPresent(whiteRoot, FIRST);
+        helper.assertBlockPresent(whiteUpper, UPPER);
+        helper.assertBlockProperty(FIRST, GrapevineBlock.AGE, 2);
+        helper.assertBlockProperty(UPPER, GrapevineBlock.AGE, 2);
+        helper.assertValueEqual(
+                ages.ageDays(absoluteRoot, 108L),
+                96L,
+                "Grafting must preserve the root system's planting date"
+        );
+        helper.assertValueEqual(
+                cutting.getCount(),
+                0,
+                "Survival grafting should consume one cutting"
+        );
+        helper.assertValueEqual(
+                knife.getDamageValue(),
+                1,
+                "Grafting should consume one knife durability"
+        );
+
+        ages.remove(absoluteRoot);
         helper.succeed();
     }
 }

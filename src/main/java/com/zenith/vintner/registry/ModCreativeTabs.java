@@ -39,6 +39,7 @@ public final class ModCreativeTabs {
                                         .forEach(output::accept);
                                 output.accept(ModItems.RED_GRAPE_CUTTING);
                                 output.accept(ModItems.WHITE_GRAPE_CUTTING);
+                                output.accept(ModItems.GRAFTING_KNIFE);
                                 output.accept(ModItems.RED_GRAPES);
                                 output.accept(ModItems.WHITE_GRAPES);
                                 ModBlocks.GRAPE_PRESSES.values()

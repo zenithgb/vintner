@@ -3,6 +3,7 @@ package com.zenith.vintner.registry;
 import com.zenith.vintner.item.CompostItem;
 import com.zenith.vintner.item.CoopersMalletItem;
 import com.zenith.vintner.item.GrapeCuttingItem;
+import com.zenith.vintner.item.GraftingKnifeItem;
 import com.zenith.vintner.item.MustItem;
 import com.zenith.vintner.item.SoilProbeItem;
 import com.zenith.vintner.item.VintnerAlmanacItem;
@@ -139,6 +140,13 @@ public final class ModItems {
             )
     );
 
+    public static final Item GRAFTING_KNIFE = register(
+            "grafting_knife",
+            properties -> new GraftingKnifeItem(
+                    properties.durability(GraftingKnifeItem.MAX_DAMAGE)
+            )
+    );
+
     public static final Item COOPERS_MALLET = register(
             "coopers_mallet",
             properties -> new CoopersMalletItem(
@@ -207,6 +215,7 @@ public final class ModItems {
                     output.accept(SEASONING_KIT);
                     output.accept(CASK_CONVERSION_KIT);
                     output.accept(SOIL_PROBE);
+                    output.accept(GRAFTING_KNIFE);
                     output.accept(VINTNER_ALMANAC);
                 });
 
