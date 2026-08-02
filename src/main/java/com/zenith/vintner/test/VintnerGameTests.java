@@ -62,6 +62,7 @@ import com.zenith.vintner.vineyard.VineAgeSavedData;
 import com.zenith.vintner.vineyard.VineAgeStage;
 import com.zenith.vintner.vineyard.VineManagementSavedData;
 import com.zenith.vintner.vineyard.VineYieldMode;
+import com.zenith.vintner.vineyard.VineyardThreat;
 import net.minecraft.advancements.AdvancementHolder;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -5696,6 +5697,70 @@ public final class VintnerGameTests {
         );
 
         management.remove(absoluteRoot);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void vineyardThreatsAreReadableAndNonRandom(
+            GameTestHelper helper
+    ) {
+        TerroirReport humidSite = new TerroirReport(
+                ClimateProfile.evaluate(
+                        0.8F,
+                        true,
+                        true,
+                        72,
+                        false
+                ),
+                SoilProfile.of(SoilType.LOAM),
+                TerrainProfile.evaluate(
+                        72,
+                        1,
+                        Direction.SOUTH,
+                        true,
+                        3,
+                        20,
+                        false,
+                        false
+                ),
+                70
+        );
+
+        helper.assertValueEqual(
+                VineyardThreat.assess(
+                        false,
+                        false,
+                        humidSite,
+                        VineyardWeatherEvent.HEAVY_RAIN
+                ),
+                VineyardThreat.NUTRIENT_IMBALANCE,
+                "Unprepared soil should be the first actionable threat"
+        );
+        helper.assertValueEqual(
+                VineyardThreat.assess(
+                        true,
+                        false,
+                        humidSite,
+                        VineyardWeatherEvent.HEAVY_RAIN
+                ),
+                VineyardThreat.MILDEW_RISK,
+                "Humid rain with poor airflow should create mildew risk"
+        );
+        helper.assertValueEqual(
+                VineyardThreat.assess(
+                        true,
+                        true,
+                        humidSite,
+                        VineyardWeatherEvent.HEAVY_RAIN
+                ),
+                VineyardThreat.ROT_RISK,
+                "Ripe fruit in heavy rain should prioritize rot risk"
+        );
+        helper.assertTrue(
+                VineyardThreat.HEALTHY.healthPoints()
+                        > VineyardThreat.ROT_RISK.healthPoints(),
+                "Threat pressure should lower the vine-health contribution"
+        );
         helper.succeed();
     }
 }

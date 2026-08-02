@@ -13,6 +13,7 @@ import com.zenith.vintner.vineyard.VineAgeSavedData;
 import com.zenith.vintner.vineyard.VineAgeStage;
 import com.zenith.vintner.vineyard.VineManagementSavedData;
 import com.zenith.vintner.vineyard.VineYieldMode;
+import com.zenith.vintner.vineyard.VineyardThreat;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -57,8 +58,6 @@ public final class GrapeQualityEvaluator {
                 ? vineState.getValue(GrapevineBlock.AGE)
                 : 0;
         boolean matureVine = vineAge >= GrapevineBlock.MAX_AGE;
-        boolean healthyVine = preparedSoil
-                && terroir.siteScore() >= 45;
         boolean ripeHarvest = matureVine;
         boolean dryHarvestWeather = !level.isRainingAt(vinePos.above());
         long currentDay = level instanceof ServerLevel serverLevel
@@ -101,14 +100,24 @@ public final class GrapeQualityEvaluator {
                 protectedCultivation,
                 irrigated
         );
+        VineyardThreat threat = VineyardThreat.assess(
+                preparedSoil,
+                matureVine,
+                terroir,
+                weatherEvent
+        );
+        int vineHealthPoints = terroir.siteScore() >= 45
+                ? threat.healthPoints()
+                : Math.min(2, threat.healthPoints());
+        boolean healthyVine = vineHealthPoints == 6;
         int harvestWeatherPoints = weatherEvent.harvestQualityPoints(
                 !dryHarvestWeather
         );
 
-        int score = scoreWithTerroirAgeWeatherAndYield(
+        int score = scoreWithTerroirAgeWeatherYieldAndHealth(
                 terroir.vineyardQualityPoints(variety),
                 vineAgeStage.qualityPoints(),
-                healthyVine,
+                vineHealthPoints,
                 yieldMode.qualityPoints(),
                 ripeHarvest,
                 harvestWeatherPoints
@@ -131,6 +140,8 @@ public final class GrapeQualityEvaluator {
                 vineAgeStage,
                 vineAgeDays,
                 yieldMode,
+                threat,
+                vineHealthPoints,
                 score,
                 profile,
                 predictedQuality,
@@ -187,9 +198,27 @@ public final class GrapeQualityEvaluator {
             boolean ripeHarvest,
             int harvestWeatherPoints
     ) {
+        return scoreWithTerroirAgeWeatherYieldAndHealth(
+                sitePoints,
+                vineAgePoints,
+                healthyVine ? 6 : 0,
+                yieldQualityPoints,
+                ripeHarvest,
+                harvestWeatherPoints
+        );
+    }
+
+    public static int scoreWithTerroirAgeWeatherYieldAndHealth(
+            int sitePoints,
+            int vineAgePoints,
+            int vineHealthPoints,
+            int yieldQualityPoints,
+            boolean ripeHarvest,
+            int harvestWeatherPoints
+    ) {
         int score = Math.clamp(sitePoints, 0, 28);
         score += Math.clamp(vineAgePoints, 0, 6);
-        score += healthyVine ? 6 : 0;
+        score += Math.clamp(vineHealthPoints, 0, 6);
         score += Math.clamp(yieldQualityPoints, 0, 7);
         score += ripeHarvest ? 8 : 0;
         score += Math.clamp(harvestWeatherPoints, 0, 7);

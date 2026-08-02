@@ -11,6 +11,7 @@ import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.vineyard.TerroirMessages;
 import com.zenith.vintner.vineyard.TerroirReport;
 import com.zenith.vintner.vineyard.VineyardSurveyRecord;
+import com.zenith.vintner.vineyard.VineyardThreat;
 import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import com.zenith.vintner.vineyard.VineyardProtection;
@@ -168,6 +169,21 @@ public final class AlmanacInspection {
                 report.yieldMode().harvestAdjustment(),
                 report.yieldMode().qualityPoints()
         ).withStyle(ChatFormatting.DARK_GREEN));
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.almanac.vine_health",
+                report.threat().displayName(),
+                report.vineHealthPoints()
+        ).withStyle(
+                report.threat() == VineyardThreat.HEALTHY
+                        ? ChatFormatting.DARK_GREEN
+                        : ChatFormatting.YELLOW
+        ));
+        if (report.threat() != VineyardThreat.HEALTHY) {
+            player.sendSystemMessage(
+                    report.threat().advice().copy()
+                            .withStyle(ChatFormatting.AQUA)
+            );
+        }
         player.sendSystemMessage(Component.translatable(
                 "message.vintner.almanac.ripeness_quality",
                 report.predictedQuality().displayName(),
