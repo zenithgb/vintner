@@ -14,6 +14,7 @@ import com.zenith.vintner.estate.VineyardPlot;
 import com.zenith.vintner.estate.VineyardPlotReport;
 import com.zenith.vintner.estate.VineyardPlotSavedData;
 import com.zenith.vintner.wine.WineMetadata;
+import com.zenith.vintner.wine.WineAppraisal;
 import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.wine.WineReadiness;
@@ -222,13 +223,30 @@ public final class VintnerAlmanacItem extends Item {
                             WineMetadata.bottleAgeDays(bottle)
                     ).withStyle(ChatFormatting.DARK_GRAY)
             );
+            WineAppraisal appraisal = WineAppraisal.evaluate(
+                    bottle,
+                    producerReputationTier(
+                            (ServerLevel) level,
+                            provenance
+                    )
+            );
             player.sendSystemMessage(
                     Component.translatable(
                             "message.vintner.almanac.value",
-                            WineMetadata.estimatedTradeValue(bottle),
-                            WineMetadata.settlementPrestige(bottle)
+                            appraisal.totalValue(),
+                            appraisal.prestige()
                     ).withStyle(ChatFormatting.DARK_GRAY)
             );
+            if (appraisal.producerAdjustment() > 0
+                    || appraisal.conditionAdjustment() < 0) {
+                player.sendSystemMessage(
+                        Component.translatable(
+                                "message.vintner.almanac.market_factors",
+                                signed(appraisal.producerAdjustment()),
+                                signed(appraisal.conditionAdjustment())
+                        ).withStyle(ChatFormatting.DARK_GRAY)
+                );
+            }
             if (bottle.is(com.zenith.vintner.registry.ModItems.AGED_RED_WINE)
                     || bottle.is(com.zenith.vintner.registry.ModItems.AGED_WHITE_WINE)) {
                 var vessel = WineMetadata.agingVessel(bottle);
@@ -281,6 +299,28 @@ public final class VintnerAlmanacItem extends Item {
         }
 
         return InteractionResult.SUCCESS;
+    }
+
+    private static EstateReputationTier producerReputationTier(
+            ServerLevel level,
+            WineProvenance provenance
+    ) {
+        if (provenance.producerId().isBlank()) {
+            return EstateReputationTier.NEW_ESTATE;
+        }
+        try {
+            return EstateReputationSavedData.get(level)
+                    .profile(java.util.UUID.fromString(
+                            provenance.producerId()
+                    ))
+                    .tier();
+        } catch (IllegalArgumentException exception) {
+            return EstateReputationTier.NEW_ESTATE;
+        }
+    }
+
+    private static String signed(int value) {
+        return value > 0 ? "+" + value : Integer.toString(value);
     }
 
     @Override

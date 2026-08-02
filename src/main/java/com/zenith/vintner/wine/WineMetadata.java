@@ -425,21 +425,11 @@ public final class WineMetadata {
     }
 
     public static int estimatedTradeValue(ItemStack stack) {
-        int ageAdjustment = switch (ageStage(stack)) {
-            case YOUNG -> 0;
-            case DEVELOPING -> 1;
-            case MATURE -> 2;
-            case PEAK -> 4;
-            case DECLINING -> -1;
-            case SPOILED -> -quality(stack).tradeValue();
-        };
-        return Math.max(0, quality(stack).tradeValue() + ageAdjustment);
+        return WineAppraisal.independent(stack).totalValue();
     }
 
     public static int settlementPrestige(ItemStack stack) {
-        return ageStage(stack) == WineAgeStage.SPOILED
-                ? 0
-                : quality(stack).prestigeValue();
+        return WineAppraisal.independent(stack).prestige();
     }
 
     public static int bottleNumber(ItemStack stack) {

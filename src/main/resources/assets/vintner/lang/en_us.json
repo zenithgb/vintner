@@ -503,6 +503,7 @@
   "wine_style.vintner.white": "White",
   "message.vintner.almanac.style_estate": "Style: %s | Estate: %s",
   "message.vintner.almanac.value": "Estimated value: %s emeralds | Cellar prestige: %s",
+  "message.vintner.almanac.market_factors": "Market factors | Estate reputation: %s | Bottle condition: %s",
   "tasting_note.vintner.light_body": "light-bodied",
   "tasting_note.vintner.rustic_body": "rustic-bodied",
   "tasting_note.vintner.medium_body": "medium-bodied",
