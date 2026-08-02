@@ -1210,6 +1210,18 @@ public final class VintnerGameTests {
         double baseBreakSpeed = player.getAttributeValue(
                 Attributes.BLOCK_BREAK_SPEED
         );
+        double baseMovementEfficiency = player.getAttributeValue(
+                Attributes.MOVEMENT_EFFICIENCY
+        );
+        double baseSafeFallDistance = player.getAttributeValue(
+                Attributes.SAFE_FALL_DISTANCE
+        );
+        double baseSubmergedMiningSpeed = player.getAttributeValue(
+                Attributes.SUBMERGED_MINING_SPEED
+        );
+        double baseWaterMovementEfficiency = player.getAttributeValue(
+                Attributes.WATER_MOVEMENT_EFFICIENCY
+        );
 
         WineConsumptionManager.consume(
                 helper.getLevel(),
@@ -1240,6 +1252,16 @@ public final class VintnerGameTests {
                 1.0F,
                 "Red wine should not reduce unrelated exhaustion"
         );
+        helper.assertTrue(
+                player.getAttributeValue(Attributes.MOVEMENT_EFFICIENCY)
+                        > baseMovementEfficiency,
+                "Red wine should reduce movement penalties"
+        );
+        helper.assertTrue(
+                player.getAttributeValue(Attributes.SAFE_FALL_DISTANCE)
+                        > baseSafeFallDistance,
+                "Red wine should provide a minor agility benefit"
+        );
 
         WineConsumptionManager.consume(
                 helper.getLevel(),
@@ -1254,12 +1276,61 @@ public final class VintnerGameTests {
                 ) > baseBreakSpeed,
                 "White wine should increase block break speed"
         );
+        helper.assertTrue(
+                player.getAttributeValue(Attributes.SUBMERGED_MINING_SPEED)
+                        > baseSubmergedMiningSpeed,
+                "White wine should support underwater work"
+        );
+        helper.assertTrue(
+                player.getAttributeValue(Attributes.WATER_MOVEMENT_EFFICIENCY)
+                        > baseWaterMovementEfficiency,
+                "White wine should support water exploration"
+        );
         helper.assertValueEqual(
                 player.getAttributeValue(
                         Attributes.KNOCKBACK_RESISTANCE
                 ),
                 baseKnockbackResistance,
                 "Replacing red wine should remove its attribute bonus"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void agedWineProfilesAddCellarWorthyBenefits(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+        double baseArmor = player.getAttributeValue(Attributes.ARMOR);
+        double baseLuck = player.getAttributeValue(Attributes.LUCK);
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.AGED_RED,
+                WineQuality.TABLE
+        );
+
+        helper.assertTrue(
+                player.getAttributeValue(Attributes.ARMOR) > baseArmor,
+                "Aged red wine should provide a modest armour benefit"
+        );
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                player,
+                WineEffectProfile.AGED_WHITE,
+                WineQuality.TABLE
+        );
+
+        helper.assertValueEqual(
+                player.getAttributeValue(Attributes.ARMOR),
+                baseArmor,
+                "Replacing aged red should remove its armour benefit"
+        );
+        helper.assertTrue(
+                player.getAttributeValue(Attributes.LUCK) > baseLuck,
+                "Aged white wine should provide a foraging luck benefit"
         );
         helper.succeed();
     }

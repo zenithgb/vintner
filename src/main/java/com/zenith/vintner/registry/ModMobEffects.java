@@ -22,6 +22,18 @@ public final class ModMobEffects {
                             id("wine_knockback_resistance"),
                             0.25,
                             AttributeModifier.Operation.ADD_VALUE
+                    ),
+                    attribute(
+                            Attributes.MOVEMENT_EFFICIENCY,
+                            id("wine_movement_efficiency"),
+                            0.15,
+                            AttributeModifier.Operation.ADD_VALUE
+                    ),
+                    attribute(
+                            Attributes.SAFE_FALL_DISTANCE,
+                            id("wine_safe_fall_distance"),
+                            1.0,
+                            AttributeModifier.Operation.ADD_VALUE
                     )
             )
     );
@@ -35,6 +47,18 @@ public final class ModMobEffects {
                             id("wine_block_break_speed"),
                             0.15,
                             AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+                    ),
+                    attribute(
+                            Attributes.SUBMERGED_MINING_SPEED,
+                            id("wine_submerged_mining_speed"),
+                            0.25,
+                            AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+                    ),
+                    attribute(
+                            Attributes.WATER_MOVEMENT_EFFICIENCY,
+                            id("wine_water_movement_efficiency"),
+                            0.15,
+                            AttributeModifier.Operation.ADD_VALUE
                     )
             )
     );
@@ -47,6 +71,12 @@ public final class ModMobEffects {
                             Attributes.KNOCKBACK_RESISTANCE,
                             id("wine_knockback_resistance"),
                             0.4,
+                            AttributeModifier.Operation.ADD_VALUE
+                    ),
+                    attribute(
+                            Attributes.ARMOR,
+                            id("wine_armor"),
+                            2.0,
                             AttributeModifier.Operation.ADD_VALUE
                     )
             )
@@ -61,6 +91,24 @@ public final class ModMobEffects {
                             id("wine_block_break_speed"),
                             0.25,
                             AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+                    ),
+                    attribute(
+                            Attributes.SUBMERGED_MINING_SPEED,
+                            id("wine_submerged_mining_speed"),
+                            0.4,
+                            AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+                    ),
+                    attribute(
+                            Attributes.WATER_MOVEMENT_EFFICIENCY,
+                            id("wine_water_movement_efficiency"),
+                            0.25,
+                            AttributeModifier.Operation.ADD_VALUE
+                    ),
+                    attribute(
+                            Attributes.LUCK,
+                            id("wine_luck"),
+                            1.0,
+                            AttributeModifier.Operation.ADD_VALUE
                     )
             )
     );
