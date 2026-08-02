@@ -51,6 +51,7 @@ import com.zenith.vintner.vineyard.VineyardSurveyRecord;
 import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.VineyardSeason;
 import com.zenith.vintner.vineyard.VineyardWeatherEvent;
+import com.zenith.vintner.vineyard.VineyardProtection;
 import net.minecraft.advancements.AdvancementHolder;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -4855,6 +4856,38 @@ public final class VintnerGameTests {
                         1
                 ),
                 "Winter should make vines dormant rather than deleting them"
+        );
+        helper.assertValueEqual(
+                VineyardSeason.WINTER.growthChanceDenominator(8, true),
+                16,
+                "Protected cultivation should permit winter growth at half speed"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void glassCoverProtectsVinesFromShelterRelevantWeather(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.RED_GRAPEVINE);
+        helper.setBlock(FIRST.above(3), Blocks.GLASS);
+
+        helper.assertTrue(
+                VineyardProtection.isProtected(
+                        helper.getLevel(),
+                        helper.absolutePos(FIRST)
+                ),
+                "Overhead glass should register as protected cultivation"
+        );
+        helper.assertValueEqual(
+                VineyardWeatherEvent.HAIL.mitigatedBy(true),
+                VineyardWeatherEvent.CALM,
+                "Glass cover should shelter vines from hail"
+        );
+        helper.assertValueEqual(
+                VineyardWeatherEvent.HEATWAVE.mitigatedBy(true),
+                VineyardWeatherEvent.HEATWAVE,
+                "Glass cover should not erase heat pressure"
         );
         helper.succeed();
     }

@@ -14,6 +14,9 @@
 - Weather affects the harvest-weather portion of grape quality. It never
   destroys a vineyard, replacing destructive simulation with recoverable
   vintage variation.
+- Glass placed two to six blocks above a vine counts as protected cultivation.
+  It permits slow winter growth and shelters the crop from late frost, hail,
+  and heavy rain. It does not remove heatwave or drought pressure.
 - Use the Vintner's Almanac on vineyard land or a grapevine to see the current
   season, vintage year, day within the season, local outlook, and its current
   harvest-quality contribution.
@@ -23,6 +26,8 @@
 - Calendar boundaries respect the configurable season length.
 - Four seasons roll into a new vintage year.
 - Winter dormancy blocks growth without mutating vine blocks.
+- Protected vines can grow slowly in winter and mitigate only shelter-relevant
+  weather events.
 - Seasonal outlooks are deterministic for the same world, region, year, and
   season.
 - All weather outcomes stay within the existing 0–7 harvest-weather budget,

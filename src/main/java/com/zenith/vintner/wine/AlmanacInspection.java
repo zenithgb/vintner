@@ -13,6 +13,7 @@ import com.zenith.vintner.vineyard.TerroirReport;
 import com.zenith.vintner.vineyard.VineyardSurveyRecord;
 import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.VineyardWeatherEvent;
+import com.zenith.vintner.vineyard.VineyardProtection;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -171,7 +172,8 @@ public final class AlmanacInspection {
                 player,
                 report.seasonalContext(),
                 report.weatherEvent(),
-                report.harvestWeatherPoints()
+                report.harvestWeatherPoints(),
+                report.protectedCultivation()
         );
         grantSurvey(player);
     }
@@ -287,17 +289,22 @@ public final class AlmanacInspection {
             TerroirReport report
     ) {
         SeasonalContext context = SeasonalContext.current(level);
+        boolean protectedCultivation = VineyardProtection.isProtected(
+                level,
+                pos
+        );
         VineyardWeatherEvent weather = VineyardWeatherEvent.at(
                 level,
                 pos,
                 report.climate(),
                 context
-        );
+        ).mitigatedBy(protectedCultivation);
         sendSeasonalOutlook(
                 player,
                 context,
                 weather,
-                weather.harvestQualityPoints(level.isRainingAt(pos.above()))
+                weather.harvestQualityPoints(level.isRainingAt(pos.above())),
+                protectedCultivation
         );
     }
 
@@ -305,7 +312,8 @@ public final class AlmanacInspection {
             Player player,
             SeasonalContext context,
             VineyardWeatherEvent weather,
-            int weatherPoints
+            int weatherPoints,
+            boolean protectedCultivation
     ) {
         player.sendSystemMessage(Component.translatable(
                 "message.vintner.almanac.season",
@@ -323,6 +331,11 @@ public final class AlmanacInspection {
                         ? ChatFormatting.DARK_GREEN
                         : ChatFormatting.GOLD
         ));
+        if (protectedCultivation) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.vintner.almanac.protected_cultivation"
+            ).withStyle(ChatFormatting.AQUA));
+        }
     }
 
     public enum Target {

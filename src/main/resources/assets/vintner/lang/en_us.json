@@ -455,5 +455,6 @@
   "weather_event.vintner.hail": "Hail risk",
   "message.vintner.almanac.season": "%s, Year %s | day %s of %s",
   "message.vintner.almanac.weather_outlook": "Vineyard outlook: %s | harvest weather %s/7",
+  "message.vintner.almanac.protected_cultivation": "Protected cultivation: overhead glass shelters this vine.",
   "gamerule.vintner.season_length_days": "Vintner season length (days)"
 }

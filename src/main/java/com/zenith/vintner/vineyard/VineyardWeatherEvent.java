@@ -47,6 +47,16 @@ public enum VineyardWeatherEvent {
         return Math.max(1, denominator * growthDenominatorPercent / 100);
     }
 
+    public VineyardWeatherEvent mitigatedBy(boolean protectedCultivation) {
+        if (!protectedCultivation) {
+            return this;
+        }
+        return switch (this) {
+            case LATE_FROST, HEAVY_RAIN, HAIL -> CALM;
+            default -> this;
+        };
+    }
+
     public static VineyardWeatherEvent at(
             ServerLevel level,
             BlockPos pos,

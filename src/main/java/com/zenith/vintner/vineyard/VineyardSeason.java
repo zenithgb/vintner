@@ -21,15 +21,36 @@ public enum VineyardSeason {
     }
 
     public boolean shouldGrow(RandomSource random, int baseDenominator) {
-        if (this == WINTER) {
+        return shouldGrow(random, baseDenominator, false);
+    }
+
+    public boolean shouldGrow(
+            RandomSource random,
+            int baseDenominator,
+            boolean protectedCultivation
+    ) {
+        if (this == WINTER && !protectedCultivation) {
             return false;
         }
-        int denominator = switch (this) {
+        int denominator = growthChanceDenominator(
+                baseDenominator,
+                protectedCultivation
+        );
+        return denominator > 0 && random.nextInt(denominator) == 0;
+    }
+
+    public int growthChanceDenominator(
+            int baseDenominator,
+            boolean protectedCultivation
+    ) {
+        if (this == WINTER && !protectedCultivation) {
+            return 0;
+        }
+        return switch (this) {
             case SPRING -> Math.max(1, baseDenominator * 3 / 4);
             case SUMMER -> baseDenominator;
             case AUTUMN -> Math.max(1, baseDenominator * 3 / 2);
-            case WINTER -> Integer.MAX_VALUE;
+            case WINTER -> Math.max(1, baseDenominator * 2);
         };
-        return random.nextInt(denominator) == 0;
     }
 }
