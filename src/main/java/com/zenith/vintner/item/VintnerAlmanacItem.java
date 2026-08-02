@@ -6,6 +6,7 @@ import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
+import com.zenith.vintner.wine.WineVintageConditions;
 import com.zenith.vintner.wine.AlmanacInspection;
 import com.zenith.vintner.vineyard.VineyardSurveyRecord;
 import net.minecraft.ChatFormatting;
@@ -108,6 +109,25 @@ public final class VintnerAlmanacItem extends Item {
                                 provenance.producerDisplayName()
                         ).withStyle(ChatFormatting.DARK_GRAY)
                 );
+                WineVintageConditions conditions =
+                        provenance.vintageConditions();
+                if (conditions.known()) {
+                    player.sendSystemMessage(
+                            Component.translatable(
+                                    "message.vintner.almanac.vintage_conditions",
+                                    conditions.season().displayName(),
+                                    conditions.year(),
+                                    conditions.weatherEvent().displayName()
+                            ).withStyle(ChatFormatting.DARK_GRAY)
+                    );
+                    if (conditions.protectedCultivation()) {
+                        player.sendSystemMessage(
+                                Component.translatable(
+                                        "message.vintner.almanac.vintage_protected"
+                                ).withStyle(ChatFormatting.DARK_GRAY)
+                        );
+                    }
+                }
             } else {
                 player.sendSystemMessage(
                         Component.translatable(

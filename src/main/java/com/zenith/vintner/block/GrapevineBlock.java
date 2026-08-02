@@ -4,6 +4,7 @@ import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.wine.GrapeQualityEvaluator;
 import com.zenith.vintner.wine.WineMetadata;
+import com.zenith.vintner.wine.WineVintageConditions;
 import com.zenith.vintner.wine.WineQuality;
 import com.zenith.vintner.wine.VineyardConditionReport;
 import com.zenith.vintner.vineyard.SeasonalContext;
@@ -605,20 +606,25 @@ public abstract class GrapevineBlock
                     grapeCount
             );
 
-            int vintage = WineMetadata.vintageFromGameTime(
-                    serverLevel.getGameTime()
-            );
-
             VineyardConditionReport report =
                     GrapeQualityEvaluator.inspect(
                             serverLevel,
                             rootPos
                     );
+            int vintage = report.seasonalContext().year();
 
             WineMetadata.applyProfile(
                     grapes,
                     vintage,
                     report.qualityProfile()
+            );
+            WineMetadata.applyVintageConditions(
+                    grapes,
+                    WineVintageConditions.harvested(
+                            report.seasonalContext(),
+                            report.weatherEvent(),
+                            report.protectedCultivation()
+                    )
             );
             Block.popResource(
                     serverLevel,

@@ -253,6 +253,7 @@ public final class WineMetadata {
                 PRODUCER_NAME_KEY,
                 provenance.producerName()
         );
+        provenance.vintageConditions().write(tag);
         if (!tag.contains(ESTATE_NAME_KEY)
                 || tag.getStringOr(ESTATE_NAME_KEY, "").isBlank()
                 || "Independent Vineyard".equals(
@@ -289,8 +290,24 @@ public final class WineMetadata {
                 tag.getIntOr(ORIGIN_Y_KEY, 0),
                 tag.getIntOr(ORIGIN_Z_KEY, 0),
                 tag.getStringOr(PRODUCER_ID_KEY, ""),
-                tag.getStringOr(PRODUCER_NAME_KEY, "")
+                tag.getStringOr(PRODUCER_NAME_KEY, ""),
+                WineVintageConditions.read(tag)
         );
+    }
+
+    public static void applyVintageConditions(
+            ItemStack stack,
+            WineVintageConditions conditions
+    ) {
+        CompoundTag tag = getTagCopy(stack);
+        conditions.write(tag);
+        setTag(stack, tag);
+    }
+
+    public static WineVintageConditions vintageConditions(
+            ItemStack stack
+    ) {
+        return WineVintageConditions.read(getTagCopy(stack));
     }
 
     public static void copyBatchMetadata(

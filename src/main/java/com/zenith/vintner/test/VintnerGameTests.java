@@ -42,6 +42,7 @@ import com.zenith.vintner.wine.WineAgeStage;
 import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
 import com.zenith.vintner.wine.WineStyle;
+import com.zenith.vintner.wine.WineVintageConditions;
 import com.zenith.vintner.vineyard.ClimateProfile;
 import com.zenith.vintner.vineyard.SoilProfile;
 import com.zenith.vintner.vineyard.SoilType;
@@ -3007,6 +3008,16 @@ public final class VintnerGameTests {
                 4,
                 WineQualityProfile.vineyard(50)
         );
+        WineVintageConditions vintageConditions =
+                WineVintageConditions.harvested(
+                        SeasonalContext.atDay(20L, 8),
+                        VineyardWeatherEvent.COOL_RIPENING,
+                        true
+                );
+        WineMetadata.applyVintageConditions(
+                grapes,
+                vintageConditions
+        );
 
         GrapePressBlockEntity press = helper.getBlockEntity(
                 pressPos,
@@ -3035,6 +3046,11 @@ public final class VintnerGameTests {
                 provenance.producerName(),
                 producer.getGameProfile().name(),
                 "Batch provenance should identify the producer"
+        );
+        helper.assertValueEqual(
+                provenance.vintageConditions(),
+                vintageConditions,
+                "Pressing should preserve native vintage conditions"
         );
 
         FermentationBarrelBlockEntity fermentation =
@@ -3103,10 +3119,18 @@ public final class VintnerGameTests {
 
         WineMetadata.applyProfile(first, 2, profile);
         WineMetadata.applyProfile(second, 2, profile);
+        WineVintageConditions conditions =
+                WineVintageConditions.harvested(
+                        SeasonalContext.atDay(9L, 8),
+                        VineyardWeatherEvent.CALM,
+                        false
+                );
+        WineMetadata.applyVintageConditions(first, conditions);
+        WineMetadata.applyVintageConditions(second, conditions);
 
         helper.assertTrue(
                 ItemStack.isSameItemSameComponents(first, second),
-                "Matching grapes must stack regardless of source vine"
+                "Grapes harvested under matching conditions must stack"
         );
         helper.assertTrue(
                 !WineMetadata.provenance(first).known()

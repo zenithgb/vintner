@@ -163,6 +163,8 @@ public final class GrapePressBlockEntity extends BlockEntity {
                     worldPosition,
                     producer.getUUID(),
                     producer.getGameProfile().name()
+            ).withVintageConditions(
+                    WineMetadata.vintageConditions(input)
             );
         }
 

@@ -17,7 +17,8 @@ public record WineProvenance(
         int originY,
         int originZ,
         String producerId,
-        String producerName
+        String producerName,
+        WineVintageConditions vintageConditions
 ) {
     public static final String UNKNOWN = "unknown";
     private static final long TICKS_PER_DAY = 24000L;
@@ -28,6 +29,32 @@ public record WineProvenance(
         originDimension = safeText(originDimension, UNKNOWN);
         producerId = safeText(producerId, "");
         producerName = safeText(producerName, "");
+        vintageConditions = vintageConditions == null
+                ? WineVintageConditions.unknown()
+                : vintageConditions;
+    }
+
+    public WineProvenance(
+            String variety,
+            long harvestedAt,
+            String originDimension,
+            int originX,
+            int originY,
+            int originZ,
+            String producerId,
+            String producerName
+    ) {
+        this(
+                variety,
+                harvestedAt,
+                originDimension,
+                originX,
+                originY,
+                originZ,
+                producerId,
+                producerName,
+                WineVintageConditions.unknown()
+        );
     }
 
     public static WineProvenance legacy() {
@@ -59,7 +86,24 @@ public record WineProvenance(
                 origin.getY(),
                 origin.getZ(),
                 producerId.toString(),
-                producerName
+                producerName,
+                WineVintageConditions.unknown()
+        );
+    }
+
+    public WineProvenance withVintageConditions(
+            WineVintageConditions conditions
+    ) {
+        return new WineProvenance(
+                variety,
+                harvestedAt,
+                originDimension,
+                originX,
+                originY,
+                originZ,
+                producerId,
+                producerName,
+                conditions
         );
     }
 
@@ -115,6 +159,7 @@ public record WineProvenance(
         output.putInt(prefix + "OriginZ", originZ);
         output.putString(prefix + "ProducerId", producerId);
         output.putString(prefix + "ProducerName", producerName);
+        vintageConditions.save(output, prefix);
     }
 
     public static WineProvenance load(
@@ -132,7 +177,8 @@ public record WineProvenance(
                 input.getIntOr(prefix + "OriginY", 0),
                 input.getIntOr(prefix + "OriginZ", 0),
                 input.getStringOr(prefix + "ProducerId", ""),
-                input.getStringOr(prefix + "ProducerName", "")
+                input.getStringOr(prefix + "ProducerName", ""),
+                WineVintageConditions.load(input, prefix)
         );
     }
 
