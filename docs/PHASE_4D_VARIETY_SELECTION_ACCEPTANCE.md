@@ -16,6 +16,9 @@
   unusable.
 - Ordinary item tooltips remain concise; detailed site guidance stays in the
   field instruments.
+- Inspecting a vine with the Almanac gives one prioritized management action:
+  prepare its soil, irrigate during drought, protect it from damaging weather,
+  wait for ripeness, or harvest. It avoids another wall of simultaneous tips.
 
 ## Balance boundaries
 
@@ -31,4 +34,5 @@
 - A cooler version of the same site recommends white grapes.
 - The recommended red variety earns more vineyard points than white on the
   warm test site.
-- The complete dedicated-server GameTest suite passes with 100 required tests.
+- Management advice prioritizes soil preparation before weather mitigation and
+  selects irrigation, shelter, or harvest guidance for the relevant state.

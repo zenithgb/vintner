@@ -56,6 +56,7 @@ import com.zenith.vintner.vineyard.VineyardSeason;
 import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import com.zenith.vintner.vineyard.VineyardProtection;
 import com.zenith.vintner.vineyard.VineyardIrrigation;
+import com.zenith.vintner.vineyard.VineyardManagementAdvice;
 import net.minecraft.advancements.AdvancementHolder;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -5064,6 +5065,57 @@ public final class VintnerGameTests {
                 warmSite.vineyardQualityPoints(GrapeVariety.RED)
                         > warmSite.vineyardQualityPoints(GrapeVariety.WHITE),
                 "Following the recommendation should improve vineyard quality"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void vineyardAdvicePrioritizesActionableManagement(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                VineyardManagementAdvice.recommend(
+                        false,
+                        VineyardWeatherEvent.DROUGHT,
+                        false,
+                        false,
+                        false
+                ),
+                VineyardManagementAdvice.PREPARE_SOIL,
+                "Preparing soil should be the first management action"
+        );
+        helper.assertValueEqual(
+                VineyardManagementAdvice.recommend(
+                        true,
+                        VineyardWeatherEvent.DROUGHT,
+                        false,
+                        false,
+                        false
+                ),
+                VineyardManagementAdvice.IRRIGATE,
+                "An unmanaged drought should recommend irrigation"
+        );
+        helper.assertValueEqual(
+                VineyardManagementAdvice.recommend(
+                        true,
+                        VineyardWeatherEvent.HAIL,
+                        false,
+                        false,
+                        false
+                ),
+                VineyardManagementAdvice.PROTECT,
+                "Hail risk should recommend protected cultivation"
+        );
+        helper.assertValueEqual(
+                VineyardManagementAdvice.recommend(
+                        true,
+                        VineyardWeatherEvent.CALM,
+                        false,
+                        false,
+                        true
+                ),
+                VineyardManagementAdvice.HARVEST,
+                "A ripe managed vine should recommend harvesting"
         );
         helper.succeed();
     }

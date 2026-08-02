@@ -15,6 +15,7 @@ import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import com.zenith.vintner.vineyard.VineyardProtection;
 import com.zenith.vintner.vineyard.VineyardIrrigation;
+import com.zenith.vintner.vineyard.VineyardManagementAdvice;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -176,6 +177,15 @@ public final class AlmanacInspection {
                 report.harvestWeatherPoints(),
                 report.protectedCultivation(),
                 report.irrigated()
+        );
+        player.sendSystemMessage(
+                VineyardManagementAdvice.recommend(
+                        report.preparedSoil(),
+                        report.weatherEvent(),
+                        report.protectedCultivation(),
+                        report.irrigated(),
+                        report.ripeHarvest()
+                ).message().copy().withStyle(ChatFormatting.AQUA)
         );
         grantSurvey(player);
     }

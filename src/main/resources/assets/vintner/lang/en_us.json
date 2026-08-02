@@ -461,5 +461,10 @@
   "message.vintner.almanac.irrigated": "Irrigation: a nearby water channel protects this site from drought.",
   "message.vintner.almanac.vintage_irrigated": "Vintage management: irrigated during the growing season.",
   "message.vintner.terroir.variety_recommendation": "Planting recommendation: %s | red fit %s/100 | white fit %s/100",
+  "message.vintner.almanac.advice.prepare_soil": "Vineyard advice: enrich the ground beneath this vine with compost.",
+  "message.vintner.almanac.advice.irrigate": "Vineyard advice: add a water channel within four blocks for drought protection.",
+  "message.vintner.almanac.advice.protect": "Vineyard advice: add a glass roof two to six blocks above the vine.",
+  "message.vintner.almanac.advice.wait": "Vineyard advice: let this vine ripen before harvesting.",
+  "message.vintner.almanac.advice.harvest": "Vineyard advice: this vine is ready to harvest.",
   "gamerule.vintner.season_length_days": "Vintner season length (days)"
 }
