@@ -1,5 +1,6 @@
 package com.zenith.vintner.block.entity;
 
+import com.zenith.vintner.estate.EstateSavedData;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQualityProfile;
@@ -13,6 +14,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -198,6 +201,15 @@ public final class GrapePressBlockEntity extends BlockEntity {
                     must,
                     provenance
             );
+            if (producer instanceof ServerPlayer serverPlayer
+                    && level instanceof ServerLevel serverLevel) {
+                EstateSavedData.get(serverLevel)
+                        .find(serverPlayer.getUUID())
+                        .ifPresent(profile -> WineMetadata.setEstateName(
+                                must,
+                                profile.estateName()
+                        ));
+            }
             WineMetadata.ensureBatchIdentity(
                     must,
                     WineMetadata.createBatchId(

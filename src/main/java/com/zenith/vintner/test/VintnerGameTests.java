@@ -18,6 +18,8 @@ import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
+import com.zenith.vintner.estate.EstateProfile;
+import com.zenith.vintner.estate.EstateSavedData;
 import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.item.GraftingKnifeItem;
 import com.zenith.vintner.registry.ModAttachments;
@@ -80,6 +82,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -2997,6 +3000,115 @@ public final class VintnerGameTests {
                         restored.getBottleCopy(0)
                 ) >= expectedMinimum,
                 "A reloaded crate should catch up for unloaded world time"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void registeredEstateBrandsNewBatches(
+            GameTestHelper helper
+    ) {
+        ServerPlayer producer = helper.makeMockServerPlayerInLevel();
+        BlockPos archivePos = new BlockPos(1, 1, 1);
+        helper.setBlock(archivePos, ModBlocks.VINTAGE_ARCHIVE);
+        ItemStack almanac = new ItemStack(ModItems.VINTNER_ALMANAC);
+        almanac.set(
+                DataComponents.CUSTOM_NAME,
+                Component.literal("Stone Hill Estate")
+        );
+        producer.setItemInHand(InteractionHand.MAIN_HAND, almanac);
+        producer.setItemInHand(
+                InteractionHand.OFF_HAND,
+                new ItemStack(Blocks.BANNER.blue())
+        );
+        producer.setShiftKeyDown(true);
+        BlockPos absoluteArchive = helper.absolutePos(archivePos);
+        producer.gameMode.useItemOn(
+                producer,
+                helper.getLevel(),
+                almanac,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteArchive),
+                        Direction.UP,
+                        absoluteArchive,
+                        false
+                )
+        );
+        producer.setShiftKeyDown(false);
+
+        EstateSavedData estates = EstateSavedData.get(helper.getLevel());
+        EstateProfile founded = estates.find(producer.getUUID())
+                .orElse(null);
+
+        helper.assertTrue(
+                founded != null,
+                "Sneak-using a named Almanac should found an estate"
+        );
+        helper.assertValueEqual(
+                founded.estateName(),
+                "Stone Hill Estate",
+                "A named Almanac should establish the estate name"
+        );
+        helper.assertValueEqual(
+                founded.vineyardName(),
+                "Stone Hill Estate Vineyard",
+                "Registration should establish a vineyard identity"
+        );
+        helper.assertValueEqual(
+                founded.bottleLabel(),
+                "Stone Hill Estate",
+                "Registration should establish a bottle label"
+        );
+        helper.assertValueEqual(
+                founded.crestColor(),
+                DyeColor.BLUE.getName(),
+                "An offhand banner should establish the crest colour"
+        );
+
+        BlockPos pressPos = new BlockPos(3, 1, 1);
+        helper.setBlock(pressPos, ModBlocks.GRAPE_PRESS);
+        GrapePressBlockEntity press = helper.getBlockEntity(
+                pressPos,
+                GrapePressBlockEntity.class
+        );
+        ItemStack grapes = new ItemStack(
+                ModItems.RED_GRAPES,
+                GrapePressBlockEntity.GRAPES_PER_PRESS
+        );
+        press.insert(grapes, grapes.getCount());
+
+        helper.assertTrue(
+                press.press(producer),
+                "A registered producer should be able to press grapes"
+        );
+        helper.assertValueEqual(
+                WineMetadata.estateName(press.bottleOneMust()),
+                founded.estateName(),
+                "New batches should inherit the registered estate name"
+        );
+
+        EstateProfile renamed = estates.register(
+                producer,
+                helper.getLevel(),
+                helper.absolutePos(new BlockPos(6, 1, 1)),
+                "Stone Hill Cellars",
+                null
+        );
+        helper.assertValueEqual(
+                renamed.foundingYear(),
+                founded.foundingYear(),
+                "Renaming must preserve the estate founding year"
+        );
+        helper.assertValueEqual(
+                renamed.homeRegion(),
+                founded.homeRegion(),
+                "Renaming must preserve the estate home region"
+        );
+        helper.assertValueEqual(
+                renamed.crestColor(),
+                founded.crestColor(),
+                "Renaming without a banner must preserve the crest"
         );
         helper.succeed();
     }
