@@ -9,6 +9,7 @@ import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import com.zenith.vintner.vineyard.VineyardProtection;
 import com.zenith.vintner.vineyard.VineyardIrrigation;
+import com.zenith.vintner.vineyard.GrapeVariety;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -45,6 +46,10 @@ public final class GrapeQualityEvaluator {
                         .is(ModBlocks.VINEYARD_SOIL);
 
         BlockState vineState = level.getBlockState(vinePos);
+        GrapeVariety variety = vineState.getBlock()
+                instanceof GrapevineBlock grapevine
+                ? grapevine.getVariety()
+                : GrapeVariety.RED;
         int vineAge = vineState.hasProperty(GrapevineBlock.AGE)
                 ? vineState.getValue(GrapevineBlock.AGE)
                 : 0;
@@ -82,7 +87,7 @@ public final class GrapeQualityEvaluator {
         );
 
         int score = scoreWithTerroirAndWeather(
-                terroir.vineyardQualityPoints(),
+                terroir.vineyardQualityPoints(variety),
                 matureVine,
                 healthyVine,
                 managedYield,

@@ -460,5 +460,6 @@
   "message.vintner.almanac.vintage_protected": "Vintage protection: harvested beneath glass cover.",
   "message.vintner.almanac.irrigated": "Irrigation: a nearby water channel protects this site from drought.",
   "message.vintner.almanac.vintage_irrigated": "Vintage management: irrigated during the growing season.",
+  "message.vintner.terroir.variety_recommendation": "Planting recommendation: %s | red fit %s/100 | white fit %s/100",
   "gamerule.vintner.season_length_days": "Vintner season length (days)"
 }

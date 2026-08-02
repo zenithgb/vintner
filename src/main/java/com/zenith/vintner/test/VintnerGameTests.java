@@ -44,10 +44,12 @@ import com.zenith.vintner.wine.WineTastingProfile;
 import com.zenith.vintner.wine.WineStyle;
 import com.zenith.vintner.wine.WineVintageConditions;
 import com.zenith.vintner.vineyard.ClimateProfile;
+import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.vineyard.SoilProfile;
 import com.zenith.vintner.vineyard.SoilType;
 import com.zenith.vintner.vineyard.TerrainProfile;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
+import com.zenith.vintner.vineyard.TerroirReport;
 import com.zenith.vintner.vineyard.VineyardSurveyRecord;
 import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.VineyardSeason;
@@ -5004,6 +5006,64 @@ public final class VintnerGameTests {
                         helper.absolutePos(FIRST)
                 ),
                 "Water beyond the four-block channel radius should not count"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void terroirRecommendsClimateAppropriateVarieties(
+            GameTestHelper helper
+    ) {
+        SoilProfile soil = SoilProfile.of(SoilType.VOLCANIC);
+        TerrainProfile terrain = TerrainProfile.evaluate(
+                72,
+                2,
+                Direction.SOUTH,
+                true,
+                8,
+                55,
+                false,
+                false
+        );
+        TerroirReport warmSite = new TerroirReport(
+                ClimateProfile.evaluate(
+                        1.15F,
+                        true,
+                        false,
+                        72,
+                        false
+                ),
+                soil,
+                terrain,
+                80
+        );
+        TerroirReport coolSite = new TerroirReport(
+                ClimateProfile.evaluate(
+                        0.5F,
+                        true,
+                        false,
+                        72,
+                        false
+                ),
+                soil,
+                terrain,
+                80
+        );
+
+        helper.assertValueEqual(
+                warmSite.recommendedVariety(),
+                GrapeVariety.RED,
+                "A warm, sunny site should recommend red grapes"
+        );
+        helper.assertValueEqual(
+                coolSite.recommendedVariety(),
+                GrapeVariety.WHITE,
+                "A cooler site should recommend white grapes"
+        );
+        helper.assertTrue(
+                warmSite.vineyardQualityPoints(GrapeVariety.RED)
+                        > warmSite.vineyardQualityPoints(GrapeVariety.WHITE),
+                "Following the recommendation should improve vineyard quality"
         );
         helper.succeed();
     }

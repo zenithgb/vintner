@@ -34,6 +34,7 @@ public final class TerroirMessages {
                         report.siteRating().displayName()
                 ).withStyle(ChatFormatting.DARK_GREEN)
         );
+        sendVarietyRecommendation(player, report);
     }
 
     public static void sendFullReport(
@@ -84,6 +85,21 @@ public final class TerroirMessages {
                         "message.vintner.terroir.potential",
                         report.siteScore(),
                         report.siteRating().displayName()
+                ).withStyle(ChatFormatting.DARK_GREEN)
+        );
+        sendVarietyRecommendation(player, report);
+    }
+
+    private static void sendVarietyRecommendation(
+            Player player,
+            TerroirReport report
+    ) {
+        player.sendSystemMessage(
+                Component.translatable(
+                        "message.vintner.terroir.variety_recommendation",
+                        report.recommendedVariety().displayName(),
+                        GrapeVariety.RED.siteSuitability(report),
+                        GrapeVariety.WHITE.siteSuitability(report)
                 ).withStyle(ChatFormatting.DARK_GREEN)
         );
     }
