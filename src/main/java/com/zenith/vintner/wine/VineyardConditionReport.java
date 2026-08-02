@@ -3,6 +3,7 @@ package com.zenith.vintner.wine;
 import com.zenith.vintner.vineyard.TerroirReport;
 import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.VineyardWeatherEvent;
+import com.zenith.vintner.vineyard.VineAgeStage;
 
 public record VineyardConditionReport(
         boolean openSky,
@@ -14,6 +15,8 @@ public record VineyardConditionReport(
         boolean managedYield,
         boolean ripeHarvest,
         boolean dryHarvestWeather,
+        VineAgeStage vineAgeStage,
+        long vineAgeDays,
         int qualityScore,
         WineQualityProfile qualityProfile,
         WineQuality predictedQuality,

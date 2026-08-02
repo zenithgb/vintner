@@ -57,6 +57,8 @@ import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import com.zenith.vintner.vineyard.VineyardProtection;
 import com.zenith.vintner.vineyard.VineyardIrrigation;
 import com.zenith.vintner.vineyard.VineyardManagementAdvice;
+import com.zenith.vintner.vineyard.VineAgeSavedData;
+import com.zenith.vintner.vineyard.VineAgeStage;
 import net.minecraft.advancements.AdvancementHolder;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -5441,6 +5443,114 @@ public final class VintnerGameTests {
                 restored.siteScore(),
                 report.siteScore(),
                 "The bookmark should preserve the evaluated site score"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void vineAgeStagesCreateYieldQualityTradeoffs(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                VineAgeStage.atDays(0),
+                VineAgeStage.NEW_PLANTING,
+                "A newly planted vine should begin as a new planting"
+        );
+        helper.assertValueEqual(
+                VineAgeStage.atDays(8),
+                VineAgeStage.YOUNG,
+                "Eight vineyard days should produce a young vine"
+        );
+        helper.assertValueEqual(
+                VineAgeStage.atDays(32),
+                VineAgeStage.MATURE,
+                "Thirty-two vineyard days should produce a mature vine"
+        );
+        helper.assertValueEqual(
+                VineAgeStage.atDays(96),
+                VineAgeStage.OLD,
+                "Ninety-six vineyard days should produce an old vine"
+        );
+        helper.assertValueEqual(
+                VineAgeStage.atDays(192),
+                VineAgeStage.ANCIENT,
+                "A long-lived vine should eventually become ancient"
+        );
+        helper.assertTrue(
+                VineAgeStage.YOUNG.harvestAdjustment()
+                        > VineAgeStage.OLD.harvestAdjustment(),
+                "Young vines should favor yield over old vines"
+        );
+        helper.assertTrue(
+                VineAgeStage.OLD.qualityPoints()
+                        > VineAgeStage.YOUNG.qualityPoints(),
+                "Old vines should favor concentration over young vines"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void vinePlantingDatesPersistPerRootPosition(
+            GameTestHelper helper
+    ) {
+        BlockPos first = helper.absolutePos(FIRST);
+        BlockPos east = helper.absolutePos(EAST);
+        VineAgeSavedData ages = VineAgeSavedData.get(helper.getLevel());
+
+        ages.remove(first);
+        ages.remove(east);
+        ages.plant(first, 12L);
+
+        helper.assertValueEqual(
+                ages.ageDays(first, 44L),
+                32L,
+                "A vine should retain its original planting day"
+        );
+        helper.assertValueEqual(
+                ages.stage(first, 44L),
+                VineAgeStage.MATURE,
+                "Persisted planting time should determine the age category"
+        );
+        helper.assertValueEqual(
+                ages.ageDays(east, 44L),
+                0L,
+                "A legacy vine should initialize safely when first inspected"
+        );
+
+        ages.remove(first);
+        ages.remove(east);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void vineAgeUsesExistingQualityBudget(
+            GameTestHelper helper
+    ) {
+        int young = GrapeQualityEvaluator.scoreWithTerroirAgeAndWeather(
+                28,
+                VineAgeStage.YOUNG.qualityPoints(),
+                true,
+                true,
+                true,
+                7
+        );
+        int ancient = GrapeQualityEvaluator.scoreWithTerroirAgeAndWeather(
+                28,
+                VineAgeStage.ANCIENT.qualityPoints(),
+                true,
+                true,
+                true,
+                7
+        );
+
+        helper.assertTrue(
+                ancient > young,
+                "Ancient roots should produce more concentrated fruit"
+        );
+        helper.assertValueEqual(
+                ancient,
+                60,
+                "Ancient vines should complete, not exceed, the vineyard budget"
         );
         helper.succeed();
     }

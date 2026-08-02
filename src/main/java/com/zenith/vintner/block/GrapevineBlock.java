@@ -8,6 +8,7 @@ import com.zenith.vintner.wine.WineVintageConditions;
 import com.zenith.vintner.wine.WineQuality;
 import com.zenith.vintner.wine.VineyardConditionReport;
 import com.zenith.vintner.vineyard.SeasonalContext;
+import com.zenith.vintner.vineyard.VineAgeSavedData;
 import com.zenith.vintner.vineyard.VineyardProtection;
 import com.zenith.vintner.wine.WinemakingEffects;
 import net.minecraft.core.BlockPos;
@@ -88,6 +89,29 @@ public abstract class GrapevineBlock
 
     protected abstract Item getCuttingItem();
 
+    @Override
+    protected void onPlace(
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            BlockState oldState,
+            boolean movedByPiston
+    ) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+
+        if (level instanceof ServerLevel serverLevel
+                && !state.getValue(UPPER)
+                && !(oldState.getBlock() instanceof GrapevineBlock)) {
+            VineAgeSavedData.get(serverLevel).plant(
+                    pos,
+                    Math.floorDiv(
+                            serverLevel.getOverworldClockTime(),
+                            SeasonalContext.TICKS_PER_DAY
+                    )
+            );
+        }
+    }
+
     public GrapeVariety getVariety() {
         return variety;
     }
@@ -139,6 +163,10 @@ public abstract class GrapevineBlock
         BlockState upperState = state.getValue(UPPER)
                 ? state
                 : level.getBlockState(upperPos);
+
+        if (level instanceof ServerLevel serverLevel) {
+            VineAgeSavedData.get(serverLevel).remove(rootPos);
+        }
 
         if (!state.getValue(UPPER)
                 || isMatchingLower(rootState)) {
@@ -594,23 +622,25 @@ public abstract class GrapevineBlock
         }
 
         if (level instanceof ServerLevel serverLevel) {
-            int harvestRange = variety.maximumHarvest()
-                    - variety.minimumHarvest()
-                    + 1;
-
-            int grapeCount = variety.minimumHarvest()
-                    + serverLevel.getRandom().nextInt(harvestRange);
-
-            ItemStack grapes = new ItemStack(
-                    getGrapeItem(),
-                    grapeCount
-            );
-
             VineyardConditionReport report =
                     GrapeQualityEvaluator.inspect(
                             serverLevel,
                             rootPos
                     );
+            int harvestRange = variety.maximumHarvest()
+                    - variety.minimumHarvest()
+                    + 1;
+            int grapeCount = Math.max(
+                    1,
+                    variety.minimumHarvest()
+                            + serverLevel.getRandom().nextInt(harvestRange)
+                            + report.vineAgeStage().harvestAdjustment()
+            );
+
+            ItemStack grapes = new ItemStack(
+                    getGrapeItem(),
+                    grapeCount
+            );
             int vintage = report.seasonalContext().year();
 
             WineMetadata.applyProfile(

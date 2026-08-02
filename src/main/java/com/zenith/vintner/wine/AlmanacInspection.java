@@ -156,6 +156,13 @@ public final class AlmanacInspection {
                 GrapevineBlock.MAX_AGE
         ).withStyle(ChatFormatting.GRAY));
         player.sendSystemMessage(Component.translatable(
+                "message.vintner.almanac.vine_age",
+                report.vineAgeStage().displayName(),
+                report.vineAgeDays(),
+                report.vineAgeStage().harvestAdjustment(),
+                report.vineAgeStage().qualityPoints()
+        ).withStyle(ChatFormatting.DARK_GREEN));
+        player.sendSystemMessage(Component.translatable(
                 "message.vintner.almanac.ripeness_quality",
                 report.predictedQuality().displayName(),
                 report.qualityScore(),
