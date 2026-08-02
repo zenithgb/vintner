@@ -12,6 +12,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 
 import java.util.ArrayList;
@@ -119,6 +120,15 @@ public final class ModVillageStructures {
                 .toList();
     }
 
+    public static boolean isVineyardElement(
+            StructurePoolElement element
+    ) {
+        return element instanceof SinglePoolElement single
+                && vineyardTemplates().contains(
+                        single.getTemplateLocation()
+                );
+    }
+
     public static boolean isInjected(
             RegistryAccess registryAccess,
             ResourceKey<StructureTemplatePool> poolKey
@@ -150,7 +160,7 @@ public final class ModVillageStructures {
 
             if (definition.processor() == null) {
                 element = StructurePoolElement
-                        .legacy(definition.template().toString())
+                        .single(definition.template().toString())
                         .apply(StructureTemplatePool.Projection.RIGID);
             } else {
                 Holder<StructureProcessorList> processor = processors

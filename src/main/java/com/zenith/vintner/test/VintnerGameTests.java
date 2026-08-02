@@ -359,6 +359,11 @@ public final class VintnerGameTests {
             StructurePoolElement vineyard = houses
                     .get(houses.size() - 1)
                     .getFirst();
+            helper.assertTrue(
+                    ModVillageStructures.isVineyardElement(vineyard),
+                    "Vineyard pool entries must be identifiable for the "
+                            + "one-per-village placement guard"
+            );
             var structureManager = helper.getLevel()
                     .getServer()
                     .getStructureManager();
@@ -435,19 +440,15 @@ public final class VintnerGameTests {
                     16,
                     "Vineyard soil plots"
             );
-            helper.assertTrue(
-                    template.filterBlocks(
-                            BlockPos.ZERO,
-                            settings,
-                            Blocks.DIRT
-                    ).size() >= 99
-                            || template.filterBlocks(
-                            BlockPos.ZERO,
-                            settings,
-                            Blocks.SANDSTONE
-                    ).size() >= 99,
-                    "Vineyard must contain a complete buried foundation"
-            );
+            int foundationBlocks = template.filterBlocks(
+                    BlockPos.ZERO,
+                    settings,
+                    Blocks.DIRT
+            ).size() + template.filterBlocks(
+                    BlockPos.ZERO,
+                    settings,
+                    Blocks.SANDSTONE
+            ).size();
             int retainingBorder = template.filterBlocks(
                     BlockPos.ZERO,
                     settings,
@@ -464,7 +465,21 @@ public final class VintnerGameTests {
             helper.assertValueEqual(
                     retainingBorder,
                     35,
-                    "Culture-matched timber retaining border"
+                    "Culture-matched buried retaining border"
+            );
+            helper.assertValueEqual(
+                    foundationBlocks + retainingBorder,
+                    99,
+                    "Vineyard must contain a complete buried foundation"
+            );
+            helper.assertValueEqual(
+                    template.filterBlocks(
+                            BlockPos.ZERO,
+                            settings,
+                            Blocks.AIR
+                    ).size(),
+                    264,
+                    "Vineyard must clear vegetation from the full plot"
             );
 
             int grapevineBlocks = 0;
@@ -496,6 +511,16 @@ public final class VintnerGameTests {
                     ).size(),
                     1,
                     "Village path connection"
+            );
+            String entranceState = template.filterBlocks(
+                    BlockPos.ZERO,
+                    settings,
+                    Blocks.JIGSAW
+            ).getFirst().nbt().getStringOr("final_state", "");
+            helper.assertTrue(
+                    entranceState.contains("_stairs[")
+                            && entranceState.contains("facing=east"),
+                    "The village path entrance must become an ascending stair"
             );
             helper.assertValueEqual(
                     template.filterBlocks(
@@ -690,6 +715,61 @@ public final class VintnerGameTests {
             );
             helper.assertBlockProperty(
                     EAST,
+                    TrellisBlock.WEST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+        });
+    }
+
+    @GameTest(maxTicks = 40)
+    public void templatePlacedTrellisesRefreshSavedConnections(
+            GameTestHelper helper
+    ) {
+        BlockState stale = ModBlocks.OAK_TRELLIS.defaultBlockState();
+        int templateFlags = Block.UPDATE_CLIENTS
+                | Block.UPDATE_KNOWN_SHAPE;
+
+        for (BlockPos pos : List.of(
+                FIRST,
+                FIRST.above(),
+                EAST,
+                EAST.above()
+        )) {
+            helper.getLevel().setBlock(
+                    helper.absolutePos(pos),
+                    stale,
+                    templateFlags
+            );
+        }
+
+        helper.succeedWhen(() -> {
+            helper.assertBlockProperty(
+                    FIRST,
+                    TrellisBlock.HAS_ABOVE,
+                    true
+            );
+            helper.assertBlockProperty(
+                    FIRST,
+                    TrellisBlock.EAST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+            helper.assertBlockProperty(
+                    EAST,
+                    TrellisBlock.WEST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+            helper.assertBlockProperty(
+                    FIRST.above(),
+                    TrellisBlock.HAS_BELOW,
+                    true
+            );
+            helper.assertBlockProperty(
+                    FIRST.above(),
+                    TrellisBlock.EAST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+            helper.assertBlockProperty(
+                    EAST.above(),
                     TrellisBlock.WEST,
                     TrellisBlock.RowConnection.LEVEL
             );

@@ -3,6 +3,7 @@ package com.zenith.vintner.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
@@ -94,6 +95,51 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
 
     public final WoodVariant woodVariant() {
         return woodVariant;
+    }
+
+    @Override
+    protected void onPlace(
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            BlockState oldState,
+            boolean movedByPiston
+    ) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+
+        if (!level.isClientSide()) {
+            level.scheduleTick(pos, this, 1);
+        }
+    }
+
+    @Override
+    protected void tick(
+            BlockState state,
+            ServerLevel level,
+            BlockPos pos,
+            RandomSource random
+    ) {
+        BlockState refreshed = updateConnections(
+                state
+                        .setValue(
+                                HAS_ABOVE,
+                                isTrellisState(
+                                        level.getBlockState(pos.above())
+                                )
+                        )
+                        .setValue(
+                                HAS_BELOW,
+                                isTrellisState(
+                                        level.getBlockState(pos.below())
+                                )
+                        ),
+                level,
+                pos
+        );
+
+        if (refreshed != state) {
+            level.setBlock(pos, refreshed, Block.UPDATE_ALL);
+        }
     }
 
     @Override

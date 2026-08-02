@@ -185,6 +185,7 @@ def create_structure(culture: str, wood: str) -> bytes:
         return palette_indexes[key]
 
     soil = state("vintner:vineyard_soil")
+    air = state("minecraft:air")
     path = state("minecraft:dirt_path")
     foundation = state(FOUNDATIONS[culture])
     surface = state(SURFACES[culture])
@@ -201,6 +202,10 @@ def create_structure(culture: str, wood: str) -> bytes:
         "minecraft:jigsaw",
         {"orientation": "west_up"},
     )
+    entrance_stairs = (
+        f"minecraft:{wood}_stairs"
+        "[facing=east,half=bottom,shape=straight,waterlogged=false]"
+    )
 
     blocks: dict[
         tuple[int, int, int],
@@ -214,21 +219,24 @@ def create_structure(culture: str, wood: str) -> bytes:
         for z in range(SIZE[2]):
             blocks[(x, 0, z)] = block_entry((x, 0, z), foundation)
             blocks[(x, 1, z)] = block_entry((x, 1, z), surface)
+            for y in range(2, SIZE[1]):
+                blocks[(x, y, z)] = block_entry((x, y, z), air)
 
-    # A timber retaining edge makes the raised farm read as an intentional
-    # village terrace. Leave a single opening where its central path meets the
-    # village street.
+    # Keep the retaining timber in the buried foundation rather than turning
+    # it into a full-height rail around the farm. Exposed terrain cuts still
+    # read as a deliberate terrace, while level sites blend into the village.
+    # Leave the entrance foundation as the local ground material.
     for x in range(SIZE[0]):
-        blocks[(x, 1, 0)] = block_entry((x, 1, 0), border_x)
-        blocks[(x, 1, SIZE[2] - 1)] = block_entry(
-            (x, 1, SIZE[2] - 1),
+        blocks[(x, 0, 0)] = block_entry((x, 0, 0), border_x)
+        blocks[(x, 0, SIZE[2] - 1)] = block_entry(
+            (x, 0, SIZE[2] - 1),
             border_x,
         )
     for z in range(1, SIZE[2] - 1):
         if z != 4:
-            blocks[(0, 1, z)] = block_entry((0, 1, z), border_z)
-        blocks[(SIZE[0] - 1, 1, z)] = block_entry(
-            (SIZE[0] - 1, 1, z),
+            blocks[(0, 0, z)] = block_entry((0, 0, z), border_z)
+        blocks[(SIZE[0] - 1, 0, z)] = block_entry(
+            (SIZE[0] - 1, 0, z),
             border_z,
         )
 
@@ -252,7 +260,7 @@ def create_structure(culture: str, wood: str) -> bytes:
         jigsaw,
         {
             "joint": tag_string("aligned"),
-            "final_state": tag_string("minecraft:dirt_path"),
+            "final_state": tag_string(entrance_stairs),
             "name": tag_string("minecraft:building_entrance"),
             "pool": tag_string(
                 f"minecraft:village/{culture}/streets"
