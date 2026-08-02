@@ -40,6 +40,11 @@ import com.zenith.vintner.wine.WineAgeStage;
 import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
 import com.zenith.vintner.wine.WineStyle;
+import com.zenith.vintner.vineyard.ClimateProfile;
+import com.zenith.vintner.vineyard.SoilProfile;
+import com.zenith.vintner.vineyard.SoilType;
+import com.zenith.vintner.vineyard.TerrainProfile;
+import com.zenith.vintner.vineyard.TerroirEvaluator;
 import net.minecraft.advancements.AdvancementHolder;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -1588,6 +1593,7 @@ public final class VintnerGameTests {
         triggerInventoryChange(player, ModItems.RED_GRAPES);
         triggerInventoryChange(player, ModItems.WHITE_GRAPES);
         triggerInventoryChange(player, Items.BOOK);
+        triggerInventoryChange(player, Items.COPPER_INGOT);
 
         helper.succeedWhen(() -> {
             for (WoodVariant woodVariant : WoodVariant.values()) {
@@ -1631,6 +1637,11 @@ public final class VintnerGameTests {
                     helper,
                     player,
                     "vintner_almanac"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "soil_probe"
             );
         });
     }
@@ -4506,6 +4517,252 @@ public final class VintnerGameTests {
                 .defaultBlockState()
                 .setValue(GrapevineBlock.UPPER, false)
                 .setValue(GrapevineBlock.AGE, GrapevineBlock.MAX_AGE);
+    }
+
+    @GameTest(maxTicks = 40)
+    public void terroirRecognizesRoadmapSoilFamilies(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                TerroirEvaluator.classifySoil(
+                        Blocks.CLAY.defaultBlockState()
+                ),
+                SoilType.CLAY,
+                "Clay should produce the clay soil profile"
+        );
+        helper.assertValueEqual(
+                TerroirEvaluator.classifySoil(
+                        Blocks.DRIPSTONE_BLOCK.defaultBlockState()
+                ),
+                SoilType.LIMESTONE,
+                "Dripstone should represent limestone geology"
+        );
+        helper.assertValueEqual(
+                TerroirEvaluator.classifySoil(
+                        Blocks.CALCITE.defaultBlockState()
+                ),
+                SoilType.CHALK,
+                "Calcite should represent chalk geology"
+        );
+        helper.assertValueEqual(
+                TerroirEvaluator.classifySoil(
+                        Blocks.GRAVEL.defaultBlockState()
+                ),
+                SoilType.GRAVEL,
+                "Gravel should produce the gravel profile"
+        );
+        helper.assertValueEqual(
+                TerroirEvaluator.classifySoil(
+                        Blocks.SAND.defaultBlockState()
+                ),
+                SoilType.SAND,
+                "Sand should produce the sand profile"
+        );
+        helper.assertValueEqual(
+                TerroirEvaluator.classifySoil(
+                        Blocks.DIRT.defaultBlockState()
+                ),
+                SoilType.LOAM,
+                "Ordinary dirt should be interpreted as loam"
+        );
+        helper.assertValueEqual(
+                TerroirEvaluator.classifySoil(
+                        Blocks.TUFF.defaultBlockState()
+                ),
+                SoilType.VOLCANIC,
+                "Tuff should produce the volcanic profile"
+        );
+        helper.assertValueEqual(
+                TerroirEvaluator.classifySoil(
+                        Blocks.MUD.defaultBlockState()
+                ),
+                SoilType.ALLUVIAL,
+                "Mud should produce the alluvial profile"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void soilProfilesExposeDistinctVineyardTradeoffs(
+            GameTestHelper helper
+    ) {
+        SoilProfile loam = SoilProfile.of(SoilType.LOAM);
+        SoilProfile sand = SoilProfile.of(SoilType.SAND);
+        SoilProfile volcanic = SoilProfile.of(SoilType.VOLCANIC);
+
+        helper.assertTrue(
+                sand.drainage() > loam.drainage(),
+                "Sand should drain faster than loam"
+        );
+        helper.assertTrue(
+                loam.fertility() > sand.fertility(),
+                "Loam should be more fertile than sand"
+        );
+        helper.assertTrue(
+                volcanic.mineralCharacter() > loam.mineralCharacter(),
+                "Volcanic ground should have stronger mineral character"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void temperateClimateOutperformsExtremeSites(
+            GameTestHelper helper
+    ) {
+        ClimateProfile temperate = ClimateProfile.evaluate(
+                0.82F,
+                true,
+                false,
+                70,
+                false
+        );
+        ClimateProfile frozen = ClimateProfile.evaluate(
+                0.0F,
+                true,
+                false,
+                140,
+                true
+        );
+        ClimateProfile hot = ClimateProfile.evaluate(
+                2.0F,
+                false,
+                false,
+                70,
+                false
+        );
+
+        helper.assertTrue(
+                temperate.suitability() > frozen.suitability(),
+                "Temperate climates should outperform frost-prone sites"
+        );
+        helper.assertTrue(
+                temperate.suitability() > hot.suitability(),
+                "Temperate climates should outperform heat-stressed sites"
+        );
+        helper.assertTrue(
+                frozen.frostRisk() > temperate.frostRisk(),
+                "Cold high ground should report greater frost risk"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void southernTerracesImproveTerrainSuitability(
+            GameTestHelper helper
+    ) {
+        TerrainProfile southern = TerrainProfile.evaluate(
+                80,
+                2,
+                Direction.SOUTH,
+                true,
+                5,
+                55,
+                false,
+                true
+        );
+        TerrainProfile northern = TerrainProfile.evaluate(
+                80,
+                2,
+                Direction.NORTH,
+                true,
+                5,
+                55,
+                false,
+                false
+        );
+
+        helper.assertTrue(
+                southern.suitability() > northern.suitability(),
+                "A terraced south-facing site should outperform north-facing ground"
+        );
+        helper.assertTrue(
+                southern.terraced(),
+                "The terrain report should retain detected terracing"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void soilProbeSurveysLandAndGrantsAdvancement(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, Blocks.CALCITE);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack probe = new ItemStack(ModItems.SOIL_PROBE);
+        player.setItemInHand(InteractionHand.MAIN_HAND, probe);
+        BlockPos absolute = helper.absolutePos(FIRST);
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                probe,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absolute),
+                        Direction.UP,
+                        absolute,
+                        false
+                )
+        );
+
+        AdvancementHolder advancement = helper.getLevel()
+                .getServer()
+                .getAdvancements()
+                .get(
+                        Identifier.fromNamespaceAndPath(
+                                "vintner",
+                                "vintner/survey_vineyard"
+                        )
+                );
+
+        helper.assertTrue(
+                advancement != null,
+                "The vineyard-survey advancement should load"
+        );
+        helper.assertTrue(
+                player.getAdvancements()
+                        .getOrStartProgress(advancement)
+                        .isDone(),
+                "Using a Soil Probe should grant survey progress"
+        );
+        helper.assertValueEqual(
+                probe.getDamageValue(),
+                1,
+                "A survival soil survey should use one durability"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void terroirUsesExistingVineyardQualityBudget(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                GrapeQualityEvaluator.scoreWithTerroir(
+                        28,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true
+                ),
+                60,
+                "An ideal terroir and harvest should retain the sixty-point vineyard cap"
+        );
+        helper.assertValueEqual(
+                GrapeQualityEvaluator.scoreWithTerroir(
+                        0,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                ),
+                0,
+                "A failed site and harvest should score zero"
+        );
+        helper.succeed();
     }
 
     private static BlockState matureUpperVine() {

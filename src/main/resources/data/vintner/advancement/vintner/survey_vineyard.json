@@ -1,0 +1,28 @@
+{
+  "parent": "vintner:vintner/craft_trellis",
+  "criteria": {
+    "surveyed": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.survey_vineyard.description"
+    },
+    "icon": {
+      "id": "vintner:soil_probe"
+    },
+    "title": {
+      "translate": "advancement.vintner.survey_vineyard.title"
+    }
+  },
+  "requirements": [
+    [
+      "surveyed"
+    ]
+  ],
+  "rewards": {
+    "experience": 25
+  },
+  "sends_telemetry_event": false
+}

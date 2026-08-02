@@ -3,10 +3,11 @@ package com.zenith.vintner.wine;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.registry.ModBlocks;
+import com.zenith.vintner.vineyard.TerroirEvaluator;
+import com.zenith.vintner.vineyard.TerroirReport;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class GrapeQualityEvaluator {
@@ -24,19 +25,15 @@ public final class GrapeQualityEvaluator {
             Level level,
             BlockPos vinePos
     ) {
-        Biome biome = level.getBiome(vinePos).value();
-
-        boolean openSky =
-                level.canSeeSky(vinePos.above(2));
-
-        float temperature = biome.getBaseTemperature();
-
+        TerroirReport terroir = TerroirEvaluator.inspect(
+                level,
+                vinePos
+        );
+        boolean openSky = terroir.terrain().sunExposure() >= 50;
         boolean suitableTemperature =
-                temperature >= 0.5F
-                        && temperature <= 1.25F;
-
+                terroir.climate().suitability() >= 45;
         boolean precipitation =
-                biome.hasPrecipitation();
+                terroir.climate().rainfall() >= 40;
 
         boolean preparedSoil =
                 level.getBlockState(vinePos.below())
@@ -48,17 +45,13 @@ public final class GrapeQualityEvaluator {
                 : 0;
         boolean matureVine = vineAge >= GrapevineBlock.MAX_AGE;
         boolean healthyVine = preparedSoil
-                && suitableTemperature
-                && precipitation;
+                && terroir.siteScore() >= 45;
         boolean managedYield = connectionCount(vineState) <= 2;
         boolean ripeHarvest = matureVine;
         boolean dryHarvestWeather = !level.isRainingAt(vinePos.above());
 
-        int score = score(
-                openSky,
-                suitableTemperature,
-                precipitation,
-                preparedSoil,
+        int score = scoreWithTerroir(
+                terroir.vineyardQualityPoints(),
                 matureVine,
                 healthyVine,
                 managedYield,
@@ -82,8 +75,26 @@ public final class GrapeQualityEvaluator {
                 dryHarvestWeather,
                 score,
                 profile,
-                predictedQuality
+                predictedQuality,
+                terroir
         );
+    }
+
+    public static int scoreWithTerroir(
+            int sitePoints,
+            boolean matureVine,
+            boolean healthyVine,
+            boolean managedYield,
+            boolean ripeHarvest,
+            boolean dryHarvestWeather
+    ) {
+        int score = Math.clamp(sitePoints, 0, 28);
+        score += matureVine ? 6 : 0;
+        score += healthyVine ? 6 : 0;
+        score += managedYield ? 5 : 0;
+        score += ripeHarvest ? 8 : 0;
+        score += dryHarvestWeather ? 7 : 0;
+        return score;
     }
 
     public static int score(

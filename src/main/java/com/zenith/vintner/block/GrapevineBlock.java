@@ -423,16 +423,6 @@ public abstract class GrapevineBlock
         level.setBlock(pos, restored, Block.UPDATE_ALL);
     }
 
-    private static Component conditionText(
-            boolean favorable
-    ) {
-        return Component.translatable(
-                favorable
-                        ? "vineyard_condition.vintner.favorable"
-                        : "vineyard_condition.vintner.poor"
-        );
-    }
-
     private static Component qualityText(
             WineQuality quality
     ) {
@@ -571,28 +561,12 @@ public abstract class GrapevineBlock
 
                 player.sendSystemMessage(
                         Component.translatable(
-                                "message.vintner.vineyard_conditions",
-                                conditionText(report.openSky()),
-                                conditionText(
-                                        report.suitableTemperature()
-                                ),
-                                conditionText(
-                                        report.precipitation()
-                                ),
-                                conditionText(
-                                        report.preparedSoil()
-                                ),
-                                conditionText(report.matureVine()),
-                                conditionText(report.healthyVine()),
-                                conditionText(report.managedYield()),
-                                conditionText(report.ripeHarvest()),
-                                conditionText(
-                                        report.dryHarvestWeather()
-                                ),
+                                "message.vintner.vineyard_quick_status",
                                 qualityText(
                                         report.predictedQuality()
                                 ),
-                                report.qualityScore()
+                                report.qualityScore(),
+                                report.terroir().siteScore()
                         )
                 );
             }

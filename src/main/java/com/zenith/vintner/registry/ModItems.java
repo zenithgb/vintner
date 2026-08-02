@@ -4,6 +4,7 @@ import com.zenith.vintner.item.CompostItem;
 import com.zenith.vintner.item.CoopersMalletItem;
 import com.zenith.vintner.item.GrapeCuttingItem;
 import com.zenith.vintner.item.MustItem;
+import com.zenith.vintner.item.SoilProbeItem;
 import com.zenith.vintner.item.VintnerAlmanacItem;
 
 import com.zenith.vintner.item.WineConsumables;
@@ -131,6 +132,13 @@ public final class ModItems {
             VintnerAlmanacItem::new
     );
 
+    public static final Item SOIL_PROBE = register(
+            "soil_probe",
+            properties -> new SoilProbeItem(
+                    properties.durability(SoilProbeItem.MAX_DAMAGE)
+            )
+    );
+
     public static final Item COOPERS_MALLET = register(
             "coopers_mallet",
             properties -> new CoopersMalletItem(
@@ -198,6 +206,7 @@ public final class ModItems {
                     output.accept(TOASTING_KIT);
                     output.accept(SEASONING_KIT);
                     output.accept(CASK_CONVERSION_KIT);
+                    output.accept(SOIL_PROBE);
                     output.accept(VINTNER_ALMANAC);
                 });
 

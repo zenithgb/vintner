@@ -6,6 +6,8 @@ import com.zenith.vintner.wine.WineProvenance;
 import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
+import com.zenith.vintner.vineyard.TerroirEvaluator;
+import com.zenith.vintner.vineyard.TerroirMessages;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -17,6 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 import java.util.function.Consumer;
@@ -24,6 +27,24 @@ import java.util.function.Consumer;
 public final class VintnerAlmanacItem extends Item {
     public VintnerAlmanacItem(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        if (context.getLevel() instanceof ServerLevel
+                && context.getPlayer() != null) {
+            TerroirMessages.sendFullReport(
+                    context.getPlayer(),
+                    TerroirEvaluator.inspect(
+                            context.getLevel(),
+                            context.getClickedPos()
+                    )
+            );
+            if (context.getPlayer() instanceof ServerPlayer player) {
+                ModAdvancements.grantSurvey(player);
+            }
+        }
+        return InteractionResult.SUCCESS;
     }
 
     @Override

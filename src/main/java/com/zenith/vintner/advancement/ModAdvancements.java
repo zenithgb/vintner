@@ -75,6 +75,14 @@ public final class ModAdvancements {
         );
     }
 
+    public static void grantSurvey(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/survey_vineyard",
+                "surveyed"
+        );
+    }
+
     public static void grantIdealCellar(ServerPlayer player) {
         grant(
                 player,
