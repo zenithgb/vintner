@@ -60,6 +60,8 @@ import com.zenith.vintner.vineyard.VineyardIrrigation;
 import com.zenith.vintner.vineyard.VineyardManagementAdvice;
 import com.zenith.vintner.vineyard.VineAgeSavedData;
 import com.zenith.vintner.vineyard.VineAgeStage;
+import com.zenith.vintner.vineyard.VineManagementSavedData;
+import com.zenith.vintner.vineyard.VineYieldMode;
 import net.minecraft.advancements.AdvancementHolder;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -5620,6 +5622,80 @@ public final class VintnerGameTests {
         );
 
         ages.remove(absoluteRoot);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void shearsSelectPersistentYieldStrategy(
+            GameTestHelper helper
+    ) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        Block vine = ModBlocks.redGrapevine(WoodVariant.OAK);
+        BlockPos absoluteRoot = helper.absolutePos(FIRST);
+
+        helper.setBlock(
+                FIRST,
+                vine.defaultBlockState().setValue(GrapevineBlock.AGE, 3)
+        );
+        helper.setBlock(
+                UPPER,
+                vine.defaultBlockState()
+                        .setValue(GrapevineBlock.UPPER, true)
+                        .setValue(GrapevineBlock.AGE, 3)
+        );
+
+        VineManagementSavedData management =
+                VineManagementSavedData.get(helper.getLevel());
+        management.remove(absoluteRoot);
+        ItemStack shears = new ItemStack(Items.SHEARS);
+        player.setItemInHand(InteractionHand.MAIN_HAND, shears);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                shears,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteRoot),
+                        Direction.NORTH,
+                        absoluteRoot,
+                        false
+                )
+        );
+
+        helper.assertValueEqual(
+                management.mode(absoluteRoot),
+                VineYieldMode.QUALITY_FOCUS,
+                "Shearing the lower trunk should select Quality Focus"
+        );
+        helper.assertBlockProperty(FIRST, GrapevineBlock.AGE, 2);
+        helper.assertBlockProperty(UPPER, GrapevineBlock.AGE, 2);
+        helper.assertValueEqual(
+                shears.getDamageValue(),
+                1,
+                "Yield management should consume shears durability"
+        );
+        helper.assertTrue(
+                GrapeQualityEvaluator.scoreWithTerroirAgeWeatherAndYield(
+                        28,
+                        6,
+                        true,
+                        VineYieldMode.QUALITY_FOCUS.qualityPoints(),
+                        true,
+                        7
+                )
+                        > GrapeQualityEvaluator.scoreWithTerroirAgeWeatherAndYield(
+                                28,
+                                6,
+                                true,
+                                VineYieldMode.HIGH_YIELD.qualityPoints(),
+                                true,
+                                7
+                        ),
+                "Quality Focus should outperform High Yield on vintage score"
+        );
+
+        management.remove(absoluteRoot);
         helper.succeed();
     }
 }

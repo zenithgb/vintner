@@ -9,6 +9,8 @@ import com.zenith.vintner.wine.WineQuality;
 import com.zenith.vintner.wine.VineyardConditionReport;
 import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.vineyard.VineAgeSavedData;
+import com.zenith.vintner.vineyard.VineManagementSavedData;
+import com.zenith.vintner.vineyard.VineYieldMode;
 import com.zenith.vintner.vineyard.VineyardProtection;
 import com.zenith.vintner.wine.WinemakingEffects;
 import net.minecraft.core.BlockPos;
@@ -166,6 +168,7 @@ public abstract class GrapevineBlock
 
         if (level instanceof ServerLevel serverLevel) {
             VineAgeSavedData.get(serverLevel).remove(rootPos);
+            VineManagementSavedData.get(serverLevel).remove(rootPos);
         }
 
         if (!state.getValue(UPPER)
@@ -474,6 +477,19 @@ public abstract class GrapevineBlock
             BlockHitResult hitResult
     ) {
         if (stack.is(Items.SHEARS)) {
+            InteractionResult management = tryAdjustYield(
+                    stack,
+                    state,
+                    level,
+                    pos,
+                    player,
+                    hand
+            );
+
+            if (management.consumesAction()) {
+                return management;
+            }
+
             InteractionResult pruning = tryPruneCutting(
                     stack,
                     state,
@@ -511,6 +527,73 @@ public abstract class GrapevineBlock
                 hand,
                 hitResult
         );
+    }
+
+    private InteractionResult tryAdjustYield(
+            ItemStack shears,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand
+    ) {
+        if (state.getValue(UPPER)) {
+            return InteractionResult.PASS;
+        }
+
+        BlockPos rootPos = pos;
+        BlockState rootState = level.getBlockState(rootPos);
+        BlockState upperState = level.getBlockState(rootPos.above());
+
+        if (!isMatchingLower(rootState)
+                || rootState.getValue(AGE) < 2
+                || !isMatchingUpper(upperState)
+                || upperState.getValue(AGE) < 2) {
+            return InteractionResult.PASS;
+        }
+
+        if (level instanceof ServerLevel serverLevel) {
+            VineYieldMode mode = VineManagementSavedData
+                    .get(serverLevel)
+                    .cycle(rootPos);
+            BlockState managedRoot = rootState.setValue(AGE, 2);
+            BlockState managedUpper = upperState.setValue(AGE, 2);
+
+            serverLevel.setBlock(
+                    rootPos,
+                    managedRoot,
+                    Block.UPDATE_ALL
+            );
+            serverLevel.setBlock(
+                    rootPos.above(),
+                    managedUpper,
+                    Block.UPDATE_ALL
+            );
+            player.sendSystemMessage(Component.translatable(
+                    "message.vintner.vine_yield_mode",
+                    mode.displayName(),
+                    mode.harvestAdjustment(),
+                    mode.qualityPoints()
+            ));
+            serverLevel.playSound(
+                    null,
+                    rootPos.above(),
+                    SoundEvents.SHEEP_SHEAR,
+                    SoundSource.BLOCKS,
+                    0.8F,
+                    0.9F
+            );
+            if (!player.getAbilities().instabuild) {
+                shears.hurtAndBreak(1, player, hand);
+            }
+            serverLevel.gameEvent(
+                    GameEvent.SHEAR,
+                    rootPos.above(),
+                    GameEvent.Context.of(player, managedUpper)
+            );
+        }
+
+        return InteractionResult.SUCCESS;
     }
 
     private InteractionResult tryPruneCutting(
@@ -635,6 +718,7 @@ public abstract class GrapevineBlock
                     variety.minimumHarvest()
                             + serverLevel.getRandom().nextInt(harvestRange)
                             + report.vineAgeStage().harvestAdjustment()
+                            + report.yieldMode().harvestAdjustment()
             );
 
             ItemStack grapes = new ItemStack(

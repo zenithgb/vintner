@@ -163,6 +163,12 @@ public final class AlmanacInspection {
                 report.vineAgeStage().qualityPoints()
         ).withStyle(ChatFormatting.DARK_GREEN));
         player.sendSystemMessage(Component.translatable(
+                "message.vintner.almanac.yield_mode",
+                report.yieldMode().displayName(),
+                report.yieldMode().harvestAdjustment(),
+                report.yieldMode().qualityPoints()
+        ).withStyle(ChatFormatting.DARK_GREEN));
+        player.sendSystemMessage(Component.translatable(
                 "message.vintner.almanac.ripeness_quality",
                 report.predictedQuality().displayName(),
                 report.qualityScore(),

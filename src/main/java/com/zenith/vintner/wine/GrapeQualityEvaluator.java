@@ -1,7 +1,6 @@
 package com.zenith.vintner.wine;
 
 import com.zenith.vintner.block.GrapevineBlock;
-import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.vineyard.TerroirReport;
@@ -12,6 +11,8 @@ import com.zenith.vintner.vineyard.VineyardIrrigation;
 import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.vineyard.VineAgeSavedData;
 import com.zenith.vintner.vineyard.VineAgeStage;
+import com.zenith.vintner.vineyard.VineManagementSavedData;
+import com.zenith.vintner.vineyard.VineYieldMode;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -58,7 +59,6 @@ public final class GrapeQualityEvaluator {
         boolean matureVine = vineAge >= GrapevineBlock.MAX_AGE;
         boolean healthyVine = preparedSoil
                 && terroir.siteScore() >= 45;
-        boolean managedYield = connectionCount(vineState) <= 2;
         boolean ripeHarvest = matureVine;
         boolean dryHarvestWeather = !level.isRainingAt(vinePos.above());
         long currentDay = level instanceof ServerLevel serverLevel
@@ -74,6 +74,10 @@ public final class GrapeQualityEvaluator {
                 )
                 : 0L;
         VineAgeStage vineAgeStage = VineAgeStage.atDays(vineAgeDays);
+        VineYieldMode yieldMode = level instanceof ServerLevel serverLevel
+                ? VineManagementSavedData.get(serverLevel).mode(vinePos)
+                : VineYieldMode.BALANCED;
+        boolean managedYield = yieldMode != VineYieldMode.HIGH_YIELD;
         SeasonalContext seasonalContext = level instanceof ServerLevel serverLevel
                 ? SeasonalContext.current(serverLevel)
                 : SeasonalContext.atDay(0, 8);
@@ -101,11 +105,11 @@ public final class GrapeQualityEvaluator {
                 !dryHarvestWeather
         );
 
-        int score = scoreWithTerroirAgeAndWeather(
+        int score = scoreWithTerroirAgeWeatherAndYield(
                 terroir.vineyardQualityPoints(variety),
                 vineAgeStage.qualityPoints(),
                 healthyVine,
-                managedYield,
+                yieldMode.qualityPoints(),
                 ripeHarvest,
                 harvestWeatherPoints
         );
@@ -126,6 +130,7 @@ public final class GrapeQualityEvaluator {
                 dryHarvestWeather,
                 vineAgeStage,
                 vineAgeDays,
+                yieldMode,
                 score,
                 profile,
                 predictedQuality,
@@ -164,13 +169,31 @@ public final class GrapeQualityEvaluator {
             boolean ripeHarvest,
             int harvestWeatherPoints
     ) {
+        return scoreWithTerroirAgeWeatherAndYield(
+                sitePoints,
+                vineAgePoints,
+                healthyVine,
+                managedYield ? 5 : 0,
+                ripeHarvest,
+                harvestWeatherPoints
+        );
+    }
+
+    public static int scoreWithTerroirAgeWeatherAndYield(
+            int sitePoints,
+            int vineAgePoints,
+            boolean healthyVine,
+            int yieldQualityPoints,
+            boolean ripeHarvest,
+            int harvestWeatherPoints
+    ) {
         int score = Math.clamp(sitePoints, 0, 28);
         score += Math.clamp(vineAgePoints, 0, 6);
         score += healthyVine ? 6 : 0;
-        score += managedYield ? 5 : 0;
+        score += Math.clamp(yieldQualityPoints, 0, 7);
         score += ripeHarvest ? 8 : 0;
         score += Math.clamp(harvestWeatherPoints, 0, 7);
-        return score;
+        return Math.min(60, score);
     }
 
     public static int scoreWithTerroir(
@@ -214,27 +237,4 @@ public final class GrapeQualityEvaluator {
         return score;
     }
 
-    private static int connectionCount(BlockState state) {
-        if (!(state.getBlock() instanceof TrellisBlock)) {
-            return 0;
-        }
-        int count = 0;
-        if (state.getValue(TrellisBlock.NORTH)
-                == TrellisBlock.RowConnection.LEVEL) {
-            count++;
-        }
-        if (state.getValue(TrellisBlock.EAST)
-                == TrellisBlock.RowConnection.LEVEL) {
-            count++;
-        }
-        if (state.getValue(TrellisBlock.SOUTH)
-                == TrellisBlock.RowConnection.LEVEL) {
-            count++;
-        }
-        if (state.getValue(TrellisBlock.WEST)
-                == TrellisBlock.RowConnection.LEVEL) {
-            count++;
-        }
-        return count;
-    }
 }
