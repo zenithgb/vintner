@@ -1,0 +1,28 @@
+{
+  "type": "farmersdelight:cutting",
+  "ingredients": [
+    "vintner:red_grapes"
+  ],
+  "result": [
+    {
+      "item": {
+        "id": "vintner:grape_seeds"
+      }
+    },
+    {
+      "chance": 0.5,
+      "item": {
+        "id": "vintner:pomace"
+      }
+    }
+  ],
+  "tool": "#c:tools/knife",
+  "fabric:load_conditions": [
+    {
+      "condition": "fabric:all_mods_loaded",
+      "values": [
+        "farmersdelight"
+      ]
+    }
+  ]
+}

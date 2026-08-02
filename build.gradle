@@ -73,6 +73,15 @@ dependencies {
 		add("localRuntime", "maven.modrinth:serene-seasons:13sXhUkI")
 		add("localRuntime", "maven.modrinth:glitchcore:SDUCBYRU")
 	}
+
+	// Enables an isolated compatibility pass without making Farmer's
+	// Delight a required Vintner dependency.
+	if (providers.gradleProperty("farmersDelightTest").isPresent()) {
+		add(
+				"localRuntime",
+				"maven.modrinth:farmers-delight-refabricated:h5h2ZIaG"
+		)
+	}
 }
 
 processResources {

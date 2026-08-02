@@ -1,0 +1,22 @@
+{
+  "type": "farmersdelight:cooking",
+  "experience": 1.0,
+  "ingredients": [
+    "#vintner:wines",
+    "minecraft:beetroot",
+    "minecraft:potato",
+    "minecraft:brown_mushroom"
+  ],
+  "recipe_book_tab": "meals",
+  "result": {
+    "id": "vintner:vineyard_soup"
+  },
+  "fabric:load_conditions": [
+    {
+      "condition": "fabric:all_mods_loaded",
+      "values": [
+        "farmersdelight"
+      ]
+    }
+  ]
+}

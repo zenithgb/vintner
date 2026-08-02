@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "vintner:red_wine_stew",
+    "vintner:braised_meat",
+    "vintner:white_wine_fish",
+    "vintner:vineyard_soup"
+  ]
+}

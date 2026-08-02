@@ -1,0 +1,22 @@
+{
+  "type": "farmersdelight:cooking",
+  "experience": 1.0,
+  "ingredients": [
+    "#vintner:red_wines",
+    "minecraft:cooked_beef",
+    "minecraft:carrot",
+    "minecraft:baked_potato"
+  ],
+  "recipe_book_tab": "meals",
+  "result": {
+    "id": "vintner:red_wine_stew"
+  },
+  "fabric:load_conditions": [
+    {
+      "condition": "fabric:all_mods_loaded",
+      "values": [
+        "farmersdelight"
+      ]
+    }
+  ]
+}
