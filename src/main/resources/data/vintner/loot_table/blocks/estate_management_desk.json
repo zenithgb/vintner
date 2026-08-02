@@ -4,10 +4,15 @@
     {
       "rolls": 1,
       "entries": [
-        {"type": "minecraft:item", "name": "vintner:estate_management_desk"}
+        {
+          "type": "minecraft:item",
+          "name": "vintner:estate_management_desk"
+        }
       ],
       "conditions": [
-        {"condition": "minecraft:survives_explosion"}
+        {
+          "condition": "minecraft:survives_explosion"
+        }
       ]
     }
   ],

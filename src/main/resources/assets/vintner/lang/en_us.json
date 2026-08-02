@@ -656,7 +656,7 @@
   "message.vintner.almanac.advice.wait": "Vineyard advice: let this vine ripen before harvesting.",
   "message.vintner.almanac.advice.harvest": "Vineyard advice: this vine is ready to harvest.",
   "gamerule.vintner.season_length_days": "Vintner season length (days)",
-  "block.vintner.estate_management_desk": "Estate Management Desk",
+  "block.vintner.estate_management_desk": "Oak Estate Management Desk",
   "screen.vintner.estate_desk.title": "Estate Management Desk",
   "screen.vintner.estate_desk.subtitle": "Founded Year %s | Home region: %s",
   "screen.vintner.estate_desk.unregistered_title": "Unregistered Estate",
@@ -692,5 +692,16 @@
   "screen.vintner.estate_desk.contracts.empty": "No active wine contracts.",
   "screen.vintner.estate_desk.contracts.future": "Contract offers will be filed here when the contracts milestone is introduced.",
   "screen.vintner.estate_desk.ledger.empty": "No estate activity has been recorded yet.",
-  "screen.vintner.estate_desk.ledger.entry": "Day %s | %s | %s | x%s | Quality %s"
+  "screen.vintner.estate_desk.ledger.entry": "Day %s | %s | %s | x%s | Quality %s",
+  "block.vintner.spruce_estate_management_desk": "Spruce Estate Management Desk",
+  "block.vintner.birch_estate_management_desk": "Birch Estate Management Desk",
+  "block.vintner.jungle_estate_management_desk": "Jungle Estate Management Desk",
+  "block.vintner.acacia_estate_management_desk": "Acacia Estate Management Desk",
+  "block.vintner.dark_oak_estate_management_desk": "Dark Oak Estate Management Desk",
+  "block.vintner.mangrove_estate_management_desk": "Mangrove Estate Management Desk",
+  "block.vintner.cherry_estate_management_desk": "Cherry Estate Management Desk",
+  "block.vintner.pale_oak_estate_management_desk": "Pale Oak Estate Management Desk",
+  "block.vintner.bamboo_estate_management_desk": "Bamboo Estate Management Desk",
+  "block.vintner.crimson_estate_management_desk": "Crimson Estate Management Desk",
+  "block.vintner.warped_estate_management_desk": "Warped Estate Management Desk"
 }

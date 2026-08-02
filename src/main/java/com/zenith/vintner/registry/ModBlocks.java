@@ -246,6 +246,14 @@ public final class ModBlocks {
             machineProperties()
     );
 
+    public static final Map<WoodVariant, Block>
+            ESTATE_MANAGEMENT_DESKS = registerMachineVariants(
+                    WoodVariant.OAK,
+                    ESTATE_MANAGEMENT_DESK,
+                    WoodVariant::estateManagementDeskId,
+                    EstateManagementDeskBlock::new
+            );
+
     public static final Block RED_GRAPEVINE = registerWithoutItem(
             "red_grapevine",
             properties -> new RedGrapevineBlock(
@@ -315,6 +323,12 @@ public final class ModBlocks {
 
     public static Block tastingCabinet(WoodVariant woodVariant) {
         return TASTING_CABINETS.get(woodVariant);
+    }
+
+    public static Block estateManagementDesk(
+            WoodVariant woodVariant
+    ) {
+        return ESTATE_MANAGEMENT_DESKS.get(woodVariant);
     }
 
     public static Block redGrapevine(WoodVariant woodVariant) {
@@ -387,6 +401,10 @@ public final class ModBlocks {
                 cabinets.length
         );
         return result;
+    }
+
+    public static Block[] estateManagementDeskBlocks() {
+        return orderedBlocks(ESTATE_MANAGEMENT_DESKS);
     }
 
     private static Map<WoodVariant, Block> registerTrellises() {
@@ -587,7 +605,8 @@ public final class ModBlocks {
                 )
                 .register(output -> {
                     output.accept(NURSERY_BED);
-                    output.accept(ESTATE_MANAGEMENT_DESK);
+                    ESTATE_MANAGEMENT_DESKS.values()
+                            .forEach(output::accept);
                     TRELLISES.values().forEach(output::accept);
                     GRAPE_PRESSES.values().forEach(output::accept);
                     FERMENTATION_BARRELS.values()

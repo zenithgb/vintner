@@ -1,0 +1,8 @@
+{
+  "parent": "vintner:block/estate_management_desk",
+  "textures": {
+    "frame": "minecraft:block/dark_oak_planks",
+    "writing": "minecraft:block/dark_oak_planks",
+    "particle": "minecraft:block/dark_oak_planks"
+  }
+}

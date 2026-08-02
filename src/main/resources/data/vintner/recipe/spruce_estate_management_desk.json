@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BKG",
+    "PPP",
+    "S S"
+  ],
+  "key": {
+    "B": "minecraft:writable_book",
+    "K": "minecraft:green_carpet",
+    "G": "minecraft:gold_nugget",
+    "P": "minecraft:spruce_planks",
+    "S": "minecraft:spruce_slab"
+  },
+  "result": {
+    "id": "vintner:spruce_estate_management_desk",
+    "count": 1
+  }
+}
