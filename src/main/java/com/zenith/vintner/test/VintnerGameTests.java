@@ -3799,6 +3799,68 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void namedPlotRecognizesPhysicalIrrigation(
+            GameTestHelper helper
+    ) {
+        VineyardPlot plot = new VineyardPlot(
+                java.util.UUID.randomUUID().toString(),
+                "Water Meadow",
+                helper.getLevel().dimension().identifier().toString(),
+                helper.absolutePos(new BlockPos(1, 1, 1)).getX(),
+                helper.absolutePos(new BlockPos(1, 1, 1)).getZ(),
+                helper.absolutePos(new BlockPos(8, 1, 2)).getX(),
+                helper.absolutePos(new BlockPos(8, 1, 2)).getZ(),
+                helper.absolutePos(new BlockPos(1, 1, 1)).getY(),
+                0L
+        );
+        for (int x : new int[]{1, 3, 5, 8}) {
+            BlockPos vinePos = new BlockPos(x, 1, 1);
+            helper.setBlock(vinePos.below(), ModBlocks.VINEYARD_SOIL);
+            helper.setBlock(
+                    vinePos,
+                    ModBlocks.RED_GRAPEVINE.defaultBlockState()
+                            .setValue(GrapevineBlock.UPPER, false)
+            );
+        }
+        helper.setBlock(new BlockPos(3, 0, 2), Blocks.WATER);
+
+        VineyardPlotReport irrigated = VineyardPlotReport.analyze(
+                helper.getLevel(),
+                plot
+        );
+        helper.assertValueEqual(
+                irrigated.irrigatedVines(),
+                3,
+                "One physical channel should cover three of four vines"
+        );
+        helper.assertValueEqual(
+                irrigated.irrigationPercent(),
+                75,
+                "Plot irrigation should report exact coverage"
+        );
+        helper.assertTrue(
+                irrigated.hasImprovedIrrigation(),
+                "Four vines at 75 percent coverage should qualify"
+        );
+
+        helper.setBlock(new BlockPos(3, 0, 2), Blocks.AIR);
+        VineyardPlotReport dry = VineyardPlotReport.analyze(
+                helper.getLevel(),
+                plot
+        );
+        helper.assertValueEqual(
+                dry.irrigatedVines(),
+                0,
+                "Removing the channel should remove irrigation coverage"
+        );
+        helper.assertFalse(
+                dry.hasImprovedIrrigation(),
+                "Improved irrigation must remain a physical upgrade"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void estateLedgerAggregatesAndBoundsHistory(
             GameTestHelper helper
     ) {
