@@ -11,6 +11,8 @@ import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.vineyard.TerroirMessages;
 import com.zenith.vintner.vineyard.TerroirReport;
 import com.zenith.vintner.vineyard.VineyardSurveyRecord;
+import com.zenith.vintner.vineyard.SeasonalContext;
+import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -87,6 +89,7 @@ public final class AlmanacInspection {
                 player,
                 report
         );
+        sendSeasonalOutlook(level, pos, player, report);
         if (player.isShiftKeyDown()) {
             VineyardSurveyRecord record = VineyardSurveyRecord.capture(
                     level,
@@ -164,6 +167,12 @@ public final class AlmanacInspection {
                         ? ChatFormatting.GREEN
                         : ChatFormatting.DARK_GRAY
         ));
+        sendSeasonalOutlook(
+                player,
+                report.seasonalContext(),
+                report.weatherEvent(),
+                report.harvestWeatherPoints()
+        );
         grantSurvey(player);
     }
 
@@ -269,6 +278,51 @@ public final class AlmanacInspection {
         if (player instanceof ServerPlayer serverPlayer) {
             ModAdvancements.grantSurvey(serverPlayer);
         }
+    }
+
+    private static void sendSeasonalOutlook(
+            ServerLevel level,
+            BlockPos pos,
+            Player player,
+            TerroirReport report
+    ) {
+        SeasonalContext context = SeasonalContext.current(level);
+        VineyardWeatherEvent weather = VineyardWeatherEvent.at(
+                level,
+                pos,
+                report.climate(),
+                context
+        );
+        sendSeasonalOutlook(
+                player,
+                context,
+                weather,
+                weather.harvestQualityPoints(level.isRainingAt(pos.above()))
+        );
+    }
+
+    private static void sendSeasonalOutlook(
+            Player player,
+            SeasonalContext context,
+            VineyardWeatherEvent weather,
+            int weatherPoints
+    ) {
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.almanac.season",
+                context.season().displayName(),
+                context.year(),
+                context.dayInSeason(),
+                context.seasonLengthDays()
+        ).withStyle(ChatFormatting.GRAY));
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.almanac.weather_outlook",
+                weather.displayName(),
+                weatherPoints
+        ).withStyle(
+                weatherPoints >= 5
+                        ? ChatFormatting.DARK_GREEN
+                        : ChatFormatting.GOLD
+        ));
     }
 
     public enum Target {

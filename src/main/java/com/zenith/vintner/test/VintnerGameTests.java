@@ -22,6 +22,7 @@ import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.registry.ModGameRules;
 import com.zenith.vintner.registry.ModTrades;
 import com.zenith.vintner.registry.ModVillageStructures;
 import com.zenith.vintner.registry.ModVillagers;
@@ -47,6 +48,9 @@ import com.zenith.vintner.vineyard.SoilType;
 import com.zenith.vintner.vineyard.TerrainProfile;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.vineyard.VineyardSurveyRecord;
+import com.zenith.vintner.vineyard.SeasonalContext;
+import com.zenith.vintner.vineyard.VineyardSeason;
+import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import net.minecraft.advancements.AdvancementHolder;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -4795,6 +4799,116 @@ public final class VintnerGameTests {
                 ),
                 0,
                 "A failed site and harvest should score zero"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void nativeCalendarUsesConfigurableSeasonBoundaries(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                SeasonalContext.atDay(0, 8).season(),
+                VineyardSeason.SPRING,
+                "The native calendar should begin in spring"
+        );
+        helper.assertValueEqual(
+                SeasonalContext.atDay(8, 8).season(),
+                VineyardSeason.SUMMER,
+                "The configured eighth day boundary should begin summer"
+        );
+        helper.assertValueEqual(
+                SeasonalContext.atDay(24, 8).season(),
+                VineyardSeason.WINTER,
+                "The fourth configured season should be winter"
+        );
+        SeasonalContext secondYear = SeasonalContext.atDay(32, 8);
+        helper.assertValueEqual(
+                secondYear.year(),
+                2,
+                "A complete four-season cycle should advance the vintage year"
+        );
+        helper.assertValueEqual(
+                helper.getLevel().getGameRules().get(
+                        ModGameRules.SEASON_LENGTH_DAYS
+                ),
+                ModGameRules.DEFAULT_SEASON_LENGTH_DAYS,
+                "New worlds should use the documented default season length"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void seasonsControlGrowthWithoutDestroyingVines(
+            GameTestHelper helper
+    ) {
+        helper.assertTrue(
+                VineyardSeason.SPRING.shouldGrow(
+                        RandomSource.create(41L),
+                        1
+                ),
+                "Spring should permit normal vine growth"
+        );
+        helper.assertTrue(
+                !VineyardSeason.WINTER.shouldGrow(
+                        RandomSource.create(41L),
+                        1
+                ),
+                "Winter should make vines dormant rather than deleting them"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void weatherOutlooksAreStableAndQualityBounded(
+            GameTestHelper helper
+    ) {
+        ClimateProfile climate = ClimateProfile.evaluate(
+                0.8F,
+                true,
+                false,
+                72,
+                false
+        );
+        SeasonalContext context = SeasonalContext.atDay(12, 8);
+        VineyardWeatherEvent first = VineyardWeatherEvent.forSite(
+                173L,
+                4,
+                -3,
+                climate,
+                context
+        );
+        VineyardWeatherEvent second = VineyardWeatherEvent.forSite(
+                173L,
+                4,
+                -3,
+                climate,
+                context
+        );
+
+        helper.assertValueEqual(
+                first,
+                second,
+                "A region's seasonal weather outlook must remain stable"
+        );
+        for (VineyardWeatherEvent event : VineyardWeatherEvent.values()) {
+            int points = event.harvestQualityPoints(false);
+            helper.assertTrue(
+                    points >= 0 && points <= 7,
+                    "Weather must stay inside the existing harvest-quality budget"
+            );
+        }
+        helper.assertValueEqual(
+                GrapeQualityEvaluator.scoreWithTerroirAndWeather(
+                        28,
+                        true,
+                        true,
+                        true,
+                        true,
+                        7
+                ),
+                60,
+                "Ideal seasonal weather should preserve the sixty-point cap"
         );
         helper.succeed();
     }

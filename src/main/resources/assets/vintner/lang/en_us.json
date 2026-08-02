@@ -440,5 +440,20 @@
   "message.vintner.aging.upgrade_already_applied": "This barrel is already configured for %s.",
   "message.vintner.aging.upgrade_recover_first": "This barrel already uses %s. Sneak-use a Cooper's Mallet to remove it before refitting.",
   "message.vintner.aging.treatment_none": "This barrel has no cooperage treatment to remove.",
-  "message.vintner.aging.treatment_removed": "Removed %s and recovered its treatment kit."
+  "message.vintner.aging.treatment_removed": "Removed %s and recovered its treatment kit.",
+  "season.vintner.spring": "Spring",
+  "season.vintner.summer": "Summer",
+  "season.vintner.autumn": "Autumn",
+  "season.vintner.winter": "Winter",
+  "weather_event.vintner.calm": "Settled weather",
+  "weather_event.vintner.ideal_season": "Ideal growing season",
+  "weather_event.vintner.cool_ripening": "Cool ripening spell",
+  "weather_event.vintner.late_frost": "Late frost risk",
+  "weather_event.vintner.heatwave": "Heatwave",
+  "weather_event.vintner.heavy_rain": "Heavy rain",
+  "weather_event.vintner.drought": "Drought",
+  "weather_event.vintner.hail": "Hail risk",
+  "message.vintner.almanac.season": "%s, Year %s | day %s of %s",
+  "message.vintner.almanac.weather_outlook": "Vineyard outlook: %s | harvest weather %s/7",
+  "gamerule.vintner.season_length_days": "Vintner season length (days)"
 }

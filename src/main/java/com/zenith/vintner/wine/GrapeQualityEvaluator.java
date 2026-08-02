@@ -5,8 +5,11 @@ import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.vineyard.TerroirReport;
+import com.zenith.vintner.vineyard.SeasonalContext;
+import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -49,14 +52,28 @@ public final class GrapeQualityEvaluator {
         boolean managedYield = connectionCount(vineState) <= 2;
         boolean ripeHarvest = matureVine;
         boolean dryHarvestWeather = !level.isRainingAt(vinePos.above());
+        SeasonalContext seasonalContext = level instanceof ServerLevel serverLevel
+                ? SeasonalContext.current(serverLevel)
+                : SeasonalContext.atDay(0, 8);
+        VineyardWeatherEvent weatherEvent = level instanceof ServerLevel serverLevel
+                ? VineyardWeatherEvent.at(
+                        serverLevel,
+                        vinePos,
+                        terroir.climate(),
+                        seasonalContext
+                )
+                : VineyardWeatherEvent.CALM;
+        int harvestWeatherPoints = weatherEvent.harvestQualityPoints(
+                !dryHarvestWeather
+        );
 
-        int score = scoreWithTerroir(
+        int score = scoreWithTerroirAndWeather(
                 terroir.vineyardQualityPoints(),
                 matureVine,
                 healthyVine,
                 managedYield,
                 ripeHarvest,
-                dryHarvestWeather
+                harvestWeatherPoints
         );
 
         WineQualityProfile profile =
@@ -76,8 +93,28 @@ public final class GrapeQualityEvaluator {
                 score,
                 profile,
                 predictedQuality,
-                terroir
+                terroir,
+                seasonalContext,
+                weatherEvent,
+                harvestWeatherPoints
         );
+    }
+
+    public static int scoreWithTerroirAndWeather(
+            int sitePoints,
+            boolean matureVine,
+            boolean healthyVine,
+            boolean managedYield,
+            boolean ripeHarvest,
+            int harvestWeatherPoints
+    ) {
+        int score = Math.clamp(sitePoints, 0, 28);
+        score += matureVine ? 6 : 0;
+        score += healthyVine ? 6 : 0;
+        score += managedYield ? 5 : 0;
+        score += ripeHarvest ? 8 : 0;
+        score += Math.clamp(harvestWeatherPoints, 0, 7);
+        return score;
     }
 
     public static int scoreWithTerroir(

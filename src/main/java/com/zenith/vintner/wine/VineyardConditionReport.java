@@ -1,6 +1,8 @@
 package com.zenith.vintner.wine;
 
 import com.zenith.vintner.vineyard.TerroirReport;
+import com.zenith.vintner.vineyard.SeasonalContext;
+import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 
 public record VineyardConditionReport(
         boolean openSky,
@@ -15,6 +17,9 @@ public record VineyardConditionReport(
         int qualityScore,
         WineQualityProfile qualityProfile,
         WineQuality predictedQuality,
-        TerroirReport terroir
+        TerroirReport terroir,
+        SeasonalContext seasonalContext,
+        VineyardWeatherEvent weatherEvent,
+        int harvestWeatherPoints
 ) {
 }

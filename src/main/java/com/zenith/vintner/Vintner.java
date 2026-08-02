@@ -5,6 +5,7 @@ import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModCreativeTabs;
 import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.registry.ModGameRules;
 import com.zenith.vintner.registry.ModLootTables;
 import com.zenith.vintner.registry.ModMobEffects;
 import com.zenith.vintner.registry.ModTrades;
@@ -20,6 +21,7 @@ public final class Vintner implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        ModGameRules.initialize();
         ModMobEffects.initialize();
         ModAttachments.initialize();
         ModItems.initialize();

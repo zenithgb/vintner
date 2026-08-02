@@ -6,6 +6,7 @@ import com.zenith.vintner.wine.GrapeQualityEvaluator;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineQuality;
 import com.zenith.vintner.wine.VineyardConditionReport;
+import com.zenith.vintner.vineyard.SeasonalContext;
 import com.zenith.vintner.wine.WinemakingEffects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -223,10 +224,12 @@ public abstract class GrapevineBlock
             return;
         }
 
+        SeasonalContext seasonalContext = SeasonalContext.current(level);
         if (age < MAX_AGE
-                && random.nextInt(
+                && seasonalContext.season().shouldGrow(
+                        random,
                         variety.growthChanceDenominator()
-                ) == 0
+                )
                 && level.getRawBrightness(pos.above(2), 0) >= 9) {
             advanceGrowth(level, pos, state);
         }
