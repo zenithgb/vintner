@@ -3,50 +3,43 @@
   "pools": [
     {
       "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "vintner:nursery_bed"
-        }
-      ]
+      "entries": [{"type": "minecraft:item", "name": "vintner:nursery_bed"}]
     },
     {
       "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "vintner:red_grape_cutting"
-        }
-      ],
-      "conditions": [
-        {
-          "condition": "minecraft:block_state_property",
-          "block": "vintner:nursery_bed",
-          "properties": {
-            "occupied": "true",
-            "variety": "red"
-          }
-        }
-      ]
+      "entries": [{"type": "minecraft:item", "name": "vintner:red_grape_cutting"}],
+      "conditions": [{
+        "condition": "minecraft:block_state_property",
+        "block": "vintner:nursery_bed",
+        "properties": {"occupied": "true", "plant": "red_grape"}
+      }]
     },
     {
       "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "vintner:white_grape_cutting"
-        }
-      ],
-      "conditions": [
-        {
-          "condition": "minecraft:block_state_property",
-          "block": "vintner:nursery_bed",
-          "properties": {
-            "occupied": "true",
-            "variety": "white"
-          }
-        }
-      ]
+      "entries": [{"type": "minecraft:item", "name": "vintner:white_grape_cutting"}],
+      "conditions": [{
+        "condition": "minecraft:block_state_property",
+        "block": "vintner:nursery_bed",
+        "properties": {"occupied": "true", "plant": "white_grape"}
+      }]
+    },
+    {
+      "rolls": 1,
+      "entries": [{"type": "minecraft:item", "name": "vintner:rootstock_cutting"}],
+      "conditions": [{
+        "condition": "minecraft:block_state_property",
+        "block": "vintner:nursery_bed",
+        "properties": {"occupied": "true", "plant": "adapted_rootstock"}
+      }]
+    },
+    {
+      "rolls": 1,
+      "entries": [{"type": "minecraft:item", "name": "vintner:resistant_rootstock_cutting"}],
+      "conditions": [{
+        "condition": "minecraft:block_state_property",
+        "block": "vintner:nursery_bed",
+        "properties": {"occupied": "true", "plant": "resistant_rootstock"}
+      }]
     }
   ]
 }

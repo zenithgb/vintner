@@ -6,84 +6,68 @@
       }
     },
     {
-      "when": {
-        "occupied": "true",
-        "age": "0",
-        "variety": "red"
-      },
-      "apply": {
-        "model": "vintner:block/nursery_bed_red_0"
-      }
+      "when": {"occupied": "true", "age": "0", "plant": "red_grape"},
+      "apply": {"model": "vintner:block/nursery_bed_red_0"}
     },
     {
-      "when": {
-        "occupied": "true",
-        "age": "1",
-        "variety": "red"
-      },
-      "apply": {
-        "model": "vintner:block/nursery_bed_red_1"
-      }
+      "when": {"occupied": "true", "age": "1", "plant": "red_grape"},
+      "apply": {"model": "vintner:block/nursery_bed_red_1"}
     },
     {
-      "when": {
-        "occupied": "true",
-        "age": "2",
-        "variety": "red"
-      },
-      "apply": {
-        "model": "vintner:block/nursery_bed_red_2"
-      }
+      "when": {"occupied": "true", "age": "2", "plant": "red_grape"},
+      "apply": {"model": "vintner:block/nursery_bed_red_2"}
     },
     {
-      "when": {
-        "occupied": "true",
-        "age": "3",
-        "variety": "red"
-      },
-      "apply": {
-        "model": "vintner:block/nursery_bed_red_3"
-      }
+      "when": {"occupied": "true", "age": "3", "plant": "red_grape"},
+      "apply": {"model": "vintner:block/nursery_bed_red_3"}
     },
     {
-      "when": {
-        "occupied": "true",
-        "age": "0",
-        "variety": "white"
-      },
-      "apply": {
-        "model": "vintner:block/nursery_bed_white_0"
-      }
+      "when": {"occupied": "true", "age": "0", "plant": "white_grape"},
+      "apply": {"model": "vintner:block/nursery_bed_white_0"}
     },
     {
-      "when": {
-        "occupied": "true",
-        "age": "1",
-        "variety": "white"
-      },
-      "apply": {
-        "model": "vintner:block/nursery_bed_white_1"
-      }
+      "when": {"occupied": "true", "age": "1", "plant": "white_grape"},
+      "apply": {"model": "vintner:block/nursery_bed_white_1"}
     },
     {
-      "when": {
-        "occupied": "true",
-        "age": "2",
-        "variety": "white"
-      },
-      "apply": {
-        "model": "vintner:block/nursery_bed_white_2"
-      }
+      "when": {"occupied": "true", "age": "2", "plant": "white_grape"},
+      "apply": {"model": "vintner:block/nursery_bed_white_2"}
     },
     {
-      "when": {
-        "occupied": "true",
-        "age": "3",
-        "variety": "white"
-      },
-      "apply": {
-        "model": "vintner:block/nursery_bed_white_3"
-      }
+      "when": {"occupied": "true", "age": "3", "plant": "white_grape"},
+      "apply": {"model": "vintner:block/nursery_bed_white_3"}
+    },
+    {
+      "when": {"occupied": "true", "age": "0", "plant": "adapted_rootstock"},
+      "apply": {"model": "vintner:block/nursery_bed_rootstock_0"}
+    },
+    {
+      "when": {"occupied": "true", "age": "1", "plant": "adapted_rootstock"},
+      "apply": {"model": "vintner:block/nursery_bed_rootstock_1"}
+    },
+    {
+      "when": {"occupied": "true", "age": "2", "plant": "adapted_rootstock"},
+      "apply": {"model": "vintner:block/nursery_bed_rootstock_2"}
+    },
+    {
+      "when": {"occupied": "true", "age": "3", "plant": "adapted_rootstock"},
+      "apply": {"model": "vintner:block/nursery_bed_rootstock_3"}
+    },
+    {
+      "when": {"occupied": "true", "age": "0", "plant": "resistant_rootstock"},
+      "apply": {"model": "vintner:block/nursery_bed_resistant_rootstock_0"}
+    },
+    {
+      "when": {"occupied": "true", "age": "1", "plant": "resistant_rootstock"},
+      "apply": {"model": "vintner:block/nursery_bed_resistant_rootstock_1"}
+    },
+    {
+      "when": {"occupied": "true", "age": "2", "plant": "resistant_rootstock"},
+      "apply": {"model": "vintner:block/nursery_bed_resistant_rootstock_2"}
+    },
+    {
+      "when": {"occupied": "true", "age": "3", "plant": "resistant_rootstock"},
+      "apply": {"model": "vintner:block/nursery_bed_resistant_rootstock_3"}
     }
   ]
 }

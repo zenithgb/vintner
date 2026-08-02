@@ -170,6 +170,10 @@ public final class AlmanacInspection {
                 report.yieldMode().qualityPoints()
         ).withStyle(ChatFormatting.DARK_GREEN));
         player.sendSystemMessage(Component.translatable(
+                "message.vintner.almanac.rootstock",
+                report.rootstock().displayName()
+        ).withStyle(ChatFormatting.DARK_GREEN));
+        player.sendSystemMessage(Component.translatable(
                 "message.vintner.almanac.vine_health",
                 report.threat().displayName(),
                 report.vineHealthPoints()

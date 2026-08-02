@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": ["vintner:red_grape_cutting", "minecraft:rooted_dirt"],
+  "result": {"id": "vintner:rootstock_cutting", "count": 1}
+}

@@ -58,6 +58,16 @@ public final class ModItems {
             )
     );
 
+    public static final Item ROOTSTOCK_CUTTING = register(
+            "rootstock_cutting",
+            Item::new
+    );
+
+    public static final Item RESISTANT_ROOTSTOCK_CUTTING = register(
+            "resistant_rootstock_cutting",
+            Item::new
+    );
+
     public static final Item RED_MUST = register(
             "red_must",
             MustItem::new
@@ -210,6 +220,8 @@ public final class ModItems {
                     output.accept(COMPOST);
                     output.accept(RED_GRAPE_CUTTING);
                     output.accept(WHITE_GRAPE_CUTTING);
+                    output.accept(ROOTSTOCK_CUTTING);
+                    output.accept(RESISTANT_ROOTSTOCK_CUTTING);
                     output.accept(COOPERS_MALLET);
                     output.accept(TOASTING_KIT);
                     output.accept(SEASONING_KIT);

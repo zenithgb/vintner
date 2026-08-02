@@ -1,11 +1,15 @@
 package com.zenith.vintner.item;
 
 import com.zenith.vintner.block.GrapevineBlock;
+import com.zenith.vintner.block.NurseryBedBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.vineyard.GraftedCuttingData;
+import com.zenith.vintner.vineyard.NurseryPlant;
+import com.zenith.vintner.vineyard.VineRootstock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -42,6 +46,19 @@ public final class GraftingKnifeItem extends Item {
                 ? InteractionHand.OFF_HAND
                 : InteractionHand.MAIN_HAND;
 
+        InteractionResult nurseryResult = graftNurseryRootstock(
+                context.getLevel(),
+                context.getClickedPos(),
+                player,
+                context.getItemInHand(),
+                context.getHand(),
+                player.getItemInHand(cuttingHand)
+        );
+
+        if (nurseryResult.consumesAction()) {
+            return nurseryResult;
+        }
+
         return graft(
                 context.getLevel(),
                 context.getClickedPos(),
@@ -50,6 +67,69 @@ public final class GraftingKnifeItem extends Item {
                 context.getHand(),
                 player.getItemInHand(cuttingHand)
         );
+    }
+
+    public static InteractionResult graftNurseryRootstock(
+            Level level,
+            BlockPos clickedPos,
+            Player player,
+            ItemStack knife,
+            InteractionHand knifeHand,
+            ItemStack cutting
+    ) {
+        BlockState state = level.getBlockState(clickedPos);
+
+        if (!(state.getBlock() instanceof NurseryBedBlock)
+                || !NurseryBedBlock.readyToHarvest(state)
+                || cuttingVariety(cutting) == null) {
+            return InteractionResult.PASS;
+        }
+
+        NurseryPlant nurseryPlant = state.getValue(NurseryBedBlock.PLANT);
+        if (!nurseryPlant.isRootstock()) {
+            return InteractionResult.PASS;
+        }
+
+        VineRootstock rootstock = nurseryPlant.rootstock();
+
+        if (level instanceof ServerLevel serverLevel) {
+            ItemStack graftedCutting = cutting.copy();
+            graftedCutting.setCount(1);
+            GraftedCuttingData.apply(graftedCutting, rootstock);
+
+            serverLevel.setBlock(
+                    clickedPos,
+                    NurseryBedBlock.emptiedState(state),
+                    Block.UPDATE_ALL
+            );
+            if (!player.getAbilities().instabuild) {
+                cutting.shrink(1);
+                knife.hurtAndBreak(1, player, knifeHand);
+            }
+            if (!player.addItem(graftedCutting)) {
+                Block.popResource(
+                        serverLevel,
+                        clickedPos.above(),
+                        graftedCutting
+                );
+            }
+            player.sendSystemMessage(
+                    net.minecraft.network.chat.Component.translatable(
+                            "message.vintner.grafted_cutting",
+                            rootstock.displayName()
+                    )
+            );
+            serverLevel.playSound(
+                    null,
+                    clickedPos,
+                    SoundEvents.SHEEP_SHEAR,
+                    SoundSource.BLOCKS,
+                    0.9F,
+                    1.35F
+            );
+        }
+
+        return InteractionResult.SUCCESS;
     }
 
     public static InteractionResult graft(

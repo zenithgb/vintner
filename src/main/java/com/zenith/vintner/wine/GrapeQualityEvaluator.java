@@ -13,6 +13,7 @@ import com.zenith.vintner.vineyard.VineAgeSavedData;
 import com.zenith.vintner.vineyard.VineAgeStage;
 import com.zenith.vintner.vineyard.VineManagementSavedData;
 import com.zenith.vintner.vineyard.VineYieldMode;
+import com.zenith.vintner.vineyard.VineRootstock;
 import com.zenith.vintner.vineyard.VineyardThreat;
 
 import net.minecraft.core.BlockPos;
@@ -76,6 +77,10 @@ public final class GrapeQualityEvaluator {
         VineYieldMode yieldMode = level instanceof ServerLevel serverLevel
                 ? VineManagementSavedData.get(serverLevel).mode(vinePos)
                 : VineYieldMode.BALANCED;
+        VineRootstock rootstock = level instanceof ServerLevel serverLevel
+                ? VineManagementSavedData.get(serverLevel)
+                        .rootstock(vinePos)
+                : VineRootstock.OWN_ROOTS;
         boolean managedYield = yieldMode != VineYieldMode.HIGH_YIELD;
         SeasonalContext seasonalContext = level instanceof ServerLevel serverLevel
                 ? SeasonalContext.current(serverLevel)
@@ -109,6 +114,10 @@ public final class GrapeQualityEvaluator {
         int vineHealthPoints = terroir.siteScore() >= 45
                 ? threat.healthPoints()
                 : Math.min(2, threat.healthPoints());
+        vineHealthPoints = Math.min(
+                6,
+                vineHealthPoints + rootstock.healthBonus(threat)
+        );
         boolean healthyVine = vineHealthPoints == 6;
         int harvestWeatherPoints = weatherEvent.harvestQualityPoints(
                 !dryHarvestWeather
@@ -140,6 +149,7 @@ public final class GrapeQualityEvaluator {
                 vineAgeStage,
                 vineAgeDays,
                 yieldMode,
+                rootstock,
                 threat,
                 vineHealthPoints,
                 score,

@@ -1,8 +1,7 @@
 package com.zenith.vintner.block;
 
 import com.mojang.serialization.MapCodec;
-import com.zenith.vintner.registry.ModItems;
-import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.vineyard.NurseryPlant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -11,7 +10,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -34,8 +32,8 @@ public final class NurseryBedBlock extends Block {
             BooleanProperty.create("occupied");
     public static final IntegerProperty AGE =
             IntegerProperty.create("age", 0, 3);
-    public static final EnumProperty<GrapeVariety> VARIETY =
-            EnumProperty.create("variety", GrapeVariety.class);
+    public static final EnumProperty<NurseryPlant> PLANT =
+            EnumProperty.create("plant", NurseryPlant.class);
     public static final int MAX_AGE = 3;
     public static final int HARVEST_COUNT = 3;
 
@@ -48,7 +46,7 @@ public final class NurseryBedBlock extends Block {
                 stateDefinition.any()
                         .setValue(OCCUPIED, false)
                         .setValue(AGE, 0)
-                        .setValue(VARIETY, GrapeVariety.RED)
+                        .setValue(PLANT, NurseryPlant.RED_GRAPE)
         );
     }
 
@@ -90,9 +88,9 @@ public final class NurseryBedBlock extends Block {
             InteractionHand hand,
             BlockHitResult hitResult
     ) {
-        GrapeVariety variety = cuttingVariety(stack);
+        NurseryPlant plant = NurseryPlant.fromItem(stack);
 
-        if (variety == null || state.getValue(OCCUPIED)) {
+        if (plant == null || state.getValue(OCCUPIED)) {
             return super.useItemOn(
                     stack,
                     state,
@@ -107,7 +105,7 @@ public final class NurseryBedBlock extends Block {
         if (!level.isClientSide()) {
             level.setBlock(
                     pos,
-                    plantedState(state, variety),
+                    plantedState(state, plant),
                     Block.UPDATE_ALL
             );
             level.playSound(
@@ -149,7 +147,7 @@ public final class NurseryBedBlock extends Block {
                     level,
                     pos.above(),
                     new ItemStack(
-                            cuttingItem(state.getValue(VARIETY)),
+                            state.getValue(PLANT).item(),
                             HARVEST_COUNT
                     )
             );
@@ -181,17 +179,17 @@ public final class NurseryBedBlock extends Block {
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(OCCUPIED, AGE, VARIETY);
+        builder.add(OCCUPIED, AGE, PLANT);
     }
 
     public static BlockState plantedState(
             BlockState state,
-            GrapeVariety variety
+            NurseryPlant plant
     ) {
         return state
                 .setValue(OCCUPIED, true)
                 .setValue(AGE, 0)
-                .setValue(VARIETY, variety);
+                .setValue(PLANT, plant);
     }
 
     public static BlockState emptiedState(BlockState state) {
@@ -205,19 +203,4 @@ public final class NurseryBedBlock extends Block {
                 && state.getValue(AGE) == MAX_AGE;
     }
 
-    public static Item cuttingItem(GrapeVariety variety) {
-        return variety == GrapeVariety.RED
-                ? ModItems.RED_GRAPE_CUTTING
-                : ModItems.WHITE_GRAPE_CUTTING;
-    }
-
-    private static GrapeVariety cuttingVariety(ItemStack stack) {
-        if (stack.is(ModItems.RED_GRAPE_CUTTING)) {
-            return GrapeVariety.RED;
-        }
-        if (stack.is(ModItems.WHITE_GRAPE_CUTTING)) {
-            return GrapeVariety.WHITE;
-        }
-        return null;
-    }
 }

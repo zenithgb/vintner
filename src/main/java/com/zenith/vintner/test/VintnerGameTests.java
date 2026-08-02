@@ -47,6 +47,8 @@ import com.zenith.vintner.wine.WineStyle;
 import com.zenith.vintner.wine.WineVintageConditions;
 import com.zenith.vintner.vineyard.ClimateProfile;
 import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.vineyard.GraftedCuttingData;
+import com.zenith.vintner.vineyard.NurseryPlant;
 import com.zenith.vintner.vineyard.SoilProfile;
 import com.zenith.vintner.vineyard.SoilType;
 import com.zenith.vintner.vineyard.TerrainProfile;
@@ -62,6 +64,7 @@ import com.zenith.vintner.vineyard.VineyardManagementAdvice;
 import com.zenith.vintner.vineyard.VineAgeSavedData;
 import com.zenith.vintner.vineyard.VineAgeStage;
 import com.zenith.vintner.vineyard.VineManagementSavedData;
+import com.zenith.vintner.vineyard.VineRootstock;
 import com.zenith.vintner.vineyard.VineYieldMode;
 import com.zenith.vintner.vineyard.VineyardThreat;
 import net.minecraft.advancements.AdvancementHolder;
@@ -5777,15 +5780,15 @@ public final class VintnerGameTests {
 
         BlockState planted = NurseryBedBlock.plantedState(
                 empty,
-                GrapeVariety.WHITE
+                NurseryPlant.WHITE_GRAPE
         );
         helper.assertTrue(
                 planted.getValue(NurseryBedBlock.OCCUPIED),
                 "Inserting a cutting should occupy the nursery bed"
         );
         helper.assertValueEqual(
-                planted.getValue(NurseryBedBlock.VARIETY),
-                GrapeVariety.WHITE,
+                planted.getValue(NurseryBedBlock.PLANT),
+                NurseryPlant.WHITE_GRAPE,
                 "The bed should remember the inserted cutting variety"
         );
 
@@ -5798,7 +5801,7 @@ public final class VintnerGameTests {
                 "A fully rooted cutting should be harvestable"
         );
         helper.assertValueEqual(
-                NurseryBedBlock.cuttingItem(GrapeVariety.WHITE),
+                NurseryPlant.WHITE_GRAPE.item(),
                 ModItems.WHITE_GRAPE_CUTTING,
                 "Harvesting should preserve the propagated variety"
         );
@@ -5811,6 +5814,172 @@ public final class VintnerGameTests {
                 NurseryBedBlock.emptiedState(mature)
                         .getValue(NurseryBedBlock.OCCUPIED),
                 "Harvesting should leave the nursery bed reusable"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void matureRootstockCanBeGraftedToACutting(
+            GameTestHelper helper
+    ) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        BlockState matureRootstock = NurseryBedBlock.plantedState(
+                ModBlocks.NURSERY_BED.defaultBlockState(),
+                NurseryPlant.RESISTANT_ROOTSTOCK
+        ).setValue(
+                NurseryBedBlock.AGE,
+                NurseryBedBlock.MAX_AGE
+        );
+        helper.setBlock(FIRST, matureRootstock);
+
+        ItemStack knife = new ItemStack(ModItems.GRAFTING_KNIFE);
+        ItemStack cutting = new ItemStack(ModItems.RED_GRAPE_CUTTING);
+        helper.assertValueEqual(
+                GraftingKnifeItem.graftNurseryRootstock(
+                        helper.getLevel(),
+                        helper.absolutePos(FIRST),
+                        player,
+                        knife,
+                        InteractionHand.MAIN_HAND,
+                        cutting
+                ),
+                InteractionResult.SUCCESS,
+                "A mature rootstock should accept a grape cutting"
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                NurseryBedBlock.OCCUPIED,
+                false
+        );
+        helper.assertValueEqual(
+                cutting.getCount(),
+                0,
+                "Nursery grafting should consume one scion cutting"
+        );
+        helper.assertValueEqual(
+                knife.getDamageValue(),
+                1,
+                "Nursery grafting should consume knife durability"
+        );
+        helper.assertTrue(
+                player.getInventory().contains(stack ->
+                        stack.is(ModItems.RED_GRAPE_CUTTING)
+                                && GraftedCuttingData.rootstock(stack)
+                                == VineRootstock.RESISTANT
+                ),
+                "The resulting cutting should carry its resistant roots"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void graftedCuttingPlantsPersistentRootstock(
+            GameTestHelper helper
+    ) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        BlockPos absoluteRoot = helper.absolutePos(FIRST);
+        VineManagementSavedData management =
+                VineManagementSavedData.get(helper.getLevel());
+        management.remove(absoluteRoot);
+        helper.setBlock(FIRST, ModBlocks.OAK_TRELLIS);
+
+        ItemStack cutting = new ItemStack(ModItems.WHITE_GRAPE_CUTTING);
+        GraftedCuttingData.apply(cutting, VineRootstock.ADAPTED);
+        helper.assertValueEqual(
+                GraftedCuttingData.rootstock(cutting),
+                VineRootstock.ADAPTED,
+                "The grafted cutting should carry adapted roots before use"
+        );
+        player.setItemInHand(InteractionHand.MAIN_HAND, cutting);
+        helper.assertValueEqual(
+                player.gameMode.useItemOn(
+                        player,
+                        helper.getLevel(),
+                        cutting,
+                        InteractionHand.MAIN_HAND,
+                        new BlockHitResult(
+                                Vec3.atCenterOf(absoluteRoot),
+                                Direction.UP,
+                                absoluteRoot,
+                                false
+                        )
+                ),
+                InteractionResult.SUCCESS,
+                "A grafted cutting should plant on a bare trellis"
+        );
+
+        helper.assertBlockPresent(ModBlocks.WHITE_GRAPEVINE, FIRST);
+        helper.assertValueEqual(
+                management.rootstock(absoluteRoot),
+                VineRootstock.ADAPTED,
+                "Planting should preserve the cutting's selected roots"
+        );
+        management.remove(absoluteRoot);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void ordinaryCuttingClearsStaleRootstockData(
+            GameTestHelper helper
+    ) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        BlockPos absoluteRoot = helper.absolutePos(FIRST);
+        VineManagementSavedData management =
+                VineManagementSavedData.get(helper.getLevel());
+        management.setRootstock(
+                absoluteRoot,
+                VineRootstock.RESISTANT
+        );
+        helper.setBlock(FIRST, ModBlocks.OAK_TRELLIS);
+
+        helper.placeAt(
+                player,
+                new ItemStack(ModItems.RED_GRAPE_CUTTING),
+                FIRST.above(),
+                Direction.DOWN
+        );
+
+        helper.assertBlockPresent(ModBlocks.RED_GRAPEVINE, FIRST);
+        helper.assertValueEqual(
+                management.rootstock(absoluteRoot),
+                VineRootstock.OWN_ROOTS,
+                "Ordinary planting should not inherit stale rootstock data"
+        );
+        management.remove(absoluteRoot);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void rootstockChoicesHaveDistinctStrengths(
+            GameTestHelper helper
+    ) {
+        helper.assertTrue(
+                VineRootstock.ADAPTED.healthBonus(
+                        VineyardThreat.DROUGHT_STRESS
+                )
+                        > VineRootstock.RESISTANT.healthBonus(
+                                VineyardThreat.DROUGHT_STRESS
+                        ),
+                "Adapted roots should be strongest against drought"
+        );
+        helper.assertTrue(
+                VineRootstock.RESISTANT.healthBonus(
+                        VineyardThreat.ROT_RISK
+                )
+                        > VineRootstock.ADAPTED.healthBonus(
+                                VineyardThreat.ROT_RISK
+                        ),
+                "Resistant roots should be strongest against rot"
+        );
+        helper.assertValueEqual(
+                VineRootstock.OWN_ROOTS.healthBonus(
+                        VineyardThreat.HEALTHY
+                ),
+                0,
+                "Own-root vines should remain the simple baseline"
         );
         helper.succeed();
     }

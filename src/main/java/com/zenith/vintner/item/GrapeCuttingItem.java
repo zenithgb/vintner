@@ -4,6 +4,8 @@ import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.WoodVariant;
+import com.zenith.vintner.vineyard.GraftedCuttingData;
+import com.zenith.vintner.vineyard.VineManagementSavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -92,6 +94,12 @@ public final class GrapeCuttingItem extends Item {
                     plantingPos,
                     plantedState,
                     Block.UPDATE_ALL
+            );
+            VineManagementSavedData.get(serverLevel).setRootstock(
+                    plantingPos,
+                    GraftedCuttingData.rootstock(
+                            context.getItemInHand()
+                    )
             );
             serverLevel.gameEvent(
                     GameEvent.BLOCK_CHANGE,

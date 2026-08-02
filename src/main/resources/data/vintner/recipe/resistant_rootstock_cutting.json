@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "vintner:rootstock_cutting",
+    "vintner:compost",
+    "minecraft:nether_wart"
+  ],
+  "result": {"id": "vintner:resistant_rootstock_cutting", "count": 1}
+}

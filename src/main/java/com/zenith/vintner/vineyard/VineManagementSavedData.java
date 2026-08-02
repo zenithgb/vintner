@@ -12,18 +12,27 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 /** Persistent yield strategy for grapevine root blocks in one dimension. */
 public final class VineManagementSavedData extends SavedData {
-    private record Entry(long position, String mode) {
+    private record Entry(
+            long position,
+            String mode,
+            String rootstock
+    ) {
         private static final Codec<Entry> CODEC = RecordCodecBuilder.create(
                 instance -> instance.group(
                         Codec.LONG.fieldOf("position")
                                 .forGetter(Entry::position),
                         Codec.STRING.fieldOf("mode")
-                                .forGetter(Entry::mode)
+                                .forGetter(Entry::mode),
+                        Codec.STRING.optionalFieldOf(
+                                "rootstock",
+                                VineRootstock.OWN_ROOTS.serializedName()
+                        ).forGetter(Entry::rootstock)
                 ).apply(instance, Entry::new)
         );
     }
@@ -49,6 +58,7 @@ public final class VineManagementSavedData extends SavedData {
             );
 
     private final Map<Long, VineYieldMode> modes = new HashMap<>();
+    private final Map<Long, VineRootstock> rootstocks = new HashMap<>();
 
     public VineManagementSavedData() {
     }
@@ -58,6 +68,12 @@ public final class VineManagementSavedData extends SavedData {
             VineYieldMode mode = VineYieldMode.fromName(entry.mode());
             if (mode != VineYieldMode.BALANCED) {
                 modes.put(entry.position(), mode);
+            }
+            VineRootstock rootstock = VineRootstock.fromName(
+                    entry.rootstock()
+            );
+            if (rootstock != VineRootstock.OWN_ROOTS) {
+                rootstocks.put(entry.position(), rootstock);
             }
         }
     }
@@ -71,6 +87,31 @@ public final class VineManagementSavedData extends SavedData {
                 rootPos.asLong(),
                 VineYieldMode.BALANCED
         );
+    }
+
+    public VineRootstock rootstock(BlockPos rootPos) {
+        return rootstocks.getOrDefault(
+                rootPos.asLong(),
+                VineRootstock.OWN_ROOTS
+        );
+    }
+
+    public void setRootstock(
+            BlockPos rootPos,
+            VineRootstock rootstock
+    ) {
+        long key = rootPos.asLong();
+        VineRootstock previous;
+
+        if (rootstock == VineRootstock.OWN_ROOTS) {
+            previous = rootstocks.remove(key);
+        } else {
+            previous = rootstocks.put(key, rootstock);
+        }
+
+        if (previous != rootstock) {
+            setDirty();
+        }
     }
 
     public void setMode(BlockPos rootPos, VineYieldMode mode) {
@@ -95,16 +136,28 @@ public final class VineManagementSavedData extends SavedData {
     }
 
     public void remove(BlockPos rootPos) {
-        if (modes.remove(rootPos.asLong()) != null) {
+        long key = rootPos.asLong();
+        if (modes.remove(key) != null
+                | rootstocks.remove(key) != null) {
             setDirty();
         }
     }
 
     private List<Entry> entries() {
-        List<Entry> entries = new ArrayList<>(modes.size());
-        modes.forEach((position, mode) ->
-                entries.add(new Entry(position, mode.serializedName()))
-        );
+        HashSet<Long> positions = new HashSet<>(modes.keySet());
+        positions.addAll(rootstocks.keySet());
+        List<Entry> entries = new ArrayList<>(positions.size());
+        positions.forEach(position -> entries.add(new Entry(
+                position,
+                modes.getOrDefault(
+                        position,
+                        VineYieldMode.BALANCED
+                ).serializedName(),
+                rootstocks.getOrDefault(
+                        position,
+                        VineRootstock.OWN_ROOTS
+                ).serializedName()
+        )));
         return entries;
     }
 }
