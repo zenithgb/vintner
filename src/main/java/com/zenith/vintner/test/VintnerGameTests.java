@@ -352,7 +352,7 @@ public final class VintnerGameTests {
             );
             helper.assertValueEqual(
                     houses.get(houses.size() - 1).getSecond(),
-                    expectedVineyardWeight(poolKey),
+                    24,
                     "Vineyard farm weight"
             );
 
@@ -384,32 +384,6 @@ public final class VintnerGameTests {
         }
 
         helper.succeed();
-    }
-
-    private static int expectedVineyardWeight(
-            ResourceKey<StructureTemplatePool> poolKey
-    ) {
-        String path = poolKey.identifier().getPath();
-
-        if (path.contains("/plains/")) {
-            return 8;
-        }
-        if (path.contains("/desert/")) {
-            return 19;
-        }
-        if (path.contains("/savanna/")) {
-            return 14;
-        }
-        if (path.contains("/snowy/")) {
-            return 6;
-        }
-        if (path.contains("/taiga/")) {
-            return 13;
-        }
-
-        throw new IllegalArgumentException(
-                "Unknown village culture pool: " + poolKey.identifier()
-        );
     }
 
     @GameTest(maxTicks = 40)
@@ -473,6 +447,24 @@ public final class VintnerGameTests {
                             Blocks.SANDSTONE
                     ).size() >= 99,
                     "Vineyard must contain a complete buried foundation"
+            );
+            int retainingBorder = template.filterBlocks(
+                    BlockPos.ZERO,
+                    settings,
+                    Blocks.STRIPPED_OAK_LOG
+            ).size() + template.filterBlocks(
+                    BlockPos.ZERO,
+                    settings,
+                    Blocks.STRIPPED_ACACIA_LOG
+            ).size() + template.filterBlocks(
+                    BlockPos.ZERO,
+                    settings,
+                    Blocks.STRIPPED_SPRUCE_LOG
+            ).size();
+            helper.assertValueEqual(
+                    retainingBorder,
+                    35,
+                    "Culture-matched timber retaining border"
             );
 
             int grapevineBlocks = 0;

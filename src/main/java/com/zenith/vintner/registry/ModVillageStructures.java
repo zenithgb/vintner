@@ -22,14 +22,10 @@ import java.util.WeakHashMap;
 
 public final class ModVillageStructures {
     private static final int SPECIALIST_HOUSE_WEIGHT = 1;
-    // Match the combined weight of each culture's vanilla farm pieces. This
-    // makes vineyards a normal part of village agriculture without making
-    // every generated building a Vintner structure.
-    private static final int PLAINS_VINEYARD_WEIGHT = 8;
-    private static final int DESERT_VINEYARD_WEIGHT = 19;
-    private static final int SAVANNA_VINEYARD_WEIGHT = 14;
-    private static final int SNOWY_VINEYARD_WEIGHT = 6;
-    private static final int TAIGA_VINEYARD_WEIGHT = 13;
+    // A vineyard is a defining village farm for Vintner. A weight of 24 makes
+    // one likely across a normal village's several house-pool selections,
+    // without requiring or guaranteeing one in every settlement.
+    private static final int VINEYARD_WEIGHT = 24;
 
     private static final List<VillageStructureDefinition>
             VILLAGE_STRUCTURES = List.of(
@@ -43,7 +39,7 @@ public final class ModVillageStructures {
                     "plains_tool_smith_1",
                     "cooper_oak"
             ),
-            vineyard("plains", PLAINS_VINEYARD_WEIGHT),
+            vineyard("plains"),
             house(
                     "desert",
                     "desert_cartographer_house_1",
@@ -54,7 +50,7 @@ public final class ModVillageStructures {
                     "desert_tool_smith_1",
                     "cooper_acacia"
             ),
-            vineyard("desert", DESERT_VINEYARD_WEIGHT),
+            vineyard("desert"),
             house(
                     "savanna",
                     "savanna_cartographer_1",
@@ -65,7 +61,7 @@ public final class ModVillageStructures {
                     "savanna_tool_smith_1",
                     "cooper_acacia"
             ),
-            vineyard("savanna", SAVANNA_VINEYARD_WEIGHT),
+            vineyard("savanna"),
             house(
                     "snowy",
                     "snowy_cartographer_house_1",
@@ -76,7 +72,7 @@ public final class ModVillageStructures {
                     "snowy_tool_smith_1",
                     "cooper_spruce"
             ),
-            vineyard("snowy", SNOWY_VINEYARD_WEIGHT),
+            vineyard("snowy"),
             house(
                     "taiga",
                     "taiga_cartographer_house_1",
@@ -87,7 +83,7 @@ public final class ModVillageStructures {
                     "taiga_tool_smith_1",
                     "cooper_spruce"
             ),
-            vineyard("taiga", TAIGA_VINEYARD_WEIGHT)
+            vineyard("taiga")
     );
 
     private static final Set<StructureTemplatePool> INJECTED_POOLS =
@@ -214,10 +210,7 @@ public final class ModVillageStructures {
         );
     }
 
-    private static VillageStructureDefinition vineyard(
-            String culture,
-            int weight
-    ) {
+    private static VillageStructureDefinition vineyard(String culture) {
         return new VillageStructureDefinition(
                 ResourceKey.create(
                         Registries.TEMPLATE_POOL,
@@ -225,7 +218,7 @@ public final class ModVillageStructures {
                 ),
                 vintner("village/" + culture + "/vineyard"),
                 null,
-                weight
+                VINEYARD_WEIGHT
         );
     }
 

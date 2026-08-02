@@ -188,6 +188,14 @@ def create_structure(culture: str, wood: str) -> bytes:
     path = state("minecraft:dirt_path")
     foundation = state(FOUNDATIONS[culture])
     surface = state(SURFACES[culture])
+    border_x = state(
+        f"minecraft:stripped_{wood}_log",
+        {"axis": "x"},
+    )
+    border_z = state(
+        f"minecraft:stripped_{wood}_log",
+        {"axis": "z"},
+    )
     composter = state("minecraft:composter", {"level": "4"})
     jigsaw = state(
         "minecraft:jigsaw",
@@ -207,7 +215,24 @@ def create_structure(culture: str, wood: str) -> bytes:
             blocks[(x, 0, z)] = block_entry((x, 0, z), foundation)
             blocks[(x, 1, z)] = block_entry((x, 1, z), surface)
 
-    for x in range(1, SIZE[0]):
+    # A timber retaining edge makes the raised farm read as an intentional
+    # village terrace. Leave a single opening where its central path meets the
+    # village street.
+    for x in range(SIZE[0]):
+        blocks[(x, 1, 0)] = block_entry((x, 1, 0), border_x)
+        blocks[(x, 1, SIZE[2] - 1)] = block_entry(
+            (x, 1, SIZE[2] - 1),
+            border_x,
+        )
+    for z in range(1, SIZE[2] - 1):
+        if z != 4:
+            blocks[(0, 1, z)] = block_entry((0, 1, z), border_z)
+        blocks[(SIZE[0] - 1, 1, z)] = block_entry(
+            (SIZE[0] - 1, 1, z),
+            border_z,
+        )
+
+    for x in range(1, SIZE[0] - 1):
         blocks[(x, 1, 4)] = block_entry((x, 1, 4), path)
 
     for z, colour in ((1, "red"), (7, "white")):
@@ -221,7 +246,7 @@ def create_structure(culture: str, wood: str) -> bytes:
                 )
                 blocks[(x, y, z)] = block_entry((x, y, z), vine)
 
-    blocks[(10, 2, 4)] = block_entry((10, 2, 4), composter)
+    blocks[(9, 2, 4)] = block_entry((9, 2, 4), composter)
     blocks[(0, 1, 4)] = block_entry(
         (0, 1, 4),
         jigsaw,
