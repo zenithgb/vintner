@@ -445,6 +445,51 @@ def aging_barrel_blockstate(
     return {"multipart": multipart}
 
 
+def fermentation_barrel_blockstate(
+    barrel_model: str,
+) -> dict[str, object]:
+    """Build a facing-aware fermenter with a front-mounted status light."""
+    multipart: list[dict[str, object]] = [{
+        "apply": {"model": "vintner:block/fermentation_airlock"},
+    }]
+    rotations = {
+        "north": 0,
+        "east": 90,
+        "south": 180,
+        "west": 270,
+    }
+
+    for facing, rotation in rotations.items():
+        apply: dict[str, object] = {"model": barrel_model}
+        if rotation:
+            apply["y"] = rotation
+        multipart.append({
+            "when": {"facing": facing},
+            "apply": apply,
+        })
+
+    overlays = (
+        (1, 1, "fermentation_barrel_red_fermenting"),
+        (1, 2, "fermentation_barrel_white_fermenting"),
+        (2, None, "fermentation_barrel_ready"),
+    )
+    for status, wine_type, model in overlays:
+        for facing, rotation in rotations.items():
+            when: dict[str, str] = {
+                "facing": facing,
+                "status": str(status),
+            }
+            if wine_type is not None:
+                when["wine_type"] = str(wine_type)
+
+            apply = {"model": f"vintner:block/{model}"}
+            if rotation:
+                apply["y"] = rotation
+            multipart.append({"when": when, "apply": apply})
+
+    return {"multipart": multipart}
+
+
 def cube_faces(texture: str) -> dict[str, dict[str, str]]:
     return {
         face: {"texture": texture}
@@ -1051,6 +1096,17 @@ def generate_machine_blockstates() -> None:
     )
 
     for base_id, id_factory in families:
+        if base_id == "fermentation_barrel":
+            for wood in WOODS:
+                block_id = id_factory(wood)
+                write_json(
+                    ASSETS / f"blockstates/{block_id}.json",
+                    fermentation_barrel_blockstate(
+                        f"vintner:block/{block_id}"
+                    ),
+                )
+            continue
+
         if base_id == "aging_barrel":
             for wood in WOODS:
                 block_id = id_factory(wood)
