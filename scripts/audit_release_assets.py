@@ -548,6 +548,37 @@ def audit_barrel_status_indicators() -> None:
                     f"front tap handle: from={start}, to={end}"
                 )
 
+            faces = elements[0].get("faces")
+            if not isinstance(faces, dict) or set(faces) != {
+                "north",
+                "east",
+                "south",
+                "west",
+                "up",
+                "down",
+            }:
+                fail(
+                    "barrel status indicator must define all six faces"
+                )
+            else:
+                for face_name, face in faces.items():
+                    uv = face.get("uv") if isinstance(face, dict) else None
+                    if (
+                        not isinstance(uv, list)
+                        or len(uv) != 4
+                        or any(
+                            not isinstance(value, (int, float))
+                            or value < 0
+                            or value > 16
+                            for value in uv
+                        )
+                    ):
+                        fail(
+                            "barrel status indicator face "
+                            f"{face_name} must use explicit in-bounds UVs: "
+                            f"uv={uv}"
+                        )
+
     aliases = (
         "cask_bung",
         "fermentation_airlock_indicator",
@@ -593,6 +624,32 @@ def audit_barrel_status_indicators() -> None:
             )
 
 
+def audit_estate_management_desk() -> None:
+    block_id = "estate_management_desk"
+    paths = {
+        "blockstate": ASSETS / f"blockstates/{block_id}.json",
+        "item definition": ASSETS / f"items/{block_id}.json",
+        "block model": ASSETS / f"models/block/{block_id}.json",
+        "item model": ASSETS / f"models/item/{block_id}.json",
+        "loot table": DATA / f"loot_table/blocks/{block_id}.json",
+        "recipe": DATA / f"recipe/{block_id}.json",
+    }
+    for label, path in paths.items():
+        if not path.is_file():
+            fail(f"{block_id}: missing {label}: {relative(path)}")
+
+    item_definition = load_json(paths["item definition"])
+    expected_model = f"vintner:item/{block_id}"
+    if (
+        item_definition is not None
+        and expected_model not in strings(item_definition)
+    ):
+        fail(
+            f"{block_id}: item definition does not reference "
+            f"{expected_model}"
+        )
+
+
 def main() -> int:
     audit_all_json()
     reachable_models = audit_model_references()
@@ -604,6 +661,7 @@ def main() -> int:
     audit_young_grapevine_wires(grapevines)
     audit_fermentation_airlock_bounds()
     audit_barrel_status_indicators()
+    audit_estate_management_desk()
 
     if errors:
         print(
