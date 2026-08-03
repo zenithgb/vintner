@@ -36,8 +36,14 @@ public final class EstateManagementDeskScreen extends Screen {
     private static final int PLOT = 0xFF7D2E2E;
     private static final int PLOT_SELECTED = 0xFFFFD24A;
     private static final int LIST_SELECTED = 0x60C48A32;
+    private static final int MAP_CONTROL = 0xD03B2115;
+    private static final int MAP_CONTROL_HOVER = 0xE06B4126;
+    private static final int MAP_CONTROL_BORDER = 0xFFD2B267;
     private static final int MAP_SIZE = 128;
     private static final int PLOT_ROWS = 4;
+    private static final float MIN_MAP_ZOOM = 1.0F;
+    private static final float MAX_MAP_ZOOM = 8.0F;
+    private static final float MAP_ZOOM_STEP = 1.25F;
 
     private final EstateDeskPayload payload;
     private final Map<Integer, MapRenderState> mapRenderStates =
@@ -58,6 +64,10 @@ public final class EstateManagementDeskScreen extends Screen {
     private int plotListX;
     private int plotListY;
     private int plotListWidth;
+    private float mapZoom = MIN_MAP_ZOOM;
+    private float mapPanX;
+    private float mapPanY;
+    private boolean draggingMap;
     private AtlasLayout atlasLayout;
 
     public EstateManagementDeskScreen(EstateDeskPayload payload) {
@@ -105,6 +115,7 @@ public final class EstateManagementDeskScreen extends Screen {
                 Math.max(0, payload.sections().size() - 1)
         );
         scroll = 0;
+        draggingMap = false;
         updateTabButtons();
     }
 
@@ -402,7 +413,18 @@ public final class EstateManagementDeskScreen extends Screen {
                 mapSize + 4,
                 MAP_INNER_BORDER
         );
-        atlasLayout = AtlasLayout.create(payload.maps(), mapX, mapY, mapSize);
+        atlasLayout = AtlasLayout.create(
+                payload.maps(),
+                mapX,
+                mapY,
+                mapSize,
+                mapZoom,
+                mapPanX,
+                mapPanY
+        );
+        mapPanX = atlasLayout.panX();
+        mapPanY = atlasLayout.panY();
+        graphics.enableScissor(mapX, mapY, mapX + mapSize, mapY + mapSize);
         for (MapTile tile : tiles) {
             float tileX = atlasLayout.screenX(
                     tile.info().centerX() - atlasLayout.halfMapBlocks()
@@ -422,6 +444,8 @@ public final class EstateManagementDeskScreen extends Screen {
 
         List<Integer> visible = visiblePlotIndexes(atlasLayout);
         renderPlotOutlines(graphics, atlasLayout, visible);
+        graphics.disableScissor();
+        renderMapControls(graphics, mouseX, mouseY);
 
         plotListX = mapX + mapSize + 13;
         plotListY = mapY + 12;
@@ -503,18 +527,85 @@ public final class EstateManagementDeskScreen extends Screen {
     }
 
     private List<Integer> visiblePlotIndexes(AtlasLayout atlas) {
+        float viewportMinX = atlas.worldX(mapX);
+        float viewportMaxX = atlas.worldX(mapX + mapSize);
+        float viewportMinZ = atlas.worldZ(mapY);
+        float viewportMaxZ = atlas.worldZ(mapY + mapSize);
         List<Integer> result = new ArrayList<>();
         for (int index = 0; index < payload.plots().size(); index++) {
             EstateDeskPayload.PlotSummary plot = payload.plots().get(index);
             if (plot.dimension().equals(atlas.dimension())
-                    && plot.maxX() >= atlas.minX()
-                    && plot.minX() < atlas.maxXExclusive()
-                    && plot.maxZ() >= atlas.minZ()
-                    && plot.minZ() < atlas.maxZExclusive()) {
+                    && plot.maxX() >= viewportMinX
+                    && plot.minX() < viewportMaxX
+                    && plot.maxZ() >= viewportMinZ
+                    && plot.minZ() < viewportMaxZ) {
                 result.add(index);
             }
         }
         return result;
+    }
+
+    private void renderMapControls(
+            GuiGraphicsExtractor graphics,
+            int mouseX,
+            int mouseY
+    ) {
+        int controlY = mapY + 4;
+        renderMapControl(
+                graphics,
+                mapX + 4,
+                controlY,
+                14,
+                Component.literal("−"),
+                mouseX,
+                mouseY
+        );
+        renderMapControl(
+                graphics,
+                mapX + 20,
+                controlY,
+                38,
+                Component.literal(Math.round(mapZoom * 100.0F) + "%"),
+                mouseX,
+                mouseY
+        );
+        renderMapControl(
+                graphics,
+                mapX + 60,
+                controlY,
+                14,
+                Component.literal("+"),
+                mouseX,
+                mouseY
+        );
+    }
+
+    private void renderMapControl(
+            GuiGraphicsExtractor graphics,
+            int x,
+            int y,
+            int width,
+            Component label,
+            int mouseX,
+            int mouseY
+    ) {
+        boolean hovered = isInside(mouseX, mouseY, x, y, width, 14);
+        graphics.fill(
+                x,
+                y,
+                x + width,
+                y + 14,
+                hovered ? MAP_CONTROL_HOVER : MAP_CONTROL
+        );
+        graphics.outline(x, y, width, 14, MAP_CONTROL_BORDER);
+        graphics.text(
+                font,
+                label,
+                x + (width - font.width(label)) / 2,
+                y + 3,
+                0xFFFFFFFF,
+                false
+        );
     }
 
     private void renderPlotOutlines(
@@ -624,6 +715,28 @@ public final class EstateManagementDeskScreen extends Screen {
             boolean doubleClick
     ) {
         if (isMapTab() && event.button() == 0 && atlasLayout != null) {
+            int controlY = mapY + 4;
+            if (isInside(event.x(), event.y(), mapX + 4, controlY, 14, 14)) {
+                changeMapZoom(
+                        mapZoom / MAP_ZOOM_STEP,
+                        mapX + mapSize / 2.0D,
+                        mapY + mapSize / 2.0D
+                );
+                return true;
+            }
+            if (isInside(event.x(), event.y(), mapX + 20, controlY, 38, 14)) {
+                resetMapView();
+                return true;
+            }
+            if (isInside(event.x(), event.y(), mapX + 60, controlY, 14, 14)) {
+                changeMapZoom(
+                        mapZoom * MAP_ZOOM_STEP,
+                        mapX + mapSize / 2.0D,
+                        mapY + mapSize / 2.0D
+                );
+                return true;
+            }
+
             List<Integer> visible = visiblePlotIndexes(atlasLayout);
             for (int row = 0; row < PLOT_ROWS; row++) {
                 int visibleIndex = plotScroll + row;
@@ -656,8 +769,43 @@ public final class EstateManagementDeskScreen extends Screen {
                     return true;
                 }
             }
+
+            if (isInside(
+                    event.x(),
+                    event.y(),
+                    mapX,
+                    mapY,
+                    mapSize,
+                    mapSize
+            )) {
+                draggingMap = true;
+                return true;
+            }
         }
         return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean mouseDragged(
+            MouseButtonEvent event,
+            double dragX,
+            double dragY
+    ) {
+        if (draggingMap && event.button() == 0 && atlasLayout != null) {
+            mapPanX += (float) dragX;
+            mapPanY += (float) dragY;
+            return true;
+        }
+        return super.mouseDragged(event, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        if (draggingMap && event.button() == 0) {
+            draggingMap = false;
+            return true;
+        }
+        return super.mouseReleased(event);
     }
 
     @Override
@@ -668,6 +816,23 @@ public final class EstateManagementDeskScreen extends Screen {
             double vertical
     ) {
         if (isMapTab() && vertical != 0.0D && atlasLayout != null) {
+            if (isInside(
+                    mouseX,
+                    mouseY,
+                    mapX,
+                    mapY,
+                    mapSize,
+                    mapSize
+            )) {
+                changeMapZoom(
+                        vertical > 0.0D
+                                ? mapZoom * MAP_ZOOM_STEP
+                                : mapZoom / MAP_ZOOM_STEP,
+                        mouseX,
+                        mouseY
+                );
+                return true;
+            }
             int visiblePlots = visiblePlotIndexes(atlasLayout).size();
             int maximum = Math.max(0, visiblePlots - PLOT_ROWS);
             if (maximum > 0) {
@@ -695,6 +860,52 @@ public final class EstateManagementDeskScreen extends Screen {
         );
     }
 
+    private void changeMapZoom(
+            float requestedZoom,
+            double anchorX,
+            double anchorY
+    ) {
+        float nextZoom = Mth.clamp(
+                requestedZoom,
+                MIN_MAP_ZOOM,
+                MAX_MAP_ZOOM
+        );
+        if (Math.abs(nextZoom - mapZoom) < 0.001F) {
+            return;
+        }
+        float ratio = nextZoom / mapZoom;
+        float centerX = mapX + mapSize / 2.0F;
+        float centerY = mapY + mapSize / 2.0F;
+        mapPanX = (float) (anchorX - centerX)
+                - ((float) (anchorX - centerX) - mapPanX) * ratio;
+        mapPanY = (float) (anchorY - centerY)
+                - ((float) (anchorY - centerY) - mapPanY) * ratio;
+        mapZoom = nextZoom;
+        plotScroll = 0;
+    }
+
+    private void resetMapView() {
+        mapZoom = MIN_MAP_ZOOM;
+        mapPanX = 0.0F;
+        mapPanY = 0.0F;
+        draggingMap = false;
+        plotScroll = 0;
+    }
+
+    private static boolean isInside(
+            double x,
+            double y,
+            int left,
+            int top,
+            int width,
+            int height
+    ) {
+        return x >= left
+                && x < left + width
+                && y >= top
+                && y < top + height;
+    }
+
     private record MapTile(
             EstateDeskPayload.MapInfo info,
             MapRenderState state
@@ -711,13 +922,18 @@ public final class EstateManagementDeskScreen extends Screen {
             String dimension,
             float pixelScale,
             float originX,
-            float originY
+            float originY,
+            float panX,
+            float panY
     ) {
         private static AtlasLayout create(
                 List<EstateDeskPayload.MapInfo> maps,
                 int canvasX,
                 int canvasY,
-                int canvasSize
+                int canvasSize,
+                float zoom,
+                float requestedPanX,
+                float requestedPanY
         ) {
             EstateDeskPayload.MapInfo first = maps.getFirst();
             int blocksPerPixel = 1 << first.scale();
@@ -740,9 +956,20 @@ public final class EstateManagementDeskScreen extends Screen {
                     .orElse(first.centerZ() + half);
             float widthPixels = (maxX - minX) / (float) blocksPerPixel;
             float heightPixels = (maxZ - minZ) / (float) blocksPerPixel;
-            float scale = canvasSize / Math.max(widthPixels, heightPixels);
+            float scale = canvasSize / Math.max(widthPixels, heightPixels)
+                    * zoom;
             float renderedWidth = widthPixels * scale;
             float renderedHeight = heightPixels * scale;
+            float maxPanX = Math.max(
+                    0.0F,
+                    (renderedWidth - canvasSize) / 2.0F
+            );
+            float maxPanY = Math.max(
+                    0.0F,
+                    (renderedHeight - canvasSize) / 2.0F
+            );
+            float panX = Mth.clamp(requestedPanX, -maxPanX, maxPanX);
+            float panY = Mth.clamp(requestedPanY, -maxPanY, maxPanY);
             return new AtlasLayout(
                     minX,
                     minZ,
@@ -752,8 +979,10 @@ public final class EstateManagementDeskScreen extends Screen {
                     half,
                     first.dimension(),
                     scale,
-                    canvasX + (canvasSize - renderedWidth) / 2.0F,
-                    canvasY + (canvasSize - renderedHeight) / 2.0F
+                    canvasX + (canvasSize - renderedWidth) / 2.0F + panX,
+                    canvasY + (canvasSize - renderedHeight) / 2.0F + panY,
+                    panX,
+                    panY
             );
         }
 
@@ -767,6 +996,16 @@ public final class EstateManagementDeskScreen extends Screen {
             return originY
                     + (worldZ - minZ) / (float) blocksPerPixel
                     * pixelScale;
+        }
+
+        private float worldX(float screenX) {
+            return minX
+                    + (screenX - originX) / pixelScale * blocksPerPixel;
+        }
+
+        private float worldZ(float screenY) {
+            return minZ
+                    + (screenY - originY) / pixelScale * blocksPerPixel;
         }
     }
 }
