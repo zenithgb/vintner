@@ -20,15 +20,26 @@ def write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, indent=2) + "\n")
 
 
-def faces(texture: str) -> dict[str, dict[str, str]]:
+def faces(
+    texture: str,
+    *,
+    omit: tuple[str, ...] = (),
+) -> dict[str, dict[str, str]]:
     return {
         side: {"texture": texture}
         for side in ("north", "east", "south", "west", "up", "down")
+        if side not in omit
     }
 
 
-def cube(start: list[float], end: list[float], texture: str) -> dict:
-    return {"from": start, "to": end, "faces": faces(texture)}
+def cube(
+    start: list[float],
+    end: list[float],
+    texture: str,
+    *,
+    omit: tuple[str, ...] = (),
+) -> dict:
+    return {"from": start, "to": end, "faces": faces(texture, omit=omit)}
 
 
 def model() -> dict:
@@ -52,26 +63,59 @@ def model() -> dict:
         cube([6, 7.85, 1.1], [6.5, 8.35, 1.35], "#seal"),
         cube([9.5, 7.85, 1.1], [10, 8.35, 1.35], "#seal"),
         cube([0, 10.25, 0], [16, 11.5, 16], "#wood"),
-        # A recessed six-hole postal hutch. Every component begins at or above
-        # the counter's upper face, removing the previous overlapping slab.
-        cube([0.75, 11.5, 8], [1.5, 16, 14.5], "#dark"),
-        cube([14.5, 11.5, 8], [15.25, 16, 14.5], "#dark"),
-        cube([1.5, 11.5, 13.75], [14.5, 15.6, 14.5], "#dark"),
-        cube([0.75, 11.5, 7.75], [15.25, 12, 14.75], "#wood"),
+        # A recessed six-hole postal hutch. Faces hidden against the counter
+        # and top cap are omitted so the cabinet has no coplanar surfaces to
+        # flicker when viewed from above or while the player moves.
+        cube(
+            [0.75, 11.5, 8],
+            [1.5, 16, 14.5],
+            "#dark",
+            omit=("up", "down"),
+        ),
+        cube(
+            [14.5, 11.5, 8],
+            [15.25, 16, 14.5],
+            "#dark",
+            omit=("up", "down"),
+        ),
+        cube(
+            [1.5, 11.5, 13.75],
+            [14.5, 15.6, 14.5],
+            "#dark",
+            omit=("up", "down"),
+        ),
+        cube(
+            [0.75, 11.5, 7.75],
+            [15.25, 12, 14.75],
+            "#wood",
+            omit=("down",),
+        ),
         cube([0.75, 13.55, 7.75], [15.25, 14.05, 14.75], "#wood"),
         cube([0.5, 15.6, 7.5], [15.5, 16, 14.75], "#wood"),
-        cube([5.45, 12, 7.75], [6.05, 15.6, 14.5], "#wood"),
-        cube([9.95, 12, 7.75], [10.55, 15.6, 14.5], "#wood"),
+        cube(
+            [5.45, 12, 7.75],
+            [6.05, 15.6, 14.5],
+            "#wood",
+            omit=("up", "down"),
+        ),
+        cube(
+            [9.95, 12, 7.75],
+            [10.55, 15.6, 14.5],
+            "#wood",
+            omit=("up", "down"),
+        ),
         # Four banded rolls sit inside the recesses. Two empty holes keep the
         # grid legible as pigeonholes rather than another bank of drawers.
-        cube([2.0, 12.35, 8.0], [4.75, 13.0, 9.6], "#paper"),
-        cube([2.95, 12.25, 7.8], [3.8, 13.1, 9.8], "#seal"),
-        cube([6.75, 12.35, 8.0], [9.25, 13.0, 9.6], "#paper"),
-        cube([7.6, 12.25, 7.8], [8.4, 13.1, 9.8], "#band"),
-        cube([11.25, 14.4, 8.0], [13.95, 15.05, 9.6], "#paper"),
-        cube([12.15, 14.3, 7.8], [13.0, 15.15, 9.8], "#seal"),
-        cube([2.0, 14.4, 8.0], [4.6, 15.05, 9.6], "#paper"),
-        cube([2.9, 14.3, 7.8], [3.7, 15.15, 9.8], "#band"),
+        # Their square ends are inset from the front rail, making the depth of
+        # each compartment visible.
+        cube([2.55, 12.25, 8.75], [3.9, 13.2, 11.0], "#paper"),
+        cube([2.95, 12.15, 8.55], [3.5, 13.3, 11.2], "#seal"),
+        cube([7.15, 12.25, 8.75], [8.55, 13.2, 11.0], "#paper"),
+        cube([7.6, 12.15, 8.55], [8.15, 13.3, 11.2], "#band"),
+        cube([11.7, 14.3, 8.75], [13.1, 15.25, 11.0], "#paper"),
+        cube([12.15, 14.2, 8.55], [12.7, 15.35, 11.2], "#seal"),
+        cube([2.55, 14.3, 8.75], [3.9, 15.25, 11.0], "#paper"),
+        cube([2.95, 14.2, 8.55], [3.5, 15.35, 11.2], "#band"),
     ]
     return {
         "parent": "minecraft:block/block",
