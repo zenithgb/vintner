@@ -23,6 +23,7 @@ from generate_wood_variants import (
     shelf_id,
     stand_id,
     surveyors_map_table_id,
+    trade_correspondence_board_id,
     trellis_id,
 )
 
@@ -313,6 +314,7 @@ def expected_resource_ids() -> tuple[set[str], set[str]]:
                 cabinet_id(wood),
                 estate_desk_id(wood),
                 surveyors_map_table_id(wood),
+                trade_correspondence_board_id(wood),
             }
         )
         grapevines.update(
@@ -813,6 +815,53 @@ def audit_surveyors_map_table() -> None:
             fail(f"{block_id}: stored-map overlay is missing a facing")
 
 
+def audit_trade_correspondence_board() -> None:
+    require_file(
+        ROOT / "scripts/generate_trade_correspondence_board_assets.py"
+    )
+    facings = {"north", "east", "south", "west"}
+    expected_keys = {f"facing={facing}" for facing in facings}
+    expected_rotations = {
+        "facing=north": 0,
+        "facing=east": 90,
+        "facing=south": 180,
+        "facing=west": 270,
+    }
+
+    for wood in WOODS:
+        block_id = trade_correspondence_board_id(wood)
+        blockstate = load_json(ASSETS / f"blockstates/{block_id}.json")
+        if not isinstance(blockstate, dict):
+            continue
+        variants = blockstate.get("variants")
+        if not isinstance(variants, dict):
+            fail(f"{block_id}: blockstate must use facing variants")
+            continue
+        if set(variants) != expected_keys:
+            fail(
+                f"{block_id}: correspondence board must cover exactly "
+                "the four horizontal facings"
+            )
+            continue
+        expected_model = f"vintner:block/{block_id}"
+        for key, rotation in expected_rotations.items():
+            variant = variants.get(key)
+            if not isinstance(variant, dict):
+                fail(f"{block_id}: invalid {key} variant")
+                continue
+            if variant.get("model") != expected_model:
+                fail(
+                    f"{block_id}: {key} does not use {expected_model}"
+                )
+            if variant.get("y", 0) != rotation:
+                fail(
+                    f"{block_id}: {key} has rotation "
+                    f"{variant.get('y', 0)} instead of {rotation}"
+                )
+            if variant.get("uvlock") is not True:
+                fail(f"{block_id}: {key} must lock its UV rotation")
+
+
 def main() -> int:
     audit_all_json()
     reachable_models = audit_model_references()
@@ -826,6 +875,7 @@ def main() -> int:
     audit_barrel_status_indicators()
     audit_estate_management_desk()
     audit_surveyors_map_table()
+    audit_trade_correspondence_board()
 
     if errors:
         print(

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PQP",
+    "PBP",
+    "S S"
+  ],
+  "key": {
+    "P": "minecraft:mangrove_planks",
+    "Q": "minecraft:paper",
+    "B": "minecraft:book",
+    "S": "minecraft:mangrove_slab"
+  },
+  "result": {
+    "id": "vintner:mangrove_trade_correspondence_board",
+    "count": 1
+  }
+}

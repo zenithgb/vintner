@@ -27,6 +27,10 @@ public enum WineMarketRegion {
         return Component.translatable("wine_market_region.vintner." + id);
     }
 
+    public String id() {
+        return id;
+    }
+
     public WineBuyerType buyerType() {
         return buyerType;
     }

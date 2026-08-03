@@ -1,0 +1,23 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true
+    },
+    "facing=east": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 270
+    }
+  }
+}

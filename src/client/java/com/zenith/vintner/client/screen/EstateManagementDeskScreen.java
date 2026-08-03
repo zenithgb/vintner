@@ -1,6 +1,8 @@
 package com.zenith.vintner.client.screen;
 
 import com.zenith.vintner.network.EstateDeskPayload;
+import com.zenith.vintner.network.EstateContractActionPayload;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -49,6 +51,7 @@ public final class EstateManagementDeskScreen extends Screen {
     private final Map<Integer, MapRenderState> mapRenderStates =
             new HashMap<>();
     private final List<Button> tabButtons = new ArrayList<>();
+    private final List<Button> contractButtons = new ArrayList<>();
     private int selectedTab;
     private int selectedPlot = -1;
     private int plotScroll;
@@ -82,6 +85,7 @@ public final class EstateManagementDeskScreen extends Screen {
         left = (width - panelWidth) / 2;
         top = (height - panelHeight) / 2;
         tabButtons.clear();
+        contractButtons.clear();
 
         int tabCount = Math.max(1, payload.sections().size());
         int tabGap = 2;
@@ -100,12 +104,41 @@ public final class EstateManagementDeskScreen extends Screen {
             tabX += tabWidth + tabGap;
         }
 
+        for (int index = 0; index < payload.contracts().size(); index++) {
+            EstateDeskPayload.ContractInfo contract =
+                    payload.contracts().get(index);
+            Button button = Button.builder(
+                    Component.translatable(
+                            contract.status().equals("active")
+                                    ? "screen.vintner.estate_desk.contract.active"
+                                    : "screen.vintner.estate_desk.contract.accept"
+                    ),
+                    ignored -> acceptContract(contract.id())
+            ).bounds(
+                    left + panelWidth - 99,
+                    top + 91 + index * 45,
+                    70,
+                    16
+            ).build();
+            button.active = contract.canAccept();
+            contractButtons.add(addRenderableWidget(button));
+        }
+
         addRenderableWidget(Button.builder(
                 CommonComponents.GUI_DONE,
                 ignored -> onClose()
         ).bounds(left + panelWidth - 72, top + panelHeight - 25, 60, 16)
                 .build());
         updateTabButtons();
+    }
+
+    private void acceptContract(String contractId) {
+        ClientPlayNetworking.send(new EstateContractActionPayload(
+                payload.deskX(),
+                payload.deskY(),
+                payload.deskZ(),
+                contractId
+        ));
     }
 
     private void selectTab(int index) {
@@ -122,6 +155,9 @@ public final class EstateManagementDeskScreen extends Screen {
     private void updateTabButtons() {
         for (int index = 0; index < tabButtons.size(); index++) {
             tabButtons.get(index).active = index != selectedTab;
+        }
+        for (Button button : contractButtons) {
+            button.visible = isContractsTab();
         }
     }
 
@@ -231,6 +267,10 @@ public final class EstateManagementDeskScreen extends Screen {
             renderMapWorkspace(graphics, mouseX, mouseY);
             return;
         }
+        if (isContractsTab()) {
+            renderContracts(graphics);
+            return;
+        }
 
         EstateDeskPayload.Section section = payload.sections().get(
                 Math.min(selectedTab, payload.sections().size() - 1)
@@ -317,6 +357,114 @@ public final class EstateManagementDeskScreen extends Screen {
     private boolean isMapTab() {
         return !payload.sections().isEmpty()
                 && selectedTab == payload.sections().size() - 1;
+    }
+
+    private boolean isContractsTab() {
+        return !payload.sections().isEmpty() && selectedTab == 4;
+    }
+
+    private void renderContracts(GuiGraphicsExtractor graphics) {
+        int contentX = left + 26;
+        int contentY = top + 77;
+        int contentWidth = panelWidth - 52;
+        graphics.text(
+                font,
+                Component.translatable(
+                        "screen.vintner.estate_desk.contracts.title"
+                ),
+                contentX,
+                contentY,
+                INK,
+                false
+        );
+        if (!payload.correspondenceConnected()) {
+            graphics.textWithWordWrap(
+                    font,
+                    Component.translatable(
+                            "screen.vintner.estate_desk.contracts.missing"
+                    ),
+                    contentX + 8,
+                    contentY + 28,
+                    contentWidth - 16,
+                    INK_MUTED,
+                    false
+            );
+            return;
+        }
+        if (payload.contracts().isEmpty()) {
+            graphics.textWithWordWrap(
+                    font,
+                    Component.translatable(
+                            "screen.vintner.estate_desk.contracts.empty"
+                    ),
+                    contentX + 8,
+                    contentY + 28,
+                    contentWidth - 16,
+                    INK_MUTED,
+                    false
+            );
+            return;
+        }
+
+        for (int index = 0; index < payload.contracts().size(); index++) {
+            EstateDeskPayload.ContractInfo contract =
+                    payload.contracts().get(index);
+            int y = contentY + 14 + index * 45;
+            graphics.fill(
+                    contentX,
+                    y,
+                    contentX + contentWidth,
+                    y + 41,
+                    0x209B6A3A
+            );
+            graphics.outline(
+                    contentX,
+                    y,
+                    contentWidth,
+                    41,
+                    PARCHMENT_EDGE
+            );
+            graphics.text(
+                    font,
+                    contract.partner(),
+                    contentX + 5,
+                    y + 4,
+                    INK,
+                    false
+            );
+            graphics.text(
+                    font,
+                    contract.requirement(),
+                    contentX + 5,
+                    y + 15,
+                    INK_MUTED,
+                    false
+            );
+            graphics.text(
+                    font,
+                    contract.progress(),
+                    contentX + 5,
+                    y + 27,
+                    LEATHER,
+                    false
+            );
+            graphics.text(
+                    font,
+                    contract.reward(),
+                    contentX + 104,
+                    y + 27,
+                    BRASS,
+                    false
+            );
+            graphics.text(
+                    font,
+                    contract.expiry(),
+                    contentX + 182,
+                    y + 27,
+                    INK_MUTED,
+                    false
+            );
+        }
     }
 
     private void renderMapWorkspace(

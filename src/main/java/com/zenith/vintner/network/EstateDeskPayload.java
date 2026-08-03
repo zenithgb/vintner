@@ -18,12 +18,18 @@ public record EstateDeskPayload(
         List<Section> sections,
         List<MapInfo> maps,
         boolean atlasConnected,
-        List<PlotSummary> plots
+        List<PlotSummary> plots,
+        int deskX,
+        int deskY,
+        int deskZ,
+        boolean correspondenceConnected,
+        List<ContractInfo> contracts
 ) implements CustomPacketPayload {
     private static final int MAX_SECTIONS = 8;
     private static final int MAX_LINES = 32;
     private static final int MAX_PLOTS = 32;
     private static final int MAX_MAPS = 9;
+    private static final int MAX_CONTRACTS = 3;
 
     public static final Type<EstateDeskPayload> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(
@@ -102,13 +108,40 @@ public record EstateDeskPayload(
                         buffer.readVarInt()
                 ));
             }
+            int deskX = buffer.readInt();
+            int deskY = buffer.readInt();
+            int deskZ = buffer.readInt();
+            boolean correspondenceConnected = buffer.readBoolean();
+            int contractCount = readBoundedCount(
+                    buffer,
+                    MAX_CONTRACTS,
+                    "contracts"
+            );
+            List<ContractInfo> contracts = new ArrayList<>(contractCount);
+            for (int index = 0; index < contractCount; index++) {
+                contracts.add(new ContractInfo(
+                        buffer.readUtf(32),
+                        ComponentSerialization.STREAM_CODEC.decode(buffer),
+                        ComponentSerialization.STREAM_CODEC.decode(buffer),
+                        ComponentSerialization.STREAM_CODEC.decode(buffer),
+                        ComponentSerialization.STREAM_CODEC.decode(buffer),
+                        ComponentSerialization.STREAM_CODEC.decode(buffer),
+                        buffer.readUtf(16),
+                        buffer.readBoolean()
+                ));
+            }
             return new EstateDeskPayload(
                     estateName,
                     subtitle,
                     sections,
                     maps,
                     atlasConnected,
-                    plots
+                    plots,
+                    deskX,
+                    deskY,
+                    deskZ,
+                    correspondenceConnected,
+                    contracts
             );
         }
 
@@ -161,6 +194,36 @@ public record EstateDeskPayload(
                 buffer.writeVarInt(plot.projectedQuality());
                 buffer.writeVarInt(plot.irrigation());
             }
+            buffer.writeInt(payload.deskX());
+            buffer.writeInt(payload.deskY());
+            buffer.writeInt(payload.deskZ());
+            buffer.writeBoolean(payload.correspondenceConnected());
+            buffer.writeVarInt(payload.contracts().size());
+            for (ContractInfo contract : payload.contracts()) {
+                buffer.writeUtf(contract.id(), 32);
+                ComponentSerialization.STREAM_CODEC.encode(
+                        buffer,
+                        contract.partner()
+                );
+                ComponentSerialization.STREAM_CODEC.encode(
+                        buffer,
+                        contract.requirement()
+                );
+                ComponentSerialization.STREAM_CODEC.encode(
+                        buffer,
+                        contract.progress()
+                );
+                ComponentSerialization.STREAM_CODEC.encode(
+                        buffer,
+                        contract.reward()
+                );
+                ComponentSerialization.STREAM_CODEC.encode(
+                        buffer,
+                        contract.expiry()
+                );
+                buffer.writeUtf(contract.status(), 16);
+                buffer.writeBoolean(contract.canAccept());
+            }
         }
     };
 
@@ -174,6 +237,9 @@ public record EstateDeskPayload(
         plots = List.copyOf(plots).stream()
                 .limit(MAX_PLOTS)
                 .toList();
+        contracts = List.copyOf(
+                contracts == null ? List.of() : contracts
+        ).stream().limit(MAX_CONTRACTS).toList();
     }
 
     private static int readBoundedCount(
@@ -218,6 +284,23 @@ public record EstateDeskPayload(
             dimension = dimension == null
                     ? "minecraft:overworld"
                     : dimension;
+        }
+    }
+
+    /** Server-authored contract card displayed on the Contracts tab. */
+    public record ContractInfo(
+            String id,
+            Component partner,
+            Component requirement,
+            Component progress,
+            Component reward,
+            Component expiry,
+            String status,
+            boolean canAccept
+    ) {
+        public ContractInfo {
+            id = id == null ? "" : id;
+            status = status == null ? "offered" : status;
         }
     }
 

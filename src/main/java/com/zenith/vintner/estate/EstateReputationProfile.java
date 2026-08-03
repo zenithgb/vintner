@@ -15,6 +15,7 @@ public record EstateReputationProfile(
         int harvestedGrapes,
         List<Long> bottledBatches,
         List<Long> archivedBatches,
+        int completedContracts,
         int bestQuality,
         int facilityMask
 ) {
@@ -43,6 +44,10 @@ public record EstateReputationProfile(
                             .forGetter(
                                     EstateReputationProfile::archivedBatches
                             ),
+                    Codec.INT.optionalFieldOf("completed_contracts", 0)
+                            .forGetter(
+                                    EstateReputationProfile::completedContracts
+                            ),
                     Codec.INT.optionalFieldOf("best_quality", 0)
                             .forGetter(EstateReputationProfile::bestQuality),
                     Codec.INT.optionalFieldOf("facility_mask", 0)
@@ -56,6 +61,7 @@ public record EstateReputationProfile(
         harvestedGrapes = Math.max(0, harvestedGrapes);
         bottledBatches = boundedDistinct(bottledBatches);
         archivedBatches = boundedDistinct(archivedBatches);
+        completedContracts = Math.max(0, completedContracts);
         bestQuality = Math.clamp(bestQuality, 0, 100);
         facilityMask = Math.max(0, facilityMask);
     }
@@ -68,6 +74,7 @@ public record EstateReputationProfile(
                 0,
                 List.of(),
                 List.of(),
+                0,
                 0,
                 0
         );
@@ -82,6 +89,7 @@ public record EstateReputationProfile(
         int quality = bestQuality;
         LinkedHashSet<Long> bottled = new LinkedHashSet<>(bottledBatches);
         LinkedHashSet<Long> archived = new LinkedHashSet<>(archivedBatches);
+        int contracts = 0;
 
         for (int index = events.size() - 1; index >= 0; index--) {
             EstateLedgerEvent event = events.get(index);
@@ -103,6 +111,10 @@ public record EstateReputationProfile(
                     addBatch(archived, event.batchId());
                     quality = Math.max(quality, event.quality());
                 }
+                case CONTRACT_COMPLETED -> contracts = saturatingAdd(
+                        contracts,
+                        event.amount()
+                );
                 default -> {
                 }
             }
@@ -115,6 +127,7 @@ public record EstateReputationProfile(
                 Math.max(harvestedGrapes, grapes),
                 new ArrayList<>(bottled),
                 new ArrayList<>(archived),
+                Math.max(completedContracts, contracts),
                 quality,
                 facilityMask
         );
@@ -128,6 +141,7 @@ public record EstateReputationProfile(
                 harvestedGrapes,
                 bottledBatches,
                 archivedBatches,
+                completedContracts,
                 bestQuality,
                 facilityMask | newFacilityMask
         );
@@ -145,6 +159,7 @@ public record EstateReputationProfile(
         int best = bestQuality;
         LinkedHashSet<Long> bottled = new LinkedHashSet<>(bottledBatches);
         LinkedHashSet<Long> archived = new LinkedHashSet<>(archivedBatches);
+        int contracts = completedContracts;
         int safeAmount = Math.max(1, amount);
 
         switch (type) {
@@ -159,6 +174,10 @@ public record EstateReputationProfile(
                 addBatch(archived, batchId);
                 best = Math.max(best, quality);
             }
+            case CONTRACT_COMPLETED -> contracts = saturatingAdd(
+                    contracts,
+                    safeAmount
+            );
             default -> {
             }
         }
@@ -170,6 +189,7 @@ public record EstateReputationProfile(
                 grapes,
                 new ArrayList<>(bottled),
                 new ArrayList<>(archived),
+                contracts,
                 best,
                 facilityMask
         );
@@ -181,6 +201,7 @@ public record EstateReputationProfile(
         int harvestPoints = Math.min(20, harvestedGrapes / 16);
         int bottlingPoints = Math.min(30, bottledBatches.size() * 3);
         int archivePoints = Math.min(40, archivedBatches.size() * 5);
+        int contractPoints = Math.min(40, completedContracts * 8);
         int qualityPoints = bestQuality >= 90
                 ? 35
                 : bestQuality >= 80
@@ -197,6 +218,7 @@ public record EstateReputationProfile(
                 + harvestPoints
                 + bottlingPoints
                 + archivePoints
+                + contractPoints
                 + qualityPoints
                 + facilityPoints;
     }

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PQP",
+    "PBP",
+    "S S"
+  ],
+  "key": {
+    "P": "minecraft:birch_planks",
+    "Q": "minecraft:paper",
+    "B": "minecraft:book",
+    "S": "minecraft:birch_slab"
+  },
+  "result": {
+    "id": "vintner:birch_trade_correspondence_board",
+    "count": 1
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "vintner:block/trade_correspondence_board",
+  "textures": {
+    "wood": "minecraft:block/bamboo_planks",
+    "dark": "minecraft:block/bamboo_block",
+    "particle": "minecraft:block/bamboo_planks"
+  }
+}

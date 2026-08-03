@@ -1,0 +1,8 @@
+{
+  "parent": "vintner:block/trade_correspondence_board",
+  "textures": {
+    "wood": "minecraft:block/acacia_planks",
+    "dark": "minecraft:block/acacia_log",
+    "particle": "minecraft:block/acacia_planks"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PQP",
+    "PBP",
+    "S S"
+  ],
+  "key": {
+    "P": "minecraft:oak_planks",
+    "Q": "minecraft:paper",
+    "B": "minecraft:book",
+    "S": "minecraft:oak_slab"
+  },
+  "result": {
+    "id": "vintner:trade_correspondence_board",
+    "count": 1
+  }
+}

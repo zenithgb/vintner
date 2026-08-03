@@ -98,6 +98,8 @@ public final class ModCreativeTabs {
                                         .forEach(output::accept);
                                 ModBlocks.SURVEYORS_MAP_TABLES.values()
                                         .forEach(output::accept);
+                                ModBlocks.TRADE_CORRESPONDENCE_BOARDS.values()
+                                        .forEach(output::accept);
                                 output.accept(ModItems.SOIL_PROBE);
                                 output.accept(
                                         ModItems.VINTNER_ALMANAC

@@ -36,6 +36,9 @@ import com.zenith.vintner.estate.LedgerEventType;
 import com.zenith.vintner.estate.VineyardPlot;
 import com.zenith.vintner.estate.VineyardPlotReport;
 import com.zenith.vintner.estate.VineyardPlotSavedData;
+import com.zenith.vintner.estate.WineContract;
+import com.zenith.vintner.estate.WineContractSavedData;
+import com.zenith.vintner.estate.WineContractStatus;
 import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.item.GraftingKnifeItem;
 import com.zenith.vintner.registry.ModAttachments;
@@ -503,6 +506,11 @@ public final class VintnerGameTests {
                 "Every wood family should have a Surveyor's Map Table"
         );
         helper.assertValueEqual(
+                ModBlocks.TRADE_CORRESPONDENCE_BOARDS.size(),
+                expected,
+                "Every wood family should have a correspondence board"
+        );
+        helper.assertValueEqual(
                 ModBlocks.RED_GRAPEVINES.size(),
                 expected,
                 "Every wood family should retain red-vine supports"
@@ -607,6 +615,165 @@ public final class VintnerGameTests {
                 "Every specialist ageing vessel should support barrel data"
         );
 
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void tradeCorrespondenceBoardConnectsToEstateDesk(
+            GameTestHelper helper
+    ) {
+        BlockPos desk = new BlockPos(2, 1, 2);
+        helper.setBlock(
+                desk,
+                ModBlocks.estateManagementDesk(WoodVariant.OAK)
+        );
+        helper.assertTrue(
+                !EstateDeskReport.hasNearbyCorrespondenceBoard(
+                        helper.getLevel(),
+                        helper.absolutePos(desk)
+                ),
+                "A desk should not invent a correspondence module"
+        );
+        helper.setBlock(
+                desk.east(2),
+                ModBlocks.tradeCorrespondenceBoard(WoodVariant.SPRUCE)
+        );
+        helper.assertTrue(
+                EstateDeskReport.hasNearbyCorrespondenceBoard(
+                        helper.getLevel(),
+                        helper.absolutePos(desk)
+                ),
+                "A nearby correspondence board should connect to the desk"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void estateWineContractsPersistAcceptanceAndDelivery(
+            GameTestHelper helper
+    ) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        WineContractSavedData data = WineContractSavedData.get(
+                helper.getLevel()
+        );
+        List<WineContract> offers = data.currentContracts(
+                helper.getLevel(),
+                owner.getUUID(),
+                WineMarketRegion.AGRICULTURAL,
+                0,
+                true
+        );
+        helper.assertValueEqual(
+                offers.size(),
+                WineContractSavedData.MAX_CURRENT_CONTRACTS,
+                "A connected estate should receive three bounded offers"
+        );
+        WineContract offer = offers.getFirst();
+        helper.assertValueEqual(
+                data.accept(
+                        helper.getLevel(),
+                        owner.getUUID(),
+                        offer.contractId()
+                ),
+                WineContractSavedData.AcceptResult.ACCEPTED,
+                "An available offer should become the active order"
+        );
+        helper.assertValueEqual(
+                data.accept(
+                        helper.getLevel(),
+                        owner.getUUID(),
+                        offers.get(1).contractId()
+                ),
+                WineContractSavedData.AcceptResult.ALREADY_ACTIVE,
+                "Only one trade order may be active at once"
+        );
+
+        ItemStack mismatchedBottle = new ItemStack(
+                offer.requiredStyle() == WineStyle.WHITE
+                        ? ModItems.AGED_RED_WINE
+                        : ModItems.AGED_WHITE_WINE
+        );
+        WineMetadata.apply(
+                mismatchedBottle,
+                2,
+                WineQuality.LEGENDARY
+        );
+        WineMetadata.markBottled(mismatchedBottle, 0L);
+        WineContractSavedData.Delivery mismatch = data.deliver(
+                helper.getLevel(),
+                owner.getUUID(),
+                mismatchedBottle
+        );
+        helper.assertValueEqual(
+                mismatch.result(),
+                WineContractSavedData.DeliveryResult.MISMATCH,
+                "A mismatched wine must not advance the active order"
+        );
+        helper.assertValueEqual(
+                data.active(owner.getUUID()).deliveredBottles(),
+                0,
+                "Rejected wine must leave delivery progress unchanged"
+        );
+
+        ItemStack bottle = new ItemStack(
+                offer.requiredStyle() == WineStyle.WHITE
+                        ? ModItems.AGED_WHITE_WINE
+                        : ModItems.AGED_RED_WINE
+        );
+        WineMetadata.apply(bottle, 1, WineQuality.LEGENDARY);
+        WineMetadata.markBottled(bottle, 0L);
+        long baseAgingTicks = switch (offer.requiredAge()) {
+            case YOUNG -> 1L;
+            case DEVELOPING -> WineAgeStage.DEVELOPING_AT;
+            case MATURE -> WineAgeStage.MATURE_AT;
+            case PEAK, DECLINING, SPOILED -> WineAgeStage.PEAK_AT;
+        };
+        long agingTicks = Math.round(
+                baseAgingTicks * WineQuality.LEGENDARY.ageingPotential()
+        );
+        WineMetadata.ageBottle(bottle, agingTicks, CellarRating.IDEAL);
+
+        helper.assertTrue(
+                offer.matches(bottle, owner.getUUID().toString()),
+                "Generated contract bottle should match: required="
+                        + offer.requiredStyle() + "/"
+                        + offer.minimumQuality() + "/"
+                        + offer.requiredAge() + ", actual="
+                        + WineMetadata.wineStyle(bottle) + "/"
+                        + WineMetadata.qualityScore(bottle) + "/"
+                        + WineMetadata.ageStage(bottle)
+        );
+
+        WineContractSavedData.Delivery delivery = null;
+        for (int index = 0; index < offer.requiredBottles(); index++) {
+            delivery = data.deliver(
+                    helper.getLevel(),
+                    owner.getUUID(),
+                    bottle
+            );
+            if (index + 1 < offer.requiredBottles()) {
+                helper.assertValueEqual(
+                        delivery.result(),
+                        WineContractSavedData.DeliveryResult.ACCEPTED,
+                        "Intermediate deliveries should keep the order active"
+                );
+            }
+        }
+        helper.assertTrue(
+                delivery != null
+                        && delivery.result()
+                        == WineContractSavedData.DeliveryResult.COMPLETED,
+                "The final matching bottle should complete the order"
+        );
+        helper.assertValueEqual(
+                delivery.contract().contractStatus(),
+                WineContractStatus.COMPLETED,
+                "Completed delivery state should be persisted"
+        );
+        helper.assertTrue(
+                data.active(owner.getUUID()) == null,
+                "A completed order must release the active contract slot"
+        );
         helper.succeed();
     }
 

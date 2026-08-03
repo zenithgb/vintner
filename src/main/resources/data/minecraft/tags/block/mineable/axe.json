@@ -147,6 +147,18 @@
     "vintner:warped_surveyors_map_table",
     "vintner:chestnut_aging_barrel",
     "vintner:neutral_aging_barrel",
-    "vintner:large_cask"
+    "vintner:large_cask",
+    "vintner:trade_correspondence_board",
+    "vintner:spruce_trade_correspondence_board",
+    "vintner:birch_trade_correspondence_board",
+    "vintner:jungle_trade_correspondence_board",
+    "vintner:acacia_trade_correspondence_board",
+    "vintner:dark_oak_trade_correspondence_board",
+    "vintner:mangrove_trade_correspondence_board",
+    "vintner:cherry_trade_correspondence_board",
+    "vintner:pale_oak_trade_correspondence_board",
+    "vintner:bamboo_trade_correspondence_board",
+    "vintner:crimson_trade_correspondence_board",
+    "vintner:warped_trade_correspondence_board"
   ]
 }

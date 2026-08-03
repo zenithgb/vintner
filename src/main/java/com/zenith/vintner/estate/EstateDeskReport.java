@@ -3,6 +3,7 @@ package com.zenith.vintner.estate;
 import com.zenith.vintner.block.entity.EstateManagementDeskBlockEntity;
 import com.zenith.vintner.block.entity.SurveyorsMapTableBlockEntity;
 import com.zenith.vintner.network.EstateDeskPayload;
+import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.wine.WineMarketRegion;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -64,13 +65,23 @@ public final class EstateDeskReport {
                 deskPos,
                 TerroirEvaluator.inspect(level, deskPos)
         );
+        boolean correspondenceConnected =
+                hasNearbyCorrespondenceBoard(level, deskPos);
+        List<WineContract> contracts = WineContractSavedData.get(level)
+                .currentContracts(
+                        level,
+                        player.getUUID(),
+                        market,
+                        reputation.score(),
+                        correspondenceConnected
+                );
 
         List<EstateDeskPayload.Section> sections = List.of(
                 overview(profile, reputation, plots, infrastructure, market),
                 vineyards(level, plots),
                 cellar(infrastructure),
                 markets(market),
-                contracts(),
+                contracts(correspondenceConnected, contracts),
                 ledger(entries),
                 map()
         );
@@ -97,7 +108,12 @@ public final class EstateDeskReport {
                         sections,
                         maps,
                         atlas.connected(),
-                        plotSummaries(level, plots)
+                        plotSummaries(level, plots),
+                        deskPos.getX(),
+                        deskPos.getY(),
+                        deskPos.getZ(),
+                        correspondenceConnected,
+                        contractInfos(level, contracts)
                 )
         );
     }
@@ -132,6 +148,11 @@ public final class EstateDeskReport {
                 ),
                 sections,
                 List.of(),
+                false,
+                List.of(),
+                0,
+                0,
+                0,
                 false,
                 List.of()
         );
@@ -237,12 +258,62 @@ public final class EstateDeskReport {
         );
     }
 
-    private static EstateDeskPayload.Section contracts() {
+    private static EstateDeskPayload.Section contracts(
+            boolean connected,
+            List<WineContract> contracts
+    ) {
+        if (!connected) {
+            return section("contracts",
+                    line("contracts.missing_module"),
+                    line("contracts.missing_module_hint")
+                            .withStyle(ChatFormatting.DARK_GRAY)
+            );
+        }
+        if (contracts.isEmpty()) {
+            return section("contracts", line("contracts.empty"));
+        }
         return section("contracts",
-                line("contracts.empty"),
-                line("contracts.future")
+                line("contracts.summary", contracts.size()),
+                line("contracts.instructions")
                         .withStyle(ChatFormatting.DARK_GRAY)
         );
+    }
+
+    private static List<EstateDeskPayload.ContractInfo> contractInfos(
+            ServerLevel level,
+            List<WineContract> contracts
+    ) {
+        boolean hasActive = contracts.stream().anyMatch(contract ->
+                contract.contractStatus() == WineContractStatus.ACTIVE);
+        long today = Math.floorDiv(level.getOverworldClockTime(), 24000L);
+        return contracts.stream().map(contract ->
+                new EstateDeskPayload.ContractInfo(
+                        contract.contractId(),
+                        contract.partner().displayName(),
+                        Component.translatable(
+                                "screen.vintner.estate_desk.contract.requirement",
+                                contract.requiredBottles(),
+                                contract.requiredStyle().displayName(),
+                                contract.minimumQuality(),
+                                contract.requiredAge().displayName()
+                        ),
+                        Component.translatable(
+                                "screen.vintner.estate_desk.contract.progress",
+                                contract.deliveredBottles(),
+                                contract.requiredBottles()
+                        ),
+                        Component.translatable(
+                                "screen.vintner.estate_desk.contract.reward",
+                                contract.rewardEmeralds()
+                        ),
+                        Component.translatable(
+                                "screen.vintner.estate_desk.contract.expiry",
+                                Math.max(0L, contract.expiresDay() - today)
+                        ),
+                        contract.status(),
+                        contract.contractStatus()
+                                == WineContractStatus.OFFERED && !hasActive
+                )).toList();
     }
 
     private static EstateDeskPayload.Section ledger(
@@ -342,6 +413,25 @@ public final class EstateDeskReport {
             }
         }
         return Optional.ofNullable(nearest);
+    }
+
+    public static boolean hasNearbyCorrespondenceBoard(
+            ServerLevel level,
+            BlockPos deskPos
+    ) {
+        for (int x = -2; x <= 2; x++) {
+            for (int y = -1; y <= 1; y++) {
+                for (int z = -2; z <= 2; z++) {
+                    if (ModBlocks.TRADE_CORRESPONDENCE_BOARDS
+                            .containsValue(level.getBlockState(
+                                    deskPos.offset(x, y, z)
+                            ).getBlock())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static List<EstateDeskPayload.MapInfo> mapInfos(

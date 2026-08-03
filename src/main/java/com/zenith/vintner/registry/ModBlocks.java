@@ -14,6 +14,7 @@ import com.zenith.vintner.block.NurseryBedBlock;
 import com.zenith.vintner.block.RedGrapevineBlock;
 import com.zenith.vintner.block.SurveyorsMapTableBlock;
 import com.zenith.vintner.block.TrellisBlock;
+import com.zenith.vintner.block.TradeCorrespondenceBoardBlock;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.block.WhiteGrapevineBlock;
 import com.zenith.vintner.block.WineCrateBlock;
@@ -269,6 +270,21 @@ public final class ModBlocks {
                     SurveyorsMapTableBlock::new
             );
 
+    public static final Block TRADE_CORRESPONDENCE_BOARD =
+            registerWithItem(
+                    "trade_correspondence_board",
+                    TradeCorrespondenceBoardBlock::new,
+                    machineProperties()
+            );
+
+    public static final Map<WoodVariant, Block>
+            TRADE_CORRESPONDENCE_BOARDS = registerMachineVariants(
+                    WoodVariant.OAK,
+                    TRADE_CORRESPONDENCE_BOARD,
+                    WoodVariant::tradeCorrespondenceBoardId,
+                    TradeCorrespondenceBoardBlock::new
+            );
+
     public static final Block RED_GRAPEVINE = registerWithoutItem(
             "red_grapevine",
             properties -> new RedGrapevineBlock(
@@ -350,6 +366,12 @@ public final class ModBlocks {
         return SURVEYORS_MAP_TABLES.get(woodVariant);
     }
 
+    public static Block tradeCorrespondenceBoard(
+            WoodVariant woodVariant
+    ) {
+        return TRADE_CORRESPONDENCE_BOARDS.get(woodVariant);
+    }
+
     public static Block redGrapevine(WoodVariant woodVariant) {
         return RED_GRAPEVINES.get(woodVariant);
     }
@@ -428,6 +450,10 @@ public final class ModBlocks {
 
     public static Block[] surveyorsMapTableBlocks() {
         return orderedBlocks(SURVEYORS_MAP_TABLES);
+    }
+
+    public static Block[] tradeCorrespondenceBoardBlocks() {
+        return orderedBlocks(TRADE_CORRESPONDENCE_BOARDS);
     }
 
     private static Map<WoodVariant, Block> registerTrellises() {

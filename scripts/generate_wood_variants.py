@@ -181,6 +181,14 @@ def surveyors_map_table_id(wood: str) -> str:
     )
 
 
+def trade_correspondence_board_id(wood: str) -> str:
+    return (
+        "trade_correspondence_board"
+        if wood == "oak"
+        else f"{wood}_trade_correspondence_board"
+    )
+
+
 def grapevine_id(wood: str, color: str) -> str:
     return (
         f"{color}_grapevine"
@@ -1368,6 +1376,7 @@ def generate_survival_data() -> None:
             cabinet_id(wood),
             estate_desk_id(wood),
             surveyors_map_table_id(wood),
+            trade_correspondence_board_id(wood),
         )
         axe_blocks.extend(f"vintner:{block_id}" for block_id in ids)
 
@@ -1544,6 +1553,24 @@ def generate_survival_data() -> None:
                     "count": 1,
                 },
             },
+            trade_correspondence_board_id(wood): {
+                "type": "minecraft:crafting_shaped",
+                "category": "misc",
+                "pattern": ["PQP", "PBP", "S S"],
+                "key": {
+                    "P": planks,
+                    "Q": "minecraft:paper",
+                    "B": "minecraft:book",
+                    "S": f"minecraft:{wood}_slab",
+                },
+                "result": {
+                    "id": (
+                        "vintner:"
+                        f"{trade_correspondence_board_id(wood)}"
+                    ),
+                    "count": 1,
+                },
+            },
         }
 
         for recipe_id, recipe in recipes.items():
@@ -1639,6 +1666,9 @@ def generate_language() -> None:
         language[f"block.vintner.{surveyors_map_table_id(wood)}"] = (
             f"{title} Surveyor's Map Table"
         )
+        language[
+            f"block.vintner.{trade_correspondence_board_id(wood)}"
+        ] = f"{title} Trade Correspondence Board"
         language[
             f"block.vintner.{grapevine_id(wood, 'red')}"
         ] = f"{title} Red Grapevine"

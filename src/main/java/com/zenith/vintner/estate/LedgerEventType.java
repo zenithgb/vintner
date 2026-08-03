@@ -13,7 +13,8 @@ public enum LedgerEventType {
     BATCH_PRESSED,
     BOTTLING,
     STORAGE,
-    ARCHIVED;
+    ARCHIVED,
+    CONTRACT_COMPLETED;
 
     public String serializedName() {
         return name().toLowerCase(Locale.ROOT);
