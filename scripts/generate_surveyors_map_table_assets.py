@@ -94,11 +94,22 @@ def map_overlay_model() -> dict:
             "paper": "minecraft:block/bone_block_side",
             "ink": "minecraft:block/blue_terracotta",
             "leather": "minecraft:block/brown_wool",
+            "terrain": "minecraft:block/green_wool",
+            "water": "minecraft:block/blue_wool",
+            "marker": "minecraft:block/red_wool",
             "particle": "minecraft:block/oak_planks",
         },
         "elements": [
-            # Filed survey rolls live in the gallery; the desk remains the
-            # only visible place where maps are handled and reviewed.
+            # An open atlas makes filed maps readable from normal player
+            # height. It is raised clear of the counter to avoid z-fighting.
+            cube([2.0, 11.52, 2.25], [14.0, 11.64, 10.75], "#leather"),
+            cube([2.35, 11.64, 2.6], [13.65, 11.78, 10.4], "#paper"),
+            cube([3.0, 11.78, 3.2], [7.4, 11.86, 6.2], "#terrain"),
+            cube([9.4, 11.78, 6.1], [12.9, 11.86, 9.6], "#terrain"),
+            cube([6.6, 11.78, 5.25], [10.8, 11.88, 7.05], "#water"),
+            cube([7.75, 11.78, 2.6], [8.15, 11.91, 10.4], "#leather"),
+            cube([4.2, 11.86, 4.25], [4.75, 11.96, 4.8], "#marker"),
+            # Additional filed survey rolls remain visible in the gallery.
             cube([2.5, 11.9, 12.6], [4.5, 13.8, 13.4], "#paper"),
             cube([6.8, 11.9, 12.6], [8.8, 13.8, 13.4], "#paper"),
             cube([11.3, 11.9, 12.6], [13.3, 13.8, 13.4], "#paper"),

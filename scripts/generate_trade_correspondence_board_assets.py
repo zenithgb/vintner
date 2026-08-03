@@ -52,20 +52,26 @@ def model() -> dict:
         cube([6, 7.85, 1.1], [6.5, 8.35, 1.35], "#seal"),
         cube([9.5, 7.85, 1.1], [10, 8.35, 1.35], "#seal"),
         cube([0, 10.25, 0], [16, 11.5, 16], "#wood"),
-        # Raised postal hutch continues the desk's document gallery.
-        cube([0.75, 11, 7.75], [15.25, 16, 14.25], "#wood"),
-        cube([1.25, 11.5, 7.5], [14.75, 15.5, 8.15], "#dark"),
-        cube([5.5, 11.5, 7.2], [6.15, 15.5, 8.4], "#wood"),
-        cube([9.85, 11.5, 7.2], [10.5, 15.5, 8.4], "#wood"),
-        cube([1.25, 13.35, 7.15], [14.75, 14, 8.4], "#wood"),
-        cube([0.5, 15.35, 7.5], [15.5, 16, 14.5], "#dark"),
-        # Partially filed correspondence reads as paper without white panels.
-        cube([2.1, 12, 7], [4.55, 12.65, 7.25], "#paper"),
-        cube([6.9, 14.3, 7], [9.1, 14.9, 7.25], "#paper"),
-        cube([11.25, 12.05, 7], [13.7, 12.7, 7.25], "#paper"),
-        cube([3.05, 12.1, 6.85], [3.55, 12.6, 7.05], "#seal"),
-        cube([7.75, 14.35, 6.85], [8.25, 14.85, 7.05], "#seal"),
-        cube([12.2, 12.15, 6.85], [12.7, 12.65, 7.05], "#seal"),
+        # A recessed six-hole postal hutch. Every component begins at or above
+        # the counter's upper face, removing the previous overlapping slab.
+        cube([0.75, 11.5, 8], [1.5, 16, 14.5], "#dark"),
+        cube([14.5, 11.5, 8], [15.25, 16, 14.5], "#dark"),
+        cube([1.5, 11.5, 13.75], [14.5, 15.6, 14.5], "#dark"),
+        cube([0.75, 11.5, 7.75], [15.25, 12, 14.75], "#wood"),
+        cube([0.75, 13.55, 7.75], [15.25, 14.05, 14.75], "#wood"),
+        cube([0.5, 15.6, 7.5], [15.5, 16, 14.75], "#wood"),
+        cube([5.45, 12, 7.75], [6.05, 15.6, 14.5], "#wood"),
+        cube([9.95, 12, 7.75], [10.55, 15.6, 14.5], "#wood"),
+        # Four banded rolls sit inside the recesses. Two empty holes keep the
+        # grid legible as pigeonholes rather than another bank of drawers.
+        cube([2.0, 12.35, 8.0], [4.75, 13.0, 9.6], "#paper"),
+        cube([2.95, 12.25, 7.8], [3.8, 13.1, 9.8], "#seal"),
+        cube([6.75, 12.35, 8.0], [9.25, 13.0, 9.6], "#paper"),
+        cube([7.6, 12.25, 7.8], [8.4, 13.1, 9.8], "#band"),
+        cube([11.25, 14.4, 8.0], [13.95, 15.05, 9.6], "#paper"),
+        cube([12.15, 14.3, 7.8], [13.0, 15.15, 9.8], "#seal"),
+        cube([2.0, 14.4, 8.0], [4.6, 15.05, 9.6], "#paper"),
+        cube([2.9, 14.3, 7.8], [3.7, 15.15, 9.8], "#band"),
     ]
     return {
         "parent": "minecraft:block/block",
@@ -74,6 +80,7 @@ def model() -> dict:
             "dark": "minecraft:block/stripped_oak_log",
             "paper": "minecraft:block/bone_block_side",
             "seal": "minecraft:block/red_wool",
+            "band": "minecraft:block/yellow_wool",
             "particle": "minecraft:block/oak_planks",
         },
         "elements": elements,
