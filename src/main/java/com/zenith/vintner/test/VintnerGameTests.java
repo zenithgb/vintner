@@ -23,6 +23,7 @@ import com.zenith.vintner.block.entity.SurveyorsMapTableBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
+import com.zenith.vintner.estate.EstateDeskReport;
 import com.zenith.vintner.estate.EstateProfile;
 import com.zenith.vintner.estate.EstateInfrastructureReport;
 import com.zenith.vintner.estate.EstateLedgerEvent;
@@ -396,6 +397,15 @@ public final class VintnerGameTests {
                 FIRST,
                 SurveyorsMapTableBlock.HAS_MAPS,
                 true
+        );
+
+        helper.setBlock(EAST, ModBlocks.ESTATE_MANAGEMENT_DESK);
+        helper.assertTrue(
+                EstateDeskReport.findNearbyAtlasTable(
+                        helper.getLevel(),
+                        helper.absolutePos(EAST)
+                ).orElse(null) == table,
+                "An adjacent estate desk should discover the populated map table"
         );
 
         var firstId = firstMap.get(DataComponents.MAP_ID);

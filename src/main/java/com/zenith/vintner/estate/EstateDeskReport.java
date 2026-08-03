@@ -21,7 +21,6 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Comparator;
 
 /** Builds a fresh, read-only estate snapshot when a desk is opened. */
 public final class EstateDeskReport {
@@ -282,19 +281,8 @@ public final class EstateDeskReport {
             ServerLevel level,
             BlockPos deskPos
     ) {
-        Optional<SurveyorsMapTableBlockEntity> table = BlockPos
-                .betweenClosedStream(
-                        deskPos.offset(-2, -1, -2),
-                        deskPos.offset(2, 1, 2)
-                )
-                .filter(candidate -> !candidate.equals(deskPos))
-                .sorted(Comparator.comparingDouble(
-                        candidate -> candidate.distSqr(deskPos)
-                ))
-                .map(level::getBlockEntity)
-                .filter(SurveyorsMapTableBlockEntity.class::isInstance)
-                .map(SurveyorsMapTableBlockEntity.class::cast)
-                .findFirst();
+        Optional<SurveyorsMapTableBlockEntity> table =
+                findNearbyAtlasTable(level, deskPos);
         if (table.isPresent()) {
             return new AtlasSource(table.get().getMapCopies(), true);
         }
@@ -310,6 +298,50 @@ public final class EstateDeskReport {
             );
         }
         return new AtlasSource(List.of(), false);
+    }
+
+    /**
+     * Finds the nearest map table in the desk's compact modular workspace.
+     * An explicit coordinate scan is used here because Minecraft's bounded
+     * position iterators may reuse a mutable BlockPos while iterating.
+     */
+    public static Optional<SurveyorsMapTableBlockEntity>
+            findNearbyAtlasTable(
+                    ServerLevel level,
+                    BlockPos deskPos
+            ) {
+        SurveyorsMapTableBlockEntity nearest = null;
+        int nearestDistance = Integer.MAX_VALUE;
+
+        for (int yOffset = -1; yOffset <= 1; yOffset++) {
+            for (int xOffset = -2; xOffset <= 2; xOffset++) {
+                for (int zOffset = -2; zOffset <= 2; zOffset++) {
+                    if (xOffset == 0
+                            && yOffset == 0
+                            && zOffset == 0) {
+                        continue;
+                    }
+                    BlockPos candidate = deskPos.offset(
+                            xOffset,
+                            yOffset,
+                            zOffset
+                    );
+                    if (!(level.getBlockEntity(candidate)
+                            instanceof SurveyorsMapTableBlockEntity table)) {
+                        continue;
+                    }
+
+                    int distance = xOffset * xOffset
+                            + yOffset * yOffset
+                            + zOffset * zOffset;
+                    if (distance < nearestDistance) {
+                        nearest = table;
+                        nearestDistance = distance;
+                    }
+                }
+            }
+        }
+        return Optional.ofNullable(nearest);
     }
 
     private static List<EstateDeskPayload.MapInfo> mapInfos(
