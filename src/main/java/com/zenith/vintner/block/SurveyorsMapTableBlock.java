@@ -99,6 +99,12 @@ public final class SurveyorsMapTableBlock extends BaseEntityBlock {
             Player player,
             BlockHitResult hitResult
     ) {
+        // The client-side block entity can briefly lag behind the server's
+        // atlas inventory. Let the server own both status messages and map
+        // removal so one interaction cannot report stale and current counts.
+        if (level.isClientSide()) {
+            return InteractionResult.SUCCESS;
+        }
         if (!(level.getBlockEntity(pos)
                 instanceof SurveyorsMapTableBlockEntity table)) {
             return InteractionResult.PASS;
