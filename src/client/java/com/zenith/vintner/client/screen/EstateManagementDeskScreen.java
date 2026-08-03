@@ -15,7 +15,9 @@ import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /** A vanilla-scale estate dashboard styled as a wooden writing desk. */
 public final class EstateManagementDeskScreen extends Screen {
@@ -38,7 +40,8 @@ public final class EstateManagementDeskScreen extends Screen {
     private static final int PLOT_ROWS = 4;
 
     private final EstateDeskPayload payload;
-    private final MapRenderState mapRenderState = new MapRenderState();
+    private final Map<Integer, MapRenderState> mapRenderStates =
+            new HashMap<>();
     private final List<Button> tabButtons = new ArrayList<>();
     private int selectedTab;
     private int selectedPlot = -1;
@@ -55,6 +58,7 @@ public final class EstateManagementDeskScreen extends Screen {
     private int plotListX;
     private int plotListY;
     private int plotListWidth;
+    private AtlasLayout atlasLayout;
 
     public EstateManagementDeskScreen(EstateDeskPayload payload) {
         super(Component.translatable("screen.vintner.estate_desk.title"));
@@ -309,6 +313,7 @@ public final class EstateManagementDeskScreen extends Screen {
             int mouseX,
             int mouseY
     ) {
+        atlasLayout = null;
         int contentX = left + 27;
         int contentY = top + 77;
         int contentRight = left + panelWidth - 27;
@@ -325,11 +330,13 @@ public final class EstateManagementDeskScreen extends Screen {
                 false
         );
 
-        if (payload.map().isEmpty()) {
+        if (payload.maps().isEmpty()) {
             graphics.textWithWordWrap(
                     font,
                     Component.translatable(
-                            "screen.vintner.estate_desk.map.missing"
+                            payload.atlasConnected()
+                                    ? "screen.vintner.estate_desk.map.empty_atlas"
+                                    : "screen.vintner.estate_desk.map.missing_module"
                     ),
                     contentX + 18,
                     contentY + 40,
@@ -340,11 +347,27 @@ public final class EstateManagementDeskScreen extends Screen {
             return;
         }
 
-        EstateDeskPayload.MapInfo info = payload.map().get();
-        MapItemSavedData data = minecraft.level == null
-                ? null
-                : minecraft.level.getMapData(new MapId(info.id()));
-        if (data == null) {
+        List<MapTile> tiles = new ArrayList<>();
+        if (minecraft.level != null) {
+            for (EstateDeskPayload.MapInfo info : payload.maps()) {
+                MapId id = new MapId(info.id());
+                MapItemSavedData data = minecraft.level.getMapData(id);
+                if (data == null) {
+                    continue;
+                }
+                MapRenderState state = mapRenderStates.computeIfAbsent(
+                        info.id(),
+                        ignored -> new MapRenderState()
+                );
+                Minecraft.getInstance().getMapRenderer().extractRenderState(
+                        id,
+                        data,
+                        state
+                );
+                tiles.add(new MapTile(info, state));
+            }
+        }
+        if (tiles.isEmpty()) {
             graphics.textWithWordWrap(
                     font,
                     Component.translatable(
@@ -358,12 +381,6 @@ public final class EstateManagementDeskScreen extends Screen {
             );
             return;
         }
-
-        Minecraft.getInstance().getMapRenderer().extractRenderState(
-                new MapId(info.id()),
-                data,
-                mapRenderState
-        );
 
         mapSize = Math.min(
                 MAP_SIZE,
@@ -385,14 +402,26 @@ public final class EstateManagementDeskScreen extends Screen {
                 mapSize + 4,
                 MAP_INNER_BORDER
         );
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(mapX, mapY);
-        graphics.pose().scale(mapSize / 128.0F, mapSize / 128.0F);
-        graphics.map(mapRenderState);
-        graphics.pose().popMatrix();
+        atlasLayout = AtlasLayout.create(payload.maps(), mapX, mapY, mapSize);
+        for (MapTile tile : tiles) {
+            float tileX = atlasLayout.screenX(
+                    tile.info().centerX() - atlasLayout.halfMapBlocks()
+            );
+            float tileY = atlasLayout.screenY(
+                    tile.info().centerZ() - atlasLayout.halfMapBlocks()
+            );
+            graphics.pose().pushMatrix();
+            graphics.pose().translate(tileX, tileY);
+            graphics.pose().scale(
+                    atlasLayout.pixelScale(),
+                    atlasLayout.pixelScale()
+            );
+            graphics.map(tile.state());
+            graphics.pose().popMatrix();
+        }
 
-        List<Integer> visible = visiblePlotIndexes(info);
-        renderPlotOutlines(graphics, info, visible);
+        List<Integer> visible = visiblePlotIndexes(atlasLayout);
+        renderPlotOutlines(graphics, atlasLayout, visible);
 
         plotListX = mapX + mapSize + 13;
         plotListY = mapY + 12;
@@ -408,6 +437,20 @@ public final class EstateManagementDeskScreen extends Screen {
                 INK,
                 false
         );
+        graphics.text(
+                font,
+                Component.translatable(
+                        payload.atlasConnected()
+                                ? "screen.vintner.estate_desk.map.atlas_info"
+                                : "screen.vintner.estate_desk.map.legacy_info",
+                        payload.maps().size(),
+                        1 << payload.maps().getFirst().scale()
+                ),
+                plotListX,
+                mapY + 10,
+                INK_MUTED,
+                false
+        );
 
         int maxPlotScroll = Math.max(0, visible.size() - PLOT_ROWS);
         plotScroll = Mth.clamp(plotScroll, 0, maxPlotScroll);
@@ -420,7 +463,7 @@ public final class EstateManagementDeskScreen extends Screen {
             EstateDeskPayload.PlotSummary plot = payload.plots().get(
                     plotIndex
             );
-            int rowY = plotListY + row * 14;
+            int rowY = plotListY + 10 + row * 14;
             if (plotIndex == selectedPlot) {
                 graphics.fill(
                         plotListX - 2,
@@ -440,7 +483,7 @@ public final class EstateManagementDeskScreen extends Screen {
             );
         }
 
-        int detailsY = plotListY + PLOT_ROWS * 14 + 4;
+        int detailsY = plotListY + 10 + PLOT_ROWS * 14 + 4;
         renderPlotDetails(graphics, contentRight, detailsY, visible);
 
         int outside = Math.max(0, payload.plots().size() - visible.size());
@@ -459,23 +502,15 @@ public final class EstateManagementDeskScreen extends Screen {
         }
     }
 
-    private List<Integer> visiblePlotIndexes(
-            EstateDeskPayload.MapInfo map
-    ) {
+    private List<Integer> visiblePlotIndexes(AtlasLayout atlas) {
         List<Integer> result = new ArrayList<>();
-        int blocksPerPixel = 1 << map.scale();
-        int half = 64 * blocksPerPixel;
-        int minX = map.centerX() - half;
-        int maxX = map.centerX() + half - 1;
-        int minZ = map.centerZ() - half;
-        int maxZ = map.centerZ() + half - 1;
         for (int index = 0; index < payload.plots().size(); index++) {
             EstateDeskPayload.PlotSummary plot = payload.plots().get(index);
-            if (plot.dimension().equals(map.dimension())
-                    && plot.maxX() >= minX
-                    && plot.minX() <= maxX
-                    && plot.maxZ() >= minZ
-                    && plot.minZ() <= maxZ) {
+            if (plot.dimension().equals(atlas.dimension())
+                    && plot.maxX() >= atlas.minX()
+                    && plot.minX() < atlas.maxXExclusive()
+                    && plot.maxZ() >= atlas.minZ()
+                    && plot.minZ() < atlas.maxZExclusive()) {
                 result.add(index);
             }
         }
@@ -484,26 +519,33 @@ public final class EstateManagementDeskScreen extends Screen {
 
     private void renderPlotOutlines(
             GuiGraphicsExtractor graphics,
-            EstateDeskPayload.MapInfo map,
+            AtlasLayout atlas,
             List<Integer> visible
     ) {
-        float blocksPerPixel = 1 << map.scale();
         for (int plotIndex : visible) {
             EstateDeskPayload.PlotSummary plot = payload.plots().get(
                     plotIndex
             );
-            int x0 = mapX + Math.clamp(Math.round(
-                    (plot.minX() - map.centerX()) / blocksPerPixel + 64.0F
-            ), 0, mapSize - 1);
-            int y0 = mapY + Math.clamp(Math.round(
-                    (plot.minZ() - map.centerZ()) / blocksPerPixel + 64.0F
-            ), 0, mapSize - 1);
-            int x1 = mapX + Math.clamp(Math.round(
-                    (plot.maxX() - map.centerX()) / blocksPerPixel + 64.0F
-            ), 0, mapSize - 1);
-            int y1 = mapY + Math.clamp(Math.round(
-                    (plot.maxZ() - map.centerZ()) / blocksPerPixel + 64.0F
-            ), 0, mapSize - 1);
+            int x0 = Math.clamp(
+                    Math.round(atlas.screenX(plot.minX())),
+                    mapX,
+                    mapX + mapSize - 1
+            );
+            int y0 = Math.clamp(
+                    Math.round(atlas.screenY(plot.minZ())),
+                    mapY,
+                    mapY + mapSize - 1
+            );
+            int x1 = Math.clamp(
+                    Math.round(atlas.screenX(plot.maxX())),
+                    mapX,
+                    mapX + mapSize - 1
+            );
+            int y1 = Math.clamp(
+                    Math.round(atlas.screenY(plot.maxZ())),
+                    mapY,
+                    mapY + mapSize - 1
+            );
             int color = plotIndex == selectedPlot
                     ? PLOT_SELECTED
                     : PLOT;
@@ -581,14 +623,14 @@ public final class EstateManagementDeskScreen extends Screen {
             MouseButtonEvent event,
             boolean doubleClick
     ) {
-        if (isMapTab() && event.button() == 0 && payload.map().isPresent()) {
-            List<Integer> visible = visiblePlotIndexes(payload.map().get());
+        if (isMapTab() && event.button() == 0 && atlasLayout != null) {
+            List<Integer> visible = visiblePlotIndexes(atlasLayout);
             for (int row = 0; row < PLOT_ROWS; row++) {
                 int visibleIndex = plotScroll + row;
                 if (visibleIndex >= visible.size()) {
                     break;
                 }
-                int rowY = plotListY + row * 14;
+                int rowY = plotListY + 10 + row * 14;
                 if (event.x() >= plotListX - 2
                         && event.x() <= plotListX + plotListWidth
                         && event.y() >= rowY - 2
@@ -598,27 +640,14 @@ public final class EstateManagementDeskScreen extends Screen {
                 }
             }
 
-            float blocksPerPixel = 1 << payload.map().get().scale();
             for (int plotIndex : visible) {
                 EstateDeskPayload.PlotSummary plot = payload.plots().get(
                         plotIndex
                 );
-                int x0 = mapX + Math.round(
-                        (plot.minX() - payload.map().get().centerX())
-                                / blocksPerPixel + 64.0F
-                );
-                int y0 = mapY + Math.round(
-                        (plot.minZ() - payload.map().get().centerZ())
-                                / blocksPerPixel + 64.0F
-                );
-                int x1 = mapX + Math.round(
-                        (plot.maxX() - payload.map().get().centerX())
-                                / blocksPerPixel + 64.0F
-                );
-                int y1 = mapY + Math.round(
-                        (plot.maxZ() - payload.map().get().centerZ())
-                                / blocksPerPixel + 64.0F
-                );
+                int x0 = Math.round(atlasLayout.screenX(plot.minX()));
+                int y0 = Math.round(atlasLayout.screenY(plot.minZ()));
+                int x1 = Math.round(atlasLayout.screenX(plot.maxX()));
+                int y1 = Math.round(atlasLayout.screenY(plot.maxZ()));
                 if (event.x() >= Math.min(x0, x1) - 2
                         && event.x() <= Math.max(x0, x1) + 2
                         && event.y() >= Math.min(y0, y1) - 2
@@ -638,8 +667,8 @@ public final class EstateManagementDeskScreen extends Screen {
             double horizontal,
             double vertical
     ) {
-        if (isMapTab() && vertical != 0.0D && payload.map().isPresent()) {
-            int visiblePlots = visiblePlotIndexes(payload.map().get()).size();
+        if (isMapTab() && vertical != 0.0D && atlasLayout != null) {
+            int visiblePlots = visiblePlotIndexes(atlasLayout).size();
             int maximum = Math.max(0, visiblePlots - PLOT_ROWS);
             if (maximum > 0) {
                 plotScroll = Mth.clamp(
@@ -664,5 +693,80 @@ public final class EstateManagementDeskScreen extends Screen {
                 horizontal,
                 vertical
         );
+    }
+
+    private record MapTile(
+            EstateDeskPayload.MapInfo info,
+            MapRenderState state
+    ) {
+    }
+
+    private record AtlasLayout(
+            int minX,
+            int minZ,
+            int maxXExclusive,
+            int maxZExclusive,
+            int blocksPerPixel,
+            int halfMapBlocks,
+            String dimension,
+            float pixelScale,
+            float originX,
+            float originY
+    ) {
+        private static AtlasLayout create(
+                List<EstateDeskPayload.MapInfo> maps,
+                int canvasX,
+                int canvasY,
+                int canvasSize
+        ) {
+            EstateDeskPayload.MapInfo first = maps.getFirst();
+            int blocksPerPixel = 1 << first.scale();
+            int half = 64 * blocksPerPixel;
+            int minX = maps.stream()
+                    .mapToInt(map -> map.centerX() - half)
+                    .min()
+                    .orElse(first.centerX() - half);
+            int minZ = maps.stream()
+                    .mapToInt(map -> map.centerZ() - half)
+                    .min()
+                    .orElse(first.centerZ() - half);
+            int maxX = maps.stream()
+                    .mapToInt(map -> map.centerX() + half)
+                    .max()
+                    .orElse(first.centerX() + half);
+            int maxZ = maps.stream()
+                    .mapToInt(map -> map.centerZ() + half)
+                    .max()
+                    .orElse(first.centerZ() + half);
+            float widthPixels = (maxX - minX) / (float) blocksPerPixel;
+            float heightPixels = (maxZ - minZ) / (float) blocksPerPixel;
+            float scale = canvasSize / Math.max(widthPixels, heightPixels);
+            float renderedWidth = widthPixels * scale;
+            float renderedHeight = heightPixels * scale;
+            return new AtlasLayout(
+                    minX,
+                    minZ,
+                    maxX,
+                    maxZ,
+                    blocksPerPixel,
+                    half,
+                    first.dimension(),
+                    scale,
+                    canvasX + (canvasSize - renderedWidth) / 2.0F,
+                    canvasY + (canvasSize - renderedHeight) / 2.0F
+            );
+        }
+
+        private float screenX(int worldX) {
+            return originX
+                    + (worldX - minX) / (float) blocksPerPixel
+                    * pixelScale;
+        }
+
+        private float screenY(int worldZ) {
+            return originY
+                    + (worldZ - minZ) / (float) blocksPerPixel
+                    * pixelScale;
+        }
     }
 }

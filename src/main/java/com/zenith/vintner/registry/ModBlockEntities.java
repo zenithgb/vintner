@@ -6,6 +6,7 @@ import com.zenith.vintner.block.entity.CellarCollectionBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.EstateManagementDeskBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
+import com.zenith.vintner.block.entity.SurveyorsMapTableBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
@@ -119,6 +120,19 @@ public final class ModBlockEntities {
                     FabricBlockEntityTypeBuilder.create(
                             EstateManagementDeskBlockEntity::new,
                             ModBlocks.estateManagementDeskBlocks()
+                    ).build()
+            );
+
+    public static final BlockEntityType<SurveyorsMapTableBlockEntity>
+            SURVEYORS_MAP_TABLE = Registry.register(
+                    BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                    Identifier.fromNamespaceAndPath(
+                            Vintner.MOD_ID,
+                            "surveyors_map_table"
+                    ),
+                    FabricBlockEntityTypeBuilder.create(
+                            SurveyorsMapTableBlockEntity::new,
+                            ModBlocks.surveyorsMapTableBlocks()
                     ).build()
             );
 

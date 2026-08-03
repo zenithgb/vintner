@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PMP",
+    "PCP",
+    "S S"
+  ],
+  "key": {
+    "P": "minecraft:birch_planks",
+    "M": "minecraft:map",
+    "C": "minecraft:cartography_table",
+    "S": "minecraft:birch_slab"
+  },
+  "result": {
+    "id": "vintner:birch_surveyors_map_table",
+    "count": 1
+  }
+}

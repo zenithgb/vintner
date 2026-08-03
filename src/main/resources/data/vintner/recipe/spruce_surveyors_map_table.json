@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PMP",
+    "PCP",
+    "S S"
+  ],
+  "key": {
+    "P": "minecraft:spruce_planks",
+    "M": "minecraft:map",
+    "C": "minecraft:cartography_table",
+    "S": "minecraft:spruce_slab"
+  },
+  "result": {
+    "id": "vintner:spruce_surveyors_map_table",
+    "count": 1
+  }
+}

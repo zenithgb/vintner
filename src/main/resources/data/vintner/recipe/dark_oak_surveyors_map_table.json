@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PMP",
+    "PCP",
+    "S S"
+  ],
+  "key": {
+    "P": "minecraft:dark_oak_planks",
+    "M": "minecraft:map",
+    "C": "minecraft:cartography_table",
+    "S": "minecraft:dark_oak_slab"
+  },
+  "result": {
+    "id": "vintner:dark_oak_surveyors_map_table",
+    "count": 1
+  }
+}

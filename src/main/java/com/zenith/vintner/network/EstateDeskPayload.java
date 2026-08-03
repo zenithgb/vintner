@@ -10,19 +10,20 @@ import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /** A bounded, server-authored snapshot for the Estate Management Desk. */
 public record EstateDeskPayload(
         Component estateName,
         Component subtitle,
         List<Section> sections,
-        Optional<MapInfo> map,
+        List<MapInfo> maps,
+        boolean atlasConnected,
         List<PlotSummary> plots
 ) implements CustomPacketPayload {
     private static final int MAX_SECTIONS = 8;
     private static final int MAX_LINES = 32;
     private static final int MAX_PLOTS = 32;
+    private static final int MAX_MAPS = 9;
 
     public static final Type<EstateDeskPayload> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(
@@ -66,15 +67,18 @@ public record EstateDeskPayload(
                 }
                 sections.add(new Section(title, lines));
             }
-            Optional<MapInfo> map = buffer.readBoolean()
-                    ? Optional.of(new MapInfo(
-                            buffer.readVarInt(),
-                            buffer.readInt(),
-                            buffer.readInt(),
-                            buffer.readByte(),
-                            buffer.readUtf(128)
-                    ))
-                    : Optional.empty();
+            int mapCount = readBoundedCount(buffer, MAX_MAPS, "maps");
+            List<MapInfo> maps = new ArrayList<>(mapCount);
+            for (int index = 0; index < mapCount; index++) {
+                maps.add(new MapInfo(
+                        buffer.readVarInt(),
+                        buffer.readInt(),
+                        buffer.readInt(),
+                        buffer.readByte(),
+                        buffer.readUtf(128)
+                ));
+            }
+            boolean atlasConnected = buffer.readBoolean();
             int plotCount = readBoundedCount(
                     buffer,
                     MAX_PLOTS,
@@ -102,7 +106,8 @@ public record EstateDeskPayload(
                     estateName,
                     subtitle,
                     sections,
-                    map,
+                    maps,
+                    atlasConnected,
                     plots
             );
         }
@@ -131,14 +136,15 @@ public record EstateDeskPayload(
                     ComponentSerialization.STREAM_CODEC.encode(buffer, line);
                 }
             }
-            buffer.writeBoolean(payload.map().isPresent());
-            payload.map().ifPresent(map -> {
+            buffer.writeVarInt(payload.maps().size());
+            for (MapInfo map : payload.maps()) {
                 buffer.writeVarInt(map.id());
                 buffer.writeInt(map.centerX());
                 buffer.writeInt(map.centerZ());
                 buffer.writeByte(map.scale());
                 buffer.writeUtf(map.dimension(), 128);
-            });
+            }
+            buffer.writeBoolean(payload.atlasConnected());
             buffer.writeVarInt(payload.plots().size());
             for (PlotSummary plot : payload.plots()) {
                 buffer.writeUtf(plot.name(), 64);
@@ -162,7 +168,9 @@ public record EstateDeskPayload(
         sections = List.copyOf(sections).stream()
                 .limit(MAX_SECTIONS)
                 .toList();
-        map = map == null ? Optional.empty() : map;
+        maps = List.copyOf(maps == null ? List.of() : maps).stream()
+                .limit(MAX_MAPS)
+                .toList();
         plots = List.copyOf(plots).stream()
                 .limit(MAX_PLOTS)
                 .toList();

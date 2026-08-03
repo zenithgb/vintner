@@ -1,0 +1,8 @@
+{
+  "parent": "vintner:block/surveyors_map_table",
+  "textures": {
+    "wood": "minecraft:block/jungle_planks",
+    "drawer": "minecraft:block/jungle_log",
+    "particle": "minecraft:block/jungle_planks"
+  }
+}

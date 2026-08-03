@@ -22,6 +22,7 @@ from generate_wood_variants import (
     rack_id,
     shelf_id,
     stand_id,
+    surveyors_map_table_id,
     trellis_id,
 )
 
@@ -311,6 +312,7 @@ def expected_resource_ids() -> tuple[set[str], set[str]]:
                 shelf_id(wood),
                 cabinet_id(wood),
                 estate_desk_id(wood),
+                surveyors_map_table_id(wood),
             }
         )
         grapevines.update(
@@ -769,6 +771,48 @@ def audit_estate_management_desk() -> None:
             fail(f"{variant_id}: still references the painted map model")
 
 
+def audit_surveyors_map_table() -> None:
+    require_file(ROOT / "scripts/generate_surveyors_map_table_assets.py")
+    require_file(
+        ASSETS / "models/block/surveyors_map_table_maps.json"
+    )
+    facings = {"north", "east", "south", "west"}
+    for wood in WOODS:
+        block_id = surveyors_map_table_id(wood)
+        blockstate = load_json(ASSETS / f"blockstates/{block_id}.json")
+        if not isinstance(blockstate, dict):
+            continue
+        multipart = blockstate.get("multipart")
+        if not isinstance(multipart, list):
+            fail(f"{block_id}: blockstate must use multipart models")
+            continue
+
+        base_model = f"vintner:block/{block_id}"
+        overlay_model = "vintner:block/surveyors_map_table_maps"
+        base_coverage = {
+            part.get("when", {}).get("facing")
+            for part in multipart
+            if isinstance(part, dict)
+            and isinstance(part.get("when"), dict)
+            and isinstance(part.get("apply"), dict)
+            and part["apply"].get("model") == base_model
+            and len(part["when"]) == 1
+        }
+        overlay_coverage = {
+            part.get("when", {}).get("facing")
+            for part in multipart
+            if isinstance(part, dict)
+            and isinstance(part.get("when"), dict)
+            and isinstance(part.get("apply"), dict)
+            and part["apply"].get("model") == overlay_model
+            and part["when"].get("has_maps") == "true"
+        }
+        if base_coverage != facings:
+            fail(f"{block_id}: table base model is missing a facing")
+        if overlay_coverage != facings:
+            fail(f"{block_id}: stored-map overlay is missing a facing")
+
+
 def main() -> int:
     audit_all_json()
     reachable_models = audit_model_references()
@@ -781,6 +825,7 @@ def main() -> int:
     audit_fermentation_airlock_bounds()
     audit_barrel_status_indicators()
     audit_estate_management_desk()
+    audit_surveyors_map_table()
 
     if errors:
         print(

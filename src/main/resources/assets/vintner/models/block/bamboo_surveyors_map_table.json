@@ -1,0 +1,8 @@
+{
+  "parent": "vintner:block/surveyors_map_table",
+  "textures": {
+    "wood": "minecraft:block/bamboo_planks",
+    "drawer": "minecraft:block/bamboo_block",
+    "particle": "minecraft:block/bamboo_planks"
+  }
+}
