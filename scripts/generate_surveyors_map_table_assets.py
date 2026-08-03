@@ -41,30 +41,30 @@ def cube(start: list[float], end: list[float], texture: str) -> dict:
 
 def base_model() -> dict:
     elements = []
-    # Slender drafting-table legs and low stretchers keep this visually
-    # related to the Estate Desk without duplicating it.
+    # A fitted atlas cabinet, rather than a second work table. Its counter and
+    # gallery match the Estate Desk exactly so either side can join cleanly.
     for x0, x1 in ((1.0, 2.5), (13.5, 15.0)):
-        for z0, z1 in ((1.0, 2.5), (13.5, 15.0)):
-            elements.append(cube([x0, 0, z0], [x1, 11.5, z1], "#wood"))
+        for z0, z1 in ((1.5, 3.0), (12.5, 14.0)):
+            elements.append(cube([x0, 0, z0], [x1, 10.25, z1], "#wood"))
     elements.extend((
-        cube([1.5, 3, 2], [2.5, 4, 14], "#wood"),
-        cube([13.5, 3, 2], [14.5, 4, 14], "#wood"),
-        cube([2.5, 3, 1.5], [13.5, 4, 2.5], "#wood"),
-        cube([2.5, 3, 13.5], [13.5, 4, 14.5], "#wood"),
-        cube([0.5, 11.5, 0.5], [15.5, 13, 15.5], "#wood"),
-        cube([0.25, 11.25, 0.25], [15.75, 12, 1.25], "#wood"),
-        # Three shallow labelled map drawers face the player.
-        cube([1.5, 7.5, 1], [14.5, 11.5, 3], "#wood"),
-        cube([2, 8, 0.65], [5.6, 9.5, 1.1], "#drawer"),
-        cube([6.2, 8, 0.65], [9.8, 9.5, 1.1], "#drawer"),
-        cube([10.4, 8, 0.65], [14, 9.5, 1.1], "#drawer"),
+        cube([1.25, 3.25, 3], [2.75, 4.25, 12.5], "#wood"),
+        cube([13.25, 3.25, 3], [14.75, 4.25, 12.5], "#wood"),
+        cube([0, 10.25, 0], [16, 11.5, 16], "#wood"),
+        # Three shallow labelled map drawers sit below the shared worktop.
+        cube([1.5, 6.75, 1], [14.5, 10.25, 3], "#wood"),
+        cube([2, 7.25, 0.65], [5.6, 9.5, 1.1], "#drawer"),
+        cube([6.2, 7.25, 0.65], [9.8, 9.5, 1.1], "#drawer"),
+        cube([10.4, 7.25, 0.65], [14, 9.5, 1.1], "#drawer"),
         cube([3.5, 8.55, 0.4], [4.1, 9, 0.7], "#brass"),
         cube([7.7, 8.55, 0.4], [8.3, 9, 0.7], "#brass"),
         cube([11.9, 8.55, 0.4], [12.5, 9, 0.7], "#brass"),
-        # Raised ruler rail and corner weights identify the surveying station.
-        cube([1, 13, 13.5], [15, 14, 14.5], "#wood"),
-        cube([1.25, 13, 1.25], [2.25, 13.5, 2.25], "#brass"),
-        cube([13.75, 13, 1.25], [14.75, 13.5, 2.25], "#brass"),
+        # The rear roll gallery continues the desk's document gallery.
+        cube([1, 11.5, 13.25], [15, 14.25, 14.75], "#wood"),
+        cube([0.75, 14.25, 13], [15.25, 14.75, 15], "#wood"),
+        cube([1.25, 11.5, 10.75], [2.25, 14.25, 14.25], "#wood"),
+        cube([13.75, 11.5, 10.75], [14.75, 14.25, 14.25], "#wood"),
+        cube([5.25, 11.75, 12.75], [5.85, 13.75, 14], "#brass"),
+        cube([10.15, 11.75, 12.75], [10.75, 13.75, 14], "#brass"),
     ))
     return {
         "parent": "minecraft:block/block",
@@ -97,12 +97,14 @@ def map_overlay_model() -> dict:
             "particle": "minecraft:block/oak_planks",
         },
         "elements": [
-            cube([2.0, 13.01, 2.25], [10.25, 13.09, 10.5], "#paper"),
-            cube([5.5, 13.1, 4.75], [13.75, 13.18, 13.0], "#paper"),
-            cube([2.6, 13.1, 2.85], [3.0, 13.22, 8.9], "#ink"),
-            cube([8.75, 13.18, 5.35], [9.15, 13.3, 11.4], "#ink"),
-            cube([5.0, 13.18, 8.5], [11.6, 13.3, 8.9], "#ink"),
-            cube([12.8, 13.18, 11.9], [14.2, 13.65, 13.3], "#leather"),
+            # Filed survey rolls live in the gallery; the desk remains the
+            # only visible place where maps are handled and reviewed.
+            cube([2.5, 11.9, 12.6], [4.5, 13.8, 13.4], "#paper"),
+            cube([6.8, 11.9, 12.6], [8.8, 13.8, 13.4], "#paper"),
+            cube([11.3, 11.9, 12.6], [13.3, 13.8, 13.4], "#paper"),
+            cube([2.35, 12.55, 12.45], [4.65, 12.9, 13.55], "#ink"),
+            cube([6.65, 12.55, 12.45], [8.95, 12.9, 13.55], "#ink"),
+            cube([11.15, 12.55, 12.45], [13.45, 12.9, 13.55], "#ink"),
         ],
     }
 

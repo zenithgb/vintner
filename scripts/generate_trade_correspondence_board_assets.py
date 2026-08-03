@@ -33,28 +33,26 @@ def cube(start: list[float], end: list[float], texture: str) -> dict:
 
 def model() -> dict:
     elements = [
-        # Fine legs, side rails, and foot-level stretchers keep the bureau open.
-        cube([1.25, 0, 1.75], [2.75, 10, 3.5], "#dark"),
-        cube([13.25, 0, 1.75], [14.75, 10, 3.5], "#dark"),
-        cube([1.25, 0, 12.5], [2.75, 10, 14.25], "#dark"),
-        cube([13.25, 0, 12.5], [14.75, 10, 14.25], "#dark"),
+        # A correspondence cabinet module: storage and pigeonholes, not a
+        # duplicate writing desk. The full-width counter joins the desk top.
+        cube([1.25, 0, 1.75], [2.75, 10.25, 3.5], "#dark"),
+        cube([13.25, 0, 1.75], [14.75, 10.25, 3.5], "#dark"),
+        cube([1.25, 0, 12.5], [2.75, 10.25, 14.25], "#dark"),
+        cube([13.25, 0, 12.5], [14.75, 10.25, 14.25], "#dark"),
         cube([1.75, 2, 2.25], [14.25, 2.75, 3.25], "#wood"),
         cube([1.75, 2, 12.75], [14.25, 2.75, 13.75], "#wood"),
         cube([1.5, 6.25, 2], [2.5, 7, 14], "#wood"),
         cube([13.5, 6.25, 2], [14.5, 7, 14], "#wood"),
-        # A small central dispatch drawer gives the bureau a functional front.
-        cube([4, 6.75, 1.5], [12, 9.5, 4.25], "#wood"),
-        cube([4.5, 7.2, 1.3], [7.75, 9, 1.65], "#dark"),
-        cube([8.25, 7.2, 1.3], [11.5, 9, 1.65], "#dark"),
+        # Four compact dispatch drawers identify the cabinet from the front.
+        cube([2, 6.5, 1.5], [14, 10.25, 4.25], "#wood"),
+        cube([2.5, 7.05, 1.3], [7.5, 8.35, 1.65], "#dark"),
+        cube([8.5, 7.05, 1.3], [13.5, 8.35, 1.65], "#dark"),
+        cube([2.5, 8.55, 1.3], [7.5, 9.85, 1.65], "#dark"),
+        cube([8.5, 8.55, 1.3], [13.5, 9.85, 1.65], "#dark"),
         cube([6, 7.85, 1.1], [6.5, 8.35, 1.35], "#seal"),
         cube([9.5, 7.85, 1.1], [10, 8.35, 1.35], "#seal"),
-        # Stepped writing slope, dark front apron, and narrow side edging.
-        cube([0.75, 9, 1.25], [15.25, 10.25, 2.5], "#dark"),
-        cube([0.75, 10, 1.5], [15.25, 10.8, 5.25], "#wood"),
-        cube([1, 10.45, 5.25], [15, 11.25, 8.75], "#wood"),
-        cube([0.75, 9.75, 1.25], [1.5, 11.3, 9], "#dark"),
-        cube([14.5, 9.75, 1.25], [15.25, 11.3, 9], "#dark"),
-        # Raised postal hutch with six deep pigeonholes.
+        cube([0, 10.25, 0], [16, 11.5, 16], "#wood"),
+        # Raised postal hutch continues the desk's document gallery.
         cube([0.75, 11, 7.75], [15.25, 16, 14.25], "#wood"),
         cube([1.25, 11.5, 7.5], [14.75, 15.5, 8.15], "#dark"),
         cube([5.5, 11.5, 7.2], [6.15, 15.5, 8.4], "#wood"),
@@ -68,9 +66,6 @@ def model() -> dict:
         cube([3.05, 12.1, 6.85], [3.55, 12.6, 7.05], "#seal"),
         cube([7.75, 14.35, 6.85], [8.25, 14.85, 7.05], "#seal"),
         cube([12.2, 12.15, 6.85], [12.7, 12.65, 7.05], "#seal"),
-        # One compact letter on the writing surface marks the dispatch point.
-        cube([4.25, 10.82, 2.25], [11.75, 10.98, 4.75], "#paper"),
-        cube([7.65, 10.99, 3.15], [8.35, 11.18, 3.85], "#seal"),
     ]
     return {
         "parent": "minecraft:block/block",
@@ -96,11 +91,17 @@ def model() -> dict:
 
 def blockstate(identifier: str) -> dict:
     variants = {}
-    for facing, rotation in ROTATIONS.items():
-        value = {"model": f"vintner:block/{identifier}", "uvlock": True}
-        if rotation:
-            value["y"] = rotation
-        variants[f"facing={facing}"] = value
+    for connection in ("none", "left", "right", "front", "back"):
+        for facing, rotation in ROTATIONS.items():
+            value = {
+                "model": f"vintner:block/{identifier}",
+                "uvlock": True,
+            }
+            if rotation:
+                value["y"] = rotation
+            variants[
+                f"connection={connection},facing={facing}"
+            ] = value
     return {"variants": variants}
 
 

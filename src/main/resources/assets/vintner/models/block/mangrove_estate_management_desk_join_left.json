@@ -1,0 +1,8 @@
+{
+  "parent": "vintner:block/estate_management_desk_join_left",
+  "textures": {
+    "frame": "minecraft:block/mangrove_planks",
+    "writing": "minecraft:block/mangrove_planks",
+    "particle": "minecraft:block/mangrove_planks"
+  }
+}

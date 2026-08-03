@@ -6,6 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -16,6 +18,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -35,7 +39,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /** A nearby estate-desk module that assembles up to nine explored maps. */
 public final class SurveyorsMapTableBlock extends BaseEntityBlock {
@@ -43,6 +46,11 @@ public final class SurveyorsMapTableBlock extends BaseEntityBlock {
             BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty HAS_MAPS =
             BooleanProperty.create("has_maps");
+    public static final EnumProperty<DeskModuleConnection> CONNECTION =
+            EnumProperty.create(
+                    "connection",
+                    DeskModuleConnection.class
+            );
     public static final MapCodec<SurveyorsMapTableBlock> CODEC =
             simpleCodec(SurveyorsMapTableBlock::new);
     private static final VoxelShape SHAPE = Block.box(
@@ -55,6 +63,10 @@ public final class SurveyorsMapTableBlock extends BaseEntityBlock {
                 stateDefinition.any()
                         .setValue(FACING, Direction.NORTH)
                         .setValue(HAS_MAPS, false)
+                        .setValue(
+                                CONNECTION,
+                                DeskModuleConnection.NONE
+                        )
         );
     }
 
@@ -71,35 +83,11 @@ public final class SurveyorsMapTableBlock extends BaseEntityBlock {
         if (!heldStack.is(Items.FILLED_MAP)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        if (!(level instanceof ServerLevel serverLevel)
-                || !(level.getBlockEntity(pos)
-                instanceof SurveyorsMapTableBlockEntity table)) {
-            return InteractionResult.SUCCESS;
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.sendSystemMessage(Component.translatable(
+                    "message.vintner.desk_module.use_desk"
+            ));
         }
-
-        SurveyorsMapTableBlockEntity.AddResult result =
-                table.addMap(heldStack, serverLevel);
-        if (result == SurveyorsMapTableBlockEntity.AddResult.ADDED) {
-            if (!player.getAbilities().instabuild) {
-                heldStack.shrink(1);
-            }
-            serverLevel.playSound(
-                    null,
-                    pos,
-                    SoundEvents.ITEM_FRAME_ADD_ITEM,
-                    SoundSource.BLOCKS,
-                    0.8F,
-                    1.0F
-            );
-        }
-        player.sendSystemMessage(
-                Component.translatable(
-                        "message.vintner.surveyors_map_table."
-                                + result.name().toLowerCase(Locale.ROOT),
-                        table.getMapCount(),
-                        SurveyorsMapTableBlockEntity.CAPACITY
-                )
-        );
         return InteractionResult.SUCCESS;
     }
 
@@ -135,7 +123,7 @@ public final class SurveyorsMapTableBlock extends BaseEntityBlock {
         }
         player.sendSystemMessage(
                 Component.translatable(
-                        "message.vintner.surveyors_map_table.status",
+                        "message.vintner.surveyors_map_table.status_desk",
                         table.getMapCount(),
                         SurveyorsMapTableBlockEntity.CAPACITY
                 )
@@ -162,10 +150,54 @@ public final class SurveyorsMapTableBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(
-                FACING,
-                context.getHorizontalDirection().getOpposite()
+        Direction facing = context.getHorizontalDirection().getOpposite();
+        return updateAttachment(
+                defaultBlockState().setValue(FACING, facing),
+                context.getLevel(),
+                context.getClickedPos()
         );
+    }
+
+    @Override
+    protected BlockState updateShape(
+            BlockState state,
+            LevelReader level,
+            ScheduledTickAccess ticks,
+            BlockPos pos,
+            Direction directionToNeighbour,
+            BlockPos neighbourPos,
+            BlockState neighbourState,
+            RandomSource random
+    ) {
+        if (directionToNeighbour.getAxis().isHorizontal()) {
+            return updateAttachment(state, level, pos);
+        }
+        return super.updateShape(
+                state,
+                level,
+                ticks,
+                pos,
+                directionToNeighbour,
+                neighbourPos,
+                neighbourState,
+                random
+        );
+    }
+
+    private static BlockState updateAttachment(
+            BlockState state,
+            LevelReader level,
+            BlockPos pos
+    ) {
+        DeskModuleConnection.Attachment attachment =
+                DeskModuleConnection.find(
+                        level,
+                        pos,
+                        state.getValue(FACING)
+                );
+        return state
+                .setValue(FACING, attachment.facing())
+                .setValue(CONNECTION, attachment.connection());
     }
 
     @Override
@@ -198,6 +230,6 @@ public final class SurveyorsMapTableBlock extends BaseEntityBlock {
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING, HAS_MAPS);
+        builder.add(FACING, HAS_MAPS, CONNECTION);
     }
 }

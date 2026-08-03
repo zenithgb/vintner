@@ -9,14 +9,14 @@
   "elements": [
     {
       "from": [
-        2.0,
-        13.01,
-        2.25
+        2.5,
+        11.9,
+        12.6
       ],
       "to": [
-        10.25,
-        13.09,
-        10.5
+        4.5,
+        13.8,
+        13.4
       ],
       "faces": {
         "north": {
@@ -41,14 +41,14 @@
     },
     {
       "from": [
-        5.5,
-        13.1,
-        4.75
+        6.8,
+        11.9,
+        12.6
       ],
       "to": [
-        13.75,
-        13.18,
-        13.0
+        8.8,
+        13.8,
+        13.4
       ],
       "faces": {
         "north": {
@@ -73,46 +73,46 @@
     },
     {
       "from": [
-        2.6,
-        13.1,
-        2.85
+        11.3,
+        11.9,
+        12.6
       ],
       "to": [
-        3.0,
-        13.22,
-        8.9
-      ],
-      "faces": {
-        "north": {
-          "texture": "#ink"
-        },
-        "east": {
-          "texture": "#ink"
-        },
-        "south": {
-          "texture": "#ink"
-        },
-        "west": {
-          "texture": "#ink"
-        },
-        "up": {
-          "texture": "#ink"
-        },
-        "down": {
-          "texture": "#ink"
-        }
-      }
-    },
-    {
-      "from": [
-        8.75,
-        13.18,
-        5.35
-      ],
-      "to": [
-        9.15,
         13.3,
-        11.4
+        13.8,
+        13.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#paper"
+        },
+        "east": {
+          "texture": "#paper"
+        },
+        "south": {
+          "texture": "#paper"
+        },
+        "west": {
+          "texture": "#paper"
+        },
+        "up": {
+          "texture": "#paper"
+        },
+        "down": {
+          "texture": "#paper"
+        }
+      }
+    },
+    {
+      "from": [
+        2.35,
+        12.55,
+        12.45
+      ],
+      "to": [
+        4.65,
+        12.9,
+        13.55
       ],
       "faces": {
         "north": {
@@ -137,14 +137,14 @@
     },
     {
       "from": [
-        5.0,
-        13.18,
-        8.5
+        6.65,
+        12.55,
+        12.45
       ],
       "to": [
-        11.6,
-        13.3,
-        8.9
+        8.95,
+        12.9,
+        13.55
       ],
       "faces": {
         "north": {
@@ -169,33 +169,33 @@
     },
     {
       "from": [
-        12.8,
-        13.18,
-        11.9
+        11.15,
+        12.55,
+        12.45
       ],
       "to": [
-        14.2,
-        13.65,
-        13.3
+        13.45,
+        12.9,
+        13.55
       ],
       "faces": {
         "north": {
-          "texture": "#leather"
+          "texture": "#ink"
         },
         "east": {
-          "texture": "#leather"
+          "texture": "#ink"
         },
         "south": {
-          "texture": "#leather"
+          "texture": "#ink"
         },
         "west": {
-          "texture": "#leather"
+          "texture": "#ink"
         },
         "up": {
-          "texture": "#leather"
+          "texture": "#ink"
         },
         "down": {
-          "texture": "#leather"
+          "texture": "#ink"
         }
       }
     }

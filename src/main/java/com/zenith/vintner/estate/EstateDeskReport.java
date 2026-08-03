@@ -9,6 +9,7 @@ import com.zenith.vintner.wine.WineMarketRegion;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
@@ -381,54 +382,27 @@ public final class EstateDeskReport {
                     ServerLevel level,
                     BlockPos deskPos
             ) {
-        SurveyorsMapTableBlockEntity nearest = null;
-        int nearestDistance = Integer.MAX_VALUE;
-
-        for (int yOffset = -1; yOffset <= 1; yOffset++) {
-            for (int xOffset = -2; xOffset <= 2; xOffset++) {
-                for (int zOffset = -2; zOffset <= 2; zOffset++) {
-                    if (xOffset == 0
-                            && yOffset == 0
-                            && zOffset == 0) {
-                        continue;
-                    }
-                    BlockPos candidate = deskPos.offset(
-                            xOffset,
-                            yOffset,
-                            zOffset
-                    );
-                    if (!(level.getBlockEntity(candidate)
-                            instanceof SurveyorsMapTableBlockEntity table)) {
-                        continue;
-                    }
-
-                    int distance = xOffset * xOffset
-                            + yOffset * yOffset
-                            + zOffset * zOffset;
-                    if (distance < nearestDistance) {
-                        nearest = table;
-                        nearestDistance = distance;
-                    }
-                }
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            BlockPos candidate = deskPos.relative(direction);
+            if (level.getBlockEntity(candidate)
+                    instanceof SurveyorsMapTableBlockEntity table) {
+                return Optional.of(table);
             }
         }
-        return Optional.ofNullable(nearest);
+        return Optional.empty();
     }
 
     public static boolean hasNearbyCorrespondenceBoard(
             ServerLevel level,
             BlockPos deskPos
     ) {
-        for (int x = -2; x <= 2; x++) {
-            for (int y = -1; y <= 1; y++) {
-                for (int z = -2; z <= 2; z++) {
-                    if (ModBlocks.TRADE_CORRESPONDENCE_BOARDS
-                            .containsValue(level.getBlockState(
-                                    deskPos.offset(x, y, z)
-                            ).getBlock())) {
-                        return true;
-                    }
-                }
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            if (ModBlocks.TRADE_CORRESPONDENCE_BOARDS.containsValue(
+                    level.getBlockState(
+                            deskPos.relative(direction)
+                    ).getBlock()
+            )) {
+                return true;
             }
         }
         return false;

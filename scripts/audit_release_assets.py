@@ -820,12 +820,17 @@ def audit_trade_correspondence_board() -> None:
         ROOT / "scripts/generate_trade_correspondence_board_assets.py"
     )
     facings = {"north", "east", "south", "west"}
-    expected_keys = {f"facing={facing}" for facing in facings}
-    expected_rotations = {
-        "facing=north": 0,
-        "facing=east": 90,
-        "facing=south": 180,
-        "facing=west": 270,
+    connections = {"none", "left", "right", "front", "back"}
+    expected_keys = {
+        f"connection={connection},facing={facing}"
+        for connection in connections
+        for facing in facings
+    }
+    facing_rotations = {
+        "north": 0,
+        "east": 90,
+        "south": 180,
+        "west": 270,
     }
 
     for wood in WOODS:
@@ -840,26 +845,28 @@ def audit_trade_correspondence_board() -> None:
         if set(variants) != expected_keys:
             fail(
                 f"{block_id}: correspondence board must cover exactly "
-                "the four horizontal facings"
+                "the four horizontal facings for every desk connection"
             )
             continue
         expected_model = f"vintner:block/{block_id}"
-        for key, rotation in expected_rotations.items():
-            variant = variants.get(key)
-            if not isinstance(variant, dict):
-                fail(f"{block_id}: invalid {key} variant")
-                continue
-            if variant.get("model") != expected_model:
-                fail(
-                    f"{block_id}: {key} does not use {expected_model}"
-                )
-            if variant.get("y", 0) != rotation:
-                fail(
-                    f"{block_id}: {key} has rotation "
-                    f"{variant.get('y', 0)} instead of {rotation}"
-                )
-            if variant.get("uvlock") is not True:
-                fail(f"{block_id}: {key} must lock its UV rotation")
+        for connection in connections:
+            for facing, rotation in facing_rotations.items():
+                key = f"connection={connection},facing={facing}"
+                variant = variants.get(key)
+                if not isinstance(variant, dict):
+                    fail(f"{block_id}: invalid {key} variant")
+                    continue
+                if variant.get("model") != expected_model:
+                    fail(
+                        f"{block_id}: {key} does not use {expected_model}"
+                    )
+                    continue
+                if variant.get("y", 0) != rotation:
+                    fail(
+                        f"{block_id}: {key} has incorrect y rotation"
+                    )
+                if variant.get("uvlock") is not True:
+                    fail(f"{block_id}: {key} must lock its UV rotation")
 
 
 def main() -> int:

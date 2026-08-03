@@ -769,6 +769,178 @@
         "uvlock": true,
         "y": 270
       }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "module_left": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_left",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "module_left": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_left",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "module_left": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_left",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "module_left": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_left",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "module_right": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_right",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "module_right": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_right",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "module_right": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_right",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "module_right": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_right",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "module_front": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_front",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "module_front": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_front",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "module_front": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_front",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "module_front": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_front",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "module_back": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_back",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "module_back": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_back",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "module_back": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_back",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "module_back": "true"
+      },
+      "apply": {
+        "model": "vintner:block/cherry_estate_management_desk_join_back",
+        "uvlock": true,
+        "y": 270
+      }
     }
   ]
 }

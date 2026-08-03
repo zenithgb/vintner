@@ -2,11 +2,15 @@ package com.zenith.vintner.block;
 
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.EstateManagementDeskBlockEntity;
+import com.zenith.vintner.block.entity.SurveyorsMapTableBlockEntity;
 import com.zenith.vintner.estate.EstateDeskReport;
+import com.zenith.vintner.item.WineItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -15,6 +19,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -36,6 +42,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public final class EstateManagementDeskBlock
         extends BaseEntityBlock {
@@ -47,6 +54,14 @@ public final class EstateManagementDeskBlock
             BooleanProperty.create("has_ledger");
     public static final BooleanProperty HAS_MAP =
             BooleanProperty.create("has_map");
+    public static final BooleanProperty MODULE_LEFT =
+            BooleanProperty.create("module_left");
+    public static final BooleanProperty MODULE_RIGHT =
+            BooleanProperty.create("module_right");
+    public static final BooleanProperty MODULE_FRONT =
+            BooleanProperty.create("module_front");
+    public static final BooleanProperty MODULE_BACK =
+            BooleanProperty.create("module_back");
     public static final MapCodec<EstateManagementDeskBlock> CODEC =
             simpleCodec(EstateManagementDeskBlock::new);
     private static final VoxelShape SHAPE = Block.box(
@@ -69,6 +84,10 @@ public final class EstateManagementDeskBlock
                         )
                         .setValue(HAS_LEDGER, false)
                         .setValue(HAS_MAP, false)
+                        .setValue(MODULE_LEFT, false)
+                        .setValue(MODULE_RIGHT, false)
+                        .setValue(MODULE_FRONT, false)
+                        .setValue(MODULE_BACK, false)
         );
     }
 
@@ -116,7 +135,43 @@ public final class EstateManagementDeskBlock
                     HAS_LEDGER
             );
         }
+        if (heldStack.getItem() instanceof WineItem) {
+            if (!(level instanceof ServerLevel serverLevel)
+                    || !(player instanceof ServerPlayer serverPlayer)) {
+                return InteractionResult.SUCCESS;
+            }
+            if (!EstateDeskReport.hasNearbyCorrespondenceBoard(
+                    serverLevel,
+                    pos
+            )) {
+                serverPlayer.sendSystemMessage(Component.translatable(
+                        "message.vintner.estate_desk.correspondence_required"
+                ));
+                return InteractionResult.SUCCESS;
+            }
+            return TradeCorrespondenceBoardBlock.dispatchWine(
+                    serverLevel,
+                    pos,
+                    serverPlayer,
+                    heldStack
+            );
+        }
         if (heldStack.is(Items.FILLED_MAP)) {
+            if (level instanceof ServerLevel serverLevel) {
+                var table = EstateDeskReport.findNearbyAtlasTable(
+                        serverLevel,
+                        pos
+                );
+                if (table.isPresent()) {
+                    return fileMap(
+                            heldStack,
+                            serverLevel,
+                            pos,
+                            player,
+                            table.get()
+                    );
+                }
+            }
             if (state.getValue(HAS_MAP)) {
                 return InteractionResult.SUCCESS;
             }
@@ -165,10 +220,90 @@ public final class EstateManagementDeskBlock
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(
-                FACING,
-                context.getHorizontalDirection().getOpposite()
+        return updateModuleConnections(
+                defaultBlockState().setValue(
+                        FACING,
+                        context.getHorizontalDirection().getOpposite()
+                ),
+                context.getLevel(),
+                context.getClickedPos()
         );
+    }
+
+    @Override
+    protected BlockState updateShape(
+            BlockState state,
+            LevelReader level,
+            ScheduledTickAccess ticks,
+            BlockPos pos,
+            Direction directionToNeighbour,
+            BlockPos neighbourPos,
+            BlockState neighbourState,
+            RandomSource random
+    ) {
+        if (directionToNeighbour.getAxis().isHorizontal()) {
+            return updateModuleConnections(state, level, pos);
+        }
+        return super.updateShape(
+                state,
+                level,
+                ticks,
+                pos,
+                directionToNeighbour,
+                neighbourPos,
+                neighbourState,
+                random
+        );
+    }
+
+    private static BlockState updateModuleConnections(
+            BlockState state,
+            LevelReader level,
+            BlockPos pos
+    ) {
+        Direction facing = state.getValue(FACING);
+        return state
+                .setValue(
+                        MODULE_LEFT,
+                        isDeskModule(level, pos.relative(
+                                DeskModuleConnection.LEFT.worldDirection(
+                                        facing
+                                )
+                        ))
+                )
+                .setValue(
+                        MODULE_RIGHT,
+                        isDeskModule(level, pos.relative(
+                                DeskModuleConnection.RIGHT.worldDirection(
+                                        facing
+                                )
+                        ))
+                )
+                .setValue(
+                        MODULE_FRONT,
+                        isDeskModule(level, pos.relative(
+                                DeskModuleConnection.FRONT.worldDirection(
+                                        facing
+                                )
+                        ))
+                )
+                .setValue(
+                        MODULE_BACK,
+                        isDeskModule(level, pos.relative(
+                                DeskModuleConnection.BACK.worldDirection(
+                                        facing
+                                )
+                        ))
+                );
+    }
+
+    private static boolean isDeskModule(
+            LevelReader level,
+            BlockPos pos
+    ) {
+        Block block = level.getBlockState(pos).getBlock();
+        return block instanceof SurveyorsMapTableBlock
+                || block instanceof TradeCorrespondenceBoardBlock;
     }
 
     @Override
@@ -260,6 +395,35 @@ public final class EstateManagementDeskBlock
         return InteractionResult.SUCCESS;
     }
 
+    private static InteractionResult fileMap(
+            ItemStack heldStack,
+            ServerLevel level,
+            BlockPos deskPos,
+            Player player,
+            SurveyorsMapTableBlockEntity table
+    ) {
+        SurveyorsMapTableBlockEntity.AddResult result =
+                table.addMap(heldStack, level);
+        if (result == SurveyorsMapTableBlockEntity.AddResult.ADDED) {
+            consumeOne(player, heldStack);
+            level.playSound(
+                    null,
+                    deskPos,
+                    SoundEvents.ITEM_FRAME_ADD_ITEM,
+                    SoundSource.BLOCKS,
+                    0.8F,
+                    1.0F
+            );
+        }
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.surveyors_map_table."
+                        + result.name().toLowerCase(Locale.ROOT),
+                table.getMapCount(),
+                SurveyorsMapTableBlockEntity.CAPACITY
+        ));
+        return InteractionResult.SUCCESS;
+    }
+
     private static void consumeOne(Player player, ItemStack heldStack) {
         if (!player.getAbilities().instabuild) {
             heldStack.shrink(1);
@@ -297,6 +461,15 @@ public final class EstateManagementDeskBlock
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING, BLOTTER_COLOR, HAS_LEDGER, HAS_MAP);
+        builder.add(
+                FACING,
+                BLOTTER_COLOR,
+                HAS_LEDGER,
+                HAS_MAP,
+                MODULE_LEFT,
+                MODULE_RIGHT,
+                MODULE_FRONT,
+                MODULE_BACK
+        );
     }
 }

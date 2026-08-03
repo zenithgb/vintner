@@ -5,6 +5,7 @@ import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.block.CellarGlassColor;
 import com.zenith.vintner.block.CellarCollectionBlock;
 import com.zenith.vintner.block.DeskBlotterColor;
+import com.zenith.vintner.block.DeskModuleConnection;
 import com.zenith.vintner.block.EstateManagementDeskBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
@@ -411,6 +412,42 @@ public final class VintnerGameTests {
                 "An adjacent estate desk should discover the populated map table"
         );
 
+        ItemStack northMap = MapItem.create(
+                helper.getLevel(),
+                absolutePos.getX(),
+                absolutePos.getZ() - 128,
+                (byte) 0,
+                true,
+                false
+        );
+        var northId = northMap.get(DataComponents.MAP_ID);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        BlockPos absoluteDesk = helper.absolutePos(EAST);
+        BlockHitResult deskHit = new BlockHitResult(
+                Vec3.atCenterOf(absoluteDesk),
+                Direction.UP,
+                absoluteDesk,
+                false
+        );
+        player.setItemInHand(InteractionHand.MAIN_HAND, northMap);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                northMap,
+                InteractionHand.MAIN_HAND,
+                deskHit
+        );
+        helper.assertValueEqual(
+                table.getMapCount(),
+                3,
+                "Maps used on the desk should be filed in its attached atlas"
+        );
+        helper.assertTrue(
+                northMap.isEmpty(),
+                "Desk filing should consume the map in survival"
+        );
+
         var firstId = firstMap.get(DataComponents.MAP_ID);
         var eastId = eastMap.get(DataComponents.MAP_ID);
         List<ItemStack> drops = Block.getDrops(
@@ -429,11 +466,16 @@ public final class VintnerGameTests {
                         && eastId.equals(stack.get(DataComponents.MAP_ID))),
                 "Breaking the table should return the adjacent exact map"
         );
+        helper.assertTrue(
+                drops.stream().anyMatch(stack -> northId != null
+                        && northId.equals(stack.get(DataComponents.MAP_ID))),
+                "Breaking the table should return the map filed through the desk"
+        );
 
         ItemStack recovered = table.takeLastMap();
         helper.assertTrue(
-                eastId != null
-                        && eastId.equals(recovered.get(DataComponents.MAP_ID)),
+                northId != null
+                        && northId.equals(recovered.get(DataComponents.MAP_ID)),
                 "Sneak-removal should return the most recently added map"
         );
         helper.succeed();
@@ -639,11 +681,43 @@ public final class VintnerGameTests {
                 ModBlocks.tradeCorrespondenceBoard(WoodVariant.SPRUCE)
         );
         helper.assertTrue(
+                !EstateDeskReport.hasNearbyCorrespondenceBoard(
+                        helper.getLevel(),
+                        helper.absolutePos(desk)
+                ),
+                "A detached correspondence cabinet should not unlock the desk"
+        );
+        helper.setBlock(
+                desk.east(),
+                ModBlocks.tradeCorrespondenceBoard(WoodVariant.SPRUCE)
+        );
+        helper.assertTrue(
                 EstateDeskReport.hasNearbyCorrespondenceBoard(
                         helper.getLevel(),
                         helper.absolutePos(desk)
                 ),
-                "A nearby correspondence board should connect to the desk"
+                "A directly attached correspondence cabinet should connect"
+        );
+        helper.assertBlockProperty(
+                desk,
+                EstateManagementDeskBlock.MODULE_RIGHT,
+                true
+        );
+        DeskModuleConnection.Attachment attachment =
+                DeskModuleConnection.find(
+                        helper.getLevel(),
+                        helper.absolutePos(desk.east()),
+                        Direction.SOUTH
+                );
+        helper.assertValueEqual(
+                attachment.facing(),
+                Direction.NORTH,
+                "An attached module should inherit the desk facing"
+        );
+        helper.assertValueEqual(
+                attachment.connection(),
+                DeskModuleConnection.RIGHT,
+                "The module should identify its side of the desk"
         );
         helper.succeed();
     }

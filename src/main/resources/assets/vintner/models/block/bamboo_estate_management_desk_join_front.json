@@ -1,0 +1,8 @@
+{
+  "parent": "vintner:block/estate_management_desk_join_front",
+  "textures": {
+    "frame": "minecraft:block/bamboo_planks",
+    "writing": "minecraft:block/bamboo_planks",
+    "particle": "minecraft:block/bamboo_planks"
+  }
+}

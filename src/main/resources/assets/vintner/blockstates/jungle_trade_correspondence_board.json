@@ -1,20 +1,96 @@
 {
   "variants": {
-    "facing=north": {
+    "connection=none,facing=north": {
       "model": "vintner:block/jungle_trade_correspondence_board",
       "uvlock": true
     },
-    "facing=east": {
+    "connection=none,facing=east": {
       "model": "vintner:block/jungle_trade_correspondence_board",
       "uvlock": true,
       "y": 90
     },
-    "facing=south": {
+    "connection=none,facing=south": {
       "model": "vintner:block/jungle_trade_correspondence_board",
       "uvlock": true,
       "y": 180
     },
-    "facing=west": {
+    "connection=none,facing=west": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 270
+    },
+    "connection=left,facing=north": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true
+    },
+    "connection=left,facing=east": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 90
+    },
+    "connection=left,facing=south": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 180
+    },
+    "connection=left,facing=west": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 270
+    },
+    "connection=right,facing=north": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true
+    },
+    "connection=right,facing=east": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 90
+    },
+    "connection=right,facing=south": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 180
+    },
+    "connection=right,facing=west": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 270
+    },
+    "connection=front,facing=north": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true
+    },
+    "connection=front,facing=east": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 90
+    },
+    "connection=front,facing=south": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 180
+    },
+    "connection=front,facing=west": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 270
+    },
+    "connection=back,facing=north": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true
+    },
+    "connection=back,facing=east": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 90
+    },
+    "connection=back,facing=south": {
+      "model": "vintner:block/jungle_trade_correspondence_board",
+      "uvlock": true,
+      "y": 180
+    },
+    "connection=back,facing=west": {
       "model": "vintner:block/jungle_trade_correspondence_board",
       "uvlock": true,
       "y": 270

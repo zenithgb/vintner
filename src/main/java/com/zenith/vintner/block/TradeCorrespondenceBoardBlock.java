@@ -13,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -23,6 +24,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -39,6 +42,11 @@ import org.jetbrains.annotations.Nullable;
 public final class TradeCorrespondenceBoardBlock extends Block {
     public static final EnumProperty<Direction> FACING =
             BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<DeskModuleConnection> CONNECTION =
+            EnumProperty.create(
+                    "connection",
+                    DeskModuleConnection.class
+            );
     public static final MapCodec<TradeCorrespondenceBoardBlock> CODEC =
             simpleCodec(TradeCorrespondenceBoardBlock::new);
     private static final VoxelShape NORTH_SOUTH_SHAPE = Shapes.or(
@@ -61,7 +69,8 @@ public final class TradeCorrespondenceBoardBlock extends Block {
     ) {
         super(properties);
         registerDefaultState(stateDefinition.any()
-                .setValue(FACING, Direction.NORTH));
+                .setValue(FACING, Direction.NORTH)
+                .setValue(CONNECTION, DeskModuleConnection.NONE));
     }
 
     @Override
@@ -72,10 +81,54 @@ public final class TradeCorrespondenceBoardBlock extends Block {
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(
-                FACING,
-                context.getHorizontalDirection().getOpposite()
+        Direction facing = context.getHorizontalDirection().getOpposite();
+        return updateAttachment(
+                defaultBlockState().setValue(FACING, facing),
+                context.getLevel(),
+                context.getClickedPos()
         );
+    }
+
+    @Override
+    protected BlockState updateShape(
+            BlockState state,
+            LevelReader level,
+            ScheduledTickAccess ticks,
+            BlockPos pos,
+            Direction directionToNeighbour,
+            BlockPos neighbourPos,
+            BlockState neighbourState,
+            RandomSource random
+    ) {
+        if (directionToNeighbour.getAxis().isHorizontal()) {
+            return updateAttachment(state, level, pos);
+        }
+        return super.updateShape(
+                state,
+                level,
+                ticks,
+                pos,
+                directionToNeighbour,
+                neighbourPos,
+                neighbourState,
+                random
+        );
+    }
+
+    private static BlockState updateAttachment(
+            BlockState state,
+            LevelReader level,
+            BlockPos pos
+    ) {
+        DeskModuleConnection.Attachment attachment =
+                DeskModuleConnection.find(
+                        level,
+                        pos,
+                        state.getValue(FACING)
+                );
+        return state
+                .setValue(FACING, attachment.facing())
+                .setValue(CONNECTION, attachment.connection());
     }
 
     @Override
@@ -117,54 +170,10 @@ public final class TradeCorrespondenceBoardBlock extends Block {
         if (!(stack.getItem() instanceof WineItem)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        if (!(level instanceof ServerLevel serverLevel)
-                || !(player instanceof ServerPlayer serverPlayer)) {
-            return InteractionResult.SUCCESS;
-        }
-
-        WineContractSavedData.Delivery delivery =
-                WineContractSavedData.get(serverLevel).deliver(
-                        serverLevel,
-                        serverPlayer.getUUID(),
-                        stack
-                );
-        switch (delivery.result()) {
-            case NO_ACTIVE_CONTRACT -> message(
-                    serverPlayer,
-                    "block.vintner.trade_correspondence_board.no_contract",
-                    ChatFormatting.GRAY
-            );
-            case MISMATCH -> message(
-                    serverPlayer,
-                    "block.vintner.trade_correspondence_board.mismatch",
-                    ChatFormatting.RED
-            );
-            case ACCEPTED -> {
-                consumeOne(serverPlayer, stack);
-                WineContract contract = delivery.contract();
-                serverLevel.playSound(
-                        null,
-                        pos,
-                        SoundEvents.BOOK_PAGE_TURN,
-                        SoundSource.BLOCKS,
-                        0.8F,
-                        1.1F
-                );
-                serverPlayer.sendSystemMessage(
-                        Component.translatable(
-                                "block.vintner.trade_correspondence_board.accepted",
-                                contract.deliveredBottles(),
-                                contract.requiredBottles()
-                        ).withStyle(ChatFormatting.GREEN)
-                );
-            }
-            case COMPLETED -> complete(
-                    serverLevel,
-                    pos,
-                    serverPlayer,
-                    stack,
-                    delivery.contract()
-            );
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.sendSystemMessage(Component.translatable(
+                    "message.vintner.desk_module.use_desk"
+            ));
         }
         return InteractionResult.SUCCESS;
     }
@@ -177,26 +186,63 @@ public final class TradeCorrespondenceBoardBlock extends Block {
             Player player,
             BlockHitResult hit
     ) {
-        if (level instanceof ServerLevel serverLevel
-                && player instanceof ServerPlayer serverPlayer) {
-            WineContract active = WineContractSavedData.get(serverLevel)
-                    .active(serverPlayer.getUUID());
-            if (active == null) {
-                message(
-                        serverPlayer,
-                        "block.vintner.trade_correspondence_board.no_contract",
-                        ChatFormatting.GRAY
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.sendSystemMessage(Component.translatable(
+                    "message.vintner.desk_module.use_desk"
+            ));
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    public static InteractionResult dispatchWine(
+            ServerLevel level,
+            BlockPos deskPos,
+            ServerPlayer player,
+            ItemStack stack
+    ) {
+        WineContractSavedData.Delivery delivery =
+                WineContractSavedData.get(level).deliver(
+                        level,
+                        player.getUUID(),
+                        stack
                 );
-            } else {
-                serverPlayer.sendSystemMessage(
+        switch (delivery.result()) {
+            case NO_ACTIVE_CONTRACT -> message(
+                    player,
+                    "block.vintner.trade_correspondence_board.no_contract",
+                    ChatFormatting.GRAY
+            );
+            case MISMATCH -> message(
+                    player,
+                    "block.vintner.trade_correspondence_board.mismatch",
+                    ChatFormatting.RED
+            );
+            case ACCEPTED -> {
+                consumeOne(player, stack);
+                WineContract contract = delivery.contract();
+                level.playSound(
+                        null,
+                        deskPos,
+                        SoundEvents.BOOK_PAGE_TURN,
+                        SoundSource.BLOCKS,
+                        0.8F,
+                        1.1F
+                );
+                player.sendSystemMessage(
                         Component.translatable(
-                                "block.vintner.trade_correspondence_board.status",
-                                active.partner().displayName(),
-                                active.deliveredBottles(),
-                                active.requiredBottles()
-                        ).withStyle(ChatFormatting.GOLD)
+                                "block.vintner.trade_correspondence_board.accepted",
+                                contract.deliveredBottles(),
+                                contract.requiredBottles()
+                        ).withStyle(ChatFormatting.GREEN)
                 );
             }
+            case COMPLETED -> complete(
+                    level,
+                    deskPos,
+                    player,
+                    stack,
+                    delivery.contract()
+            );
         }
         return InteractionResult.SUCCESS;
     }
@@ -263,6 +309,6 @@ public final class TradeCorrespondenceBoardBlock extends Block {
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING);
+        builder.add(FACING, CONNECTION);
     }
 }

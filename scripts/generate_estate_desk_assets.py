@@ -221,6 +221,25 @@ def map_frame_model() -> dict[str, object]:
     }
 
 
+def module_join_model(side: str) -> dict[str, object]:
+    bounds = {
+        "left": ([0, 10.25, 1], [0.5, 11.5, 15]),
+        "right": ([15.5, 10.25, 1], [16, 11.5, 15]),
+        "front": ([0.5, 10.25, 0], [15.5, 11.5, 1]),
+        "back": ([0.5, 10.25, 15], [15.5, 11.5, 16]),
+    }
+    start, end = bounds[side]
+    return {
+        "parent": "minecraft:block/block",
+        "textures": {
+            "frame": "minecraft:block/oak_planks",
+            "writing": "minecraft:block/oak_planks",
+            "particle": "minecraft:block/oak_planks",
+        },
+        "elements": [cube(start, end, "#frame", "#writing")],
+    }
+
+
 def desk_id(wood: str) -> str:
     return (
         "estate_management_desk"
@@ -275,6 +294,22 @@ def blockstate(base_model: str) -> dict[str, object]:
                 "apply": apply,
             })
 
+    for side in ("left", "right", "front", "back"):
+        for facing, rotation in ROTATIONS.items():
+            apply = {
+                "model": f"vintner:block/{base_model}_join_{side}",
+                "uvlock": True,
+            }
+            if rotation:
+                apply["y"] = rotation
+            multipart.append({
+                "when": {
+                    "facing": facing,
+                    f"module_{side}": "true",
+                },
+                "apply": apply,
+            })
+
     return {"multipart": multipart}
 
 
@@ -292,6 +327,11 @@ def main() -> None:
         MODEL_DIR / "estate_management_desk_map_frame.json",
         map_frame_model(),
     )
+    for side in ("left", "right", "front", "back"):
+        write_json(
+            MODEL_DIR / f"estate_management_desk_join_{side}.json",
+            module_join_model(side),
+        )
     # Filled maps are rendered from their actual MapItemSavedData by the desk
     # block-entity renderer, so no painted placeholder model is generated.
     (MODEL_DIR / "estate_management_desk_map.json").unlink(
@@ -323,6 +363,21 @@ def main() -> None:
                     },
                 },
             )
+            for side in ("left", "right", "front", "back"):
+                write_json(
+                    MODEL_DIR / f"{block_id}_join_{side}.json",
+                    {
+                        "parent": (
+                            "vintner:block/"
+                            f"estate_management_desk_join_{side}"
+                        ),
+                        "textures": {
+                            "frame": f"minecraft:block/{wood}_planks",
+                            "writing": f"minecraft:block/{wood}_planks",
+                            "particle": f"minecraft:block/{wood}_planks",
+                        },
+                    },
+                )
         write_json(
             ASSETS / f"blockstates/{block_id}.json",
             blockstate(block_id),
