@@ -21,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -29,6 +30,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 /** Physical dispatch point for fulfilling accepted estate wine orders. */
@@ -37,6 +41,20 @@ public final class TradeCorrespondenceBoardBlock extends Block {
             BlockStateProperties.HORIZONTAL_FACING;
     public static final MapCodec<TradeCorrespondenceBoardBlock> CODEC =
             simpleCodec(TradeCorrespondenceBoardBlock::new);
+    private static final VoxelShape NORTH_SOUTH_SHAPE = Shapes.or(
+            Block.box(0.75, 9, 1.25, 15.25, 16, 14.25),
+            Block.box(1.25, 0, 1.75, 2.75, 10, 3.5),
+            Block.box(13.25, 0, 1.75, 14.75, 10, 3.5),
+            Block.box(1.25, 0, 12.5, 2.75, 10, 14.25),
+            Block.box(13.25, 0, 12.5, 14.75, 10, 14.25)
+    );
+    private static final VoxelShape EAST_WEST_SHAPE = Shapes.or(
+            Block.box(1.25, 9, 0.75, 14.75, 16, 15.25),
+            Block.box(1.75, 0, 1.25, 3.5, 10, 2.75),
+            Block.box(12.5, 0, 1.25, 14.25, 10, 2.75),
+            Block.box(1.75, 0, 13.25, 3.5, 10, 14.75),
+            Block.box(12.5, 0, 13.25, 14.25, 10, 14.75)
+    );
 
     public TradeCorrespondenceBoardBlock(
             BlockBehaviour.Properties properties
@@ -58,6 +76,32 @@ public final class TradeCorrespondenceBoardBlock extends Block {
                 FACING,
                 context.getHorizontalDirection().getOpposite()
         );
+    }
+
+    @Override
+    protected VoxelShape getShape(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        return shapeFor(state);
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        return shapeFor(state);
+    }
+
+    private static VoxelShape shapeFor(BlockState state) {
+        return state.getValue(FACING).getAxis() == Direction.Axis.Z
+                ? NORTH_SOUTH_SHAPE
+                : EAST_WEST_SHAPE;
     }
 
     @Override

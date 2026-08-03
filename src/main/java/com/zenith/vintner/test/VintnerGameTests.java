@@ -8404,4 +8404,25 @@ public final class VintnerGameTests {
         );
         helper.succeed();
     }
+
+    @GameTest(maxTicks = 40)
+    public void tradeCorrespondenceBoardDoesNotSupportFenceConnections(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.TRADE_CORRESPONDENCE_BOARD);
+        BlockState state = helper.getBlockState(FIRST);
+        BlockPos absolutePos = helper.absolutePos(FIRST);
+
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            helper.assertFalse(
+                    state.isFaceSturdy(
+                            helper.getLevel(),
+                            absolutePos,
+                            direction
+                    ),
+                    "The open correspondence bureau must not attract fences"
+            );
+        }
+        helper.succeed();
+    }
 }

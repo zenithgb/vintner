@@ -33,29 +33,44 @@ def cube(start: list[float], end: list[float], texture: str) -> dict:
 
 def model() -> dict:
     elements = [
-        # Slender writing bureau legs and lower stretcher.
-        cube([1, 0, 2], [2.5, 10, 3.5], "#wood"),
-        cube([13.5, 0, 2], [15, 10, 3.5], "#wood"),
-        cube([1, 0, 12.5], [2.5, 10, 14], "#wood"),
-        cube([13.5, 0, 12.5], [15, 10, 14], "#wood"),
-        cube([1.5, 2, 2.5], [14.5, 3, 3.5], "#wood"),
-        cube([1.5, 2, 12.5], [14.5, 3, 13.5], "#wood"),
-        # Sloped correspondence ledge and raised pigeonhole back.
-        cube([0.5, 9.5, 1], [15.5, 11.5, 9], "#wood"),
-        cube([1, 11.5, 8], [15, 16, 14.5], "#wood"),
-        cube([1.5, 12, 7.6], [14.5, 15.5, 8.3], "#dark"),
-        cube([5.5, 12, 7.2], [6.2, 15.5, 8.5], "#wood"),
-        cube([10, 12, 7.2], [10.7, 15.5, 8.5], "#wood"),
-        cube([1.5, 13.5, 7.15], [14.5, 14.1, 8.5], "#wood"),
-        # Filed letters, dispatch paper and wax seals on the player side.
-        cube([2, 12.2, 7.0], [5, 13.25, 7.25], "#paper"),
-        cube([6.4, 14.25, 7.0], [9.8, 15.25, 7.25], "#paper"),
-        cube([10.9, 12.2, 7.0], [14, 13.25, 7.25], "#paper"),
-        cube([3.2, 12.35, 6.85], [3.8, 12.95, 7.05], "#seal"),
-        cube([7.8, 14.4, 6.85], [8.4, 15, 7.05], "#seal"),
-        cube([12.1, 12.35, 6.85], [12.7, 12.95, 7.05], "#seal"),
-        cube([3, 11.52, 2], [12.5, 11.68, 7.5], "#paper"),
-        cube([6.8, 11.69, 4.2], [7.7, 11.9, 5.1], "#seal"),
+        # Fine legs, side rails, and foot-level stretchers keep the bureau open.
+        cube([1.25, 0, 1.75], [2.75, 10, 3.5], "#dark"),
+        cube([13.25, 0, 1.75], [14.75, 10, 3.5], "#dark"),
+        cube([1.25, 0, 12.5], [2.75, 10, 14.25], "#dark"),
+        cube([13.25, 0, 12.5], [14.75, 10, 14.25], "#dark"),
+        cube([1.75, 2, 2.25], [14.25, 2.75, 3.25], "#wood"),
+        cube([1.75, 2, 12.75], [14.25, 2.75, 13.75], "#wood"),
+        cube([1.5, 6.25, 2], [2.5, 7, 14], "#wood"),
+        cube([13.5, 6.25, 2], [14.5, 7, 14], "#wood"),
+        # A small central dispatch drawer gives the bureau a functional front.
+        cube([4, 6.75, 1.5], [12, 9.5, 4.25], "#wood"),
+        cube([4.5, 7.2, 1.3], [7.75, 9, 1.65], "#dark"),
+        cube([8.25, 7.2, 1.3], [11.5, 9, 1.65], "#dark"),
+        cube([6, 7.85, 1.1], [6.5, 8.35, 1.35], "#seal"),
+        cube([9.5, 7.85, 1.1], [10, 8.35, 1.35], "#seal"),
+        # Stepped writing slope, dark front apron, and narrow side edging.
+        cube([0.75, 9, 1.25], [15.25, 10.25, 2.5], "#dark"),
+        cube([0.75, 10, 1.5], [15.25, 10.8, 5.25], "#wood"),
+        cube([1, 10.45, 5.25], [15, 11.25, 8.75], "#wood"),
+        cube([0.75, 9.75, 1.25], [1.5, 11.3, 9], "#dark"),
+        cube([14.5, 9.75, 1.25], [15.25, 11.3, 9], "#dark"),
+        # Raised postal hutch with six deep pigeonholes.
+        cube([0.75, 11, 7.75], [15.25, 16, 14.25], "#wood"),
+        cube([1.25, 11.5, 7.5], [14.75, 15.5, 8.15], "#dark"),
+        cube([5.5, 11.5, 7.2], [6.15, 15.5, 8.4], "#wood"),
+        cube([9.85, 11.5, 7.2], [10.5, 15.5, 8.4], "#wood"),
+        cube([1.25, 13.35, 7.15], [14.75, 14, 8.4], "#wood"),
+        cube([0.5, 15.35, 7.5], [15.5, 16, 14.5], "#dark"),
+        # Partially filed correspondence reads as paper without white panels.
+        cube([2.1, 12, 7], [4.55, 12.65, 7.25], "#paper"),
+        cube([6.9, 14.3, 7], [9.1, 14.9, 7.25], "#paper"),
+        cube([11.25, 12.05, 7], [13.7, 12.7, 7.25], "#paper"),
+        cube([3.05, 12.1, 6.85], [3.55, 12.6, 7.05], "#seal"),
+        cube([7.75, 14.35, 6.85], [8.25, 14.85, 7.05], "#seal"),
+        cube([12.2, 12.15, 6.85], [12.7, 12.65, 7.05], "#seal"),
+        # One compact letter on the writing surface marks the dispatch point.
+        cube([4.25, 10.82, 2.25], [11.75, 10.98, 4.75], "#paper"),
+        cube([7.65, 10.99, 3.15], [8.35, 11.18, 3.85], "#seal"),
     ]
     return {
         "parent": "minecraft:block/block",
