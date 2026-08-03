@@ -9,6 +9,7 @@ import com.zenith.vintner.block.EstateManagementDeskBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.NurseryBedBlock;
+import com.zenith.vintner.block.SurveyorsMapTableBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.block.WineRackBlock;
@@ -18,6 +19,7 @@ import com.zenith.vintner.block.entity.CellarCollectionBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.EstateManagementDeskBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
+import com.zenith.vintner.block.entity.SurveyorsMapTableBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
@@ -335,6 +337,92 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void surveyorsMapTableBuildsACompatibleAtlas(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.SURVEYORS_MAP_TABLE);
+        BlockPos absolutePos = helper.absolutePos(FIRST);
+        helper.assertTrue(
+                helper.getLevel().getBlockEntity(absolutePos)
+                        instanceof SurveyorsMapTableBlockEntity,
+                "The Surveyor's Map Table should create its block entity"
+        );
+        SurveyorsMapTableBlockEntity table =
+                (SurveyorsMapTableBlockEntity) helper.getLevel()
+                        .getBlockEntity(absolutePos);
+
+        ItemStack firstMap = MapItem.create(
+                helper.getLevel(),
+                absolutePos.getX(),
+                absolutePos.getZ(),
+                (byte) 0,
+                true,
+                false
+        );
+        ItemStack eastMap = MapItem.create(
+                helper.getLevel(),
+                absolutePos.getX() + 128,
+                absolutePos.getZ(),
+                (byte) 0,
+                true,
+                false
+        );
+
+        helper.assertValueEqual(
+                table.addMap(firstMap, helper.getLevel()),
+                SurveyorsMapTableBlockEntity.AddResult.ADDED,
+                "The first explored map should begin an estate atlas"
+        );
+        helper.assertValueEqual(
+                table.addMap(firstMap, helper.getLevel()),
+                SurveyorsMapTableBlockEntity.AddResult.DUPLICATE,
+                "The same map should not occupy two atlas slots"
+        );
+        helper.assertValueEqual(
+                table.addMap(eastMap, helper.getLevel()),
+                SurveyorsMapTableBlockEntity.AddResult.ADDED,
+                "Adjacent map coverage should extend the estate atlas"
+        );
+        helper.assertValueEqual(
+                table.getMapCount(),
+                2,
+                "The table should retain both compatible maps"
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                SurveyorsMapTableBlock.HAS_MAPS,
+                true
+        );
+
+        var firstId = firstMap.get(DataComponents.MAP_ID);
+        var eastId = eastMap.get(DataComponents.MAP_ID);
+        List<ItemStack> drops = Block.getDrops(
+                helper.getBlockState(FIRST),
+                helper.getLevel(),
+                absolutePos,
+                table
+        );
+        helper.assertTrue(
+                drops.stream().anyMatch(stack -> firstId != null
+                        && firstId.equals(stack.get(DataComponents.MAP_ID))),
+                "Breaking the table should return the first exact map"
+        );
+        helper.assertTrue(
+                drops.stream().anyMatch(stack -> eastId != null
+                        && eastId.equals(stack.get(DataComponents.MAP_ID))),
+                "Breaking the table should return the adjacent exact map"
+        );
+
+        ItemStack recovered = table.takeLastMap();
+        helper.assertTrue(
+                eastId != null
+                        && eastId.equals(recovered.get(DataComponents.MAP_ID)),
+                "Sneak-removal should return the most recently added map"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void allWoodVariantRegistriesAreComplete(
             GameTestHelper helper
     ) {
@@ -394,6 +482,11 @@ public final class VintnerGameTests {
                 ModBlocks.ESTATE_MANAGEMENT_DESKS.size(),
                 expected,
                 "Every wood family should have an estate desk"
+        );
+        helper.assertValueEqual(
+                ModBlocks.SURVEYORS_MAP_TABLES.size(),
+                expected,
+                "Every wood family should have a Surveyor's Map Table"
         );
         helper.assertValueEqual(
                 ModBlocks.RED_GRAPEVINES.size(),
@@ -478,6 +571,14 @@ public final class VintnerGameTests {
                     ),
                     woodVariant.id()
                             + " estate desk should support its block entity"
+            );
+            helper.assertTrue(
+                    ModBlockEntities.SURVEYORS_MAP_TABLE.isValid(
+                            ModBlocks.surveyorsMapTable(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " map table should support its block entity"
             );
         }
 

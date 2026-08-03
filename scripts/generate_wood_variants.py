@@ -173,6 +173,14 @@ def estate_desk_id(wood: str) -> str:
     )
 
 
+def surveyors_map_table_id(wood: str) -> str:
+    return (
+        "surveyors_map_table"
+        if wood == "oak"
+        else f"{wood}_surveyors_map_table"
+    )
+
+
 def grapevine_id(wood: str, color: str) -> str:
     return (
         f"{color}_grapevine"
@@ -908,7 +916,7 @@ def generate_cooperage_kits() -> None:
                 "A": "minecraft:iron_ingot",
             },
             "unlock": "minecraft:charcoal",
-            "texture": "minecraft:item/fire_charge",
+            "texture": "vintner:item/toasting_kit",
         },
         "seasoning_kit": {
             "pattern": [" H ", "HBH", " H "],
@@ -917,7 +925,7 @@ def generate_cooperage_kits() -> None:
                 "B": "minecraft:water_bucket",
             },
             "unlock": "minecraft:honeycomb",
-            "texture": "minecraft:item/honeycomb",
+            "texture": "vintner:item/seasoning_kit",
         },
         "cask_conversion_kit": {
             "pattern": ["PCP", "PPP", "PCP"],
@@ -926,7 +934,7 @@ def generate_cooperage_kits() -> None:
                 "C": "minecraft:copper_ingot",
             },
             "unlock": "minecraft:copper_ingot",
-            "texture": "minecraft:item/copper_ingot",
+            "texture": "vintner:item/cask_conversion_kit",
         },
     }
     for item_id, recipe in recipes.items():
@@ -983,11 +991,18 @@ def generate_cooperage_kits() -> None:
 
     master_path = DATA / "advancement/vintner/master_cooper.json"
     master = read_json(master_path)
-    master["criteria"] = copy.deepcopy(criteria)
-    master["requirements"] = [[criterion] for criterion in criteria]
-    master["display"]["icon"]["id"] = (
-        "vintner:cask_conversion_kit"
-    )
+    master_criteria = {
+        "mallet": {
+            "conditions": {"recipe_id": "vintner:coopers_mallet"},
+            "trigger": "minecraft:recipe_crafted",
+        },
+        **copy.deepcopy(criteria),
+    }
+    master["criteria"] = master_criteria
+    master["requirements"] = [
+        [criterion] for criterion in master_criteria
+    ]
+    master["display"]["icon"]["id"] = "vintner:coopers_mallet"
     write_json(master_path, master)
 
 
@@ -1244,6 +1259,10 @@ def generate_items() -> None:
                 estate_desk_id(wood),
                 f"vintner:block/{estate_desk_id(wood)}",
             ),
+            (
+                surveyors_map_table_id(wood),
+                f"vintner:block/{surveyors_map_table_id(wood)}",
+            ),
         )
 
         for block_id, parent in ids_and_models:
@@ -1348,6 +1367,7 @@ def generate_survival_data() -> None:
             shelf_id(wood),
             cabinet_id(wood),
             estate_desk_id(wood),
+            surveyors_map_table_id(wood),
         )
         axe_blocks.extend(f"vintner:{block_id}" for block_id in ids)
 
@@ -1509,6 +1529,21 @@ def generate_survival_data() -> None:
                     "count": 1,
                 },
             },
+            surveyors_map_table_id(wood): {
+                "type": "minecraft:crafting_shaped",
+                "category": "misc",
+                "pattern": ["PMP", "PCP", "S S"],
+                "key": {
+                    "P": planks,
+                    "M": "minecraft:map",
+                    "C": "minecraft:cartography_table",
+                    "S": f"minecraft:{wood}_slab",
+                },
+                "result": {
+                    "id": f"vintner:{surveyors_map_table_id(wood)}",
+                    "count": 1,
+                },
+            },
         }
 
         for recipe_id, recipe in recipes.items():
@@ -1601,6 +1636,9 @@ def generate_language() -> None:
         language[f"block.vintner.{estate_desk_id(wood)}"] = (
             f"{title} Estate Management Desk"
         )
+        language[f"block.vintner.{surveyors_map_table_id(wood)}"] = (
+            f"{title} Surveyor's Map Table"
+        )
         language[
             f"block.vintner.{grapevine_id(wood, 'red')}"
         ] = f"{title} Red Grapevine"
@@ -1651,16 +1689,16 @@ def generate_language() -> None:
         "Bulk choice: very slow, gentle maturation for eight bottles with very low oxygen and soft tannin."
     )
     language["aging_vessel.vintner.crafting.oak"] = (
-        "Start here. Every wood family begins with this balanced profile; apply a cooperage kit to an empty barrel to specialise it."
+        "Start here. Every wood family begins with this balanced profile; use a Cooper's Mallet and treatment kit on an empty barrel to specialise it."
     )
     language["aging_vessel.vintner.crafting.chestnut"] = (
-        "Apply a Toasting Kit to an empty ordinary Aging Barrel."
+        "Hold a Cooper's Mallet and Toasting Kit, then use either one on an empty ordinary Aging Barrel."
     )
     language["aging_vessel.vintner.crafting.neutral"] = (
-        "Apply a Seasoning Kit to an empty ordinary Aging Barrel."
+        "Hold a Cooper's Mallet and Seasoning Kit, then use either one on an empty ordinary Aging Barrel."
     )
     language["aging_vessel.vintner.crafting.large_cask"] = (
-        "Apply a Cask Conversion Kit to an empty ordinary Aging Barrel."
+        "Hold a Cooper's Mallet and Cask Conversion Kit, then use either one on an empty ordinary Aging Barrel."
     )
     language["message.vintner.aging.upgrade_applied"] = (
         "Barrel configured for %s."
@@ -1672,7 +1710,7 @@ def generate_language() -> None:
         "This barrel is already configured for %s."
     )
     language["message.vintner.aging.upgrade_recover_first"] = (
-        "This barrel already uses %s. Break it to recover the current kit before refitting it."
+        "This barrel already uses %s. Sneak-use a Cooper's Mallet to remove it before refitting."
     )
     language["advancement.vintner.choose_aging_style.title"] = (
         "Choose an Aging Style"
@@ -1682,7 +1720,7 @@ def generate_language() -> None:
     )
     language["advancement.vintner.master_cooper.title"] = "Master Cooper"
     language["advancement.vintner.master_cooper.description"] = (
-        "Craft all three cooperage upgrade kits"
+        "Craft a Cooper's Mallet and all three treatment kits"
     )
     language["wine_style.vintner.red"] = "Red"
     language["wine_style.vintner.white"] = "White"

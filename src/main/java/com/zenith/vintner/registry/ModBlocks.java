@@ -12,6 +12,7 @@ import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapePressBlock;
 import com.zenith.vintner.block.NurseryBedBlock;
 import com.zenith.vintner.block.RedGrapevineBlock;
+import com.zenith.vintner.block.SurveyorsMapTableBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.block.WhiteGrapevineBlock;
@@ -254,6 +255,20 @@ public final class ModBlocks {
                     EstateManagementDeskBlock::new
             );
 
+    public static final Block SURVEYORS_MAP_TABLE = registerWithItem(
+            "surveyors_map_table",
+            SurveyorsMapTableBlock::new,
+            machineProperties()
+    );
+
+    public static final Map<WoodVariant, Block>
+            SURVEYORS_MAP_TABLES = registerMachineVariants(
+                    WoodVariant.OAK,
+                    SURVEYORS_MAP_TABLE,
+                    WoodVariant::surveyorsMapTableId,
+                    SurveyorsMapTableBlock::new
+            );
+
     public static final Block RED_GRAPEVINE = registerWithoutItem(
             "red_grapevine",
             properties -> new RedGrapevineBlock(
@@ -331,6 +346,10 @@ public final class ModBlocks {
         return ESTATE_MANAGEMENT_DESKS.get(woodVariant);
     }
 
+    public static Block surveyorsMapTable(WoodVariant woodVariant) {
+        return SURVEYORS_MAP_TABLES.get(woodVariant);
+    }
+
     public static Block redGrapevine(WoodVariant woodVariant) {
         return RED_GRAPEVINES.get(woodVariant);
     }
@@ -405,6 +424,10 @@ public final class ModBlocks {
 
     public static Block[] estateManagementDeskBlocks() {
         return orderedBlocks(ESTATE_MANAGEMENT_DESKS);
+    }
+
+    public static Block[] surveyorsMapTableBlocks() {
+        return orderedBlocks(SURVEYORS_MAP_TABLES);
     }
 
     private static Map<WoodVariant, Block> registerTrellises() {
@@ -606,6 +629,8 @@ public final class ModBlocks {
                 .register(output -> {
                     output.accept(NURSERY_BED);
                     ESTATE_MANAGEMENT_DESKS.values()
+                            .forEach(output::accept);
+                    SURVEYORS_MAP_TABLES.values()
                             .forEach(output::accept);
                     TRELLISES.values().forEach(output::accept);
                     GRAPE_PRESSES.values().forEach(output::accept);

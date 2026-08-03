@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PMP",
+    "PCP",
+    "S S"
+  ],
+  "key": {
+    "P": "minecraft:acacia_planks",
+    "M": "minecraft:map",
+    "C": "minecraft:cartography_table",
+    "S": "minecraft:acacia_slab"
+  },
+  "result": {
+    "id": "vintner:acacia_surveyors_map_table",
+    "count": 1
+  }
+}

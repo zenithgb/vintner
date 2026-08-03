@@ -1,0 +1,8 @@
+{
+  "parent": "vintner:block/surveyors_map_table",
+  "textures": {
+    "wood": "minecraft:block/warped_planks",
+    "drawer": "minecraft:block/warped_stem",
+    "particle": "minecraft:block/warped_planks"
+  }
+}

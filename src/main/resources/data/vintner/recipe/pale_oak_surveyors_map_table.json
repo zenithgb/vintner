@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PMP",
+    "PCP",
+    "S S"
+  ],
+  "key": {
+    "P": "minecraft:pale_oak_planks",
+    "M": "minecraft:map",
+    "C": "minecraft:cartography_table",
+    "S": "minecraft:pale_oak_slab"
+  },
+  "result": {
+    "id": "vintner:pale_oak_surveyors_map_table",
+    "count": 1
+  }
+}

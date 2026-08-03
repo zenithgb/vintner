@@ -1,0 +1,8 @@
+{
+  "parent": "vintner:block/surveyors_map_table",
+  "textures": {
+    "wood": "minecraft:block/crimson_planks",
+    "drawer": "minecraft:block/crimson_stem",
+    "particle": "minecraft:block/crimson_planks"
+  }
+}

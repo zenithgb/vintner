@@ -1,6 +1,7 @@
 package com.zenith.vintner.estate;
 
 import com.zenith.vintner.block.entity.EstateManagementDeskBlockEntity;
+import com.zenith.vintner.block.entity.SurveyorsMapTableBlockEntity;
 import com.zenith.vintner.network.EstateDeskPayload;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.wine.WineMarketRegion;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Comparator;
 
 /** Builds a fresh, read-only estate snapshot when a desk is opened. */
 public final class EstateDeskReport {
@@ -74,9 +76,13 @@ public final class EstateDeskReport {
                 map()
         );
 
-        Optional<EstateDeskPayload.MapInfo> map = mapInfo(
+        AtlasSource atlas = atlasSource(
                 level,
-                deskPos,
+                deskPos
+        );
+        List<EstateDeskPayload.MapInfo> maps = mapInfos(
+                level,
+                atlas.maps(),
                 player
         );
 
@@ -90,7 +96,8 @@ public final class EstateDeskReport {
                                 profile.homeRegionDisplayName()
                         ),
                         sections,
-                        map,
+                        maps,
+                        atlas.connected(),
                         plotSummaries(level, plots)
                 )
         );
@@ -125,7 +132,8 @@ public final class EstateDeskReport {
                         "screen.vintner.estate_desk.unregistered_subtitle"
                 ),
                 sections,
-                Optional.empty(),
+                List.of(),
+                false,
                 List.of()
         );
     }
@@ -270,29 +278,76 @@ public final class EstateDeskReport {
         return new EstateDeskPayload.Section(tab("map"), List.of());
     }
 
-    private static Optional<EstateDeskPayload.MapInfo> mapInfo(
+    private static AtlasSource atlasSource(
             ServerLevel level,
-            BlockPos deskPos,
+            BlockPos deskPos
+    ) {
+        Optional<SurveyorsMapTableBlockEntity> table = BlockPos
+                .betweenClosedStream(
+                        deskPos.offset(-2, -1, -2),
+                        deskPos.offset(2, 1, 2)
+                )
+                .filter(candidate -> !candidate.equals(deskPos))
+                .sorted(Comparator.comparingDouble(
+                        candidate -> candidate.distSqr(deskPos)
+                ))
+                .map(level::getBlockEntity)
+                .filter(SurveyorsMapTableBlockEntity.class::isInstance)
+                .map(SurveyorsMapTableBlockEntity.class::cast)
+                .findFirst();
+        if (table.isPresent()) {
+            return new AtlasSource(table.get().getMapCopies(), true);
+        }
+
+        if (level.getBlockEntity(deskPos)
+                instanceof EstateManagementDeskBlockEntity desk) {
+            ItemStack legacyMap = desk.getMapCopy();
+            return new AtlasSource(
+                    legacyMap.isEmpty()
+                            ? List.of()
+                            : List.of(legacyMap),
+                    false
+            );
+        }
+        return new AtlasSource(List.of(), false);
+    }
+
+    private static List<EstateDeskPayload.MapInfo> mapInfos(
+            ServerLevel level,
+            List<ItemStack> stacks,
             ServerPlayer player
     ) {
-        if (!(level.getBlockEntity(deskPos)
-                instanceof EstateManagementDeskBlockEntity desk)) {
-            return Optional.empty();
-        }
+        List<EstateDeskPayload.MapInfo> result = new ArrayList<>();
+        for (ItemStack stack : stacks) {
+            MapId id = stack.get(DataComponents.MAP_ID);
+            if (id == null) {
+                continue;
+            }
+            MapItemSavedData data = level.getMapData(id);
+            if (data == null) {
+                continue;
+            }
 
-        ItemStack stack = desk.getMapCopy();
-        MapId id = stack.get(DataComponents.MAP_ID);
-        if (id == null) {
-            return Optional.empty();
+            sendFullMap(player, id, data);
+            result.add(new EstateDeskPayload.MapInfo(
+                    id.id(),
+                    data.centerX,
+                    data.centerZ,
+                    data.scale,
+                    data.dimension.identifier().toString()
+            ));
         }
-        MapItemSavedData data = level.getMapData(id);
-        if (data == null) {
-            return Optional.empty();
-        }
+        return List.copyOf(result);
+    }
 
+    private static void sendFullMap(
+            ServerPlayer player,
+            MapId id,
+            MapItemSavedData data
+    ) {
         // Send a complete vanilla map update because an installed desk map
-        // is no longer carried and therefore is not covered by normal map
-        // inventory synchronization.
+        // or atlas map is not carried and therefore is not covered by normal
+        // map inventory synchronization.
         var decorations = new ArrayList<
                 net.minecraft.world.level.saveddata.maps.MapDecoration
                 >();
@@ -310,14 +365,9 @@ public final class EstateDeskReport {
                         data.colors.clone()
                 )
         ));
+    }
 
-        return Optional.of(new EstateDeskPayload.MapInfo(
-                id.id(),
-                data.centerX,
-                data.centerZ,
-                data.scale,
-                data.dimension.identifier().toString()
-        ));
+    private record AtlasSource(List<ItemStack> maps, boolean connected) {
     }
 
     private static List<EstateDeskPayload.PlotSummary> plotSummaries(
