@@ -198,6 +198,10 @@ def create_structure(culture: str, wood: str) -> bytes:
         {"axis": "z"},
     )
     composter = state("minecraft:composter", {"level": "4"})
+    contract_board = state(
+        "vintner:village_contract_board",
+        {"facing": "west", "wood": wood},
+    )
     jigsaw = state(
         "minecraft:jigsaw",
         {"orientation": "west_up"},
@@ -255,6 +259,7 @@ def create_structure(culture: str, wood: str) -> bytes:
                 blocks[(x, y, z)] = block_entry((x, y, z), vine)
 
     blocks[(9, 2, 4)] = block_entry((9, 2, 4), composter)
+    blocks[(1, 2, 3)] = block_entry((1, 2, 3), contract_board)
     blocks[(0, 1, 4)] = block_entry(
         (0, 1, 4),
         jigsaw,

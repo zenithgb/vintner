@@ -74,7 +74,7 @@ public final class EstateDeskReport {
                         player.getUUID(),
                         market,
                         reputation.score(),
-                        correspondenceConnected
+                        false
                 );
 
         List<EstateDeskPayload.Section> sections = List.of(

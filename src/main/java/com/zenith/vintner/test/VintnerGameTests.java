@@ -1089,7 +1089,7 @@ public final class VintnerGameTests {
                             settings,
                             Blocks.AIR
                     ).size(),
-                    264,
+                    263,
                     "Vineyard must clear vegetation from the full plot"
             );
 

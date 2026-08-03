@@ -16,6 +16,7 @@ import com.zenith.vintner.block.SurveyorsMapTableBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.TradeCorrespondenceBoardBlock;
 import com.zenith.vintner.block.VintageArchiveBlock;
+import com.zenith.vintner.block.VillageContractBoardBlock;
 import com.zenith.vintner.block.WhiteGrapevineBlock;
 import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.block.WineRackBlock;
@@ -284,6 +285,12 @@ public final class ModBlocks {
                     WoodVariant::tradeCorrespondenceBoardId,
                     TradeCorrespondenceBoardBlock::new
             );
+
+    public static final Block VILLAGE_CONTRACT_BOARD = registerWithItem(
+            "village_contract_board",
+            VillageContractBoardBlock::new,
+            machineProperties()
+    );
 
     public static final Block RED_GRAPEVINE = registerWithoutItem(
             "red_grapevine",
@@ -672,6 +679,7 @@ public final class ModBlocks {
                             .forEach(output::accept);
                     TASTING_CABINETS.values()
                             .forEach(output::accept);
+                    output.accept(VILLAGE_CONTRACT_BOARD);
                 });
     }
 }

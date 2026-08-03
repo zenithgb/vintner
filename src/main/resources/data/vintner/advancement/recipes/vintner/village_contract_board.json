@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_book": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:book"
+          }
+        ]
+      }
+    },
+    "has_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "vintner:village_contract_board"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_book",
+      "has_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "vintner:village_contract_board"
+    ]
+  }
+}

@@ -1,21 +1,11 @@
 {
-  "processors": [
-    {
-      "processor_type": "minecraft:rule",
-      "rules": [
-        {
-          "input_predicate": {
-            "block": "minecraft:cartography_table",
-            "predicate_type": "minecraft:block_match"
-          },
-          "location_predicate": {
-            "predicate_type": "minecraft:always_true"
-          },
-          "output_state": {
-            "Name": "vintner:grape_press"
-          }
-        }
-      ]
-    }
-  ]
+  "processors": [{
+    "processor_type": "minecraft:rule",
+    "rules": [{
+      "input_predicate": {"block": "minecraft:chest", "predicate_type": "minecraft:block_match"},
+      "location_predicate": {"predicate_type": "minecraft:always_true"},
+      "output_state": {"Name": "vintner:grape_press"},
+      "block_entity_modifier": {"type": "minecraft:clear"}
+    }]
+  }]
 }

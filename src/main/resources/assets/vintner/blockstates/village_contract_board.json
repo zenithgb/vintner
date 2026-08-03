@@ -1,0 +1,232 @@
+{
+  "variants": {
+    "facing=north,wood=oak": {
+      "model": "vintner:block/village_contract_board",
+      "uvlock": true
+    },
+    "facing=east,wood=oak": {
+      "model": "vintner:block/village_contract_board",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south,wood=oak": {
+      "model": "vintner:block/village_contract_board",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,wood=oak": {
+      "model": "vintner:block/village_contract_board",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=north,wood=spruce": {
+      "model": "vintner:block/village_contract_board_spruce",
+      "uvlock": true
+    },
+    "facing=east,wood=spruce": {
+      "model": "vintner:block/village_contract_board_spruce",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south,wood=spruce": {
+      "model": "vintner:block/village_contract_board_spruce",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,wood=spruce": {
+      "model": "vintner:block/village_contract_board_spruce",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=north,wood=birch": {
+      "model": "vintner:block/village_contract_board_birch",
+      "uvlock": true
+    },
+    "facing=east,wood=birch": {
+      "model": "vintner:block/village_contract_board_birch",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south,wood=birch": {
+      "model": "vintner:block/village_contract_board_birch",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,wood=birch": {
+      "model": "vintner:block/village_contract_board_birch",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=north,wood=jungle": {
+      "model": "vintner:block/village_contract_board_jungle",
+      "uvlock": true
+    },
+    "facing=east,wood=jungle": {
+      "model": "vintner:block/village_contract_board_jungle",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south,wood=jungle": {
+      "model": "vintner:block/village_contract_board_jungle",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,wood=jungle": {
+      "model": "vintner:block/village_contract_board_jungle",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=north,wood=acacia": {
+      "model": "vintner:block/village_contract_board_acacia",
+      "uvlock": true
+    },
+    "facing=east,wood=acacia": {
+      "model": "vintner:block/village_contract_board_acacia",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south,wood=acacia": {
+      "model": "vintner:block/village_contract_board_acacia",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,wood=acacia": {
+      "model": "vintner:block/village_contract_board_acacia",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=north,wood=dark_oak": {
+      "model": "vintner:block/village_contract_board_dark_oak",
+      "uvlock": true
+    },
+    "facing=east,wood=dark_oak": {
+      "model": "vintner:block/village_contract_board_dark_oak",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south,wood=dark_oak": {
+      "model": "vintner:block/village_contract_board_dark_oak",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,wood=dark_oak": {
+      "model": "vintner:block/village_contract_board_dark_oak",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=north,wood=mangrove": {
+      "model": "vintner:block/village_contract_board_mangrove",
+      "uvlock": true
+    },
+    "facing=east,wood=mangrove": {
+      "model": "vintner:block/village_contract_board_mangrove",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south,wood=mangrove": {
+      "model": "vintner:block/village_contract_board_mangrove",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,wood=mangrove": {
+      "model": "vintner:block/village_contract_board_mangrove",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=north,wood=cherry": {
+      "model": "vintner:block/village_contract_board_cherry",
+      "uvlock": true
+    },
+    "facing=east,wood=cherry": {
+      "model": "vintner:block/village_contract_board_cherry",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south,wood=cherry": {
+      "model": "vintner:block/village_contract_board_cherry",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,wood=cherry": {
+      "model": "vintner:block/village_contract_board_cherry",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=north,wood=pale_oak": {
+      "model": "vintner:block/village_contract_board_pale_oak",
+      "uvlock": true
+    },
+    "facing=east,wood=pale_oak": {
+      "model": "vintner:block/village_contract_board_pale_oak",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south,wood=pale_oak": {
+      "model": "vintner:block/village_contract_board_pale_oak",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,wood=pale_oak": {
+      "model": "vintner:block/village_contract_board_pale_oak",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=north,wood=bamboo": {
+      "model": "vintner:block/village_contract_board_bamboo",
+      "uvlock": true
+    },
+    "facing=east,wood=bamboo": {
+      "model": "vintner:block/village_contract_board_bamboo",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south,wood=bamboo": {
+      "model": "vintner:block/village_contract_board_bamboo",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,wood=bamboo": {
+      "model": "vintner:block/village_contract_board_bamboo",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=north,wood=crimson": {
+      "model": "vintner:block/village_contract_board_crimson",
+      "uvlock": true
+    },
+    "facing=east,wood=crimson": {
+      "model": "vintner:block/village_contract_board_crimson",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south,wood=crimson": {
+      "model": "vintner:block/village_contract_board_crimson",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,wood=crimson": {
+      "model": "vintner:block/village_contract_board_crimson",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=north,wood=warped": {
+      "model": "vintner:block/village_contract_board_warped",
+      "uvlock": true
+    },
+    "facing=east,wood=warped": {
+      "model": "vintner:block/village_contract_board_warped",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=south,wood=warped": {
+      "model": "vintner:block/village_contract_board_warped",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,wood=warped": {
+      "model": "vintner:block/village_contract_board_warped",
+      "uvlock": true,
+      "y": 270
+    }
+  }
+}

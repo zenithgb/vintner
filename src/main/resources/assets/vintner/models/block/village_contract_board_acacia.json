@@ -1,0 +1,8 @@
+{
+  "parent": "vintner:block/village_contract_board",
+  "textures": {
+    "wood": "minecraft:block/acacia_planks",
+    "dark": "minecraft:block/acacia_log",
+    "particle": "minecraft:block/acacia_planks"
+  }
+}

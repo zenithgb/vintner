@@ -32,56 +32,56 @@ public final class ModVillageStructures {
             VILLAGE_STRUCTURES = List.of(
             house(
                     "plains",
-                    "plains_cartographer_1",
+                    "plains_medium_house_2",
                     "winemaker_oak"
             ),
             house(
                     "plains",
-                    "plains_tool_smith_1",
+                    "plains_small_house_7",
                     "cooper_oak"
             ),
             vineyard("plains"),
             house(
                     "desert",
-                    "desert_cartographer_house_1",
+                    "desert_small_house_5",
                     "winemaker_acacia"
             ),
             house(
                     "desert",
-                    "desert_tool_smith_1",
+                    "desert_small_house_8",
                     "cooper_acacia"
             ),
             vineyard("desert"),
             house(
                     "savanna",
-                    "savanna_cartographer_1",
+                    "savanna_medium_house_1",
                     "winemaker_acacia"
             ),
             house(
                     "savanna",
-                    "savanna_tool_smith_1",
+                    "savanna_small_house_3",
                     "cooper_acacia"
             ),
             vineyard("savanna"),
             house(
                     "snowy",
-                    "snowy_cartographer_house_1",
+                    "snowy_small_house_2",
                     "winemaker_spruce"
             ),
             house(
                     "snowy",
-                    "snowy_tool_smith_1",
+                    "snowy_medium_house_2",
                     "cooper_spruce"
             ),
             vineyard("snowy"),
             house(
                     "taiga",
-                    "taiga_cartographer_house_1",
+                    "taiga_medium_house_4",
                     "winemaker_spruce"
             ),
             house(
                     "taiga",
-                    "taiga_tool_smith_1",
+                    "taiga_small_house_3",
                     "cooper_spruce"
             ),
             vineyard("taiga")

@@ -100,6 +100,9 @@ public final class ModCreativeTabs {
                                         .forEach(output::accept);
                                 ModBlocks.TRADE_CORRESPONDENCE_BOARDS.values()
                                         .forEach(output::accept);
+                                output.accept(
+                                        ModBlocks.VILLAGE_CONTRACT_BOARD
+                                );
                                 output.accept(ModItems.SOIL_PROBE);
                                 output.accept(
                                         ModItems.VINTNER_ALMANAC

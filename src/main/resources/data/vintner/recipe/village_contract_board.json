@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "QBQ",
+    "S S"
+  ],
+  "key": {
+    "P": "minecraft:oak_planks",
+    "Q": "minecraft:paper",
+    "B": "minecraft:book",
+    "S": "minecraft:stick"
+  },
+  "result": {
+    "id": "vintner:village_contract_board"
+  }
+}
