@@ -19,14 +19,18 @@ def cube(start, end, texture):
 
 def main():
     elements = [
-        cube([1, 0, 7], [2.5, 16, 9], "#dark"),
-        cube([13.5, 0, 7], [15, 16, 9], "#dark"),
-        cube([1, 5, 6.5], [15, 15, 9.5], "#wood"),
-        cube([2, 6, 6.2], [14, 14, 6.5], "#board"),
-        cube([3, 7, 6.0], [8, 11, 6.2], "#paper"),
-        cube([9, 9, 6.0], [13, 13, 6.2], "#paper"),
-        cube([5.25, 7.75, 5.85], [5.75, 8.25, 6.05], "#seal"),
-        cube([10.75, 11.75, 5.85], [11.25, 12.25, 6.05], "#seal"),
+        # Every part either meets at an edge or has a visible gap. Keeping the
+        # notice surface out of the posts removes the moving-camera flicker
+        # caused by overlapping faces in the original model.
+        cube([1, 0, 7], [2.5, 15, 9], "#dark"),
+        cube([13.5, 0, 7], [15, 15, 9], "#dark"),
+        cube([2.5, 5, 7], [13.5, 6, 9], "#wood"),
+        cube([2.5, 14, 7], [13.5, 15, 9], "#wood"),
+        cube([2.5, 6, 7.25], [13.5, 14, 8.75], "#board"),
+        cube([3, 7, 7.0], [8, 11, 7.25], "#paper"),
+        cube([9, 9, 7.0], [13, 13, 7.25], "#paper"),
+        cube([5.25, 7.75, 6.8], [5.75, 8.25, 7.0], "#seal"),
+        cube([10.75, 11.75, 6.8], [11.25, 12.25, 7.0], "#seal"),
         cube([0.5, 15, 6.5], [15.5, 16, 9.5], "#wood"),
     ]
     write(ASSETS / "models/block/village_contract_board.json", {

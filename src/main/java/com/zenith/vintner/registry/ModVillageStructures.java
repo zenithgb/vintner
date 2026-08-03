@@ -173,7 +173,10 @@ public final class ModVillageStructures {
             if (definition.processor() == null) {
                 element = StructurePoolElement
                         .single(definition.template().toString())
-                        .apply(StructureTemplatePool.Projection.RIGID);
+                        .apply(
+                                StructureTemplatePool.Projection
+                                        .TERRAIN_MATCHING
+                        );
             } else {
                 Holder<StructureProcessorList> processor = processors
                         .getOrThrow(definition.processor());

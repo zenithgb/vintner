@@ -10,6 +10,7 @@ import com.zenith.vintner.registry.ModLootTables;
 import com.zenith.vintner.registry.ModMobEffects;
 import com.zenith.vintner.registry.ModTrades;
 import com.zenith.vintner.registry.ModVillageStructures;
+import com.zenith.vintner.registry.VillageContractBoardPlacement;
 import com.zenith.vintner.registry.ModVillagers;
 import com.zenith.vintner.network.ModNetworking;
 import net.fabricmc.api.ModInitializer;
@@ -30,6 +31,7 @@ public final class Vintner implements ModInitializer {
         ModBlocks.initialize();
         ModVillagers.initialize();
         ModVillageStructures.initialize();
+        VillageContractBoardPlacement.initialize();
         ModCreativeTabs.initialize();
         ModBlockEntities.initialize();
         ModLootTables.initialize();

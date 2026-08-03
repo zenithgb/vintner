@@ -1076,10 +1076,10 @@ public final class VintnerGameTests {
             helper.assertValueEqual(
                     retainingBorder,
                     35,
-                    "Culture-matched buried retaining border"
+                    "Culture-matched flush retaining border"
             );
             helper.assertValueEqual(
-                    foundationBlocks + retainingBorder,
+                    foundationBlocks,
                     99,
                     "Vineyard must contain a complete buried foundation"
             );
@@ -1089,7 +1089,7 @@ public final class VintnerGameTests {
                             settings,
                             Blocks.AIR
                     ).size(),
-                    263,
+                    264,
                     "Vineyard must clear vegetation from the full plot"
             );
 
@@ -1141,6 +1141,15 @@ public final class VintnerGameTests {
                     ).size(),
                     1,
                     "Vineyard composter"
+            );
+            helper.assertValueEqual(
+                    template.filterBlocks(
+                            BlockPos.ZERO,
+                            settings,
+                            ModBlocks.VILLAGE_CONTRACT_BOARD
+                    ).size(),
+                    0,
+                    "Contract boards belong at village bells, not vineyards"
             );
         }
 

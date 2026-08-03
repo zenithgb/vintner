@@ -198,10 +198,6 @@ def create_structure(culture: str, wood: str) -> bytes:
         {"axis": "z"},
     )
     composter = state("minecraft:composter", {"level": "4"})
-    contract_board = state(
-        "vintner:village_contract_board",
-        {"facing": "west", "wood": wood},
-    )
     jigsaw = state(
         "minecraft:jigsaw",
         {"orientation": "west_up"},
@@ -216,9 +212,9 @@ def create_structure(culture: str, wood: str) -> bytes:
         dict[str, tuple[int, object]],
     ] = {}
 
-    # Village farms are rigid pieces. A complete buried foundation and surface
-    # layer create a deliberate terrace instead of leaving parts of the farm
-    # floating over, or swallowed by, uneven village terrain.
+    # The village pool terrain-matches this piece. A complete buried foundation
+    # and surface layer then make its final placement a deliberate terrace
+    # instead of leaving farm blocks floating over small terrain changes.
     for x in range(SIZE[0]):
         for z in range(SIZE[2]):
             blocks[(x, 0, z)] = block_entry((x, 0, z), foundation)
@@ -226,21 +222,19 @@ def create_structure(culture: str, wood: str) -> bytes:
             for y in range(2, SIZE[1]):
                 blocks[(x, y, z)] = block_entry((x, y, z), air)
 
-    # Keep the retaining timber in the buried foundation rather than turning
-    # it into a full-height rail around the farm. Exposed terrain cuts still
-    # read as a deliberate terrace, while level sites blend into the village.
-    # Leave the entrance foundation as the local ground material.
+    # A flush timber sill makes the farm boundary legible without becoming a
+    # raised wall. The entrance stays open for the village path stair.
     for x in range(SIZE[0]):
-        blocks[(x, 0, 0)] = block_entry((x, 0, 0), border_x)
-        blocks[(x, 0, SIZE[2] - 1)] = block_entry(
-            (x, 0, SIZE[2] - 1),
+        blocks[(x, 1, 0)] = block_entry((x, 1, 0), border_x)
+        blocks[(x, 1, SIZE[2] - 1)] = block_entry(
+            (x, 1, SIZE[2] - 1),
             border_x,
         )
     for z in range(1, SIZE[2] - 1):
         if z != 4:
-            blocks[(0, 0, z)] = block_entry((0, 0, z), border_z)
-        blocks[(SIZE[0] - 1, 0, z)] = block_entry(
-            (SIZE[0] - 1, 0, z),
+            blocks[(0, 1, z)] = block_entry((0, 1, z), border_z)
+        blocks[(SIZE[0] - 1, 1, z)] = block_entry(
+            (SIZE[0] - 1, 1, z),
             border_z,
         )
 
@@ -259,7 +253,6 @@ def create_structure(culture: str, wood: str) -> bytes:
                 blocks[(x, y, z)] = block_entry((x, y, z), vine)
 
     blocks[(9, 2, 4)] = block_entry((9, 2, 4), composter)
-    blocks[(1, 2, 3)] = block_entry((1, 2, 3), contract_board)
     blocks[(0, 1, 4)] = block_entry(
         (0, 1, 4),
         jigsaw,
