@@ -4,6 +4,8 @@ All notable changes to Vintner are documented in this file.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-12
+
 ### Added
 
 - Persistent wine provenance from pressing through fermentation, barrel

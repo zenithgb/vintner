@@ -13,6 +13,11 @@ its development branch and is not part of this release.
 - [x] Dedicated-server world save and clean shutdown
 - [ ] Packaged JAR installed in a clean client profile
 
+Final candidate artifact:
+
+- `vintner-1.2.0.jar`
+- SHA-256: `513a618d35aac75db14b066e3f7bcb35302aec100acc7e17ab3fc27021173869`
+
 ## Manual in-game gate
 
 - [ ] Compare oak, chestnut, neutral, and large-cask ageing with one batch.
@@ -31,9 +36,9 @@ its development branch and is not part of this release.
 
 ## Publication gate
 
-- [ ] Replace the release-candidate version with `1.2.0`.
-- [ ] Date the `1.2.0` changelog section.
-- [ ] Rebuild and record the final JAR SHA-256.
+- [x] Replace the release-candidate version with `1.2.0`.
+- [x] Date the `1.2.0` changelog section.
+- [x] Rebuild and record the final JAR SHA-256.
 - [ ] Upload the final JAR to Modrinth as a public Release for Minecraft 26.2,
   Fabric, client and server required on both sides, with Fabric API required.
 - [ ] Tag `v1.2.0` only after the uploaded artifact is verified.
