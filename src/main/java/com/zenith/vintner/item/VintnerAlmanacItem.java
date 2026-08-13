@@ -64,6 +64,13 @@ public final class VintnerAlmanacItem extends Item {
                             .copy()
                             .withStyle(ChatFormatting.GRAY)
             );
+            player.sendSystemMessage(
+                    Component.translatable(
+                            "message.vintner.almanac.style_estate",
+                            WineMetadata.wineStyle(bottle).displayName(),
+                            WineMetadata.estateName(bottle)
+                    ).withStyle(ChatFormatting.DARK_GRAY)
+            );
             WineProvenance provenance =
                     WineMetadata.provenance(bottle);
 
@@ -116,6 +123,32 @@ public final class VintnerAlmanacItem extends Item {
                             WineMetadata.bottleAgeDays(bottle)
                     ).withStyle(ChatFormatting.DARK_GRAY)
             );
+            player.sendSystemMessage(
+                    Component.translatable(
+                            "message.vintner.almanac.value",
+                            WineMetadata.estimatedTradeValue(bottle),
+                            WineMetadata.settlementPrestige(bottle)
+                    ).withStyle(ChatFormatting.DARK_GRAY)
+            );
+            if (bottle.is(com.zenith.vintner.registry.ModItems.AGED_RED_WINE)
+                    || bottle.is(com.zenith.vintner.registry.ModItems.AGED_WHITE_WINE)) {
+                var vessel = WineMetadata.agingVessel(bottle);
+                player.sendSystemMessage(
+                        Component.translatable(
+                                "message.vintner.almanac.vessel",
+                                vessel.displayName()
+                        ).withStyle(ChatFormatting.DARK_GRAY)
+                );
+                player.sendSystemMessage(
+                        Component.translatable(
+                                "message.vintner.almanac.vessel_profile",
+                                vessel.oxygenExposure(),
+                                vessel.tannin(),
+                                vessel.spoilageRisk(),
+                                vessel.idealStyle()
+                        ).withStyle(ChatFormatting.DARK_GRAY)
+                );
+            }
             player.sendSystemMessage(
                     Component.translatable(
                             "message.vintner.almanac.readiness",

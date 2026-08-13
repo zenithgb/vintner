@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 public record WineTastingProfile(
         Component fruit,
         Component character,
+        Component body,
         Component finish
 ) {
     private static final String[] RED_FRUIT = {
@@ -44,7 +45,7 @@ public record WineTastingProfile(
 
         String fruit = select(fruitOptions, seed);
         String character = aged
-                ? (red ? "soft_oak" : "rounded_mineral")
+                ? agedCharacter(stack, red, characterOptions, seed)
                 : select(characterOptions, seed >>> 4);
         String finish = finishKey(
                 WineMetadata.quality(stack),
@@ -55,8 +56,21 @@ public record WineTastingProfile(
         return new WineTastingProfile(
                 note(fruit),
                 note(character),
+                note(bodyKey(WineMetadata.quality(stack), red)),
                 note(finish)
         );
+    }
+
+    private static String agedCharacter(
+            ItemStack stack,
+            boolean red,
+            String[] characterOptions,
+            int seed
+    ) {
+        AgingVessel vessel = WineMetadata.agingVessel(stack);
+        return vessel == AgingVessel.NEUTRAL
+                ? select(characterOptions, seed >>> 4)
+                : vessel.tastingNote(red);
     }
 
     public Component description() {
@@ -64,8 +78,17 @@ public record WineTastingProfile(
                 "tasting.vintner.profile",
                 fruit,
                 character,
+                body,
                 finish
         );
+    }
+
+    private static String bodyKey(WineQuality quality, boolean red) {
+        return switch (quality) {
+            case ROUGH, TABLE -> red ? "rustic_body" : "light_body";
+            case GOOD, FINE -> "medium_body";
+            case EXCEPTIONAL, LEGENDARY -> "full_body";
+        };
     }
 
     private static String finishKey(

@@ -51,11 +51,25 @@ public final class ModCreativeTabs {
                                 output.accept(ModItems.WHITE_WINE);
                                 ModBlocks.AGING_BARRELS.values()
                                         .forEach(output::accept);
+                                output.accept(ModItems.COOPERS_MALLET);
+                                output.accept(ModItems.TOASTING_KIT);
+                                output.accept(ModItems.SEASONING_KIT);
+                                output.accept(
+                                        ModItems.CASK_CONVERSION_KIT
+                                );
                                 output.accept(ModItems.AGED_RED_WINE);
                                 output.accept(ModItems.AGED_WHITE_WINE);
                                 ModBlocks.WINE_RACKS.values()
                                         .forEach(output::accept);
+                                ModBlocks.WINE_CRATES.values()
+                                        .forEach(output::accept);
                                 ModBlocks.VINTAGE_ARCHIVES.values()
+                                        .forEach(output::accept);
+                                ModBlocks.BARREL_STANDS.values()
+                                        .forEach(output::accept);
+                                ModBlocks.LABELLED_CELLAR_SHELVES.values()
+                                        .forEach(output::accept);
+                                ModBlocks.TASTING_CABINETS.values()
                                         .forEach(output::accept);
                                 output.accept(
                                         ModItems.VINTNER_ALMANAC

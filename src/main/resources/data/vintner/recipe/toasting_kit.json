@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " C ",
+    "CAC",
+    " C "
+  ],
+  "key": {
+    "C": "minecraft:charcoal",
+    "A": "minecraft:iron_ingot"
+  },
+  "result": {
+    "id": "vintner:toasting_kit",
+    "count": 1
+  }
+}

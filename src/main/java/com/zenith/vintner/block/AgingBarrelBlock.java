@@ -5,9 +5,12 @@ import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.wine.AgingVessel;
 import com.zenith.vintner.wine.WinemakingFeedback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -38,7 +41,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class AgingBarrelBlock extends BaseEntityBlock {
+public class AgingBarrelBlock extends BaseEntityBlock {
     public static final MapCodec<AgingBarrelBlock> CODEC =
             simpleCodec(AgingBarrelBlock::new);
 
@@ -51,17 +54,35 @@ public final class AgingBarrelBlock extends BaseEntityBlock {
     public static final IntegerProperty WINE_TYPE =
             IntegerProperty.create("wine_type", 0, 2);
 
+    public static final EnumProperty<AgingVessel> VESSEL =
+            EnumProperty.create("vessel", AgingVessel.class);
+
+    private final AgingVessel vessel;
+
     public AgingBarrelBlock(
             BlockBehaviour.Properties properties
     ) {
+        this(AgingVessel.OAK, properties);
+    }
+
+    public AgingBarrelBlock(
+            AgingVessel vessel,
+            BlockBehaviour.Properties properties
+    ) {
         super(properties);
+        this.vessel = vessel;
 
         registerDefaultState(
                 stateDefinition.any()
                         .setValue(FACING, Direction.NORTH)
                         .setValue(STATUS, 0)
                         .setValue(WINE_TYPE, 0)
+                        .setValue(VESSEL, vessel)
         );
+    }
+
+    public AgingVessel vessel() {
+        return vessel;
     }
 
     @Override
@@ -120,6 +141,51 @@ public final class AgingBarrelBlock extends BaseEntityBlock {
             InteractionHand hand,
             BlockHitResult hitResult
     ) {
+        InteractionHand malletHand = findMalletHand(player);
+
+        if (malletHand != null && player.isSecondaryUseActive()) {
+            return removeCooperageTreatment(
+                    player.getItemInHand(malletHand),
+                    malletHand,
+                    state,
+                    level,
+                    pos,
+                    player
+            );
+        }
+
+        CooperageUse cooperageUse = findCooperageUse(
+                player,
+                hand,
+                heldStack
+        );
+
+        if (cooperageUse != null) {
+            return applyCooperageKit(
+                    cooperageUse,
+                    state,
+                    level,
+                    pos,
+                    player
+            );
+        }
+
+        if (vesselForKit(heldStack) != null) {
+            if (!level.isClientSide()) {
+                player.sendSystemMessage(Component.translatable(
+                        "message.vintner.aging.mallet_required"
+                ).withStyle(ChatFormatting.YELLOW));
+            }
+            return InteractionResult.SUCCESS;
+        }
+
+        if (heldStack.is(ModItems.VINTNER_ALMANAC)) {
+            if (level instanceof ServerLevel) {
+                showVesselGuide(player, state.getValue(VESSEL));
+            }
+            return InteractionResult.SUCCESS;
+        }
+
         if (!heldStack.is(ModItems.RED_WINE)
                 && !heldStack.is(ModItems.WHITE_WINE)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
@@ -159,6 +225,267 @@ public final class AgingBarrelBlock extends BaseEntityBlock {
         WinemakingFeedback.showAgingStatus(player, barrel);
 
         return InteractionResult.SUCCESS;
+    }
+
+    private InteractionResult applyCooperageKit(
+            CooperageUse cooperageUse,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player
+    ) {
+        if (vessel != AgingVessel.OAK) {
+            return InteractionResult.PASS;
+        }
+
+        if (!(level.getBlockEntity(pos)
+                instanceof AgingBarrelBlockEntity barrel)) {
+            return InteractionResult.PASS;
+        }
+
+        AgingVessel requestedVessel = cooperageUse.requestedVessel();
+        AgingVessel activeVessel = state.getValue(VESSEL);
+
+        if (activeVessel != AgingVessel.OAK) {
+            if (!level.isClientSide()) {
+                String message = activeVessel == requestedVessel
+                        ? "message.vintner.aging.upgrade_already_applied"
+                        : "message.vintner.aging.upgrade_recover_first";
+                player.sendSystemMessage(Component.translatable(
+                        message,
+                        activeVessel.displayName()
+                ).withStyle(ChatFormatting.YELLOW));
+            }
+            return InteractionResult.SUCCESS;
+        }
+
+        if (!barrel.isEmpty()) {
+            if (!level.isClientSide()) {
+                player.sendSystemMessage(Component.translatable(
+                        "message.vintner.aging.upgrade_empty_required"
+                ).withStyle(ChatFormatting.RED));
+            }
+            return InteractionResult.SUCCESS;
+        }
+
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return InteractionResult.SUCCESS;
+        }
+
+        serverLevel.setBlock(
+                pos,
+                state.setValue(VESSEL, requestedVessel),
+                Block.UPDATE_ALL
+        );
+
+        if (!player.getAbilities().instabuild) {
+            cooperageUse.kit().shrink(1);
+            cooperageUse.mallet().hurtAndBreak(
+                    1,
+                    player,
+                    cooperageUse.malletHand()
+            );
+        }
+
+        serverLevel.playSound(
+                null,
+                pos,
+                SoundEvents.ANVIL_USE,
+                SoundSource.BLOCKS,
+                0.65F,
+                1.15F
+        );
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.aging.upgrade_applied",
+                requestedVessel.displayName()
+        ).withStyle(ChatFormatting.GREEN));
+
+        return InteractionResult.SUCCESS;
+    }
+
+    public InteractionResult removeCooperageTreatment(
+            ItemStack mallet,
+            InteractionHand malletHand,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player
+    ) {
+        if (vessel != AgingVessel.OAK) {
+            return InteractionResult.PASS;
+        }
+
+        if (!(level.getBlockEntity(pos)
+                instanceof AgingBarrelBlockEntity barrel)) {
+            return InteractionResult.PASS;
+        }
+
+        AgingVessel activeVessel = state.getValue(VESSEL);
+
+        if (activeVessel == AgingVessel.OAK) {
+            if (!level.isClientSide()) {
+                player.sendSystemMessage(Component.translatable(
+                        "message.vintner.aging.treatment_none"
+                ).withStyle(ChatFormatting.YELLOW));
+            }
+            return InteractionResult.SUCCESS;
+        }
+
+        if (!barrel.isEmpty()) {
+            if (!level.isClientSide()) {
+                player.sendSystemMessage(Component.translatable(
+                        "message.vintner.aging.upgrade_empty_required"
+                ).withStyle(ChatFormatting.RED));
+            }
+            return InteractionResult.SUCCESS;
+        }
+
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return InteractionResult.SUCCESS;
+        }
+
+        ItemStack recoveredKit = kitForVessel(activeVessel);
+
+        serverLevel.setBlock(
+                pos,
+                state.setValue(VESSEL, AgingVessel.OAK),
+                Block.UPDATE_ALL
+        );
+
+        if (!recoveredKit.isEmpty()
+                && !player.addItem(recoveredKit)) {
+            Block.popResource(serverLevel, pos, recoveredKit);
+        }
+
+        if (!player.getAbilities().instabuild) {
+            mallet.hurtAndBreak(1, player, malletHand);
+        }
+
+        serverLevel.playSound(
+                null,
+                pos,
+                SoundEvents.ANVIL_USE,
+                SoundSource.BLOCKS,
+                0.55F,
+                0.8F
+        );
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.aging.treatment_removed",
+                activeVessel.displayName()
+        ).withStyle(ChatFormatting.GREEN));
+
+        return InteractionResult.SUCCESS;
+    }
+
+    @Nullable
+    private static InteractionHand findMalletHand(Player player) {
+        if (player.getMainHandItem().is(ModItems.COOPERS_MALLET)) {
+            return InteractionHand.MAIN_HAND;
+        }
+        if (player.getOffhandItem().is(ModItems.COOPERS_MALLET)) {
+            return InteractionHand.OFF_HAND;
+        }
+        return null;
+    }
+
+    @Nullable
+    private static CooperageUse findCooperageUse(
+            Player player,
+            InteractionHand usedHand,
+            ItemStack heldStack
+    ) {
+        InteractionHand otherHand = usedHand == InteractionHand.MAIN_HAND
+                ? InteractionHand.OFF_HAND
+                : InteractionHand.MAIN_HAND;
+        ItemStack otherStack = player.getItemInHand(otherHand);
+
+        if (heldStack.is(ModItems.COOPERS_MALLET)) {
+            AgingVessel requestedVessel = vesselForKit(otherStack);
+
+            return requestedVessel == null
+                    ? null
+                    : new CooperageUse(
+                            heldStack,
+                            usedHand,
+                            otherStack,
+                            requestedVessel
+                    );
+        }
+
+        AgingVessel requestedVessel = vesselForKit(heldStack);
+
+        if (requestedVessel != null
+                && otherStack.is(ModItems.COOPERS_MALLET)) {
+            return new CooperageUse(
+                    otherStack,
+                    otherHand,
+                    heldStack,
+                    requestedVessel
+            );
+        }
+
+        return null;
+    }
+
+    private static AgingVessel vesselForKit(ItemStack stack) {
+        if (stack.is(ModItems.TOASTING_KIT)) {
+            return AgingVessel.CHESTNUT;
+        }
+        if (stack.is(ModItems.SEASONING_KIT)) {
+            return AgingVessel.NEUTRAL;
+        }
+        if (stack.is(ModItems.CASK_CONVERSION_KIT)) {
+            return AgingVessel.LARGE_CASK;
+        }
+        return null;
+    }
+
+    private static ItemStack kitForVessel(AgingVessel vessel) {
+        return switch (vessel) {
+            case CHESTNUT -> new ItemStack(ModItems.TOASTING_KIT);
+            case NEUTRAL -> new ItemStack(ModItems.SEASONING_KIT);
+            case LARGE_CASK -> new ItemStack(
+                    ModItems.CASK_CONVERSION_KIT
+            );
+            case OAK -> ItemStack.EMPTY;
+        };
+    }
+
+    private record CooperageUse(
+            ItemStack mallet,
+            InteractionHand malletHand,
+            ItemStack kit,
+            AgingVessel requestedVessel
+    ) {
+    }
+
+    private void showVesselGuide(
+            Player player,
+            AgingVessel activeVessel
+    ) {
+        player.sendSystemMessage(
+                Component.translatable(
+                        "message.vintner.almanac.vessel_guide",
+                        activeVessel.displayName()
+                ).withStyle(ChatFormatting.GOLD)
+        );
+        player.sendSystemMessage(
+                Component.translatable(
+                        "message.vintner.almanac.vessel_capacity",
+                        activeVessel.capacity(),
+                        activeVessel.agingTimeSeconds()
+                ).withStyle(ChatFormatting.GRAY)
+        );
+        player.sendSystemMessage(
+                activeVessel.guide()
+                        .copy()
+                        .withStyle(ChatFormatting.GRAY)
+        );
+        player.sendSystemMessage(
+                activeVessel.craftingHint()
+                        .copy()
+                        .withStyle(ChatFormatting.DARK_GRAY)
+        );
     }
 
     @Override
@@ -250,6 +577,14 @@ public final class AgingBarrelBlock extends BaseEntityBlock {
             }
         }
 
+        if (vessel == AgingVessel.OAK) {
+            ItemStack kit = kitForVessel(state.getValue(VESSEL));
+
+            if (!kit.isEmpty()) {
+                drops.add(kit);
+            }
+        }
+
         return drops;
     }
 
@@ -257,6 +592,6 @@ public final class AgingBarrelBlock extends BaseEntityBlock {
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING, STATUS, WINE_TYPE);
+        builder.add(FACING, STATUS, WINE_TYPE, VESSEL);
     }
 }

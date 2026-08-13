@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " H ",
+    "HBH",
+    " H "
+  ],
+  "key": {
+    "H": "minecraft:honeycomb",
+    "B": "minecraft:water_bucket"
+  },
+  "result": {
+    "id": "vintner:seasoning_kit",
+    "count": 1
+  }
+}

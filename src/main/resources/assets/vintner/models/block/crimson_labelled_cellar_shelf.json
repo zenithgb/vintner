@@ -1,0 +1,9 @@
+{
+  "parent": "vintner:block/labelled_cellar_shelf",
+  "textures": {
+    "wood": "minecraft:block/crimson_planks",
+    "beam": "minecraft:block/crimson_stem",
+    "end": "minecraft:block/crimson_stem_top",
+    "particle": "minecraft:block/crimson_planks"
+  }
+}

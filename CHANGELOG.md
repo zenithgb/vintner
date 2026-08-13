@@ -4,6 +4,8 @@ All notable changes to Vintner are documented in this file.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-12
+
 ### Added
 
 - Persistent wine provenance from pressing through fermentation, barrel
@@ -16,6 +18,22 @@ All notable changes to Vintner are documented in this file.
   retain their catalogue when moved in Survival, and support comparator output.
 - Vintage Archive variants, recipes, loot tables, item presentation, and
   recipe unlocks for all twelve supported wood families.
+- Chestnut and neutral ageing barrels plus an eight-bottle large cask, each
+  with distinct capacity, speed, quality, style affinity, and tasting character.
+- Barrel stands, single-batch Labelled Cellar Shelves, and mixed-vintage
+  Tasting Cabinets in all twelve supported wood families.
+- Persistent wine style and estate identity, fuller body-aware tasting notes,
+  estimated trade value, and cellar prestige in Almanac reports.
+- Cellar evaluation for temperature stability and nearby machinery
+  disturbance in addition to shelter, depth, light, humidity, and heat.
+
+### Changed
+
+- Wine quality now also controls pairing strength, low-quality fault risk,
+  estimated value, and future settlement-prestige contribution.
+- Labelled shelves and tasting cabinets age their stored bottles, expose exact
+  visual fill states, retain metadata on retrieval and save/load, and provide
+  comparator output.
 
 ## [1.1.0] - 2026-08-07
 

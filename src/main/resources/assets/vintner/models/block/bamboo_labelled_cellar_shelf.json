@@ -1,0 +1,9 @@
+{
+  "parent": "vintner:block/labelled_cellar_shelf",
+  "textures": {
+    "wood": "minecraft:block/bamboo_planks",
+    "beam": "minecraft:block/bamboo_block",
+    "end": "minecraft:block/bamboo_block_top",
+    "particle": "minecraft:block/bamboo_planks"
+  }
+}

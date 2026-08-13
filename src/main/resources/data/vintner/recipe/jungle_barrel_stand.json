@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "S S",
+    "PSP",
+    "P P"
+  ],
+  "key": {
+    "P": "minecraft:jungle_planks",
+    "S": "minecraft:jungle_slab"
+  },
+  "result": {
+    "id": "vintner:jungle_barrel_stand",
+    "count": 1
+  }
+}

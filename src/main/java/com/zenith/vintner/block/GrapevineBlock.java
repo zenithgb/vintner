@@ -582,6 +582,13 @@ public abstract class GrapevineBlock
                                 conditionText(
                                         report.preparedSoil()
                                 ),
+                                conditionText(report.matureVine()),
+                                conditionText(report.healthyVine()),
+                                conditionText(report.managedYield()),
+                                conditionText(report.ripeHarvest()),
+                                conditionText(
+                                        report.dryHarvestWeather()
+                                ),
                                 qualityText(
                                         report.predictedQuality()
                                 ),

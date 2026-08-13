@@ -12,7 +12,9 @@ public record CellarConditions(
         boolean underground,
         boolean dark,
         boolean humid,
-        boolean heatSource
+        boolean heatSource,
+        boolean stableTemperature,
+        boolean disturbed
 ) {
     public static CellarConditions evaluate(
             Level level,
@@ -25,6 +27,9 @@ public record CellarConditions(
                 level.getMaxLocalRawBrightness(position) <= 7;
         boolean humid = hasNearbyWater(level, position);
         boolean heatSource = hasNearbyHeat(level, position);
+        boolean stableTemperature = sheltered && underground;
+        boolean disturbed = level.hasNeighborSignal(position)
+                || hasNearbyPiston(level, position);
 
         return new CellarConditions(
                 ratingFor(
@@ -32,13 +37,17 @@ public record CellarConditions(
                         underground,
                         dark,
                         humid,
-                        heatSource
+                        heatSource,
+                        stableTemperature,
+                        disturbed
                 ),
                 sheltered,
                 underground,
                 dark,
                 humid,
-                heatSource
+                heatSource,
+                stableTemperature,
+                disturbed
         );
     }
 
@@ -49,14 +58,36 @@ public record CellarConditions(
             boolean humid,
             boolean heatSource
     ) {
+        return ratingFor(
+                sheltered,
+                underground,
+                dark,
+                humid,
+                heatSource,
+                sheltered && underground,
+                false
+        );
+    }
+
+    public static CellarRating ratingFor(
+            boolean sheltered,
+            boolean underground,
+            boolean dark,
+            boolean humid,
+            boolean heatSource,
+            boolean stableTemperature,
+            boolean disturbed
+    ) {
         int score = 0;
         score += sheltered ? 1 : 0;
         score += underground ? 1 : 0;
         score += dark ? 1 : 0;
         score += humid ? 1 : 0;
+        score += stableTemperature ? 1 : 0;
         score -= heatSource ? 3 : 0;
+        score -= disturbed ? 2 : 0;
 
-        if (score >= 4) {
+        if (score >= 5) {
             return CellarRating.IDEAL;
         }
         if (score >= 3) {
@@ -66,6 +97,21 @@ public record CellarConditions(
             return CellarRating.BASIC;
         }
         return CellarRating.POOR;
+    }
+
+    private static boolean hasNearbyPiston(
+            Level level,
+            BlockPos position
+    ) {
+        for (Direction direction : Direction.values()) {
+            var state = level.getBlockState(position.relative(direction));
+            if (state.is(Blocks.PISTON)
+                    || state.is(Blocks.STICKY_PISTON)
+                    || state.is(Blocks.MOVING_PISTON)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean hasNearbyWater(

@@ -2,7 +2,8 @@
   "multipart": [
     {
       "when": {
-        "facing": "north"
+        "facing": "north",
+        "vessel": "oak"
       },
       "apply": {
         "model": "vintner:block/bamboo_aging_barrel"
@@ -10,7 +11,35 @@
     },
     {
       "when": {
-        "facing": "east"
+        "facing": "north",
+        "vessel": "chestnut"
+      },
+      "apply": {
+        "model": "vintner:block/bamboo_aging_barrel_toasted"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "vessel": "neutral"
+      },
+      "apply": {
+        "model": "vintner:block/bamboo_aging_barrel_seasoned"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "vessel": "large_cask"
+      },
+      "apply": {
+        "model": "vintner:block/bamboo_aging_barrel_cellar_cask"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "vessel": "oak"
       },
       "apply": {
         "model": "vintner:block/bamboo_aging_barrel",
@@ -19,7 +48,38 @@
     },
     {
       "when": {
-        "facing": "south"
+        "facing": "east",
+        "vessel": "chestnut"
+      },
+      "apply": {
+        "model": "vintner:block/bamboo_aging_barrel_toasted",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "vessel": "neutral"
+      },
+      "apply": {
+        "model": "vintner:block/bamboo_aging_barrel_seasoned",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "vessel": "large_cask"
+      },
+      "apply": {
+        "model": "vintner:block/bamboo_aging_barrel_cellar_cask",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "vessel": "oak"
       },
       "apply": {
         "model": "vintner:block/bamboo_aging_barrel",
@@ -28,10 +88,71 @@
     },
     {
       "when": {
-        "facing": "west"
+        "facing": "south",
+        "vessel": "chestnut"
+      },
+      "apply": {
+        "model": "vintner:block/bamboo_aging_barrel_toasted",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "vessel": "neutral"
+      },
+      "apply": {
+        "model": "vintner:block/bamboo_aging_barrel_seasoned",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "vessel": "large_cask"
+      },
+      "apply": {
+        "model": "vintner:block/bamboo_aging_barrel_cellar_cask",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "vessel": "oak"
       },
       "apply": {
         "model": "vintner:block/bamboo_aging_barrel",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "vessel": "chestnut"
+      },
+      "apply": {
+        "model": "vintner:block/bamboo_aging_barrel_toasted",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "vessel": "neutral"
+      },
+      "apply": {
+        "model": "vintner:block/bamboo_aging_barrel_seasoned",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "vessel": "large_cask"
+      },
+      "apply": {
+        "model": "vintner:block/bamboo_aging_barrel_cellar_cask",
         "y": 270
       }
     },

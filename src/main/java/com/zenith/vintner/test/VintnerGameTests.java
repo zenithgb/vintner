@@ -1,14 +1,20 @@
 package com.zenith.vintner.test;
 
 import com.zenith.vintner.block.AgingBarrelBlock;
+import com.zenith.vintner.block.CellarGlassColor;
+import com.zenith.vintner.block.CellarCollectionBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
+import com.zenith.vintner.block.WineCrateBlock;
+import com.zenith.vintner.block.WineRackBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
+import com.zenith.vintner.block.entity.CellarCollectionBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
+import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.registry.ModAttachments;
@@ -17,6 +23,8 @@ import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.CellarConditions;
 import com.zenith.vintner.wine.CellarRating;
+import com.zenith.vintner.wine.AgingVessel;
+import com.zenith.vintner.wine.GrapeQualityEvaluator;
 import com.zenith.vintner.wine.WineConsumptionManager;
 import com.zenith.vintner.wine.WineConsumptionState;
 import com.zenith.vintner.wine.WineMetadata;
@@ -27,6 +35,7 @@ import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.wine.WineAgeStage;
 import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
+import com.zenith.vintner.wine.WineStyle;
 import net.minecraft.advancements.AdvancementHolder;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -46,6 +55,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
@@ -62,6 +72,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -103,9 +114,29 @@ public final class VintnerGameTests {
                 "Every wood family should have a wine rack"
         );
         helper.assertValueEqual(
+                ModBlocks.WINE_CRATES.size(),
+                expected,
+                "Every wood family should have a wine crate"
+        );
+        helper.assertValueEqual(
                 ModBlocks.VINTAGE_ARCHIVES.size(),
                 expected,
                 "Every wood family should have a vintage archive"
+        );
+        helper.assertValueEqual(
+                ModBlocks.BARREL_STANDS.size(),
+                expected,
+                "Every wood family should have a barrel stand"
+        );
+        helper.assertValueEqual(
+                ModBlocks.LABELLED_CELLAR_SHELVES.size(),
+                expected,
+                "Every wood family should have a labelled cellar shelf"
+        );
+        helper.assertValueEqual(
+                ModBlocks.TASTING_CABINETS.size(),
+                expected,
+                "Every wood family should have a tasting cabinet"
         );
         helper.assertValueEqual(
                 ModBlocks.RED_GRAPEVINES.size(),
@@ -152,6 +183,14 @@ public final class VintnerGameTests {
                             + " wine rack should support its block entity"
             );
             helper.assertTrue(
+                    ModBlockEntities.WINE_CRATE.isValid(
+                            ModBlocks.wineCrate(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " wine crate should support its block entity"
+            );
+            helper.assertTrue(
                     ModBlockEntities.VINTAGE_ARCHIVE.isValid(
                             ModBlocks.vintageArchive(woodVariant)
                                     .defaultBlockState()
@@ -159,7 +198,34 @@ public final class VintnerGameTests {
                     woodVariant.id()
                             + " vintage archive should support its block entity"
             );
+            helper.assertTrue(
+                    ModBlockEntities.CELLAR_COLLECTION.isValid(
+                            ModBlocks.labelledCellarShelf(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " labelled shelf should support its block entity"
+            );
+            helper.assertTrue(
+                    ModBlockEntities.CELLAR_COLLECTION.isValid(
+                            ModBlocks.tastingCabinet(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " tasting cabinet should support its block entity"
+            );
         }
+
+        helper.assertTrue(
+                ModBlockEntities.AGING_BARREL.isValid(
+                        ModBlocks.CHESTNUT_AGING_BARREL.defaultBlockState()
+                ) && ModBlockEntities.AGING_BARREL.isValid(
+                        ModBlocks.NEUTRAL_AGING_BARREL.defaultBlockState()
+                ) && ModBlockEntities.AGING_BARREL.isValid(
+                        ModBlocks.LARGE_CASK.defaultBlockState()
+                ),
+                "Every specialist ageing vessel should support barrel data"
+        );
 
         helper.succeed();
     }
@@ -1030,6 +1096,11 @@ public final class VintnerGameTests {
                         helper,
                         player,
                         woodVariant.wineRackId()
+                );
+                assertRecipeKnown(
+                        helper,
+                        player,
+                        woodVariant.wineCrateId()
                 );
             }
             assertRecipeKnown(
@@ -2091,6 +2162,292 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void wineCrateStoresSixteenMixedBottles(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_CRATE);
+        WineCrateBlockEntity crate = helper.getBlockEntity(
+                FIRST,
+                WineCrateBlockEntity.class
+        );
+
+        for (int index = 0;
+             index < WineCrateBlockEntity.CAPACITY;
+             index++) {
+            ItemStack wine = new ItemStack(
+                    index % 2 == 0
+                            ? ModItems.RED_WINE
+                            : ModItems.AGED_WHITE_WINE
+            );
+            WineMetadata.ensureBatchIdentity(
+                    wine,
+                    800000L + index
+            );
+            WineMetadata.assignBottleNumber(
+                    wine,
+                    index + 1,
+                    WineCrateBlockEntity.CAPACITY
+            );
+            helper.assertTrue(
+                    crate.insertOne(wine),
+                    "The crate should accept bottle " + (index + 1)
+            );
+            helper.assertBlockProperty(
+                    FIRST,
+                    WineCrateBlock.BOTTLE_COUNT,
+                    index + 1
+            );
+        }
+
+        helper.assertValueEqual(
+                crate.getBottleCount(),
+                WineCrateBlockEntity.CAPACITY,
+                "The crate should store sixteen bottles"
+        );
+        helper.assertValueEqual(
+                crate.getComparatorSignal(),
+                15,
+                "A full crate should output comparator strength 15"
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                WineCrateBlock.BOTTLE_COUNT,
+                16
+        );
+        helper.assertFalse(
+                crate.insertOne(new ItemStack(ModItems.RED_WINE)),
+                "A full crate must reject a seventeenth bottle"
+        );
+
+        ItemStack returned = crate.takeLastBottle();
+        helper.assertValueEqual(
+                WineMetadata.batchId(returned),
+                800015L,
+                "Crate retrieval should return the latest bottle"
+        );
+        helper.assertValueEqual(
+                WineMetadata.bottleNumber(returned),
+                16,
+                "Crate retrieval must preserve bottle numbering"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineCrateEmptyHandInteractionReturnsBottle(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_CRATE);
+        WineCrateBlockEntity crate = helper.getBlockEntity(
+                FIRST,
+                WineCrateBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.ensureBatchIdentity(wine, 864200L);
+        helper.assertTrue(
+                crate.insertOne(wine),
+                "The interaction test crate should accept wine"
+        );
+        var player = helper.makeMockServerPlayer(
+                GameType.SURVIVAL
+        );
+
+        helper.useBlock(FIRST, player);
+
+        helper.assertValueEqual(
+                crate.getBottleCount(),
+                0,
+                "Empty-hand use should remove the latest crate bottle"
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                WineCrateBlock.BOTTLE_COUNT,
+                0
+        );
+        helper.assertTrue(
+                player.getInventory().contains(
+                        stack -> WineMetadata.batchId(stack)
+                                == 864200L
+                ),
+                "Empty-hand use should preserve the bottle metadata"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineCratesCanBePlacedDirectlyOnEachOther(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_CRATE);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        Block upperCrate = ModBlocks.wineCrate(
+                WoodVariant.SPRUCE
+        );
+        ItemStack crateItem = new ItemStack(upperCrate.asItem());
+        player.setItemInHand(InteractionHand.MAIN_HAND, crateItem);
+        BlockPos lowerPos = helper.absolutePos(FIRST);
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                crateItem,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atBottomCenterOf(lowerPos.above()),
+                        Direction.UP,
+                        lowerPos,
+                        false
+                )
+        );
+
+        helper.assertBlockPresent(ModBlocks.WINE_CRATE, FIRST);
+        helper.assertBlockPresent(upperCrate, UPPER);
+        helper.assertTrue(
+                helper.getBlockState(FIRST)
+                        .getShape(helper.getLevel(), lowerPos)
+                        .max(Direction.Axis.Y) == 1.0,
+                "A stacked crate must support the crate above it"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineCrateContentsSurviveSerialization(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_CRATE);
+        WineCrateBlockEntity crate = helper.getBlockEntity(
+                FIRST,
+                WineCrateBlockEntity.class
+        );
+        ItemStack first = new ItemStack(ModItems.WHITE_WINE);
+        ItemStack second = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.ensureBatchIdentity(first, 112233L);
+        WineMetadata.ensureBatchIdentity(second, 445566L);
+        WineMetadata.apply(
+                second,
+                9,
+                WineQuality.EXCEPTIONAL
+        );
+        crate.insertOne(first);
+        crate.insertOne(second);
+
+        WineCrateBlockEntity restored =
+                (WineCrateBlockEntity) reload(helper, crate);
+
+        helper.assertValueEqual(
+                restored.getBottleCount(),
+                2,
+                "Crate contents must survive save and load"
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchId(restored.getBottleCopy(0)),
+                112233L,
+                "The first stored batch must survive serialization"
+        );
+        helper.assertValueEqual(
+                WineMetadata.quality(restored.getBottleCopy(1)),
+                WineQuality.EXCEPTIONAL,
+                "Serialized crate wine must retain quality"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void creativeCrateBreakDropsStoredBottle(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_CRATE);
+        WineCrateBlockEntity crate = helper.getBlockEntity(
+                FIRST,
+                WineCrateBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.AGED_WHITE_WINE);
+        WineMetadata.ensureBatchIdentity(wine, 778899L);
+        WineMetadata.assignBottleNumber(wine, 3, 4);
+        helper.assertTrue(
+                crate.insertOne(wine),
+                "The creative-break crate should accept wine"
+        );
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.CREATIVE);
+
+        player.gameMode.destroyBlock(helper.absolutePos(FIRST));
+
+        helper.assertBlockNotPresent(ModBlocks.WINE_CRATE, FIRST);
+        helper.assertItemEntityPresent(
+                ModItems.AGED_WHITE_WINE,
+                FIRST,
+                2.0
+        );
+        List<ItemEntity> drops = helper.getLevel()
+                .getEntitiesOfClass(
+                        ItemEntity.class,
+                        new AABB(helper.absolutePos(FIRST)).inflate(2.0)
+                );
+        helper.assertTrue(
+                drops.stream().anyMatch(drop ->
+                        WineMetadata.batchId(drop.getItem()) == 778899L
+                                && WineMetadata.bottleNumber(
+                                drop.getItem()
+                        ) == 3
+                ),
+                "Creative breaking must preserve crate bottle metadata"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineCrateCatchesUpAfterChunkReload(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_CRATE);
+        WineCrateBlockEntity crate = helper.getBlockEntity(
+                FIRST,
+                WineCrateBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.apply(wine, 6, WineQuality.FINE);
+        helper.assertTrue(
+                crate.insertOne(wine),
+                "The crate should accept the catch-up test bottle"
+        );
+
+        long elapsedTicks = 24000L;
+        WineCrateBlockEntity restored =
+                reloadCrateWithElapsedTime(
+                        helper,
+                        crate,
+                        elapsedTicks
+                );
+
+        for (int tick = 0; tick < 20; tick++) {
+            WineCrateBlockEntity.serverTick(
+                    helper.getLevel(),
+                    helper.absolutePos(FIRST),
+                    helper.getBlockState(FIRST),
+                    restored
+            );
+        }
+
+        CellarConditions conditions = CellarConditions.evaluate(
+                helper.getLevel(),
+                helper.absolutePos(FIRST)
+        );
+        long expectedMinimum = Math.round(
+                elapsedTicks * conditions.rating().ageRate()
+        );
+
+        helper.assertTrue(
+                WineMetadata.bottleAge(
+                        restored.getBottleCopy(0)
+                ) >= expectedMinimum,
+                "A reloaded crate should catch up for unloaded world time"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void provenanceSurvivesTheFullWinemakingPath(
             GameTestHelper helper
     ) {
@@ -2675,6 +3032,57 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void vineyardQualityUsesAllPhaseThreeInputs(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                GrapeQualityEvaluator.score(
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true
+                ),
+                60,
+                "An ideal mature, managed, ripe, dry harvest should score sixty"
+        );
+        helper.assertValueEqual(
+                GrapeQualityEvaluator.score(
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                ),
+                0,
+                "Poor site, vine, yield, ripeness, and weather should score zero"
+        );
+        helper.assertTrue(
+                GrapeQualityEvaluator.score(
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        false
+                ) < 60,
+                "Wet harvest weather should reduce an otherwise ideal score"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void legacyQualityIdsRemainReadable(
             GameTestHelper helper
     ) {
@@ -2813,6 +3221,684 @@ public final class VintnerGameTests {
                 WineMetadata.quality(agedWine),
                 WineQuality.EXCEPTIONAL,
                 "The accumulated score should determine the final tier"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void almanacExplainsPlacedAgeingVessels(
+            GameTestHelper helper
+    ) {
+        BlockPos barrelPos = new BlockPos(1, 1, 1);
+        helper.setBlock(barrelPos, ModBlocks.CHESTNUT_AGING_BARREL);
+        AgingBarrelBlockEntity barrel = helper.getBlockEntity(
+                barrelPos,
+                AgingBarrelBlockEntity.class
+        );
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ItemStack almanac = new ItemStack(ModItems.VINTNER_ALMANAC);
+        player.setItemInHand(InteractionHand.MAIN_HAND, almanac);
+        BlockPos absoluteBarrel = helper.absolutePos(barrelPos);
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                almanac,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteBarrel),
+                        Direction.NORTH,
+                        absoluteBarrel,
+                        false
+                )
+        );
+
+        helper.assertValueEqual(
+                almanac.getCount(),
+                1,
+                "Reading a vessel guide must not consume the Almanac"
+        );
+        helper.assertValueEqual(
+                barrel.getBottleCount(),
+                0,
+                "Reading a vessel guide must not modify the barrel"
+        );
+        helper.assertValueEqual(
+                AgingVessel.CHESTNUT.agingTimeSeconds(),
+                75,
+                "The displayed Chestnut ageing time should stay accurate"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void specialistAgeingVesselsHaveDistinctProfiles(
+            GameTestHelper helper
+    ) {
+        BlockPos chestnutPos = new BlockPos(1, 1, 1);
+        BlockPos neutralPos = new BlockPos(3, 1, 1);
+        BlockPos caskPos = new BlockPos(5, 1, 1);
+        helper.setBlock(chestnutPos, ModBlocks.CHESTNUT_AGING_BARREL);
+        helper.setBlock(neutralPos, ModBlocks.NEUTRAL_AGING_BARREL);
+        helper.setBlock(caskPos, ModBlocks.LARGE_CASK);
+
+        AgingBarrelBlockEntity chestnut = helper.getBlockEntity(
+                chestnutPos,
+                AgingBarrelBlockEntity.class
+        );
+        AgingBarrelBlockEntity neutral = helper.getBlockEntity(
+                neutralPos,
+                AgingBarrelBlockEntity.class
+        );
+        AgingBarrelBlockEntity cask = helper.getBlockEntity(
+                caskPos,
+                AgingBarrelBlockEntity.class
+        );
+
+        helper.assertValueEqual(
+                chestnut.getVessel(),
+                AgingVessel.CHESTNUT,
+                "The chestnut barrel should use its specialist profile"
+        );
+        helper.assertValueEqual(
+                neutral.getVessel(),
+                AgingVessel.NEUTRAL,
+                "The neutral barrel should use its specialist profile"
+        );
+        helper.assertValueEqual(
+                cask.getCapacity(),
+                8,
+                "The large cask should hold eight matching bottles"
+        );
+        helper.assertTrue(
+                chestnut.getAgingTime() < neutral.getAgingTime()
+                        && neutral.getAgingTime() < cask.getAgingTime(),
+                "Vessel oxygen exposure should create distinct ageing speeds"
+        );
+        helper.assertTrue(
+                AgingVessel.CHESTNUT.spoilageRiskPenalty()
+                        > AgingVessel.NEUTRAL.spoilageRiskPenalty(),
+                "Higher-exposure chestnut should carry more spoilage risk"
+        );
+        helper.assertTrue(
+                AgingVessel.CHESTNUT.qualityContribution(1)
+                        > AgingVessel.CHESTNUT.qualityContribution(2),
+                "Chestnut should have a meaningful red-wine style affinity"
+        );
+        helper.assertTrue(
+                !AgingVessel.OAK.tastingNote(true).equals(
+                        AgingVessel.LARGE_CASK.tastingNote(true)
+                ),
+                "Vessel tannin and flavour should change tasting notes"
+        );
+
+        ItemStack bottle = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.applyProfile(
+                bottle,
+                12,
+                new WineQualityProfile(0, 55, 5, 5, 0, 0)
+        );
+        WineMetadata.ensureBatchIdentity(bottle, 3012001L);
+        for (int index = 0; index < cask.getCapacity(); index++) {
+            helper.assertTrue(
+                    cask.insertOne(bottle),
+                    "The large cask should accept bottle " + (index + 1)
+            );
+        }
+        for (int tick = 0; tick < cask.getAgingTime(); tick++) {
+            AgingBarrelBlockEntity.serverTick(
+                    helper.getLevel(),
+                    helper.absolutePos(caskPos),
+                    helper.getBlockState(caskPos),
+                    cask
+            );
+        }
+        ItemStack result = cask.takeOneAgedWine();
+        helper.assertValueEqual(
+                WineMetadata.agingVessel(result),
+                AgingVessel.LARGE_CASK,
+                "Finished wine should remember its ageing vessel"
+        );
+        helper.assertValueEqual(
+                WineMetadata.qualityProfile(result).ageing(),
+                AgingVessel.LARGE_CASK.qualityContribution(1),
+                "The cask profile should contribute to final quality"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cooperageKitsPreserveWoodAndConfigureEmptyBarrels(
+            GameTestHelper helper
+    ) {
+        AgingVessel[] profiles = {
+                AgingVessel.CHESTNUT,
+                AgingVessel.NEUTRAL,
+                AgingVessel.LARGE_CASK
+        };
+        Item[] kits = {
+                ModItems.TOASTING_KIT,
+                ModItems.SEASONING_KIT,
+                ModItems.CASK_CONVERSION_KIT
+        };
+        Block barrelBlock = ModBlocks.agingBarrel(
+                WoodVariant.CHERRY
+        );
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack mallet = new ItemStack(ModItems.COOPERS_MALLET);
+        player.setItemInHand(InteractionHand.MAIN_HAND, mallet);
+
+        for (int index = 0; index < profiles.length; index++) {
+            BlockPos pos = new BlockPos(1 + index * 2, 1, 1);
+            helper.setBlock(pos, barrelBlock);
+            Item kitItem = kits[index];
+            ItemStack kit = new ItemStack(kitItem);
+            player.setItemInHand(InteractionHand.OFF_HAND, kit);
+            BlockPos absolutePos = helper.absolutePos(pos);
+
+            player.gameMode.useItemOn(
+                    player,
+                    helper.getLevel(),
+                    mallet,
+                    InteractionHand.MAIN_HAND,
+                    new BlockHitResult(
+                            Vec3.atCenterOf(absolutePos),
+                            Direction.NORTH,
+                            absolutePos,
+                            false
+                    )
+            );
+
+            helper.assertBlockPresent(barrelBlock, pos);
+            helper.assertBlockProperty(
+                    pos,
+                    AgingBarrelBlock.VESSEL,
+                    profiles[index]
+            );
+            AgingBarrelBlockEntity barrel = helper.getBlockEntity(
+                    pos,
+                    AgingBarrelBlockEntity.class
+            );
+            helper.assertValueEqual(
+                    barrel.getVessel(),
+                    profiles[index],
+                    "The applied kit should control barrel behaviour"
+            );
+            helper.assertValueEqual(
+                    kit.getCount(),
+                    0,
+                    "Applying a treatment should consume its kit"
+            );
+            helper.assertValueEqual(
+                    mallet.getDamageValue(),
+                    index + 1,
+                    "Each treatment should use one mallet durability"
+            );
+
+            List<ItemStack> drops = Block.getDrops(
+                    helper.getBlockState(pos),
+                    helper.getLevel(),
+                    absolutePos,
+                    barrel
+            );
+            helper.assertTrue(
+                    drops.stream().anyMatch(stack -> stack.is(
+                            barrelBlock.asItem()
+                    )),
+                    "The upgraded barrel should retain its wood item"
+            );
+            helper.assertTrue(
+                    drops.stream().anyMatch(stack -> stack.is(kitItem)),
+                    "Breaking an upgraded barrel should return its kit"
+            );
+        }
+
+        BlockPos toastedPos = new BlockPos(1, 1, 1);
+        ItemStack replacementKit = new ItemStack(
+                ModItems.SEASONING_KIT
+        );
+        player.setItemInHand(
+                InteractionHand.OFF_HAND,
+                replacementKit
+        );
+        BlockPos absoluteToastedPos = helper.absolutePos(toastedPos);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                mallet,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteToastedPos),
+                        Direction.NORTH,
+                        absoluteToastedPos,
+                        false
+                )
+        );
+        helper.assertBlockProperty(
+                toastedPos,
+                AgingBarrelBlock.VESSEL,
+                AgingVessel.CHESTNUT
+        );
+        helper.assertValueEqual(
+                replacementKit.getCount(),
+                1,
+                "Refitting a treated barrel must not destroy either kit"
+        );
+        helper.assertValueEqual(
+                mallet.getDamageValue(),
+                profiles.length,
+                "A rejected refit must not damage the mallet"
+        );
+
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cooperageTreatmentCannotChangeMidBatch(
+            GameTestHelper helper
+    ) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, ModBlocks.AGING_BARREL);
+        AgingBarrelBlockEntity barrel = helper.getBlockEntity(
+                pos,
+                AgingBarrelBlockEntity.class
+        );
+        helper.assertTrue(
+                barrel.insertOne(new ItemStack(ModItems.RED_WINE)),
+                "The test barrel should accept its first bottle"
+        );
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack mallet = new ItemStack(ModItems.COOPERS_MALLET);
+        ItemStack kit = new ItemStack(ModItems.TOASTING_KIT);
+        player.setItemInHand(InteractionHand.MAIN_HAND, mallet);
+        player.setItemInHand(InteractionHand.OFF_HAND, kit);
+        BlockPos absolutePos = helper.absolutePos(pos);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                mallet,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absolutePos),
+                        Direction.NORTH,
+                        absolutePos,
+                        false
+                )
+        );
+
+        helper.assertBlockProperty(
+                pos,
+                AgingBarrelBlock.VESSEL,
+                AgingVessel.OAK
+        );
+        helper.assertValueEqual(
+                kit.getCount(),
+                1,
+                "A rejected treatment must not consume the kit"
+        );
+        helper.assertValueEqual(
+                barrel.getBottleCount(),
+                1,
+                "A rejected treatment must not disturb the batch"
+        );
+        helper.assertValueEqual(
+                mallet.getDamageValue(),
+                0,
+                "A rejected treatment must not damage the mallet"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void coopersMalletRemovesTreatmentsFromEmptyBarrels(
+            GameTestHelper helper
+    ) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, ModBlocks.agingBarrel(WoodVariant.OAK));
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack mallet = new ItemStack(ModItems.COOPERS_MALLET);
+        ItemStack kit = new ItemStack(ModItems.TOASTING_KIT);
+        player.setItemInHand(InteractionHand.MAIN_HAND, mallet);
+        player.setItemInHand(InteractionHand.OFF_HAND, kit);
+        BlockPos absolutePos = helper.absolutePos(pos);
+        BlockHitResult hit = new BlockHitResult(
+                Vec3.atCenterOf(absolutePos),
+                Direction.NORTH,
+                absolutePos,
+                false
+        );
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                mallet,
+                InteractionHand.MAIN_HAND,
+                hit
+        );
+        helper.assertBlockProperty(
+                pos,
+                AgingBarrelBlock.VESSEL,
+                AgingVessel.CHESTNUT
+        );
+
+        player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+        player.setShiftKeyDown(true);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                mallet,
+                InteractionHand.MAIN_HAND,
+                hit
+        );
+        player.setShiftKeyDown(false);
+
+        helper.assertBlockProperty(
+                pos,
+                AgingBarrelBlock.VESSEL,
+                AgingVessel.OAK
+        );
+        helper.assertValueEqual(
+                mallet.getDamageValue(),
+                2,
+                "Applying and removing should each damage the mallet"
+        );
+        helper.assertTrue(
+                player.getInventory().contains(
+                        stack -> stack.is(ModItems.TOASTING_KIT)
+                ),
+                "Removing a treatment should return its kit"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void coopersMalletRotatesCellarFixtures(
+            GameTestHelper helper
+    ) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(
+                pos,
+                ModBlocks.wineRack(WoodVariant.OAK).defaultBlockState()
+                        .setValue(WineRackBlock.FACING, Direction.NORTH)
+        );
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack mallet = new ItemStack(ModItems.COOPERS_MALLET);
+        player.setItemInHand(InteractionHand.MAIN_HAND, mallet);
+        BlockPos absolutePos = helper.absolutePos(pos);
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                mallet,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absolutePos),
+                        Direction.UP,
+                        absolutePos,
+                        false
+                )
+        );
+
+        helper.assertBlockProperty(
+                pos,
+                WineRackBlock.FACING,
+                Direction.EAST
+        );
+        helper.assertValueEqual(
+                mallet.getDamageValue(),
+                1,
+                "Rotating a fixture should use mallet durability"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cellarFixturesSeparateBatchAndTastingStorage(
+            GameTestHelper helper
+    ) {
+        BlockPos shelfPos = new BlockPos(1, 1, 1);
+        BlockPos cabinetPos = new BlockPos(3, 1, 1);
+        helper.setBlock(shelfPos, ModBlocks.LABELLED_CELLAR_SHELF);
+        helper.setBlock(cabinetPos, ModBlocks.TASTING_CABINET);
+        CellarCollectionBlockEntity shelf = helper.getBlockEntity(
+                shelfPos,
+                CellarCollectionBlockEntity.class
+        );
+        CellarCollectionBlockEntity cabinet = helper.getBlockEntity(
+                cabinetPos,
+                CellarCollectionBlockEntity.class
+        );
+        ItemStack first = new ItemStack(ModItems.AGED_RED_WINE);
+        ItemStack matching = new ItemStack(ModItems.AGED_RED_WINE);
+        ItemStack other = new ItemStack(ModItems.AGED_WHITE_WINE);
+        WineMetadata.apply(first, 8, WineQuality.FINE);
+        WineMetadata.apply(matching, 8, WineQuality.FINE);
+        WineMetadata.apply(other, 9, WineQuality.EXCEPTIONAL);
+        WineMetadata.ensureBatchIdentity(first, 88001L);
+        WineMetadata.ensureBatchIdentity(matching, 88001L);
+        WineMetadata.ensureBatchIdentity(other, 99001L);
+
+        helper.assertTrue(
+                shelf.insertOne(first) && shelf.insertOne(matching),
+                "A labelled shelf should accept bottles from its batch"
+        );
+        helper.assertFalse(
+                shelf.insertOne(other),
+                "A labelled shelf should reject a different batch"
+        );
+        helper.assertTrue(
+                cabinet.insertOne(first) && cabinet.insertOne(other),
+                "A tasting cabinet should accept mixed vintages"
+        );
+        helper.assertBlockProperty(
+                shelfPos,
+                CellarCollectionBlock.BOTTLE_COUNT,
+                2
+        );
+        helper.assertBlockProperty(
+                cabinetPos,
+                CellarCollectionBlock.BOTTLE_COUNT,
+                2
+        );
+
+        CellarCollectionBlockEntity restored =
+                (CellarCollectionBlockEntity) reload(helper, cabinet);
+        helper.assertValueEqual(
+                restored.getBottleCount(),
+                2,
+                "Tasting cabinet contents should survive save and load"
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchId(restored.takeLastBottle()),
+                99001L,
+                "Cabinet retrieval should preserve bottle identity"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cellarFixtureGlassCanBeDyedWithoutLosingWine(
+            GameTestHelper helper
+    ) {
+        BlockPos shelfPos = new BlockPos(1, 1, 1);
+        BlockPos cabinetPos = new BlockPos(3, 1, 1);
+        helper.setBlock(shelfPos, ModBlocks.LABELLED_CELLAR_SHELF);
+        helper.setBlock(cabinetPos, ModBlocks.TASTING_CABINET);
+        CellarCollectionBlockEntity shelf = helper.getBlockEntity(
+                shelfPos,
+                CellarCollectionBlockEntity.class
+        );
+        ItemStack bottle = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.ensureBatchIdentity(bottle, 77119L);
+        helper.assertTrue(
+                shelf.insertOne(bottle),
+                "The dye test shelf should accept its bottle"
+        );
+        helper.assertBlockProperty(
+                shelfPos,
+                CellarCollectionBlock.GLASS_COLOR,
+                CellarGlassColor.CLEAR
+        );
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack redDye = new ItemStack(
+                Items.DYE.pick(DyeColor.RED)
+        );
+        player.setItemInHand(InteractionHand.MAIN_HAND, redDye);
+        BlockPos absoluteShelf = helper.absolutePos(shelfPos);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                redDye,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteShelf),
+                        Direction.NORTH,
+                        absoluteShelf,
+                        false
+                )
+        );
+
+        helper.assertBlockProperty(
+                shelfPos,
+                CellarCollectionBlock.GLASS_COLOR,
+                CellarGlassColor.RED
+        );
+        helper.assertValueEqual(
+                redDye.getCount(),
+                0,
+                "Survival dyeing should consume one dye"
+        );
+        helper.assertValueEqual(
+                shelf.getBottleCount(),
+                1,
+                "Dyeing glass must preserve stored wine"
+        );
+
+        ItemStack blueDye = new ItemStack(
+                Items.DYE.pick(DyeColor.BLUE)
+        );
+        player.setItemInHand(InteractionHand.MAIN_HAND, blueDye);
+        BlockPos absoluteCabinet = helper.absolutePos(cabinetPos);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                blueDye,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteCabinet),
+                        Direction.NORTH,
+                        absoluteCabinet,
+                        false
+                )
+        );
+
+        helper.assertBlockProperty(
+                cabinetPos,
+                CellarCollectionBlock.GLASS_COLOR,
+                CellarGlassColor.BLUE
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void completeVintageIdentitySupportsCellarDecisions(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                WineStyle.from(new ItemStack(ModItems.WHITE_GRAPES)),
+                WineStyle.WHITE,
+                "White grapes should establish white-wine style metadata"
+        );
+        helper.assertValueEqual(
+                WineStyle.from(new ItemStack(ModItems.WHITE_MUST)),
+                WineStyle.WHITE,
+                "White must should retain white-wine style metadata"
+        );
+        ItemStack bottle = new ItemStack(ModItems.AGED_WHITE_WINE);
+        WineMetadata.apply(bottle, 14, WineQuality.LEGENDARY);
+        WineMetadata.ensureBatchIdentity(bottle, 140014L);
+        WineMetadata.applyProvenance(
+                bottle,
+                new WineProvenance(
+                        "white",
+                        336000L,
+                        "minecraft:overworld",
+                        12,
+                        64,
+                        -8,
+                        "producer-id",
+                        "North Hill"
+                )
+        );
+        WineMetadata.setEstateName(bottle, "North Hill Estate");
+        WineMetadata.markBottled(bottle, 336000L);
+        WineMetadata.ageBottle(
+                bottle,
+                WineAgeStage.PEAK_AT,
+                CellarRating.IDEAL
+        );
+
+        helper.assertValueEqual(
+                WineMetadata.wineStyle(bottle),
+                WineStyle.WHITE,
+                "Wine style should be stored or inferred from the bottle"
+        );
+        helper.assertValueEqual(
+                WineMetadata.estateName(bottle),
+                "North Hill Estate",
+                "Wine identity should preserve its estate"
+        );
+        helper.assertTrue(
+                WineMetadata.estimatedTradeValue(bottle)
+                        > WineQuality.TABLE.tradeValue(),
+                "Peak legendary wine should advertise a premium value"
+        );
+        helper.assertTrue(
+                WineMetadata.settlementPrestige(bottle) > 0,
+                "Collectible wine should expose a prestige value"
+        );
+        helper.assertTrue(
+                WineTastingProfile.from(bottle).body() != null,
+                "The tasting profile should include body as well as notes"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cellarStabilityAndDisturbanceAffectRating(
+            GameTestHelper helper
+    ) {
+        helper.assertValueEqual(
+                CellarConditions.ratingFor(
+                        true,
+                        true,
+                        true,
+                        true,
+                        false,
+                        true,
+                        false
+                ),
+                CellarRating.IDEAL,
+                "A stable protected cellar should be ideal"
+        );
+        helper.assertTrue(
+                CellarConditions.ratingFor(
+                        true,
+                        true,
+                        true,
+                        true,
+                        false,
+                        true,
+                        true
+                ) != CellarRating.IDEAL,
+                "Nearby machinery disturbance should reduce cellar quality"
         );
         helper.succeed();
     }
@@ -2984,5 +4070,33 @@ public final class VintnerGameTests {
         );
         restored.setLevel(helper.getLevel());
         return (WineRackBlockEntity) restored;
+    }
+
+    private static WineCrateBlockEntity reloadCrateWithElapsedTime(
+            GameTestHelper helper,
+            WineCrateBlockEntity original,
+            long elapsedTicks
+    ) {
+        CompoundTag saved = original.saveWithFullMetadata(
+                helper.getLevel().registryAccess()
+        );
+        saved.putLong(
+                "LastAgingGameTime",
+                helper.getLevel().getGameTime() - elapsedTicks
+        );
+
+        BlockEntity restored = BlockEntity.loadStatic(
+                original.getBlockPos(),
+                original.getBlockState(),
+                saved,
+                helper.getLevel().registryAccess()
+        );
+
+        helper.assertTrue(
+                restored instanceof WineCrateBlockEntity,
+                "The persisted wine crate should deserialize"
+        );
+        restored.setLevel(helper.getLevel());
+        return (WineCrateBlockEntity) restored;
     }
 }

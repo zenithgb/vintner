@@ -47,7 +47,11 @@ public final class WinePairingManager {
                 activeProfile != null
                         && matches(mealTypes, activeProfile)
         ) {
-            applyPairing(consumer, activeProfile);
+            applyPairing(
+                    consumer,
+                    activeProfile,
+                    pairingMultiplier(activeProfile, consumer)
+            );
             setState(consumer, current.markPaired());
             return;
         }
@@ -64,7 +68,8 @@ public final class WinePairingManager {
     public static void onWineConsumed(
             ServerLevel level,
             LivingEntity consumer,
-            WineEffectProfile profile
+            WineEffectProfile profile,
+            WineQuality quality
     ) {
         WinePairingState current = state(
                 consumer,
@@ -72,7 +77,11 @@ public final class WinePairingManager {
         ).beginWineServing();
 
         if (matches(current.recentMealTypes(), profile)) {
-            applyPairing(consumer, profile);
+            applyPairing(
+                    consumer,
+                    profile,
+                    quality.pairingMultiplier()
+            );
             current = current.markPaired();
         }
 
@@ -117,11 +126,12 @@ public final class WinePairingManager {
 
     private static void applyPairing(
             LivingEntity consumer,
-            WineEffectProfile profile
+            WineEffectProfile profile,
+            float durationMultiplier
     ) {
         profile.extendActiveDuration(
                 consumer,
-                DURATION_MULTIPLIER
+                durationMultiplier
         );
 
         if (consumer instanceof Player player) {
@@ -131,6 +141,17 @@ public final class WinePairingManager {
                     )
             );
         }
+    }
+
+    private static float pairingMultiplier(
+            WineEffectProfile profile,
+            LivingEntity consumer
+    ) {
+        return switch (profile.amplifier(consumer)) {
+            case 2 -> WineQuality.LEGENDARY.pairingMultiplier();
+            case 1 -> WineQuality.EXCEPTIONAL.pairingMultiplier();
+            default -> DURATION_MULTIPLIER;
+        };
     }
 
     private static void setState(

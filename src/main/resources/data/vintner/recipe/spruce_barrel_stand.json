@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "S S",
+    "PSP",
+    "P P"
+  ],
+  "key": {
+    "P": "minecraft:spruce_planks",
+    "S": "minecraft:spruce_slab"
+  },
+  "result": {
+    "id": "vintner:spruce_barrel_stand",
+    "count": 1
+  }
+}

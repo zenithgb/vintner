@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "SPS",
+    "PNP"
+  ],
+  "key": {
+    "P": "minecraft:pale_oak_planks",
+    "S": "minecraft:stick",
+    "N": "minecraft:name_tag"
+  },
+  "result": {
+    "id": "vintner:pale_oak_labelled_cellar_shelf",
+    "count": 1
+  }
+}

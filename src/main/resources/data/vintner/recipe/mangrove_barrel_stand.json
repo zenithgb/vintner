@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "S S",
+    "PSP",
+    "P P"
+  ],
+  "key": {
+    "P": "minecraft:mangrove_planks",
+    "S": "minecraft:mangrove_slab"
+  },
+  "result": {
+    "id": "vintner:mangrove_barrel_stand",
+    "count": 1
+  }
+}

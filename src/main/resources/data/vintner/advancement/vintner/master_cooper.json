@@ -1,0 +1,59 @@
+{
+  "parent": "vintner:vintner/choose_aging_style",
+  "criteria": {
+    "mallet": {
+      "conditions": {
+        "recipe_id": "vintner:coopers_mallet"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "toasted": {
+      "conditions": {
+        "recipe_id": "vintner:toasting_kit"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "seasoned": {
+      "conditions": {
+        "recipe_id": "vintner:seasoning_kit"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "cellar_cask": {
+      "conditions": {
+        "recipe_id": "vintner:cask_conversion_kit"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.master_cooper.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "vintner:coopers_mallet"
+    },
+    "title": {
+      "translate": "advancement.vintner.master_cooper.title"
+    }
+  },
+  "requirements": [
+    [
+      "mallet"
+    ],
+    [
+      "toasted"
+    ],
+    [
+      "seasoned"
+    ],
+    [
+      "cellar_cask"
+    ]
+  ],
+  "rewards": {
+    "experience": 75
+  },
+  "sends_telemetry_event": false
+}

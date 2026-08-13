@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "vintner:oak_aging_barrel",
+    "vintner:spruce_aging_barrel",
+    "vintner:birch_aging_barrel",
+    "vintner:jungle_aging_barrel",
+    "vintner:acacia_aging_barrel",
+    "vintner:aging_barrel",
+    "vintner:mangrove_aging_barrel",
+    "vintner:cherry_aging_barrel",
+    "vintner:pale_oak_aging_barrel",
+    "vintner:bamboo_aging_barrel",
+    "vintner:crimson_aging_barrel",
+    "vintner:warped_aging_barrel"
+  ]
+}

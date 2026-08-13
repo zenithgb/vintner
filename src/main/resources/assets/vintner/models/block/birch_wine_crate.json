@@ -1,0 +1,9 @@
+{
+  "parent": "vintner:block/wine_crate",
+  "textures": {
+    "wood": "minecraft:block/birch_planks",
+    "beam": "minecraft:block/birch_log",
+    "end": "minecraft:block/birch_log_top",
+    "particle": "minecraft:block/birch_planks"
+  }
+}
