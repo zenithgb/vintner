@@ -2,9 +2,13 @@
   "parent": "minecraft:block/block",
   "ambientocclusion": false,
   "textures": {
-    "glass": "minecraft:block/glass",
+    "glass": {
+      "force_translucent": true,
+      "sprite": "minecraft:block/glass"
+    },
+    "glass_edge": "minecraft:block/light_gray_concrete",
     "wine": "minecraft:block/red_concrete",
-    "particle": "minecraft:block/glass"
+    "particle": "minecraft:block/light_gray_concrete"
   },
   "display": {
     "gui": {
@@ -97,22 +101,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "east": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "south": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "west": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "up": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "down": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         }
       }
     },
@@ -129,22 +133,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "east": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "south": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "west": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "up": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "down": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         }
       }
     },
@@ -161,22 +165,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "east": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "south": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "west": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "up": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "down": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         }
       }
     },
@@ -321,22 +325,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "east": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "south": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "west": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "up": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "down": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         }
       }
     },
@@ -353,22 +357,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "east": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "south": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "west": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "up": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "down": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         }
       }
     },
@@ -385,22 +389,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "east": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "south": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "west": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "up": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "down": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         }
       }
     },
@@ -417,22 +421,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "east": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "south": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "west": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "up": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         },
         "down": {
-          "texture": "#glass"
+          "texture": "#glass_edge"
         }
       }
     },
