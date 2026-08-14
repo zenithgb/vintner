@@ -1,0 +1,14 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "bottle": "minecraft:block/green_terracotta",
+    "bottle_dark": "minecraft:block/green_concrete",
+    "cork": "minecraft:block/stripped_oak_log_top",
+    "label": "minecraft:block/white_terracotta",
+    "seal": "minecraft:block/red_terracotta",
+    "wine": "minecraft:block/red_concrete",
+    "glass": "minecraft:block/white_stained_glass",
+    "particle": "minecraft:block/green_terracotta"
+  }
+}

@@ -447,6 +447,221 @@ def cube_faces(texture: str) -> dict[str, dict[str, str]]:
     }
 
 
+CANONICAL_BOTTLE_CUBOIDS = (
+    ((-1.5, 0.0, -1.5), (1.5, 5.4, 1.5), "#bottle"),
+    ((-1.35, 5.4, -1.35), (1.35, 5.9, 1.35), "#bottle"),
+    ((-1.0, 5.9, -1.0), (1.0, 6.4, 1.0), "#bottle"),
+    ((-0.6, 6.4, -0.6), (0.6, 8.8, 0.6), "#bottle_dark"),
+    ((-0.72, 8.6, -0.72), (0.72, 9.2, 0.72), "#bottle_dark"),
+    ((-0.5, 9.0, -0.5), (0.5, 9.7, 0.5), "#cork"),
+    # Four thin panels form a paper label wrapped around the bottle without
+    # replacing the bottle volume with a large white cube.
+    ((-1.52, 1.9, -1.56), (1.52, 3.4, -1.5), "#label"),
+    ((-1.52, 1.9, 1.5), (1.52, 3.4, 1.56), "#label"),
+    ((-1.56, 1.9, -1.5), (-1.5, 3.4, 1.5), "#label"),
+    ((1.5, 1.9, -1.5), (1.56, 3.4, 1.5), "#label"),
+)
+
+
+def bottle_elements(
+    center_x: float,
+    base_y: float,
+    center_z: float,
+    scale: float,
+    *,
+    horizontal: bool = False,
+    include_seal: bool = False,
+) -> list[dict[str, object]]:
+    cuboids = list(CANONICAL_BOTTLE_CUBOIDS)
+
+    if include_seal:
+        cuboids.append(
+            ((-0.45, 2.2, -1.63), (0.45, 3.1, -1.56), "#seal")
+        )
+
+    elements = []
+
+    for start, end, texture in cuboids:
+        if horizontal:
+            world_from = [
+                center_x + start[0] * scale,
+                base_y + start[2] * scale,
+                center_z - end[1] * scale,
+            ]
+            world_to = [
+                center_x + end[0] * scale,
+                base_y + end[2] * scale,
+                center_z - start[1] * scale,
+            ]
+        else:
+            world_from = [
+                center_x + start[0] * scale,
+                base_y + start[1] * scale,
+                center_z + start[2] * scale,
+            ]
+            world_to = [
+                center_x + end[0] * scale,
+                base_y + end[1] * scale,
+                center_z + end[2] * scale,
+            ]
+
+        elements.append({
+            "from": [round(value, 4) for value in world_from],
+            "to": [round(value, 4) for value in world_to],
+            "faces": cube_faces(texture),
+        })
+
+    return elements
+
+
+def generate_canonical_bottle_models() -> None:
+    write_json(
+        ASSETS / "models/block/wine_bottle_palette.json",
+        {
+            "parent": "minecraft:block/block",
+            "ambientocclusion": False,
+            "textures": {
+                "bottle": "minecraft:block/green_terracotta",
+                "bottle_dark": "minecraft:block/green_concrete",
+                "cork": "minecraft:block/stripped_oak_log_top",
+                "label": "minecraft:block/white_terracotta",
+                "seal": "minecraft:block/red_terracotta",
+                "wine": "minecraft:block/red_concrete",
+                "glass": "minecraft:block/white_stained_glass",
+                "particle": "minecraft:block/green_terracotta",
+            },
+        },
+    )
+
+    for servings in range(5):
+        elements = bottle_elements(
+            8.0,
+            0.0,
+            8.0,
+            1.0,
+            include_seal=False,
+        )
+
+        # A row of four restrained wax marks on the front label makes the
+        # remaining pours legible without changing the accepted silhouette.
+        for marker in range(servings):
+            x0 = 6.55 + marker * 0.75
+            elements.append({
+                "from": [x0, 2.25, 6.34],
+                "to": [x0 + 0.45, 2.8, 6.43],
+                "faces": cube_faces("#wine"),
+            })
+
+        write_json(
+            ASSETS / f"models/block/wine_bottle_fill_{servings}.json",
+            {
+                "parent": "vintner:block/wine_bottle_palette",
+                "ambientocclusion": False,
+                "elements": elements,
+            },
+        )
+
+    # Keep the canonical model name as the fully sealed bottle for existing
+    # model references and asset previews.
+    write_json(
+        ASSETS / "models/block/wine_bottle.json",
+        {
+            "parent": "vintner:block/wine_bottle_fill_4",
+        },
+    )
+
+    variants = {}
+    rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
+    for facing, rotation in rotations.items():
+        for servings in range(5):
+            entry = {
+                "model": f"vintner:block/wine_bottle_fill_{servings}",
+            }
+            if rotation:
+                entry["y"] = rotation
+            variants[f"facing={facing},servings={servings}"] = entry
+
+    write_json(
+        ASSETS / "blockstates/wine_bottle.json",
+        {"variants": variants},
+    )
+
+    # A compact, genuinely three-dimensional goblet. The former model was a
+    # near-flat white outline; this uses a square Minecraft-style bowl, clear
+    # glass, a restrained stem, and a broad enough foot to read cleanly both
+    # in inventory and when arranged on a table.
+    glass_elements = [
+        {"from": [5.75, 1.0, 5.75], "to": [10.25, 2.0, 10.25],
+         "faces": cube_faces("#glass")},
+        {"from": [7.5, 2.0, 7.5], "to": [8.5, 5.5, 8.5],
+         "faces": cube_faces("#glass")},
+        {"from": [6.5, 5.5, 6.5], "to": [9.5, 6.5, 9.5],
+         "faces": cube_faces("#glass")},
+        {"from": [5.5, 6.5, 5.5], "to": [6.5, 10.5, 10.5],
+         "faces": cube_faces("#glass")},
+        {"from": [9.5, 6.5, 5.5], "to": [10.5, 10.5, 10.5],
+         "faces": cube_faces("#glass")},
+        {"from": [6.5, 6.5, 5.5], "to": [9.5, 10.5, 6.5],
+         "faces": cube_faces("#glass")},
+        {"from": [6.5, 6.5, 9.5], "to": [9.5, 10.5, 10.5],
+         "faces": cube_faces("#glass")},
+        {"from": [5.25, 10.5, 5.25], "to": [10.75, 11.25, 6.25],
+         "faces": cube_faces("#glass")},
+        {"from": [5.25, 10.5, 9.75], "to": [10.75, 11.25, 10.75],
+         "faces": cube_faces("#glass")},
+        {"from": [5.25, 10.5, 6.25], "to": [6.25, 11.25, 9.75],
+         "faces": cube_faces("#glass")},
+        {"from": [9.75, 10.5, 6.25], "to": [10.75, 11.25, 9.75],
+         "faces": cube_faces("#glass")},
+    ]
+    item_display = {
+        "gui": {"rotation": [25, 225, 0], "translation": [0, -0.25, 0],
+                "scale": [1.7, 1.7, 1.7]},
+        "ground": {"translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
+        "fixed": {"rotation": [0, 180, 0], "scale": [0.9, 0.9, 0.9]},
+        "thirdperson_righthand": {
+            "rotation": [75, 45, 0], "translation": [0, 2.5, 0],
+            "scale": [0.7, 0.7, 0.7],
+        },
+        "firstperson_righthand": {
+            "rotation": [0, 45, 0], "translation": [0, 2, 0],
+            "scale": [0.8, 0.8, 0.8],
+        },
+    }
+
+    for name, filled in (("wine_glass", False), ("filled_wine_glass", True)):
+        elements = list(glass_elements)
+        if filled:
+            elements.append({
+                "from": [6.6, 6.5, 6.6],
+                "to": [9.4, 9.35, 9.4],
+                "faces": cube_faces("#wine"),
+            })
+        write_json(
+            ASSETS / f"models/item/{name}.json",
+            {
+                "parent": "minecraft:block/block",
+                "ambientocclusion": False,
+                "textures": {
+                    "glass": "minecraft:block/glass",
+                    "wine": "minecraft:block/red_concrete",
+                    "particle": "minecraft:block/glass",
+                },
+                "display": item_display,
+                "elements": elements,
+            },
+        )
+        write_json(
+            ASSETS / f"items/{name}.json",
+            {
+                "model": {
+                    "type": "minecraft:model",
+                    "model": f"vintner:item/{name}",
+                }
+            },
+        )
+
+
 def generate_cellar_fixture_base_models() -> None:
     wood_faces = cube_faces("#wood")
     beam_faces = cube_faces("#beam")
@@ -552,8 +767,6 @@ def generate_cellar_fixture_base_models() -> None:
         },
     )
 
-    bottle_faces = cube_faces("#bottle")
-    cork_faces = cube_faces("#cork")
     slot = 0
     for y in (2.0, 9.0):
         for x in (3.0, 6.33, 9.67, 13.0):
@@ -561,17 +774,8 @@ def generate_cellar_fixture_base_models() -> None:
             write_json(
                 ASSETS / f"models/block/cellar_fixture_bottle_slot_{slot}.json",
                 {
-                    "parent": "minecraft:block/block",
-                    "textures": {
-                        "bottle": "minecraft:block/green_concrete",
-                        "cork": "minecraft:block/stripped_oak_log_top",
-                        "particle": "minecraft:block/green_concrete",
-                    },
-                    "elements": [
-                        {"from": [x - 0.8, y, 6.7], "to": [x + 0.8, y + 4.4, 9.3], "faces": copy.deepcopy(bottle_faces)},
-                        {"from": [x - 0.45, y + 4.4, 7.1], "to": [x + 0.45, y + 6.0, 8.9], "faces": copy.deepcopy(bottle_faces)},
-                        {"from": [x - 0.48, y + 6.0, 7.05], "to": [x + 0.48, y + 6.4, 8.95], "faces": copy.deepcopy(cork_faces)},
-                    ],
+                    "parent": "vintner:block/wine_bottle_palette",
+                    "elements": bottle_elements(x, y, 8.0, 0.68),
                 },
             )
 
@@ -836,7 +1040,7 @@ def generate_cooperage_kits() -> None:
                 "A": "minecraft:iron_ingot",
             },
             "unlock": "minecraft:charcoal",
-            "texture": "minecraft:item/fire_charge",
+            "texture": "vintner:item/toasting_kit",
         },
         "seasoning_kit": {
             "pattern": [" H ", "HBH", " H "],
@@ -845,7 +1049,7 @@ def generate_cooperage_kits() -> None:
                 "B": "minecraft:water_bucket",
             },
             "unlock": "minecraft:honeycomb",
-            "texture": "minecraft:item/honeycomb",
+            "texture": "vintner:item/seasoning_kit",
         },
         "cask_conversion_kit": {
             "pattern": ["PCP", "PPP", "PCP"],
@@ -854,7 +1058,7 @@ def generate_cooperage_kits() -> None:
                 "C": "minecraft:copper_ingot",
             },
             "unlock": "minecraft:copper_ingot",
-            "texture": "minecraft:item/copper_ingot",
+            "texture": "vintner:item/cask_conversion_kit",
         },
     }
     for item_id, recipe in recipes.items():
@@ -911,23 +1115,47 @@ def generate_cooperage_kits() -> None:
 
     master_path = DATA / "advancement/vintner/master_cooper.json"
     master = read_json(master_path)
-    master["criteria"] = copy.deepcopy(criteria)
-    master["requirements"] = [[criterion] for criterion in criteria]
-    master["display"]["icon"]["id"] = (
-        "vintner:cask_conversion_kit"
-    )
+    master_criteria = {
+        "mallet": {
+            "conditions": {"recipe_id": "vintner:coopers_mallet"},
+            "trigger": "minecraft:recipe_crafted",
+        },
+        **copy.deepcopy(criteria),
+    }
+    master["criteria"] = master_criteria
+    master["requirements"] = [
+        [criterion]
+        for criterion in master_criteria
+    ]
+    master["display"]["icon"]["id"] = "vintner:coopers_mallet"
     write_json(master_path, master)
 
 
+def generate_rack_bottle_models() -> None:
+    slots = (
+        (5.0, 2.875),
+        (11.0, 2.875),
+        (5.0, 10.375),
+        (11.0, 10.375),
+    )
+
+    for slot, (x, y) in enumerate(slots, start=1):
+        write_json(
+            ASSETS / f"models/block/wine_rack_bottle_{slot}.json",
+            {
+                "parent": "vintner:block/wine_bottle_palette",
+                "elements": bottle_elements(
+                    x,
+                    y,
+                    11.6,
+                    0.75,
+                    horizontal=True,
+                ),
+            },
+        )
+
+
 def generate_crate_bottle_models() -> None:
-    bottle_faces = {
-        face: {"texture": "#bottle"}
-        for face in ("north", "east", "south", "west", "up", "down")
-    }
-    cork_faces = {
-        face: {"texture": "#cork"}
-        for face in ("north", "east", "south", "west", "up", "down")
-    }
     centers = (3.0, 6.33, 9.67, 13.0)
 
     slot = 0
@@ -935,39 +1163,16 @@ def generate_crate_bottle_models() -> None:
     for z_center in centers:
         for x_center in centers:
             slot += 1
-            elements = [
-                {
-                    "from": [x_center - 1, 2, z_center - 1],
-                    "to": [x_center + 1, 8, z_center + 1],
-                    "faces": copy.deepcopy(bottle_faces),
-                },
-                {
-                    "from": [x_center - 0.72, 8, z_center - 0.72],
-                    "to": [x_center + 0.72, 9, z_center + 0.72],
-                    "faces": copy.deepcopy(bottle_faces),
-                },
-                {
-                    "from": [x_center - 0.38, 9, z_center - 0.38],
-                    "to": [x_center + 0.38, 11.3, z_center + 0.38],
-                    "faces": copy.deepcopy(bottle_faces),
-                },
-                {
-                    "from": [x_center - 0.43, 11.3, z_center - 0.43],
-                    "to": [x_center + 0.43, 11.8, z_center + 0.43],
-                    "faces": copy.deepcopy(cork_faces),
-                },
-            ]
-
             write_json(
                 ASSETS / f"models/block/wine_crate_bottle_slot_{slot}.json",
                 {
-                    "parent": "minecraft:block/block",
-                    "textures": {
-                        "bottle": "minecraft:block/green_concrete",
-                        "cork": "minecraft:block/stripped_oak_log_top",
-                        "particle": "minecraft:block/green_concrete",
-                    },
-                    "elements": elements,
+                    "parent": "vintner:block/wine_bottle_palette",
+                    "elements": bottle_elements(
+                        x_center,
+                        2.0,
+                        z_center,
+                        0.68,
+                    ),
                 },
             )
 
@@ -1624,10 +1829,12 @@ def main() -> None:
     generate_trellis_blockstates()
     generate_grapevine_blockstates()
     generate_machine_models()
+    generate_canonical_bottle_models()
     generate_cellar_fixture_base_models()
     generate_cellar_fixture_blockstates()
     generate_special_aging_vessels()
     generate_cooperage_kits()
+    generate_rack_bottle_models()
     generate_crate_bottle_models()
     generate_crate_blockstate()
     generate_machine_blockstates()

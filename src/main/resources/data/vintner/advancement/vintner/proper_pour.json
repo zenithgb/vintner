@@ -1,0 +1,28 @@
+{
+  "parent": "vintner:vintner/ferment_wine",
+  "criteria": {
+    "proper_pour": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.proper_pour.description"
+    },
+    "icon": {
+      "id": "vintner:filled_wine_glass"
+    },
+    "title": {
+      "translate": "advancement.vintner.proper_pour.title"
+    }
+  },
+  "requirements": [
+    [
+      "proper_pour"
+    ]
+  ],
+  "rewards": {
+    "experience": 15
+  },
+  "sends_telemetry_event": false
+}

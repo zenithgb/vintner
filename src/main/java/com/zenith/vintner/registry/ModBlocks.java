@@ -14,6 +14,8 @@ import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.block.WhiteGrapevineBlock;
 import com.zenith.vintner.block.WineCrateBlock;
+import com.zenith.vintner.block.WineBottleBlock;
+import com.zenith.vintner.block.WineGlassBlock;
 import com.zenith.vintner.block.WineRackBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.vineyard.GrapeVariety;
@@ -140,6 +142,33 @@ public final class ModBlocks {
             "wine_crate",
             WineCrateBlock::new,
             machineProperties()
+    );
+
+    /**
+     * A placed wine bottle has no standalone BlockItem. It is created by
+     * using a WineItem on a block and returns that exact WineItem on removal.
+     */
+    public static final Block WINE_BOTTLE = registerWithoutItem(
+            "wine_bottle",
+            WineBottleBlock::new,
+            BlockBehaviour.Properties.of()
+                    .strength(0.3F)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion()
+    );
+
+    /**
+     * A tabletop setting can hold up to four exact glass ItemStacks. Like the
+     * placed bottle, it is created from the item itself and has no BlockItem.
+     */
+    public static final Block WINE_GLASSES = registerWithoutItem(
+            "wine_glasses",
+            WineGlassBlock::new,
+            BlockBehaviour.Properties.of()
+                    .strength(0.2F)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion()
+                    .noCollision()
     );
 
     public static final Map<WoodVariant, Block> WINE_CRATES =

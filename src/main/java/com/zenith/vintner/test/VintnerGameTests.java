@@ -6,6 +6,7 @@ import com.zenith.vintner.block.CellarCollectionBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
+import com.zenith.vintner.block.WineBottleBlock;
 import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.block.WineRackBlock;
 import com.zenith.vintner.block.WoodVariant;
@@ -15,8 +16,11 @@ import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
+import com.zenith.vintner.block.entity.WineBottleBlockEntity;
+import com.zenith.vintner.block.entity.WineGlassBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.item.WineEffectProfile;
+import com.zenith.vintner.item.FilledWineGlassItem;
 import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
@@ -644,6 +648,98 @@ public final class VintnerGameTests {
                 ).drinks(),
                 1,
                 "Drinking the item should update consumption history"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void partialBottleDrinkScalesConsumptionAndReturnsBottle(
+            GameTestHelper helper
+    ) {
+        var player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack wine = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.setServings(wine, 2);
+
+        ItemStack result = wine.finishUsingItem(
+                helper.getLevel(),
+                player
+        );
+
+        helper.assertTrue(
+                result.is(Items.GLASS_BOTTLE),
+                "Drinking a partial bottle should return its empty bottle"
+        );
+        helper.assertValueEqual(
+                WineConsumptionManager.state(
+                        player,
+                        helper.getLevel().getGameTime()
+                ).effectiveServingUnits(),
+                2,
+                "Two remaining servings should count as half a bottle"
+        );
+        helper.assertValueEqual(
+                WineEffectProfile.RED.remainingDuration(player),
+                Math.round(
+                        20 * 20
+                                * WineQuality.TABLE.durationMultiplier()
+                                * WineMetadata.ageStage(wine)
+                                        .benefitMultiplier()
+                                * 0.5F
+                ),
+                "Half a table-red bottle should give half its base duration"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void fourPouredGlassesEqualOneBottleEffect(
+            GameTestHelper helper
+    ) {
+        var glassTaster = helper.makeMockServerPlayerInLevel();
+        var bottleTaster = helper.makeMockServerPlayerInLevel();
+        glassTaster.setGameMode(GameType.SURVIVAL);
+        bottleTaster.setGameMode(GameType.SURVIVAL);
+        ItemStack source = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.apply(source, 1, WineQuality.TABLE);
+        WineMetadata.setEffectProfile(source, WineEffectProfile.RED.id());
+
+        for (int serving = 0; serving < 4; serving++) {
+            ItemStack glass = FilledWineGlassItem.fromBottle(source);
+            ItemStack result = glass.finishUsingItem(
+                    helper.getLevel(),
+                    glassTaster
+            );
+            helper.assertTrue(
+                    result.is(ModItems.WINE_GLASS),
+                    "Every poured serving should return a reusable wine glass"
+            );
+        }
+
+        WineConsumptionManager.consume(
+                helper.getLevel(),
+                bottleTaster,
+                WineEffectProfile.RED,
+                WineQuality.TABLE,
+                WineMetadata.ageStage(source)
+        );
+
+        helper.assertValueEqual(
+                WineConsumptionManager.state(
+                        glassTaster,
+                        helper.getLevel().getGameTime()
+                ).effectiveServingUnits(),
+                4,
+                "Four glasses should equal one tracked bottle"
+        );
+        helper.assertValueEqual(
+                WineEffectProfile.RED.remainingDuration(glassTaster),
+                WineEffectProfile.RED.remainingDuration(bottleTaster),
+                "Four servings should equal one full bottle effect"
+        );
+        helper.assertFalse(
+                glassTaster.hasEffect(MobEffects.NAUSEA),
+                "One bottle divided into glasses should not cause impairment"
         );
         helper.succeed();
     }
@@ -2365,6 +2461,9 @@ public final class VintnerGameTests {
         ItemStack wine = new ItemStack(ModItems.AGED_WHITE_WINE);
         WineMetadata.ensureBatchIdentity(wine, 778899L);
         WineMetadata.assignBottleNumber(wine, 3, 4);
+        WineMetadata.setServings(wine, 4);
+        WineMetadata.setEffectProfile(wine, WineEffectProfile.AGED_RED.id());
+        WineMetadata.ensureDefaults(wine);
         helper.assertTrue(
                 crate.insertOne(wine),
                 "The creative-break crate should accept wine"
@@ -2575,6 +2674,366 @@ public final class VintnerGameTests {
                 !WineMetadata.provenance(first).known()
                         && !WineMetadata.provenance(second).known(),
                 "Provenance should begin when a batch is pressed"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineBottlePlacementPreservesExactMetadata(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, Blocks.STONE);
+
+        ItemStack wine = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.apply(wine, 4, WineQuality.EXCEPTIONAL);
+        WineMetadata.ensureBatchIdentity(wine, 99117L);
+        WineMetadata.applyProvenance(
+                wine,
+                new WineProvenance(
+                        "aged_red",
+                        1234L,
+                        "minecraft:overworld",
+                        7,
+                        8,
+                        9,
+                        "VintnerDev",
+                        "VintnerDev"
+                )
+        );
+        WineMetadata.assignBottleNumber(wine, 3, 4);
+        WineMetadata.ensureDefaults(wine);
+        WineMetadata.setEffectProfile(
+                wine,
+                WineEffectProfile.AGED_RED.id()
+        );
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.getAbilities().instabuild = false;
+        player.setItemInHand(InteractionHand.MAIN_HAND, wine.copy());
+        BlockPos lowerPos = helper.absolutePos(FIRST);
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                player.getItemInHand(InteractionHand.MAIN_HAND),
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(lowerPos),
+                        Direction.UP,
+                        lowerPos,
+                        false
+                )
+        );
+
+        helper.assertBlockPresent(ModBlocks.WINE_BOTTLE, UPPER);
+        WineBottleBlockEntity bottleEntity = helper.getBlockEntity(
+                UPPER,
+                WineBottleBlockEntity.class
+        );
+        ItemStack stored = bottleEntity.getBottleCopy();
+
+        helper.assertTrue(
+                ItemStack.isSameItemSameComponents(wine, stored),
+                "Placed bottles must preserve every item component"
+        );
+        helper.assertValueEqual(
+                player.getItemInHand(InteractionHand.MAIN_HAND).getCount(),
+                0,
+                "Placing a bottle should consume one held bottle"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineBottleSerializationPreservesMetadata(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_BOTTLE);
+        WineBottleBlockEntity original = helper.getBlockEntity(
+                FIRST,
+                WineBottleBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.WHITE_WINE);
+        WineMetadata.apply(wine, 2, WineQuality.FINE);
+        WineMetadata.ensureBatchIdentity(wine, 99118L);
+        WineMetadata.assignBottleNumber(wine, 1, 2);
+        WineMetadata.setServings(wine, 4);
+        WineMetadata.setEffectProfile(wine, WineEffectProfile.WHITE.id());
+        original.setBottle(wine);
+
+        BlockEntity restored = reload(helper, original);
+
+        helper.assertTrue(
+                restored instanceof WineBottleBlockEntity,
+                "A placed bottle must deserialize as its bottle entity"
+        );
+        helper.assertTrue(
+                ItemStack.isSameItemSameComponents(
+                        wine,
+                        ((WineBottleBlockEntity) restored).getBottleCopy()
+                ),
+                "Bottle metadata must survive save and reload"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineBottleCanBeRemovedWithoutLosingMetadata(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_BOTTLE);
+        WineBottleBlockEntity bottleEntity = helper.getBlockEntity(
+                FIRST,
+                WineBottleBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.AGED_WHITE_WINE);
+        WineMetadata.apply(wine, 3, WineQuality.GOOD);
+        WineMetadata.ensureBatchIdentity(wine, 99119L);
+        WineMetadata.setServings(wine, 4);
+        WineMetadata.setEffectProfile(wine, WineEffectProfile.AGED_WHITE.id());
+        bottleEntity.setBottle(wine);
+
+        ItemStack removed = bottleEntity.takeBottle();
+
+        helper.assertTrue(
+                ItemStack.isSameItemSameComponents(wine, removed),
+                "Removing a bottle must return the exact stored stack"
+        );
+        helper.assertTrue(
+                bottleEntity.getBottleCopy().isEmpty(),
+                "Removing a bottle must leave the block empty"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void creativeWineBottleBreakDropsStoredBottle(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_BOTTLE);
+        WineBottleBlockEntity bottleEntity = helper.getBlockEntity(
+                FIRST,
+                WineBottleBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.apply(wine, 4, WineQuality.EXCEPTIONAL);
+        WineMetadata.ensureBatchIdentity(wine, 99120L);
+        WineMetadata.assignBottleNumber(wine, 4, 4);
+        WineMetadata.setServings(wine, 4);
+        WineMetadata.setEffectProfile(wine, WineEffectProfile.AGED_RED.id());
+        bottleEntity.setBottle(wine);
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.CREATIVE);
+        player.gameMode.destroyBlock(helper.absolutePos(FIRST));
+
+        helper.assertBlockNotPresent(ModBlocks.WINE_BOTTLE, FIRST);
+        helper.assertItemEntityPresent(
+                ModItems.AGED_RED_WINE,
+                FIRST,
+                2.0
+        );
+        List<ItemEntity> drops = helper.getLevel().getEntitiesOfClass(
+                ItemEntity.class,
+                new AABB(helper.absolutePos(FIRST)).inflate(2.0)
+        );
+        helper.assertTrue(
+                drops.stream().anyMatch(drop ->
+                        WineMetadata.batchId(drop.getItem()) == 99120L
+                                && WineMetadata.bottleNumber(
+                                drop.getItem()
+                        ) == 4
+                ),
+                "Creative breaking must preserve placed bottle metadata"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void placedBottlePoursFourExactMetadataServings(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_BOTTLE);
+        WineBottleBlockEntity bottleEntity = helper.getBlockEntity(
+                FIRST,
+                WineBottleBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.apply(wine, 7, WineQuality.EXCEPTIONAL);
+        WineMetadata.ensureBatchIdentity(wine, 99121L);
+        WineMetadata.assignBottleNumber(wine, 2, 4);
+        WineMetadata.setEffectProfile(
+                wine,
+                WineEffectProfile.AGED_RED.id()
+        );
+        bottleEntity.setBottle(wine);
+
+        for (int remaining = 3; remaining >= 0; remaining--) {
+            ItemStack glass = bottleEntity.pourServing();
+            helper.assertTrue(
+                    glass.is(ModItems.FILLED_WINE_GLASS),
+                    "Each valid pour should create one filled glass"
+            );
+            helper.assertValueEqual(
+                    WineMetadata.batchId(glass),
+                    99121L,
+                    "A poured glass must preserve batch identity"
+            );
+            helper.assertValueEqual(
+                    WineMetadata.bottleNumber(glass),
+                    2,
+                    "A poured glass must preserve bottle numbering"
+            );
+            helper.assertValueEqual(
+                    WineMetadata.effectProfile(glass),
+                    WineEffectProfile.AGED_RED.id(),
+                    "A poured glass must preserve the source effect profile"
+            );
+            helper.assertValueEqual(
+                    bottleEntity.servings(),
+                    remaining,
+                    "A pour must remove exactly one serving"
+            );
+            helper.assertBlockProperty(
+                    FIRST,
+                    WineBottleBlock.SERVINGS,
+                    remaining
+            );
+        }
+
+        helper.assertTrue(
+                bottleEntity.pourServing().isEmpty(),
+                "An empty bottle must reject additional pours"
+        );
+        helper.assertTrue(
+                bottleEntity.getBottleCopy().is(Items.GLASS_BOTTLE),
+                "The final pour should leave a reusable empty bottle"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void partialPlacedBottlePersistsWithoutDuplication(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_BOTTLE);
+        WineBottleBlockEntity bottleEntity = helper.getBlockEntity(
+                FIRST,
+                WineBottleBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.WHITE_WINE);
+        WineMetadata.ensureBatchIdentity(wine, 99122L);
+        WineMetadata.setEffectProfile(wine, WineEffectProfile.WHITE.id());
+        bottleEntity.setBottle(wine);
+
+        helper.assertFalse(
+                bottleEntity.pourServing().isEmpty(),
+                "The first serving should pour"
+        );
+        helper.assertFalse(
+                bottleEntity.pourServing().isEmpty(),
+                "The second serving should pour"
+        );
+
+        WineBottleBlockEntity restored =
+                (WineBottleBlockEntity) reload(helper, bottleEntity);
+        helper.assertValueEqual(
+                restored.servings(),
+                2,
+                "A partial bottle must preserve its remaining servings"
+        );
+        ItemStack recovered = restored.takeBottle();
+        helper.assertValueEqual(
+                WineMetadata.servings(recovered),
+                2,
+                "Removing a partial bottle must not restore consumed servings"
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchId(recovered),
+                99122L,
+                "Removing a partial bottle must preserve its batch"
+        );
+        helper.assertTrue(
+                restored.takeBottle().isEmpty(),
+                "A bottle entity may surrender its stored bottle only once"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void placedGlassesPreserveCapacityAndWineMetadata(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_GLASSES);
+        WineGlassBlockEntity glasses = helper.getBlockEntity(
+                FIRST,
+                WineGlassBlockEntity.class
+        );
+        ItemStack empty = new ItemStack(ModItems.WINE_GLASS);
+        ItemStack red = new ItemStack(ModItems.FILLED_WINE_GLASS);
+        ItemStack white = new ItemStack(ModItems.FILLED_WINE_GLASS);
+        ItemStack fourth = new ItemStack(ModItems.WINE_GLASS);
+        ItemStack rejected = new ItemStack(ModItems.FILLED_WINE_GLASS);
+
+        WineMetadata.apply(red, 8, WineQuality.EXCEPTIONAL);
+        WineMetadata.ensureBatchIdentity(red, 81301L);
+        WineMetadata.setEffectProfile(red, WineEffectProfile.AGED_RED.id());
+        WineMetadata.apply(white, 5, WineQuality.FINE);
+        WineMetadata.ensureBatchIdentity(white, 81302L);
+        WineMetadata.setEffectProfile(white, WineEffectProfile.WHITE.id());
+
+        helper.assertTrue(glasses.addGlass(empty), "The first glass should fit");
+        helper.assertTrue(glasses.addGlass(red), "A red serving should fit");
+        helper.assertTrue(glasses.addGlass(white), "A white serving should fit");
+        helper.assertTrue(glasses.addGlass(fourth), "The fourth glass should fit");
+        helper.assertFalse(
+                glasses.addGlass(rejected),
+                "A tabletop setting must reject a fifth glass"
+        );
+
+        WineGlassBlockEntity restored =
+                (WineGlassBlockEntity) reload(helper, glasses);
+        helper.assertValueEqual(
+                restored.size(),
+                4,
+                "All four placed glasses must survive save and reload"
+        );
+        List<ItemStack> restoredGlasses = restored.getGlasses();
+        helper.assertTrue(
+                restoredGlasses.get(0).is(ModItems.WINE_GLASS),
+                "The empty glass must remain empty"
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchId(restoredGlasses.get(1)),
+                81301L,
+                "The red serving must retain its batch"
+        );
+        helper.assertValueEqual(
+                WineMetadata.effectProfile(restoredGlasses.get(1)),
+                WineEffectProfile.AGED_RED.id(),
+                "The red serving must retain its wine profile"
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchId(restoredGlasses.get(2)),
+                81302L,
+                "The white serving must retain its batch"
+        );
+        helper.assertValueEqual(
+                WineMetadata.effectProfile(restoredGlasses.get(2)),
+                WineEffectProfile.WHITE.id(),
+                "The white serving must retain its wine profile"
+        );
+
+        ItemStack removed = restored.takeGlass(1);
+        helper.assertValueEqual(
+                WineMetadata.batchId(removed),
+                81301L,
+                "Picking up a glass must return the exact stored serving"
+        );
+        helper.assertValueEqual(
+                restored.size(),
+                3,
+                "Picking up one glass must remove exactly one"
         );
         helper.succeed();
     }

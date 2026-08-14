@@ -37,7 +37,7 @@ public final class VintnerAlmanacItem extends Item {
                 : InteractionHand.MAIN_HAND;
         ItemStack bottle = player.getItemInHand(otherHand);
 
-        if (!(bottle.getItem() instanceof WineItem)) {
+        if (!canInspect(bottle)) {
             if (level instanceof ServerLevel) {
                 player.sendSystemMessage(
                         Component.translatable(
@@ -118,6 +118,14 @@ public final class VintnerAlmanacItem extends Item {
 
             player.sendSystemMessage(
                     Component.translatable(
+                            "message.vintner.almanac.servings",
+                            WineMetadata.servings(bottle),
+                            WineMetadata.SERVINGS_PER_BOTTLE
+                    ).withStyle(ChatFormatting.DARK_GRAY)
+            );
+
+            player.sendSystemMessage(
+                    Component.translatable(
                             "message.vintner.almanac.age",
                             WineMetadata.ageStage(bottle).displayName(),
                             WineMetadata.bottleAgeDays(bottle)
@@ -182,6 +190,54 @@ public final class VintnerAlmanacItem extends Item {
         }
 
         return InteractionResult.SUCCESS;
+    }
+
+    public static boolean canInspect(ItemStack stack) {
+        return stack.getItem() instanceof WineItem
+                || stack.getItem() instanceof FilledWineGlassItem;
+    }
+
+    public static void inspectPlacedWine(
+            ServerLevel level,
+            Player player,
+            ItemStack bottle
+    ) {
+        if (!canInspect(bottle)) {
+            return;
+        }
+
+        WineMetadata.ensureDefaults(bottle);
+        player.sendSystemMessage(
+                Component.translatable(
+                        "message.vintner.almanac.identity",
+                        WineMetadata.quality(bottle).displayName(),
+                        WineMetadata.vintage(bottle),
+                        WineMetadata.batchCode(bottle)
+                ).withStyle(ChatFormatting.GOLD)
+        );
+        player.sendSystemMessage(
+                WineTastingProfile.from(bottle)
+                        .description()
+                        .copy()
+                        .withStyle(ChatFormatting.GRAY)
+        );
+        player.sendSystemMessage(
+                Component.translatable(
+                        "message.vintner.almanac.servings",
+                        WineMetadata.servings(bottle),
+                        WineMetadata.SERVINGS_PER_BOTTLE
+                ).withStyle(ChatFormatting.DARK_GRAY)
+        );
+        player.sendSystemMessage(
+                Component.translatable(
+                        "message.vintner.almanac.readiness",
+                        WineReadiness.from(bottle).displayName()
+                ).withStyle(ChatFormatting.DARK_GRAY)
+        );
+
+        if (player instanceof ServerPlayer serverPlayer) {
+            ModAdvancements.grantInspection(serverPlayer);
+        }
     }
 
     @Override

@@ -65,6 +65,11 @@ public final class WineMetadata {
             "VintnerEstateName";
     private static final String WINE_STYLE_KEY =
             "VintnerWineStyle";
+    private static final String SERVINGS_KEY = "VintnerServings";
+    private static final String EFFECT_PROFILE_KEY =
+            "VintnerEffectProfile";
+
+    public static final int SERVINGS_PER_BOTTLE = 4;
 
     /*
      * One Minecraft year is currently treated as 96 in-game days.
@@ -300,6 +305,46 @@ public final class WineMetadata {
         target.set(
                 DataComponents.CUSTOM_DATA,
                 CustomData.of(getTagCopy(source))
+        );
+    }
+
+    /**
+     * Wine made before 1.3.0 has no servings tag. Treating that absence as a
+     * full bottle keeps every existing bottle and storage fixture compatible.
+     */
+    public static int servings(ItemStack stack) {
+        return Math.clamp(
+                getTagCopy(stack).getIntOr(
+                        SERVINGS_KEY,
+                        SERVINGS_PER_BOTTLE
+                ),
+                0,
+                SERVINGS_PER_BOTTLE
+        );
+    }
+
+    public static void setServings(ItemStack stack, int servings) {
+        CompoundTag tag = getTagCopy(stack);
+        tag.putInt(
+                SERVINGS_KEY,
+                Math.clamp(servings, 0, SERVINGS_PER_BOTTLE)
+        );
+        setTag(stack, tag);
+    }
+
+    public static void setEffectProfile(
+            ItemStack stack,
+            String profileId
+    ) {
+        CompoundTag tag = getTagCopy(stack);
+        tag.putString(EFFECT_PROFILE_KEY, profileId);
+        setTag(stack, tag);
+    }
+
+    public static String effectProfile(ItemStack stack) {
+        return getTagCopy(stack).getStringOr(
+                EFFECT_PROFILE_KEY,
+                "red"
         );
     }
 

@@ -56,6 +56,37 @@ public enum WineEffectProfile {
         );
     }
 
+    public void applyAccumulating(
+            LivingEntity consumer,
+            WineQuality quality,
+            float consumptionMultiplier
+    ) {
+        int existingDuration = isActive(consumer)
+                ? remainingDuration(consumer)
+                : 0;
+        clearActiveProfile(consumer);
+
+        int addedDuration = Math.max(
+                1,
+                Math.round(
+                        baseDurationTicks
+                                * quality.durationMultiplier()
+                                * consumptionMultiplier
+                )
+        );
+
+        consumer.addEffect(
+                new MobEffectInstance(
+                        effect,
+                        existingDuration + addedDuration,
+                        quality.signatureEffectAmplifier(),
+                        false,
+                        false,
+                        false
+                )
+        );
+    }
+
     public boolean isActive(LivingEntity consumer) {
         return consumer.hasEffect(effect);
     }
@@ -99,6 +130,26 @@ public enum WineEffectProfile {
         return Component.translatable(
                 "tooltip.vintner.wine_benefit." + translationKey
         );
+    }
+
+    public String id() {
+        return translationKey;
+    }
+
+    public Component displayName() {
+        return Component.translatable(
+                "wine_profile.vintner.name." + translationKey
+        );
+    }
+
+    public static WineEffectProfile byId(String id) {
+        for (WineEffectProfile profile : values()) {
+            if (profile.id().equals(id)) {
+                return profile;
+            }
+        }
+
+        return RED;
     }
 
     public static void clearActiveProfile(

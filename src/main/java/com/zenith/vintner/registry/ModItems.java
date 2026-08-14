@@ -3,6 +3,8 @@ package com.zenith.vintner.registry;
 import com.zenith.vintner.item.CompostItem;
 import com.zenith.vintner.item.CoopersMalletItem;
 import com.zenith.vintner.item.GrapeCuttingItem;
+import com.zenith.vintner.item.FilledWineGlassItem;
+import com.zenith.vintner.item.WineGlassItem;
 import com.zenith.vintner.item.MustItem;
 import com.zenith.vintner.item.VintnerAlmanacItem;
 
@@ -126,6 +128,24 @@ public final class ModItems {
             )
     );
 
+    public static final Item WINE_GLASS = register(
+            "wine_glass",
+            WineGlassItem::new
+    );
+
+    public static final Item FILLED_WINE_GLASS = register(
+            "filled_wine_glass",
+            properties -> new FilledWineGlassItem(
+                    properties
+                            .stacksTo(1)
+                            .component(
+                                    DataComponents.CONSUMABLE,
+                                    WineConsumables.WINE
+                            )
+                            .usingConvertsTo(WINE_GLASS)
+            )
+    );
+
     public static final Item VINTNER_ALMANAC = register(
             "vintner_almanac",
             VintnerAlmanacItem::new
@@ -214,6 +234,8 @@ public final class ModItems {
                     output.accept(WHITE_WINE);
                     output.accept(AGED_RED_WINE);
                     output.accept(AGED_WHITE_WINE);
+                    output.accept(WINE_GLASS);
+                    output.accept(FILLED_WINE_GLASS);
                 });
     }
 }

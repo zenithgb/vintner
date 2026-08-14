@@ -1,21 +1,16 @@
 {
-  "parent": "minecraft:block/block",
-  "textures": {
-    "bottle": "minecraft:block/green_concrete",
-    "cork": "minecraft:block/stripped_oak_log_top",
-    "particle": "minecraft:block/green_concrete"
-  },
+  "parent": "vintner:block/wine_bottle_palette",
   "elements": [
     {
       "from": [
+        1.98,
         2.0,
-        2,
-        5.33
+        5.31
       ],
       "to": [
-        4.0,
-        8,
-        7.33
+        4.02,
+        5.672,
+        7.35
       ],
       "faces": {
         "north": {
@@ -40,14 +35,14 @@
     },
     {
       "from": [
-        2.2800000000000002,
-        8,
-        5.61
+        2.082,
+        5.672,
+        5.412
       ],
       "to": [
-        3.7199999999999998,
-        9,
-        7.05
+        3.918,
+        6.012,
+        7.248
       ],
       "faces": {
         "north": {
@@ -72,14 +67,14 @@
     },
     {
       "from": [
-        2.62,
-        9,
-        5.95
+        2.32,
+        6.012,
+        5.65
       ],
       "to": [
-        3.38,
-        11.3,
-        6.71
+        3.68,
+        6.352,
+        7.01
       ],
       "faces": {
         "north": {
@@ -104,14 +99,78 @@
     },
     {
       "from": [
-        2.57,
-        11.3,
-        5.9
+        2.592,
+        6.352,
+        5.922
       ],
       "to": [
-        3.43,
-        11.8,
-        6.76
+        3.408,
+        7.984,
+        6.738
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bottle_dark"
+        },
+        "east": {
+          "texture": "#bottle_dark"
+        },
+        "south": {
+          "texture": "#bottle_dark"
+        },
+        "west": {
+          "texture": "#bottle_dark"
+        },
+        "up": {
+          "texture": "#bottle_dark"
+        },
+        "down": {
+          "texture": "#bottle_dark"
+        }
+      }
+    },
+    {
+      "from": [
+        2.5104,
+        7.848,
+        5.8404
+      ],
+      "to": [
+        3.4896,
+        8.256,
+        6.8196
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bottle_dark"
+        },
+        "east": {
+          "texture": "#bottle_dark"
+        },
+        "south": {
+          "texture": "#bottle_dark"
+        },
+        "west": {
+          "texture": "#bottle_dark"
+        },
+        "up": {
+          "texture": "#bottle_dark"
+        },
+        "down": {
+          "texture": "#bottle_dark"
+        }
+      }
+    },
+    {
+      "from": [
+        2.66,
+        8.12,
+        5.99
+      ],
+      "to": [
+        3.34,
+        8.596,
+        6.67
       ],
       "faces": {
         "north": {
@@ -131,6 +190,134 @@
         },
         "down": {
           "texture": "#cork"
+        }
+      }
+    },
+    {
+      "from": [
+        1.9664,
+        3.292,
+        5.2692
+      ],
+      "to": [
+        4.0336,
+        4.312,
+        5.31
+      ],
+      "faces": {
+        "north": {
+          "texture": "#label"
+        },
+        "east": {
+          "texture": "#label"
+        },
+        "south": {
+          "texture": "#label"
+        },
+        "west": {
+          "texture": "#label"
+        },
+        "up": {
+          "texture": "#label"
+        },
+        "down": {
+          "texture": "#label"
+        }
+      }
+    },
+    {
+      "from": [
+        1.9664,
+        3.292,
+        7.35
+      ],
+      "to": [
+        4.0336,
+        4.312,
+        7.3908
+      ],
+      "faces": {
+        "north": {
+          "texture": "#label"
+        },
+        "east": {
+          "texture": "#label"
+        },
+        "south": {
+          "texture": "#label"
+        },
+        "west": {
+          "texture": "#label"
+        },
+        "up": {
+          "texture": "#label"
+        },
+        "down": {
+          "texture": "#label"
+        }
+      }
+    },
+    {
+      "from": [
+        1.9392,
+        3.292,
+        5.31
+      ],
+      "to": [
+        1.98,
+        4.312,
+        7.35
+      ],
+      "faces": {
+        "north": {
+          "texture": "#label"
+        },
+        "east": {
+          "texture": "#label"
+        },
+        "south": {
+          "texture": "#label"
+        },
+        "west": {
+          "texture": "#label"
+        },
+        "up": {
+          "texture": "#label"
+        },
+        "down": {
+          "texture": "#label"
+        }
+      }
+    },
+    {
+      "from": [
+        4.02,
+        3.292,
+        5.31
+      ],
+      "to": [
+        4.0608,
+        4.312,
+        7.35
+      ],
+      "faces": {
+        "north": {
+          "texture": "#label"
+        },
+        "east": {
+          "texture": "#label"
+        },
+        "south": {
+          "texture": "#label"
+        },
+        "west": {
+          "texture": "#label"
+        },
+        "up": {
+          "texture": "#label"
+        },
+        "down": {
+          "texture": "#label"
         }
       }
     }
