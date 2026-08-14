@@ -165,4 +165,9 @@ The distributable JAR is written to `build/libs/`.
 
 ## License
 
-MIT
+Vintner source code is licensed under the GNU Lesser General Public License,
+version 3 or any later version (LGPL-3.0-or-later). See `LICENSE-CODE` and
+`LICENSE-GPL-3.0`.
+
+Original Vintner creative assets are All Rights Reserved unless explicitly
+stated otherwise. See `ASSETS_LICENSE.md` and `LICENSING.md`.
