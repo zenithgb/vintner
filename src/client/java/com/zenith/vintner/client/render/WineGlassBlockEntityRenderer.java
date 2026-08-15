@@ -93,8 +93,8 @@ public final class WineGlassBlockEntityRenderer implements
                     state.facing
             );
             poseStack.pushPose();
-            poseStack.translate(position.x, 0.02, position.z);
-            poseStack.scale(0.85F, 0.85F, 0.85F);
+            poseStack.translate(position.x, 0.015, position.z);
+            poseStack.scale(1.05F, 1.05F, 1.05F);
             state.glasses[index].submit(
                     poseStack,
                     collector,

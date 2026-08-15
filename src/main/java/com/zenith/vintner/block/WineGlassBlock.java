@@ -316,17 +316,17 @@ public final class WineGlassBlock extends BaseEntityBlock {
     ) {
         double[][] layout = switch (count) {
             case 1 -> new double[][]{{0.5, 0.5}};
-            case 2 -> new double[][]{{0.34, 0.5}, {0.66, 0.5}};
+            case 2 -> new double[][]{{0.31, 0.5}, {0.69, 0.5}};
             case 3 -> new double[][]{
-                    {0.32, 0.34},
-                    {0.68, 0.34},
+                    {0.30, 0.32},
+                    {0.70, 0.32},
                     {0.5, 0.68}
             };
             default -> new double[][]{
-                    {0.32, 0.32},
-                    {0.68, 0.32},
-                    {0.32, 0.68},
-                    {0.68, 0.68}
+                    {0.30, 0.30},
+                    {0.70, 0.30},
+                    {0.30, 0.70},
+                    {0.70, 0.70}
             };
         };
 

@@ -6,26 +6,29 @@
       "force_translucent": true,
       "sprite": "minecraft:block/glass"
     },
-    "glass_edge": "minecraft:block/light_gray_concrete",
+    "glass_edge": {
+      "force_translucent": true,
+      "sprite": "minecraft:block/glass"
+    },
     "wine": "minecraft:block/red_concrete",
-    "particle": "minecraft:block/light_gray_concrete"
+    "particle": "minecraft:block/glass"
   },
   "display": {
     "gui": {
       "rotation": [
-        25,
-        225,
+        10,
+        180,
         0
       ],
       "translation": [
         0,
-        -0.25,
+        0.5,
         0
       ],
       "scale": [
-        1.7,
-        1.7,
-        1.7
+        1.55,
+        1.55,
+        1.55
       ]
     },
     "ground": {
@@ -90,14 +93,14 @@
   "elements": [
     {
       "from": [
-        5.75,
+        6.5,
         1.0,
-        5.75
+        6.5
       ],
       "to": [
-        10.25,
-        2.0,
-        10.25
+        9.5,
+        1.6,
+        9.5
       ],
       "faces": {
         "north": {
@@ -122,14 +125,14 @@
     },
     {
       "from": [
-        7.5,
-        2.0,
-        7.5
+        7.65,
+        1.6,
+        7.65
       ],
       "to": [
-        8.5,
+        8.35,
         5.5,
-        8.5
+        8.35
       ],
       "faces": {
         "north": {
