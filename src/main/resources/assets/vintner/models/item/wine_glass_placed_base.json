@@ -4,7 +4,7 @@
   "textures": {
     "glass": {
       "force_translucent": true,
-      "sprite": "minecraft:block/white_stained_glass"
+      "sprite": "minecraft:block/glass"
     },
     "wine": "minecraft:block/red_concrete",
     "particle": "minecraft:block/glass"
