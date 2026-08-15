@@ -1,6 +1,19 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "vintner:item/wine_glass"
+    "type": "minecraft:select",
+    "property": "minecraft:display_context",
+    "cases": [
+      {
+        "when": "fixed",
+        "model": {
+          "type": "minecraft:model",
+          "model": "vintner:item/wine_glass_placed"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "vintner:item/wine_glass"
+    }
   }
 }

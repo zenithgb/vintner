@@ -1,0 +1,19 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "glass": {
+      "force_translucent": true,
+      "sprite": "minecraft:block/white_stained_glass"
+    },
+    "wine": "minecraft:block/red_concrete",
+    "particle": "minecraft:block/glass"
+  },
+  "display": {
+    "fixed": {
+      "rotation": [0, 0, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.72, 0.72, 0.72]
+    }
+  }
+}
