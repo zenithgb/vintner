@@ -6,12 +6,9 @@
       "force_translucent": true,
       "sprite": "minecraft:block/glass"
     },
-    "glass_edge": {
-      "force_translucent": true,
-      "sprite": "minecraft:block/glass"
-    },
+    "glass_edge": "minecraft:block/light_blue_concrete",
     "wine": "minecraft:block/red_concrete",
-    "particle": "minecraft:block/glass"
+    "particle": "minecraft:block/light_blue_concrete"
   },
   "display": {
     "gui": {
