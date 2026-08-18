@@ -93,10 +93,9 @@ public final class WineGlassBlockEntityRenderer implements
                     state.facing
             );
             poseStack.pushPose();
-            // FIXED item models are centred around the render origin. Raise the
-            // goblet so its foot, rather than the middle of its bowl, rests on
-            // the supporting block surface.
-            poseStack.translate(position.x, 0.31, position.z);
+            // The crossed sprite is centred around the render origin. Raise it
+            // just enough for the foot to rest on the supporting surface.
+            poseStack.translate(position.x, 0.23, position.z);
             poseStack.scale(1.05F, 1.05F, 1.05F);
             state.glasses[index].submit(
                     poseStack,
