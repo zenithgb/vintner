@@ -1,8 +1,69 @@
 {
   "parent": "vintner:item/wine_glass_placed_base",
   "elements": [
-    {"from":[7.2,7.45,7.2],"to":[8.8,7.8,8.8],"faces":{"north":{"texture":"#wine"},"east":{"texture":"#wine"},"south":{"texture":"#wine"},"west":{"texture":"#wine"},"up":{"texture":"#wine"},"down":{"texture":"#wine"}}},
-    {"from":[6.9,7.8,6.9],"to":[9.1,8.15,9.1],"faces":{"north":{"texture":"#wine"},"east":{"texture":"#wine"},"south":{"texture":"#wine"},"west":{"texture":"#wine"},"up":{"texture":"#wine"},"down":{"texture":"#wine"}}},
-    {"from":[6.55,8.15,6.55],"to":[9.45,8.5,9.45],"faces":{"north":{"texture":"#wine"},"east":{"texture":"#wine"},"south":{"texture":"#wine"},"west":{"texture":"#wine"},"up":{"texture":"#wine"},"down":{"texture":"#wine"}}}
+    {
+      "from": [
+        7.2,
+        7.65,
+        7.2
+      ],
+      "to": [
+        8.8,
+        8.0,
+        8.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wine"
+        },
+        "east": {
+          "texture": "#wine"
+        },
+        "south": {
+          "texture": "#wine"
+        },
+        "west": {
+          "texture": "#wine"
+        },
+        "up": {
+          "texture": "#wine"
+        },
+        "down": {
+          "texture": "#wine"
+        }
+      }
+    },
+    {
+      "from": [
+        6.95,
+        8.0,
+        6.95
+      ],
+      "to": [
+        9.05,
+        8.35,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wine"
+        },
+        "east": {
+          "texture": "#wine"
+        },
+        "south": {
+          "texture": "#wine"
+        },
+        "west": {
+          "texture": "#wine"
+        },
+        "up": {
+          "texture": "#wine"
+        },
+        "down": {
+          "texture": "#wine"
+        }
+      }
+    }
   ]
 }
