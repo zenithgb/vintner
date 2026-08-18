@@ -10,11 +10,11 @@
           "models": [
             {
               "type": "minecraft:model",
-              "model": "vintner:item/filled_wine_glass_placed_front"
+              "model": "vintner:item/wine_glass_placed"
             },
             {
               "type": "minecraft:model",
-              "model": "vintner:item/filled_wine_glass_placed_side"
+              "model": "vintner:item/filled_wine_glass_placed_fill"
             }
           ]
         }

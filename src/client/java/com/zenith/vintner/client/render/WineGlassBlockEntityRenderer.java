@@ -95,7 +95,7 @@ public final class WineGlassBlockEntityRenderer implements
             poseStack.pushPose();
             // The crossed sprite is centred around the render origin. Raise it
             // just enough for the foot to rest on the supporting surface.
-            poseStack.translate(position.x, 0.23, position.z);
+            poseStack.translate(position.x, 0.29, position.z);
             poseStack.scale(1.05F, 1.05F, 1.05F);
             state.glasses[index].submit(
                     poseStack,
