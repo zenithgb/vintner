@@ -123,8 +123,11 @@ public final class WineGlassBlockEntityRenderer implements
     ) {
         // A low octagonal foot and narrow stem keep the silhouette readable at
         // Minecraft scale without turning the glass into a heavy goblet.
-        prism(pose, consumer, light, 0.0F, 0.022F, 0.105F, 0.105F, true);
-        prism(pose, consumer, light, 0.022F, 0.285F, 0.018F, 0.018F, true);
+        // Keep the foot just above the supporting surface so its underside does
+        // not fight the block top. The uncapped stem overlaps both adjoining
+        // pieces slightly, avoiding coplanar internal faces at either joint.
+        prism(pose, consumer, light, 0.006F, 0.03F, 0.09F, 0.09F, true);
+        prism(pose, consumer, light, 0.018F, 0.292F, 0.018F, 0.018F, false);
 
         // One continuous faceted bowl. The inner surface is inset to leave a
         // real open cavity and a visible, but restrained, glass rim.
