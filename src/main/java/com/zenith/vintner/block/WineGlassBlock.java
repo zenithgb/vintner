@@ -2,8 +2,8 @@ package com.zenith.vintner.block;
 
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.WineGlassBlockEntity;
+import com.zenith.vintner.item.GobletItem;
 import com.zenith.vintner.registry.ModBlockEntities;
-import com.zenith.vintner.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -43,7 +43,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/** A compact tabletop setting containing one to four exact wine glasses. */
+/** A compact tabletop setting containing one to four exact metal goblets. */
 public final class WineGlassBlock extends BaseEntityBlock {
     public static final MapCodec<WineGlassBlock> CODEC =
             simpleCodec(WineGlassBlock::new);
@@ -157,7 +157,7 @@ public final class WineGlassBlock extends BaseEntityBlock {
             InteractionHand hand,
             BlockHitResult hitResult
     ) {
-        if (!isGlass(heldStack)) {
+        if (!GobletItem.isGoblet(heldStack)) {
             return InteractionResult.PASS;
         }
 
@@ -173,7 +173,7 @@ public final class WineGlassBlock extends BaseEntityBlock {
         if (glassEntity.isFull()) {
             player.sendOverlayMessage(
                     Component.translatable(
-                            "message.vintner.wine_glasses.full"
+                            "message.vintner.goblets.full"
                     )
             );
             return InteractionResult.SUCCESS;
@@ -372,8 +372,4 @@ public final class WineGlassBlock extends BaseEntityBlock {
         return nearest;
     }
 
-    private static boolean isGlass(ItemStack stack) {
-        return stack.is(ModItems.WINE_GLASS)
-                || stack.is(ModItems.FILLED_WINE_GLASS);
-    }
 }

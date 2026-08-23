@@ -1,8 +1,11 @@
 package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.block.WineBottleBlock;
+import com.zenith.vintner.item.FilledGobletItem;
 import com.zenith.vintner.item.FilledWineGlassItem;
+import com.zenith.vintner.item.GobletItem;
 import com.zenith.vintner.registry.ModBlockEntities;
+import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.WineMetadata;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Items;
@@ -42,13 +45,28 @@ public final class WineBottleBlockEntity extends BlockEntity {
     }
 
     public synchronized ItemStack pourServing() {
+        return pourServing(new ItemStack(ModItems.WINE_GLASS));
+    }
+
+    public synchronized ItemStack pourServing(ItemStack vessel) {
         if (bottle.isEmpty()
                 || bottle.is(Items.GLASS_BOTTLE)
                 || WineMetadata.servings(bottle) <= 0) {
             return ItemStack.EMPTY;
         }
 
-        ItemStack glass = FilledWineGlassItem.fromBottle(bottle);
+        ItemStack serving;
+        if (vessel.is(ModItems.WINE_GLASS)) {
+            serving = FilledWineGlassItem.fromBottle(bottle);
+        } else if (GobletItem.isEmptyGoblet(vessel)) {
+            serving = FilledGobletItem.fromBottle(
+                    bottle,
+                    GobletItem.class.cast(vessel.getItem()).material()
+            );
+        } else {
+            return ItemStack.EMPTY;
+        }
+
         int remaining = WineMetadata.servings(bottle) - 1;
 
         if (remaining <= 0) {
@@ -59,7 +77,7 @@ public final class WineBottleBlockEntity extends BlockEntity {
 
         setChanged();
         syncServings();
-        return glass;
+        return serving;
     }
 
     public int servings() {

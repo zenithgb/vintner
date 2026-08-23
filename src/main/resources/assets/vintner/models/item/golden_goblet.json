@@ -1,0 +1,7 @@
+{
+  "parent": "vintner:item/goblet_base",
+  "textures": {
+    "metal": "minecraft:block/gold_block",
+    "particle": "minecraft:block/gold_block"
+  }
+}

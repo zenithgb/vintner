@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.WineBottleBlockEntity;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.item.VintnerAlmanacItem;
+import com.zenith.vintner.item.GobletItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.WineMetadata;
@@ -183,7 +184,8 @@ public final class WineBottleBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        if (!heldStack.is(ModItems.WINE_GLASS)) {
+        if (!heldStack.is(ModItems.WINE_GLASS)
+                && !GobletItem.isEmptyGoblet(heldStack)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
@@ -196,8 +198,8 @@ public final class WineBottleBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        ItemStack filledGlass = bottleEntity.pourServing();
-        if (filledGlass.isEmpty()) {
+        ItemStack filledVessel = bottleEntity.pourServing(heldStack);
+        if (filledVessel.isEmpty()) {
             player.sendSystemMessage(
                     Component.translatable(
                             "message.vintner.wine_bottle.empty"
@@ -210,8 +212,8 @@ public final class WineBottleBlock extends BaseEntityBlock {
             heldStack.shrink(1);
         }
 
-        if (!player.addItem(filledGlass)) {
-            popResource(serverLevel, pos, filledGlass);
+        if (!player.addItem(filledVessel)) {
+            popResource(serverLevel, pos, filledVessel);
         }
 
         serverLevel.playSound(

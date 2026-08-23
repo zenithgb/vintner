@@ -1,7 +1,7 @@
 package com.zenith.vintner.block.entity;
 
+import com.zenith.vintner.item.GobletItem;
 import com.zenith.vintner.registry.ModBlockEntities;
-import com.zenith.vintner.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Stores the exact metadata-bearing glass stacks in one tabletop setting. */
+/** Stores the exact metadata-bearing goblet stacks in one tabletop setting. */
 public final class WineGlassBlockEntity extends BlockEntity {
     public static final int CAPACITY = 4;
 
@@ -31,7 +31,7 @@ public final class WineGlassBlockEntity extends BlockEntity {
     }
 
     public boolean addGlass(ItemStack stack) {
-        if (glasses.size() >= CAPACITY || !isGlass(stack)) {
+        if (glasses.size() >= CAPACITY || !GobletItem.isGoblet(stack)) {
             return false;
         }
 
@@ -94,11 +94,6 @@ public final class WineGlassBlockEntity extends BlockEntity {
         }
     }
 
-    private static boolean isGlass(ItemStack stack) {
-        return stack.is(ModItems.WINE_GLASS)
-                || stack.is(ModItems.FILLED_WINE_GLASS);
-    }
-
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
@@ -110,7 +105,7 @@ public final class WineGlassBlockEntity extends BlockEntity {
                     ItemStack.CODEC
             ).orElse(ItemStack.EMPTY);
 
-            if (!stack.isEmpty() && isGlass(stack)) {
+            if (!stack.isEmpty() && GobletItem.isGoblet(stack)) {
                 glasses.add(stack.copyWithCount(1));
             }
         }

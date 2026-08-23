@@ -4,7 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.zenith.vintner.block.WineGlassBlock;
 import com.zenith.vintner.block.entity.WineGlassBlockEntity;
-import com.zenith.vintner.registry.ModItems;
+import com.zenith.vintner.item.FilledGobletItem;
+import com.zenith.vintner.item.GobletMaterial;
+import com.zenith.vintner.wine.WineMetadata;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -19,17 +21,29 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
-/** Renders each metadata-bearing glass as one continuous faceted vessel. */
+/** Renders each metadata-bearing goblet as a continuous metal vessel. */
 public final class WineGlassBlockEntityRenderer implements
         BlockEntityRenderer<WineGlassBlockEntity, WineGlassRenderState> {
     private static final int SIDES = 8;
-    private static final Identifier GLASS_TEXTURE =
+    private static final Identifier PEWTER_TEXTURE =
             Identifier.withDefaultNamespace(
-                    "textures/block/light_gray_stained_glass.png"
+                    "textures/block/iron_block.png"
             );
-    private static final Identifier WINE_TEXTURE =
+    private static final Identifier COPPER_TEXTURE =
+            Identifier.withDefaultNamespace(
+                    "textures/block/copper_block.png"
+            );
+    private static final Identifier GOLD_TEXTURE =
+            Identifier.withDefaultNamespace(
+                    "textures/block/gold_block.png"
+            );
+    private static final Identifier RED_WINE_TEXTURE =
             Identifier.withDefaultNamespace(
                     "textures/block/red_stained_glass.png"
+            );
+    private static final Identifier WHITE_WINE_TEXTURE =
+            Identifier.withDefaultNamespace(
+                    "textures/block/yellow_stained_glass.png"
             );
 
     public WineGlassBlockEntityRenderer(
@@ -73,7 +87,13 @@ public final class WineGlassBlockEntityRenderer implements
             ItemStack stack = index < state.count
                     ? glasses.get(index)
                     : ItemStack.EMPTY;
-            state.filled[index] = stack.is(ModItems.FILLED_WINE_GLASS);
+            state.materials[index] = GobletMaterial.from(stack);
+            state.filled[index] = stack.getItem()
+                    instanceof FilledGobletItem;
+            state.whiteWine[index] = state.filled[index]
+                    && WineMetadata
+                    .effectProfile(stack)
+                    .contains("white");
         }
     }
 
@@ -94,8 +114,10 @@ public final class WineGlassBlockEntityRenderer implements
             poseStack.translate(position.x, 0.0, position.z);
             collector.submitCustomGeometry(
                     poseStack,
-                    RenderTypes.entityTranslucent(GLASS_TEXTURE),
-                    (pose, consumer) -> renderGlass(
+                    RenderTypes.entityTranslucent(
+                            metalTexture(state.materials[index])
+                    ),
+                    (pose, consumer) -> renderGoblet(
                             pose,
                             consumer,
                             state.lightCoords
@@ -104,7 +126,11 @@ public final class WineGlassBlockEntityRenderer implements
             if (state.filled[index]) {
                 collector.order(1).submitCustomGeometry(
                         poseStack,
-                        RenderTypes.entityTranslucent(WINE_TEXTURE),
+                        RenderTypes.entityTranslucent(
+                                state.whiteWine[index]
+                                        ? WHITE_WINE_TEXTURE
+                                        : RED_WINE_TEXTURE
+                        ),
                         (pose, consumer) -> renderWine(
                                 pose,
                                 consumer,
@@ -116,24 +142,29 @@ public final class WineGlassBlockEntityRenderer implements
         }
     }
 
-    private static void renderGlass(
+    private static Identifier metalTexture(GobletMaterial material) {
+        return switch (material) {
+            case COPPER -> COPPER_TEXTURE;
+            case GOLD -> GOLD_TEXTURE;
+            default -> PEWTER_TEXTURE;
+        };
+    }
+
+    private static void renderGoblet(
             PoseStack.Pose pose,
             VertexConsumer consumer,
             int light
     ) {
-        // A low octagonal foot and narrow stem keep the silhouette readable at
-        // Minecraft scale without turning the glass into a heavy goblet.
-        // Keep the foot just above the supporting surface so its underside does
-        // not fight the block top. The uncapped stem overlaps both adjoining
-        // pieces slightly, avoiding coplanar internal faces at either joint.
-        prism(pose, consumer, light, 0.006F, 0.03F, 0.09F, 0.09F, true);
-        prism(pose, consumer, light, 0.018F, 0.292F, 0.018F, 0.018F, false);
+        // A broad octagonal foot and short stem give the opaque vessel a
+        // deliberate vanilla-scale goblet silhouette. Hidden joins overlap,
+        // and the stem remains uncapped, to avoid coplanar flicker.
+        prism(pose, consumer, light, 0.006F, 0.04F, 0.11F, 0.11F, true);
+        prism(pose, consumer, light, 0.032F, 0.255F, 0.025F, 0.025F, false);
 
-        // One continuous faceted bowl. The inner surface is inset to leave a
-        // real open cavity and a visible, but restrained, glass rim.
-        float[] heights = {0.275F, 0.335F, 0.49F, 0.635F};
-        float[] outer = {0.045F, 0.075F, 0.125F, 0.15F};
-        float[] inner = {0.025F, 0.055F, 0.105F, 0.13F};
+        // The bowl is one hollow octagonal shell rather than stacked cubes.
+        float[] heights = {0.235F, 0.305F, 0.48F, 0.58F};
+        float[] outer = {0.05F, 0.09F, 0.155F, 0.16F};
+        float[] inner = {0.026F, 0.066F, 0.128F, 0.133F};
 
         for (int tier = 0; tier < heights.length - 1; tier++) {
             frustumSides(
@@ -174,6 +205,14 @@ public final class WineGlassBlockEntityRenderer implements
                 inner[0],
                 outer[0]
         );
+        disc(
+                pose,
+                consumer,
+                light,
+                heights[0] + 0.006F,
+                inner[0],
+                false
+        );
     }
 
     private static void renderWine(
@@ -181,19 +220,19 @@ public final class WineGlassBlockEntityRenderer implements
             VertexConsumer consumer,
             int light
     ) {
-        // The wine follows the inside of the bowl and stops well below the rim.
+        // The serving sits inside the bowl with a visible metal rim above it.
         frustumSides(
                 pose,
                 consumer,
                 light,
-                0.305F,
-                0.505F,
-                0.027F,
-                0.098F,
+                0.27F,
+                0.49F,
+                0.03F,
+                0.12F,
                 false
         );
-        disc(pose, consumer, light, 0.505F, 0.098F, false);
-        disc(pose, consumer, light, 0.305F, 0.027F, true);
+        disc(pose, consumer, light, 0.49F, 0.12F, false);
+        disc(pose, consumer, light, 0.27F, 0.03F, true);
     }
 
     private static void prism(
@@ -364,7 +403,7 @@ public final class WineGlassBlockEntityRenderer implements
             float normalZ
     ) {
         consumer.addVertex(pose, x, y, z)
-                .setColor(255, 255, 255, 210)
+                .setColor(255, 255, 255, 255)
                 .setUv(u, v)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(light)
