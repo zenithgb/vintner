@@ -65,7 +65,7 @@ public final class TastingServiceBlock extends BaseEntityBlock {
             0,
             1,
             15,
-            12,
+            10,
             15
     );
 

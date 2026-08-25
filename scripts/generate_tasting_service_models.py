@@ -21,9 +21,9 @@ TEXTURES = {
     "bottle": "minecraft:block/green_terracotta",
     "cork": "minecraft:block/stripped_spruce_log",
     "red_label": "minecraft:block/red_terracotta",
-    "white_label": "minecraft:block/yellow_terracotta",
+    "white_label": "minecraft:block/yellow_concrete",
     "red_wine": "minecraft:block/red_concrete",
-    "white_wine": "minecraft:block/yellow_terracotta",
+    "white_wine": "minecraft:block/yellow_concrete",
     "particle": "minecraft:block/oak_planks",
 }
 
@@ -47,19 +47,88 @@ def cube(
     }
 
 
+def rotated_cube(
+    start: list[float],
+    end: list[float],
+    texture: str,
+    origin: list[float],
+    angle: float,
+) -> dict[str, object]:
+    element = cube(start, end, texture)
+    element["rotation"] = {
+        "origin": origin,
+        "axis": "y",
+        "angle": angle,
+        "rescale": False,
+    }
+    return element
+
+
 def cup(center_x: float, center_z: float) -> list[dict[str, object]]:
-    """A small square ceramic tasting cup with a clearly open centre."""
-    x0 = center_x - 1.0
-    x1 = center_x + 1.0
-    z0 = center_z - 1.0
-    z1 = center_z + 1.0
-    return [
-        cube([x0, 2.0, z0], [x1, 3.35, z0 + 0.3], "ceramic"),
-        cube([x0, 2.0, z1 - 0.3], [x1, 3.35, z1], "ceramic"),
-        cube([x0, 2.0, z0 + 0.3], [x0 + 0.3, 3.35, z1 - 0.3], "ceramic"),
-        cube([x1 - 0.3, 2.0, z0 + 0.3], [x1, 3.35, z1 - 0.3], "ceramic"),
-        cube([x0 + 0.25, 1.85, z0 + 0.25], [x1 - 0.25, 2.1, z1 - 0.25], "ceramic"),
+    """A compact chamfered ceramic tasting cup with an open centre."""
+    y0 = 2.0
+    y1 = 3.1
+    half = 0.78
+    straight = 0.43
+    thickness = 0.22
+    corner_offset = 0.57
+    corner_half_length = 0.29
+    corner_half_width = 0.11
+
+    elements = [
+        cube(
+            [center_x - straight, y0, center_z - half],
+            [center_x + straight, y1, center_z - half + thickness],
+            "ceramic",
+        ),
+        cube(
+            [center_x - straight, y0, center_z + half - thickness],
+            [center_x + straight, y1, center_z + half],
+            "ceramic",
+        ),
+        cube(
+            [center_x - half, y0, center_z - straight],
+            [center_x - half + thickness, y1, center_z + straight],
+            "ceramic",
+        ),
+        cube(
+            [center_x + half - thickness, y0, center_z - straight],
+            [center_x + half, y1, center_z + straight],
+            "ceramic",
+        ),
+        cube(
+            [center_x - 0.48, 1.84, center_z - 0.48],
+            [center_x + 0.48, 2.06, center_z + 0.48],
+            "ceramic",
+        ),
     ]
+
+    for offset_x, offset_z, angle in (
+        (-corner_offset, -corner_offset, 45.0),
+        (corner_offset, -corner_offset, -45.0),
+        (-corner_offset, corner_offset, -45.0),
+        (corner_offset, corner_offset, 45.0),
+    ):
+        origin = [center_x + offset_x, (y0 + y1) / 2, center_z + offset_z]
+        elements.append(
+            rotated_cube(
+                [
+                    origin[0] - corner_half_length,
+                    y0,
+                    origin[2] - corner_half_width,
+                ],
+                [
+                    origin[0] + corner_half_length,
+                    y1,
+                    origin[2] + corner_half_width,
+                ],
+                "ceramic",
+                origin,
+                angle,
+            )
+        )
+
+    return elements
 
 
 CUP_CENTERS = ((3.0, 5.0), (6.35, 5.0), (9.65, 5.0), (13.0, 5.0))
@@ -70,7 +139,7 @@ BASE_ELEMENTS = [
     cube([1.0, 1.0, 14.4], [15.0, 2.0, 15.0], "rim"),
     cube([1.0, 1.0, 1.6], [1.6, 2.0, 14.4], "rim"),
     cube([14.4, 1.0, 1.6], [15.0, 2.0, 14.4], "rim"),
-    cube([2.0, 1.05, 8.0], [6.0, 1.35, 13.5], "cloth"),
+    cube([2.15, 1.04, 9.6], [5.65, 1.2, 13.75], "cloth"),
 ]
 
 for center in CUP_CENTERS:
@@ -79,23 +148,35 @@ for center in CUP_CENTERS:
 
 def bottle_elements(label: str) -> list[dict[str, object]]:
     return [
-        cube([9.6, 2.0, 9.4], [13.4, 7.0, 13.2], "bottle"),
-        cube([10.2, 7.0, 10.0], [12.8, 8.2, 12.6], "bottle"),
-        cube([10.8, 8.2, 10.6], [12.2, 10.8, 12.0], "bottle"),
-        cube([10.65, 10.8, 10.45], [12.35, 11.5, 12.15], "cork"),
-        cube([10.35, 4.0, 9.2], [12.65, 6.2, 9.45], label),
+        cube([10.0, 2.0, 9.8], [13.0, 6.25, 12.8], "bottle"),
+        cube([10.45, 6.25, 10.25], [12.55, 7.15, 12.35], "bottle"),
+        cube([10.9, 7.15, 10.7], [12.1, 9.0, 11.9], "bottle"),
+        cube([10.75, 9.0, 10.55], [12.25, 9.55, 12.05], "cork"),
+        cube([10.45, 3.7, 9.62], [12.55, 5.45, 9.85], label),
     ]
 
 
 def fill_elements(texture: str, count: int) -> list[dict[str, object]]:
     result = []
     for center_x, center_z in CUP_CENTERS[:count]:
-        result.append(
-            cube(
-                [center_x - 0.65, 3.0, center_z - 0.65],
-                [center_x + 0.65, 3.18, center_z + 0.65],
-                texture,
-            )
+        result.extend(
+            [
+                cube(
+                    [center_x - 0.5, 2.88, center_z - 0.5],
+                    [center_x + 0.5, 3.04, center_z + 0.5],
+                    texture,
+                ),
+                cube(
+                    [center_x - 0.62, 2.88, center_z - 0.3],
+                    [center_x + 0.62, 3.04, center_z + 0.3],
+                    texture,
+                ),
+                cube(
+                    [center_x - 0.3, 2.88, center_z - 0.62],
+                    [center_x + 0.3, 3.04, center_z + 0.62],
+                    texture,
+                ),
+            ]
         )
     return result
 

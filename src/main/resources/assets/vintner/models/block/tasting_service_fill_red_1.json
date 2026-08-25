@@ -9,22 +9,86 @@
     "bottle": "minecraft:block/green_terracotta",
     "cork": "minecraft:block/stripped_spruce_log",
     "red_label": "minecraft:block/red_terracotta",
-    "white_label": "minecraft:block/yellow_terracotta",
+    "white_label": "minecraft:block/yellow_concrete",
     "red_wine": "minecraft:block/red_concrete",
-    "white_wine": "minecraft:block/yellow_terracotta",
+    "white_wine": "minecraft:block/yellow_concrete",
     "particle": "minecraft:block/oak_planks"
   },
   "elements": [
     {
       "from": [
-        2.35,
-        3.0,
-        4.35
+        2.5,
+        2.88,
+        4.5
       ],
       "to": [
-        3.65,
-        3.18,
-        5.65
+        3.5,
+        3.04,
+        5.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#red_wine"
+        },
+        "east": {
+          "texture": "#red_wine"
+        },
+        "south": {
+          "texture": "#red_wine"
+        },
+        "west": {
+          "texture": "#red_wine"
+        },
+        "up": {
+          "texture": "#red_wine"
+        },
+        "down": {
+          "texture": "#red_wine"
+        }
+      }
+    },
+    {
+      "from": [
+        2.38,
+        2.88,
+        4.7
+      ],
+      "to": [
+        3.62,
+        3.04,
+        5.3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#red_wine"
+        },
+        "east": {
+          "texture": "#red_wine"
+        },
+        "south": {
+          "texture": "#red_wine"
+        },
+        "west": {
+          "texture": "#red_wine"
+        },
+        "up": {
+          "texture": "#red_wine"
+        },
+        "down": {
+          "texture": "#red_wine"
+        }
+      }
+    },
+    {
+      "from": [
+        2.7,
+        2.88,
+        4.38
+      ],
+      "to": [
+        3.3,
+        3.04,
+        5.62
       ],
       "faces": {
         "north": {
