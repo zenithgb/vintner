@@ -168,6 +168,43 @@ def generate_white_wine_texture() -> None:
     )
 
 
+def generate_tasting_liquid_textures() -> None:
+    """Generate subtly translucent wine used only in poured tasting cups."""
+    alpha = 0xE0
+    accents = (
+        (2, 2), (3, 2), (11, 3), (12, 3), (7, 6), (8, 6),
+        (3, 10), (4, 10), (12, 12), (13, 12),
+    )
+    shadows = (
+        (5, 3), (6, 3), (13, 6), (2, 7), (9, 10), (10, 10),
+        (5, 14), (6, 14),
+    )
+
+    palettes = {
+        "red_wine_liquid": (
+            (0x79, 0x18, 0x28, alpha),
+            (0x98, 0x29, 0x3B, alpha),
+            (0x55, 0x10, 0x1C, alpha),
+        ),
+        "white_wine_liquid": (
+            (0xEE, 0xED, 0xC4, alpha),
+            (0xF7, 0xF6, 0xDD, alpha),
+            (0xD9, 0xD6, 0xAD, alpha),
+        ),
+    }
+
+    for texture_name, (base, highlight, shadow) in palettes.items():
+        rows = [[base for _ in range(16)] for _ in range(16)]
+        for x, y in accents:
+            rows[y][x] = highlight
+        for x, y in shadows:
+            rows[y][x] = shadow
+        write_rgba_texture(
+            ASSETS / f"textures/block/{texture_name}.png",
+            rows,
+        )
+
+
 def read_json(path: Path) -> object:
     return json.loads(path.read_text())
 
@@ -637,6 +674,7 @@ def bottle_elements(
 
 def generate_canonical_bottle_models() -> None:
     generate_white_wine_texture()
+    generate_tasting_liquid_textures()
     palettes = {
         "red": {
             "bottle": "minecraft:block/green_terracotta",

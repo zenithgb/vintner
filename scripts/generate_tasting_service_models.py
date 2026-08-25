@@ -33,8 +33,14 @@ TEXTURES = {
     "seal": "minecraft:block/red_terracotta",
     "red_seal": "minecraft:block/red_terracotta",
     "white_seal": "vintner:block/white_wine",
-    "red_wine": "minecraft:block/red_concrete",
-    "white_wine": "vintner:block/white_wine",
+    "red_wine": {
+        "force_translucent": True,
+        "sprite": "vintner:block/red_wine_liquid",
+    },
+    "white_wine": {
+        "force_translucent": True,
+        "sprite": "vintner:block/white_wine_liquid",
+    },
     "particle": "minecraft:block/oak_planks",
 }
 
