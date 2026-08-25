@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 import copy
+import binascii
 import json
+import struct
+import zlib
 from pathlib import Path
 
 
@@ -99,6 +102,70 @@ GLASS_COLORS = (
 def write_json(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, indent=2) + "\n")
+
+
+def write_rgba_texture(
+    path: Path,
+    rows: list[list[tuple[int, int, int, int]]],
+) -> None:
+    """Write a small RGBA texture without adding a Pillow dependency."""
+    width = len(rows[0])
+    height = len(rows)
+    if width == 0 or any(len(row) != width for row in rows):
+        raise ValueError("Texture rows must have one non-zero width")
+
+    def chunk(kind: bytes, payload: bytes) -> bytes:
+        checksum = binascii.crc32(kind + payload) & 0xFFFFFFFF
+        return (
+            struct.pack(">I", len(payload))
+            + kind
+            + payload
+            + struct.pack(">I", checksum)
+        )
+
+    raw = b"".join(
+        b"\x00" + bytes(channel for pixel in row for channel in pixel)
+        for row in rows
+    )
+    header = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
+    png = (
+        b"\x89PNG\r\n\x1a\n"
+        + chunk(b"IHDR", header)
+        + chunk(b"IDAT", zlib.compress(raw, level=9))
+        + chunk(b"IEND", b"")
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(png)
+
+
+def generate_white_wine_texture() -> None:
+    """Generate pale straw wine centred on the requested #EEEDC4."""
+    base = (0xEE, 0xED, 0xC4, 0xFF)
+    highlight = (0xF7, 0xF6, 0xDD, 0xFF)
+    shadow = (0xD9, 0xD6, 0xAD, 0xFF)
+    warm = (0xE7, 0xE3, 0xB5, 0xFF)
+    rows = [[base for _ in range(16)] for _ in range(16)]
+
+    # Sparse, low-contrast pixel clusters retain the exact base colour over
+    # most of the surface while preventing the liquid from reading as a flat
+    # debug swatch in the tasting cups and bottle label medallion.
+    for x, y in (
+        (2, 2), (3, 2), (11, 3), (12, 3), (7, 6), (8, 6),
+        (3, 10), (4, 10), (12, 12), (13, 12),
+    ):
+        rows[y][x] = highlight
+    for x, y in (
+        (5, 3), (6, 3), (13, 6), (2, 7), (9, 10), (10, 10),
+        (5, 14), (6, 14),
+    ):
+        rows[y][x] = shadow
+    for x, y in ((9, 2), (4, 6), (11, 8), (7, 12), (8, 12)):
+        rows[y][x] = warm
+
+    write_rgba_texture(
+        ASSETS / "textures/block/white_wine.png",
+        rows,
+    )
 
 
 def read_json(path: Path) -> object:
@@ -448,30 +515,33 @@ def cube_faces(texture: str) -> dict[str, dict[str, str]]:
 
 
 RED_BOTTLE_CUBOIDS = (
-    # One restrained, stepped silhouette is reused by placed bottles,
-    # tasting services, racks, crates, and cellar fixtures.  The slimmer
-    # body and longer neck keep it legible at storage scale without turning
-    # it into a stack of unrelated cubes at table scale.
-    ((-1.3, 0.0, -1.3), (1.3, 5.2, 1.3), "#bottle"),
-    ((-1.2, 5.2, -1.2), (1.2, 5.75, 1.2), "#bottle"),
-    ((-0.88, 5.75, -0.88), (0.88, 6.35, 0.88), "#bottle"),
-    ((-0.48, 6.35, -0.48), (0.48, 9.15, 0.48), "#bottle_dark"),
-    ((-0.62, 8.95, -0.62), (0.62, 9.55, 0.62), "#bottle_dark"),
-    ((-0.42, 9.35, -0.42), (0.42, 10.15, 0.42), "#cork"),
+    # Bordeaux-inspired: a firm heel, long straight body, squared shoulders,
+    # foil collar, and proud cork. The extra transitions give the bottle a
+    # crafted silhouette without making storage displays visually noisy.
+    ((-1.55, 0.0, -1.45), (1.55, 0.38, 1.45), "#bottle_dark"),
+    ((-1.45, 0.28, -1.35), (1.45, 5.05, 1.35), "#bottle"),
+    ((-1.38, 5.05, -1.28), (1.38, 5.48, 1.28), "#bottle"),
+    ((-1.12, 5.48, -1.06), (1.12, 5.88, 1.06), "#bottle"),
+    ((-0.78, 5.88, -0.72), (0.78, 6.28, 0.72), "#bottle_dark"),
+    ((-0.5, 6.22, -0.48), (0.5, 9.35, 0.48), "#bottle_dark"),
+    ((-0.66, 8.9, -0.62), (0.66, 9.58, 0.62), "#neck_foil"),
+    ((-0.42, 9.48, -0.4), (0.42, 10.28, 0.4), "#cork"),
 )
 
 
 WHITE_BOTTLE_CUBOIDS = (
-    # White wine shares the same scale and neck language, but its softer
-    # stepped shoulders and olive glass remain identifiable without relying
-    # on a large coloured band.
-    ((-1.25, 0.0, -1.25), (1.25, 4.75, 1.25), "#bottle"),
-    ((-1.18, 4.75, -1.18), (1.18, 5.3, 1.18), "#bottle"),
-    ((-0.98, 5.3, -0.98), (0.98, 5.8, 0.98), "#bottle"),
-    ((-0.72, 5.8, -0.72), (0.72, 6.35, 0.72), "#bottle"),
-    ((-0.48, 6.35, -0.48), (0.48, 9.15, 0.48), "#bottle_dark"),
-    ((-0.62, 8.95, -0.62), (0.62, 9.55, 0.62), "#bottle_dark"),
-    ((-0.42, 9.35, -0.42), (0.42, 10.15, 0.42), "#cork"),
+    # Burgundy-inspired: a broader body and five gentler shoulder steps make
+    # white bottles identifiable by form as well as by their pale label mark.
+    ((-1.58, 0.0, -1.48), (1.58, 0.38, 1.48), "#bottle_dark"),
+    ((-1.48, 0.28, -1.38), (1.48, 4.55, 1.38), "#bottle"),
+    ((-1.4, 4.55, -1.3), (1.4, 4.98, 1.3), "#bottle"),
+    ((-1.24, 4.98, -1.16), (1.24, 5.36, 1.16), "#bottle"),
+    ((-1.04, 5.36, -0.98), (1.04, 5.72, 0.98), "#bottle"),
+    ((-0.82, 5.72, -0.76), (0.82, 6.08, 0.76), "#bottle"),
+    ((-0.62, 6.08, -0.58), (0.62, 6.38, 0.58), "#bottle_dark"),
+    ((-0.5, 6.32, -0.48), (0.5, 9.35, 0.48), "#bottle_dark"),
+    ((-0.66, 8.9, -0.62), (0.66, 9.58, 0.62), "#neck_foil"),
+    ((-0.42, 9.48, -0.4), (0.42, 10.28, 0.4), "#cork"),
 )
 
 
@@ -493,20 +563,40 @@ def bottle_elements(
         if profile == "white"
         else RED_BOTTLE_CUBOIDS
     )
-    front_z = -1.25 if profile == "white" else -1.3
+    front_z = -1.38 if profile == "white" else -1.35
 
-    # A single inset parchment panel reads as a real label from the front
-    # while leaving the bottle glass visible on the sides and back.
-    cuboids.append(
-        ((-0.9, 1.7, front_z - 0.065),
-         (0.9, 3.55, front_z - 0.005),
-         "#label")
-    )
+    # Two slim reflections keep the green glass from reading as one flat
+    # cuboid. They remain subtle enough to survive the reduced rack scale.
+    cuboids.extend((
+        ((-1.08, 0.62, front_z - 0.035),
+         (-0.78, 4.72, front_z + 0.005),
+         "#bottle_highlight"),
+        ((-0.34, 6.48, -0.505),
+         (-0.18, 8.78, -0.475),
+         "#bottle_highlight"),
+    ))
+
+    # A bordered paper label, fine rules, and a central vintage medallion
+    # create a real front face while leaving the sides and back as glass.
+    cuboids.extend((
+        ((-1.08, 1.42, front_z - 0.08),
+         (1.08, 4.05, front_z - 0.015),
+         "#label_border"),
+        ((-0.94, 1.58, front_z - 0.145),
+         (0.94, 3.89, front_z - 0.085),
+         "#label"),
+        ((-0.62, 1.84, front_z - 0.205),
+         (0.62, 2.02, front_z - 0.15),
+         "#label_ink"),
+        ((-0.62, 3.46, front_z - 0.205),
+         (0.62, 3.64, front_z - 0.15),
+         "#label_ink"),
+    ))
 
     if include_seal:
         cuboids.append(
-            ((-0.42, 2.22, front_z - 0.135),
-             (0.42, 3.03, front_z - 0.07),
+            ((-0.44, 2.36, front_z - 0.27),
+             (0.44, 3.12, front_z - 0.21),
              "#seal")
         )
 
@@ -546,16 +636,21 @@ def bottle_elements(
 
 
 def generate_canonical_bottle_models() -> None:
+    generate_white_wine_texture()
     palettes = {
         "red": {
             "bottle": "minecraft:block/green_terracotta",
             "bottle_dark": "minecraft:block/green_concrete",
+            "bottle_highlight": "minecraft:block/lime_terracotta",
+            "neck_foil": "minecraft:block/red_terracotta",
             "seal": "minecraft:block/red_terracotta",
         },
         "white": {
-            "bottle": "minecraft:block/lime_terracotta",
-            "bottle_dark": "minecraft:block/green_terracotta",
-            "seal": "minecraft:block/yellow_terracotta",
+            "bottle": "minecraft:block/green_terracotta",
+            "bottle_dark": "minecraft:block/green_concrete",
+            "bottle_highlight": "minecraft:block/lime_terracotta",
+            "neck_foil": "vintner:block/white_wine",
+            "seal": "vintner:block/white_wine",
         },
     }
 
@@ -568,7 +663,9 @@ def generate_canonical_bottle_models() -> None:
                 "textures": {
                     **palette,
                     "cork": "minecraft:block/stripped_oak_log_top",
-                    "label": "minecraft:block/light_gray_terracotta",
+                    "label": "minecraft:block/smooth_sandstone",
+                    "label_border": "minecraft:block/brown_terracotta",
+                    "label_ink": "minecraft:block/brown_concrete",
                     "particle": palette["bottle"],
                 },
             },

@@ -24,13 +24,17 @@ TEXTURES = {
     "cloth": "minecraft:block/red_wool",
     "bottle": "minecraft:block/green_terracotta",
     "bottle_dark": "minecraft:block/green_concrete",
+    "bottle_highlight": "minecraft:block/lime_terracotta",
     "cork": "minecraft:block/stripped_spruce_log",
-    "label": "minecraft:block/light_gray_terracotta",
+    "label": "minecraft:block/smooth_sandstone",
+    "label_border": "minecraft:block/brown_terracotta",
+    "label_ink": "minecraft:block/brown_concrete",
+    "neck_foil": "minecraft:block/red_terracotta",
     "seal": "minecraft:block/red_terracotta",
     "red_seal": "minecraft:block/red_terracotta",
-    "white_seal": "minecraft:block/yellow_terracotta",
+    "white_seal": "vintner:block/white_wine",
     "red_wine": "minecraft:block/red_concrete",
-    "white_wine": "minecraft:block/yellow_concrete",
+    "white_wine": "vintner:block/white_wine",
     "particle": "minecraft:block/oak_planks",
 }
 
@@ -194,10 +198,13 @@ def model(
     elements: list[dict[str, object]],
     *,
     seal_texture: str | None = None,
+    neck_foil_texture: str | None = None,
 ) -> dict[str, object]:
     textures = dict(TEXTURES)
     if seal_texture is not None:
         textures["seal"] = seal_texture
+    if neck_foil_texture is not None:
+        textures["neck_foil"] = neck_foil_texture
     return {
         "parent": "minecraft:block/block",
         "ambientocclusion": False,
@@ -219,6 +226,7 @@ generated: dict[Path, dict[str, object]] = {
     BLOCK_MODELS / "tasting_service_bottle_white.json": model(
         bottle_elements("white"),
         seal_texture=TEXTURES["white_seal"],
+        neck_foil_texture=TEXTURES["white_seal"],
     ),
 }
 
