@@ -3,6 +3,7 @@ package com.zenith.vintner.block.entity;
 import com.zenith.vintner.block.WineBottleBlock;
 import com.zenith.vintner.item.FilledWineGlassItem;
 import com.zenith.vintner.registry.ModBlockEntities;
+import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.WineMetadata;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Items;
@@ -23,7 +24,7 @@ public final class WineBottleBlockEntity extends BlockEntity {
     public void setBottle(ItemStack stack) {
         bottle = stack.copyWithCount(1);
         setChanged();
-        syncServings();
+        syncVisualState();
     }
 
     public ItemStack getBottleCopy() {
@@ -58,7 +59,7 @@ public final class WineBottleBlockEntity extends BlockEntity {
         }
 
         setChanged();
-        syncServings();
+        syncVisualState();
         return glass;
     }
 
@@ -70,28 +71,56 @@ public final class WineBottleBlockEntity extends BlockEntity {
         return WineMetadata.servings(bottle);
     }
 
-    private void syncServings() {
+    private void syncVisualState() {
         if (level == null
+                || bottle.isEmpty()
                 || !getBlockState().hasProperty(
                 WineBottleBlock.SERVINGS
+        )
+                || !getBlockState().hasProperty(
+                WineBottleBlock.WHITE_WINE
         )) {
             return;
         }
 
         int servings = servings();
-        if (getBlockState().getValue(WineBottleBlock.SERVINGS)
-                == servings) {
+        BlockState state = getBlockState();
+        boolean whiteWine = state.getValue(WineBottleBlock.WHITE_WINE);
+
+        if (isWineBottle()) {
+            whiteWine = bottle.is(ModItems.WHITE_WINE)
+                    || bottle.is(ModItems.AGED_WHITE_WINE);
+        }
+
+        BlockState updated = state
+                .setValue(WineBottleBlock.SERVINGS, servings)
+                .setValue(WineBottleBlock.WHITE_WINE, whiteWine);
+
+        if (updated == state) {
             return;
         }
 
         level.setBlock(
                 worldPosition,
-                getBlockState().setValue(
-                        WineBottleBlock.SERVINGS,
-                        servings
-                ),
+                updated,
                 Block.UPDATE_ALL
         );
+    }
+
+    private boolean isWineBottle() {
+        return bottle.is(ModItems.RED_WINE)
+                || bottle.is(ModItems.WHITE_WINE)
+                || bottle.is(ModItems.AGED_RED_WINE)
+                || bottle.is(ModItems.AGED_WHITE_WINE);
+    }
+
+    @Override
+    public void setLevel(net.minecraft.world.level.Level level) {
+        super.setLevel(level);
+
+        if (!level.isClientSide()) {
+            syncVisualState();
+        }
     }
 
     @Override

@@ -1,78 +1,153 @@
 {
   "variants": {
-    "facing=north,servings=0": {
-      "model": "vintner:block/wine_bottle_fill_0"
+    "facing=north,servings=0,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_0"
     },
-    "facing=north,servings=1": {
-      "model": "vintner:block/wine_bottle_fill_1"
+    "facing=north,servings=1,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_1"
     },
-    "facing=north,servings=2": {
-      "model": "vintner:block/wine_bottle_fill_2"
+    "facing=north,servings=2,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_2"
     },
-    "facing=north,servings=3": {
-      "model": "vintner:block/wine_bottle_fill_3"
+    "facing=north,servings=3,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_3"
     },
-    "facing=north,servings=4": {
-      "model": "vintner:block/wine_bottle_fill_4"
+    "facing=north,servings=4,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_4"
     },
-    "facing=east,servings=0": {
-      "model": "vintner:block/wine_bottle_fill_0",
+    "facing=north,servings=0,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_0"
+    },
+    "facing=north,servings=1,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_1"
+    },
+    "facing=north,servings=2,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_2"
+    },
+    "facing=north,servings=3,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_3"
+    },
+    "facing=north,servings=4,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_4"
+    },
+    "facing=east,servings=0,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_0",
       "y": 90
     },
-    "facing=east,servings=1": {
-      "model": "vintner:block/wine_bottle_fill_1",
+    "facing=east,servings=1,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_1",
       "y": 90
     },
-    "facing=east,servings=2": {
-      "model": "vintner:block/wine_bottle_fill_2",
+    "facing=east,servings=2,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_2",
       "y": 90
     },
-    "facing=east,servings=3": {
-      "model": "vintner:block/wine_bottle_fill_3",
+    "facing=east,servings=3,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_3",
       "y": 90
     },
-    "facing=east,servings=4": {
-      "model": "vintner:block/wine_bottle_fill_4",
+    "facing=east,servings=4,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_4",
       "y": 90
     },
-    "facing=south,servings=0": {
-      "model": "vintner:block/wine_bottle_fill_0",
+    "facing=east,servings=0,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_0",
+      "y": 90
+    },
+    "facing=east,servings=1,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_1",
+      "y": 90
+    },
+    "facing=east,servings=2,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_2",
+      "y": 90
+    },
+    "facing=east,servings=3,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_3",
+      "y": 90
+    },
+    "facing=east,servings=4,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_4",
+      "y": 90
+    },
+    "facing=south,servings=0,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_0",
       "y": 180
     },
-    "facing=south,servings=1": {
-      "model": "vintner:block/wine_bottle_fill_1",
+    "facing=south,servings=1,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_1",
       "y": 180
     },
-    "facing=south,servings=2": {
-      "model": "vintner:block/wine_bottle_fill_2",
+    "facing=south,servings=2,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_2",
       "y": 180
     },
-    "facing=south,servings=3": {
-      "model": "vintner:block/wine_bottle_fill_3",
+    "facing=south,servings=3,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_3",
       "y": 180
     },
-    "facing=south,servings=4": {
-      "model": "vintner:block/wine_bottle_fill_4",
+    "facing=south,servings=4,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_4",
       "y": 180
     },
-    "facing=west,servings=0": {
-      "model": "vintner:block/wine_bottle_fill_0",
+    "facing=south,servings=0,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_0",
+      "y": 180
+    },
+    "facing=south,servings=1,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_1",
+      "y": 180
+    },
+    "facing=south,servings=2,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_2",
+      "y": 180
+    },
+    "facing=south,servings=3,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_3",
+      "y": 180
+    },
+    "facing=south,servings=4,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_4",
+      "y": 180
+    },
+    "facing=west,servings=0,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_0",
       "y": 270
     },
-    "facing=west,servings=1": {
-      "model": "vintner:block/wine_bottle_fill_1",
+    "facing=west,servings=1,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_1",
       "y": 270
     },
-    "facing=west,servings=2": {
-      "model": "vintner:block/wine_bottle_fill_2",
+    "facing=west,servings=2,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_2",
       "y": 270
     },
-    "facing=west,servings=3": {
-      "model": "vintner:block/wine_bottle_fill_3",
+    "facing=west,servings=3,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_3",
       "y": 270
     },
-    "facing=west,servings=4": {
-      "model": "vintner:block/wine_bottle_fill_4",
+    "facing=west,servings=4,white_wine=false": {
+      "model": "vintner:block/wine_bottle_red_fill_4",
+      "y": 270
+    },
+    "facing=west,servings=0,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_0",
+      "y": 270
+    },
+    "facing=west,servings=1,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_1",
+      "y": 270
+    },
+    "facing=west,servings=2,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_2",
+      "y": 270
+    },
+    "facing=west,servings=3,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_3",
+      "y": 270
+    },
+    "facing=west,servings=4,white_wine=true": {
+      "model": "vintner:block/wine_bottle_white_fill_4",
       "y": 270
     }
   }

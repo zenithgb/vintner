@@ -23,9 +23,12 @@ TEXTURES = {
     "ceramic": "minecraft:block/white_terracotta",
     "cloth": "minecraft:block/red_wool",
     "bottle": "minecraft:block/green_terracotta",
+    "bottle_dark": "minecraft:block/green_concrete",
     "cork": "minecraft:block/stripped_spruce_log",
-    "red_label": "minecraft:block/red_terracotta",
-    "white_label": "minecraft:block/yellow_concrete",
+    "label": "minecraft:block/light_gray_terracotta",
+    "seal": "minecraft:block/red_terracotta",
+    "red_seal": "minecraft:block/red_terracotta",
+    "white_seal": "minecraft:block/yellow_terracotta",
     "red_wine": "minecraft:block/red_concrete",
     "white_wine": "minecraft:block/yellow_concrete",
     "particle": "minecraft:block/oak_planks",
@@ -150,13 +153,15 @@ for center in CUP_CENTERS:
     BASE_ELEMENTS.extend(cup(*center))
 
 
-def bottle_elements() -> list[dict[str, object]]:
+def bottle_elements(colour: str) -> list[dict[str, object]]:
     """Use the same bottle silhouette as every Vintner storage display."""
     return canonical_bottle_elements(
         11.5,
         2.0,
         11.3,
         0.74,
+        include_seal=True,
+        profile=colour,
     )
 
 
@@ -188,12 +193,11 @@ def fill_elements(texture: str, count: int) -> list[dict[str, object]]:
 def model(
     elements: list[dict[str, object]],
     *,
-    label_texture: str | None = None,
+    seal_texture: str | None = None,
 ) -> dict[str, object]:
     textures = dict(TEXTURES)
-    if label_texture is not None:
-        textures["bottle_dark"] = "minecraft:block/green_concrete"
-        textures["label"] = label_texture
+    if seal_texture is not None:
+        textures["seal"] = seal_texture
     return {
         "parent": "minecraft:block/block",
         "ambientocclusion": False,
@@ -209,12 +213,12 @@ BLOCKSTATES.mkdir(parents=True, exist_ok=True)
 generated: dict[Path, dict[str, object]] = {
     BLOCK_MODELS / "tasting_service_base.json": model(BASE_ELEMENTS),
     BLOCK_MODELS / "tasting_service_bottle_red.json": model(
-        bottle_elements(),
-        label_texture=TEXTURES["red_label"],
+        bottle_elements("red"),
+        seal_texture=TEXTURES["red_seal"],
     ),
     BLOCK_MODELS / "tasting_service_bottle_white.json": model(
-        bottle_elements(),
-        label_texture=TEXTURES["white_label"],
+        bottle_elements("white"),
+        seal_texture=TEXTURES["white_seal"],
     ),
 }
 
@@ -226,12 +230,12 @@ for colour, texture in (("red", "red_wine"), ("white", "white_wine")):
 
 display_elements = (
     BASE_ELEMENTS
-    + bottle_elements()
+    + bottle_elements("red")
     + fill_elements("red_wine", 4)
 )
 generated[BLOCK_MODELS / "tasting_service_display.json"] = model(
     display_elements,
-    label_texture=TEXTURES["red_label"],
+    seal_texture=TEXTURES["red_seal"],
 )
 generated[ITEM_MODELS / "tasting_service.json"] = {
     "parent": "vintner:block/tasting_service_display",

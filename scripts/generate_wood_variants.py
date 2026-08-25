@@ -447,7 +447,7 @@ def cube_faces(texture: str) -> dict[str, dict[str, str]]:
     }
 
 
-CANONICAL_BOTTLE_CUBOIDS = (
+RED_BOTTLE_CUBOIDS = (
     # One restrained, stepped silhouette is reused by placed bottles,
     # tasting services, racks, crates, and cellar fixtures.  The slimmer
     # body and longer neck keep it legible at storage scale without turning
@@ -458,12 +458,20 @@ CANONICAL_BOTTLE_CUBOIDS = (
     ((-0.48, 6.35, -0.48), (0.48, 9.15, 0.48), "#bottle_dark"),
     ((-0.62, 8.95, -0.62), (0.62, 9.55, 0.62), "#bottle_dark"),
     ((-0.42, 9.35, -0.42), (0.42, 10.15, 0.42), "#cork"),
-    # Four thin panels form a paper label wrapped around the bottle without
-    # replacing the bottle volume with a large white cube.
-    ((-1.32, 1.85, -1.36), (1.32, 3.3, -1.3), "#label"),
-    ((-1.32, 1.85, 1.3), (1.32, 3.3, 1.36), "#label"),
-    ((-1.36, 1.85, -1.3), (-1.3, 3.3, 1.3), "#label"),
-    ((1.3, 1.85, -1.3), (1.36, 3.3, 1.3), "#label"),
+)
+
+
+WHITE_BOTTLE_CUBOIDS = (
+    # White wine shares the same scale and neck language, but its softer
+    # stepped shoulders and olive glass remain identifiable without relying
+    # on a large coloured band.
+    ((-1.25, 0.0, -1.25), (1.25, 4.75, 1.25), "#bottle"),
+    ((-1.18, 4.75, -1.18), (1.18, 5.3, 1.18), "#bottle"),
+    ((-0.98, 5.3, -0.98), (0.98, 5.8, 0.98), "#bottle"),
+    ((-0.72, 5.8, -0.72), (0.72, 6.35, 0.72), "#bottle"),
+    ((-0.48, 6.35, -0.48), (0.48, 9.15, 0.48), "#bottle_dark"),
+    ((-0.62, 8.95, -0.62), (0.62, 9.55, 0.62), "#bottle_dark"),
+    ((-0.42, 9.35, -0.42), (0.42, 10.15, 0.42), "#cork"),
 )
 
 
@@ -475,12 +483,31 @@ def bottle_elements(
     *,
     horizontal: bool = False,
     include_seal: bool = False,
+    profile: str = "red",
 ) -> list[dict[str, object]]:
-    cuboids = list(CANONICAL_BOTTLE_CUBOIDS)
+    if profile not in {"red", "white"}:
+        raise ValueError(f"Unknown bottle profile: {profile}")
+
+    cuboids = list(
+        WHITE_BOTTLE_CUBOIDS
+        if profile == "white"
+        else RED_BOTTLE_CUBOIDS
+    )
+    front_z = -1.25 if profile == "white" else -1.3
+
+    # A single inset parchment panel reads as a real label from the front
+    # while leaving the bottle glass visible on the sides and back.
+    cuboids.append(
+        ((-0.9, 1.7, front_z - 0.065),
+         (0.9, 3.55, front_z - 0.005),
+         "#label")
+    )
 
     if include_seal:
         cuboids.append(
-            ((-0.4, 2.15, -1.43), (0.4, 3.0, -1.36), "#seal")
+            ((-0.42, 2.22, front_z - 0.135),
+             (0.42, 3.03, front_z - 0.07),
+             "#seal")
         )
 
     elements = []
@@ -519,49 +546,65 @@ def bottle_elements(
 
 
 def generate_canonical_bottle_models() -> None:
+    palettes = {
+        "red": {
+            "bottle": "minecraft:block/green_terracotta",
+            "bottle_dark": "minecraft:block/green_concrete",
+            "seal": "minecraft:block/red_terracotta",
+        },
+        "white": {
+            "bottle": "minecraft:block/lime_terracotta",
+            "bottle_dark": "minecraft:block/green_terracotta",
+            "seal": "minecraft:block/yellow_terracotta",
+        },
+    }
+
+    for colour, palette in palettes.items():
+        write_json(
+            ASSETS / f"models/block/wine_bottle_palette_{colour}.json",
+            {
+                "parent": "minecraft:block/block",
+                "ambientocclusion": False,
+                "textures": {
+                    **palette,
+                    "cork": "minecraft:block/stripped_oak_log_top",
+                    "label": "minecraft:block/light_gray_terracotta",
+                    "particle": palette["bottle"],
+                },
+            },
+        )
+
+        for servings in range(5):
+            write_json(
+                ASSETS
+                / f"models/block/wine_bottle_{colour}_fill_{servings}.json",
+                {
+                    "parent": f"vintner:block/wine_bottle_palette_{colour}",
+                    "ambientocclusion": False,
+                    "elements": bottle_elements(
+                        8.0,
+                        0.0,
+                        8.0,
+                        1.0,
+                        include_seal=servings > 0,
+                        profile=colour,
+                    ),
+                },
+            )
+
+    # Preserve the original palette/model names for storage fixtures and
+    # external resource packs that use the established canonical bottle.
     write_json(
         ASSETS / "models/block/wine_bottle_palette.json",
         {
-            "parent": "minecraft:block/block",
-            "ambientocclusion": False,
-            "textures": {
-                "bottle": "minecraft:block/green_terracotta",
-                "bottle_dark": "minecraft:block/green_concrete",
-                "cork": "minecraft:block/stripped_oak_log_top",
-                "label": "minecraft:block/white_terracotta",
-                "seal": "minecraft:block/red_terracotta",
-                "wine": "minecraft:block/red_concrete",
-                "glass": "minecraft:block/white_stained_glass",
-                "particle": "minecraft:block/green_terracotta",
-            },
+            "parent": "vintner:block/wine_bottle_palette_red",
         },
     )
-
     for servings in range(5):
-        elements = bottle_elements(
-            8.0,
-            0.0,
-            8.0,
-            1.0,
-            include_seal=False,
-        )
-
-        # A row of four restrained wax marks on the front label makes the
-        # remaining pours legible without changing the accepted silhouette.
-        for marker in range(servings):
-            x0 = 6.55 + marker * 0.75
-            elements.append({
-                "from": [x0, 2.25, 6.34],
-                "to": [x0 + 0.45, 2.8, 6.43],
-                "faces": cube_faces("#wine"),
-            })
-
         write_json(
             ASSETS / f"models/block/wine_bottle_fill_{servings}.json",
             {
-                "parent": "vintner:block/wine_bottle_palette",
-                "ambientocclusion": False,
-                "elements": elements,
+                "parent": f"vintner:block/wine_bottle_red_fill_{servings}",
             },
         )
 
@@ -577,13 +620,19 @@ def generate_canonical_bottle_models() -> None:
     variants = {}
     rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
     for facing, rotation in rotations.items():
-        for servings in range(5):
-            entry = {
-                "model": f"vintner:block/wine_bottle_fill_{servings}",
-            }
-            if rotation:
-                entry["y"] = rotation
-            variants[f"facing={facing},servings={servings}"] = entry
+        for colour, white_wine in (("red", "false"), ("white", "true")):
+            for servings in range(5):
+                entry = {
+                    "model": (
+                        f"vintner:block/wine_bottle_{colour}_fill_{servings}"
+                    ),
+                }
+                if rotation:
+                    entry["y"] = rotation
+                variants[
+                    f"facing={facing},servings={servings},"
+                    f"white_wine={white_wine}"
+                ] = entry
 
     write_json(
         ASSETS / "blockstates/wine_bottle.json",

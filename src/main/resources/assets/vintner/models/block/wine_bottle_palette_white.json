@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "bottle": "minecraft:block/lime_terracotta",
+    "bottle_dark": "minecraft:block/green_terracotta",
+    "seal": "minecraft:block/yellow_terracotta",
+    "cork": "minecraft:block/stripped_oak_log_top",
+    "label": "minecraft:block/light_gray_terracotta",
+    "particle": "minecraft:block/lime_terracotta"
+  }
+}

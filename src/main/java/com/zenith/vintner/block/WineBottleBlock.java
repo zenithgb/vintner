@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -52,6 +53,8 @@ public final class WineBottleBlock extends BaseEntityBlock {
                     0,
                     WineMetadata.SERVINGS_PER_BOTTLE
             );
+    public static final BooleanProperty WHITE_WINE =
+            BooleanProperty.create("white_wine");
     private static final VoxelShape SHAPE = Block.box(
             6.25,
             0,
@@ -66,6 +69,7 @@ public final class WineBottleBlock extends BaseEntityBlock {
         registerDefaultState(
                 stateDefinition.any()
                         .setValue(FACING, Direction.NORTH)
+                        .setValue(WHITE_WINE, false)
                         .setValue(
                                 SERVINGS,
                                 WineMetadata.SERVINGS_PER_BOTTLE
@@ -279,5 +283,6 @@ public final class WineBottleBlock extends BaseEntityBlock {
     ) {
         builder.add(FACING);
         builder.add(SERVINGS);
+        builder.add(WHITE_WINE);
     }
 }

@@ -2736,6 +2736,11 @@ public final class VintnerGameTests {
                 ItemStack.isSameItemSameComponents(wine, stored),
                 "Placed bottles must preserve every item component"
         );
+        helper.assertBlockProperty(
+                UPPER,
+                WineBottleBlock.WHITE_WINE,
+                false
+        );
         helper.assertValueEqual(
                 player.getItemInHand(InteractionHand.MAIN_HAND).getCount(),
                 0,
@@ -2761,6 +2766,12 @@ public final class VintnerGameTests {
         WineMetadata.setEffectProfile(wine, WineEffectProfile.WHITE.id());
         original.setBottle(wine);
 
+        helper.assertBlockProperty(
+                FIRST,
+                WineBottleBlock.WHITE_WINE,
+                true
+        );
+
         BlockEntity restored = reload(helper, original);
 
         helper.assertTrue(
@@ -2773,6 +2784,11 @@ public final class VintnerGameTests {
                         ((WineBottleBlockEntity) restored).getBottleCopy()
                 ),
                 "Bottle metadata must survive save and reload"
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                WineBottleBlock.WHITE_WINE,
+                true
         );
         helper.succeed();
     }
@@ -2925,6 +2941,12 @@ public final class VintnerGameTests {
         WineMetadata.ensureBatchIdentity(wine, 99122L);
         WineMetadata.setEffectProfile(wine, WineEffectProfile.WHITE.id());
         bottleEntity.setBottle(wine);
+
+        helper.assertBlockProperty(
+                FIRST,
+                WineBottleBlock.WHITE_WINE,
+                true
+        );
 
         helper.assertFalse(
                 bottleEntity.pourServing().isEmpty(),
