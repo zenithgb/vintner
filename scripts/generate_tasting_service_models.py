@@ -6,6 +6,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from generate_wood_variants import (
+    bottle_elements as canonical_bottle_elements,
+)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "src/main/resources/assets/vintner"
@@ -146,14 +150,14 @@ for center in CUP_CENTERS:
     BASE_ELEMENTS.extend(cup(*center))
 
 
-def bottle_elements(label: str) -> list[dict[str, object]]:
-    return [
-        cube([10.0, 2.0, 9.8], [13.0, 6.25, 12.8], "bottle"),
-        cube([10.45, 6.25, 10.25], [12.55, 7.15, 12.35], "bottle"),
-        cube([10.9, 7.15, 10.7], [12.1, 9.0, 11.9], "bottle"),
-        cube([10.75, 9.0, 10.55], [12.25, 9.55, 12.05], "cork"),
-        cube([10.45, 3.7, 9.62], [12.55, 5.45, 9.85], label),
-    ]
+def bottle_elements() -> list[dict[str, object]]:
+    """Use the same bottle silhouette as every Vintner storage display."""
+    return canonical_bottle_elements(
+        11.5,
+        2.0,
+        11.3,
+        0.74,
+    )
 
 
 def fill_elements(texture: str, count: int) -> list[dict[str, object]]:
@@ -181,11 +185,19 @@ def fill_elements(texture: str, count: int) -> list[dict[str, object]]:
     return result
 
 
-def model(elements: list[dict[str, object]]) -> dict[str, object]:
+def model(
+    elements: list[dict[str, object]],
+    *,
+    label_texture: str | None = None,
+) -> dict[str, object]:
+    textures = dict(TEXTURES)
+    if label_texture is not None:
+        textures["bottle_dark"] = "minecraft:block/green_concrete"
+        textures["label"] = label_texture
     return {
         "parent": "minecraft:block/block",
         "ambientocclusion": False,
-        "textures": TEXTURES,
+        "textures": textures,
         "elements": elements,
     }
 
@@ -197,10 +209,12 @@ BLOCKSTATES.mkdir(parents=True, exist_ok=True)
 generated: dict[Path, dict[str, object]] = {
     BLOCK_MODELS / "tasting_service_base.json": model(BASE_ELEMENTS),
     BLOCK_MODELS / "tasting_service_bottle_red.json": model(
-        bottle_elements("red_label")
+        bottle_elements(),
+        label_texture=TEXTURES["red_label"],
     ),
     BLOCK_MODELS / "tasting_service_bottle_white.json": model(
-        bottle_elements("white_label")
+        bottle_elements(),
+        label_texture=TEXTURES["white_label"],
     ),
 }
 
@@ -212,11 +226,12 @@ for colour, texture in (("red", "red_wine"), ("white", "white_wine")):
 
 display_elements = (
     BASE_ELEMENTS
-    + bottle_elements("red_label")
+    + bottle_elements()
     + fill_elements("red_wine", 4)
 )
 generated[BLOCK_MODELS / "tasting_service_display.json"] = model(
-    display_elements
+    display_elements,
+    label_texture=TEXTURES["red_label"],
 )
 generated[ITEM_MODELS / "tasting_service.json"] = {
     "parent": "vintner:block/tasting_service_display",

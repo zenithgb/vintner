@@ -448,18 +448,22 @@ def cube_faces(texture: str) -> dict[str, dict[str, str]]:
 
 
 CANONICAL_BOTTLE_CUBOIDS = (
-    ((-1.5, 0.0, -1.5), (1.5, 5.4, 1.5), "#bottle"),
-    ((-1.35, 5.4, -1.35), (1.35, 5.9, 1.35), "#bottle"),
-    ((-1.0, 5.9, -1.0), (1.0, 6.4, 1.0), "#bottle"),
-    ((-0.6, 6.4, -0.6), (0.6, 8.8, 0.6), "#bottle_dark"),
-    ((-0.72, 8.6, -0.72), (0.72, 9.2, 0.72), "#bottle_dark"),
-    ((-0.5, 9.0, -0.5), (0.5, 9.7, 0.5), "#cork"),
+    # One restrained, stepped silhouette is reused by placed bottles,
+    # tasting services, racks, crates, and cellar fixtures.  The slimmer
+    # body and longer neck keep it legible at storage scale without turning
+    # it into a stack of unrelated cubes at table scale.
+    ((-1.3, 0.0, -1.3), (1.3, 5.2, 1.3), "#bottle"),
+    ((-1.2, 5.2, -1.2), (1.2, 5.75, 1.2), "#bottle"),
+    ((-0.88, 5.75, -0.88), (0.88, 6.35, 0.88), "#bottle"),
+    ((-0.48, 6.35, -0.48), (0.48, 9.15, 0.48), "#bottle_dark"),
+    ((-0.62, 8.95, -0.62), (0.62, 9.55, 0.62), "#bottle_dark"),
+    ((-0.42, 9.35, -0.42), (0.42, 10.15, 0.42), "#cork"),
     # Four thin panels form a paper label wrapped around the bottle without
     # replacing the bottle volume with a large white cube.
-    ((-1.52, 1.9, -1.56), (1.52, 3.4, -1.5), "#label"),
-    ((-1.52, 1.9, 1.5), (1.52, 3.4, 1.56), "#label"),
-    ((-1.56, 1.9, -1.5), (-1.5, 3.4, 1.5), "#label"),
-    ((1.5, 1.9, -1.5), (1.56, 3.4, 1.5), "#label"),
+    ((-1.32, 1.85, -1.36), (1.32, 3.3, -1.3), "#label"),
+    ((-1.32, 1.85, 1.3), (1.32, 3.3, 1.36), "#label"),
+    ((-1.36, 1.85, -1.3), (-1.3, 3.3, 1.3), "#label"),
+    ((1.3, 1.85, -1.3), (1.36, 3.3, 1.3), "#label"),
 )
 
 
@@ -476,7 +480,7 @@ def bottle_elements(
 
     if include_seal:
         cuboids.append(
-            ((-0.45, 2.2, -1.63), (0.45, 3.1, -1.56), "#seal")
+            ((-0.4, 2.15, -1.43), (0.4, 3.0, -1.36), "#seal")
         )
 
     elements = []
@@ -1401,7 +1405,7 @@ def generate_survival_data() -> None:
 
     for wood in WOODS:
         planks = f"minecraft:{wood}_planks"
-        ids = (
+        ids = [
             trellis_id(wood),
             press_id(wood),
             fermentation_id(wood),
@@ -1412,7 +1416,9 @@ def generate_survival_data() -> None:
             stand_id(wood),
             shelf_id(wood),
             cabinet_id(wood),
-        )
+        ]
+        if wood == "oak":
+            ids.insert(6, "tasting_service")
         axe_blocks.extend(f"vintner:{block_id}" for block_id in ids)
 
         recipes = {
