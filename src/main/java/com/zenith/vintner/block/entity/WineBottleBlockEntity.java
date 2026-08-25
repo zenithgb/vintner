@@ -115,15 +115,6 @@ public final class WineBottleBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void setLevel(net.minecraft.world.level.Level level) {
-        super.setLevel(level);
-
-        if (!level.isClientSide()) {
-            syncVisualState();
-        }
-    }
-
-    @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         bottle = input.read("Bottle", ItemStack.CODEC).orElse(ItemStack.EMPTY);
