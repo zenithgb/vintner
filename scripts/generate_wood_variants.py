@@ -586,73 +586,16 @@ def generate_canonical_bottle_models() -> None:
         {"variants": variants},
     )
 
-    # A compact, genuinely three-dimensional goblet. The former model was a
-    # near-flat white outline; this uses a square Minecraft-style bowl, clear
-    # glass, a restrained stem, and a broad enough foot to read cleanly both
-    # in inventory and when arranged on a table.
-    glass_elements = [
-        {"from": [5.75, 1.0, 5.75], "to": [10.25, 2.0, 10.25],
-         "faces": cube_faces("#glass_edge")},
-        {"from": [7.5, 2.0, 7.5], "to": [8.5, 5.5, 8.5],
-         "faces": cube_faces("#glass_edge")},
-        {"from": [6.5, 5.5, 6.5], "to": [9.5, 6.5, 9.5],
-         "faces": cube_faces("#glass_edge")},
-        {"from": [5.5, 6.5, 5.5], "to": [6.5, 10.5, 10.5],
-         "faces": cube_faces("#glass")},
-        {"from": [9.5, 6.5, 5.5], "to": [10.5, 10.5, 10.5],
-         "faces": cube_faces("#glass")},
-        {"from": [6.5, 6.5, 5.5], "to": [9.5, 10.5, 6.5],
-         "faces": cube_faces("#glass")},
-        {"from": [6.5, 6.5, 9.5], "to": [9.5, 10.5, 10.5],
-         "faces": cube_faces("#glass")},
-        {"from": [5.25, 10.5, 5.25], "to": [10.75, 11.25, 6.25],
-         "faces": cube_faces("#glass_edge")},
-        {"from": [5.25, 10.5, 9.75], "to": [10.75, 11.25, 10.75],
-         "faces": cube_faces("#glass_edge")},
-        {"from": [5.25, 10.5, 6.25], "to": [6.25, 11.25, 9.75],
-         "faces": cube_faces("#glass_edge")},
-        {"from": [9.75, 10.5, 6.25], "to": [10.75, 11.25, 9.75],
-         "faces": cube_faces("#glass_edge")},
-    ]
-    item_display = {
-        "gui": {"rotation": [25, 225, 0], "translation": [0, -0.25, 0],
-                "scale": [1.7, 1.7, 1.7]},
-        "ground": {"translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
-        "fixed": {"rotation": [0, 180, 0], "scale": [0.9, 0.9, 0.9]},
-        "thirdperson_righthand": {
-            "rotation": [75, 45, 0], "translation": [0, 2.5, 0],
-            "scale": [0.7, 0.7, 0.7],
-        },
-        "firstperson_righthand": {
-            "rotation": [0, 45, 0], "translation": [0, 2, 0],
-            "scale": [0.8, 0.8, 0.8],
-        },
-    }
-
-    for name, filled in (("wine_glass", False), ("filled_wine_glass", True)):
-        elements = list(glass_elements)
-        if filled:
-            elements.append({
-                "from": [6.6, 6.5, 6.6],
-                "to": [9.4, 9.35, 9.4],
-                "faces": cube_faces("#wine"),
-            })
+    # Individual glasses are inventory serving tools only. Placed table
+    # presentation belongs to the complete Tasting Service block, so these
+    # stay as clear, stable sprite models instead of regenerating large
+    # three-dimensional drinkware models.
+    for name in ("wine_glass", "filled_wine_glass"):
         write_json(
             ASSETS / f"models/item/{name}.json",
             {
-                "parent": "minecraft:block/block",
-                "ambientocclusion": False,
-                "textures": {
-                    "glass": {
-                        "force_translucent": True,
-                        "sprite": "minecraft:block/glass",
-                    },
-                    "glass_edge": "minecraft:block/light_gray_concrete",
-                    "wine": "minecraft:block/red_concrete",
-                    "particle": "minecraft:block/light_gray_concrete",
-                },
-                "display": item_display,
-                "elements": elements,
+                "parent": "minecraft:item/generated",
+                "textures": {"layer0": f"vintner:item/{name}"},
             },
         )
         write_json(

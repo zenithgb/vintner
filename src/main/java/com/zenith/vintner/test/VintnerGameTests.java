@@ -14,10 +14,10 @@ import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.CellarCollectionBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
+import com.zenith.vintner.block.entity.TastingServiceBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineBottleBlockEntity;
-import com.zenith.vintner.block.entity.WineGlassBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.item.FilledWineGlassItem;
@@ -2961,136 +2961,106 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void bottlePoursIntoMatchingReusableGoblet(
+    public void tastingServicePreservesBottleMetadataAndServings(
             GameTestHelper helper
     ) {
-        helper.setBlock(FIRST, ModBlocks.WINE_BOTTLE);
-        WineBottleBlockEntity bottleEntity = helper.getBlockEntity(
+        helper.setBlock(FIRST, ModBlocks.TASTING_SERVICE);
+        TastingServiceBlockEntity service = helper.getBlockEntity(
                 FIRST,
-                WineBottleBlockEntity.class
+                TastingServiceBlockEntity.class
         );
-        ItemStack wine = new ItemStack(ModItems.AGED_WHITE_WINE);
-        WineMetadata.apply(wine, 6, WineQuality.FINE);
-        WineMetadata.ensureBatchIdentity(wine, 99123L);
+        ItemStack wine = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.apply(wine, 8, WineQuality.EXCEPTIONAL);
+        WineMetadata.ensureBatchIdentity(wine, 81301L);
+        WineMetadata.assignBottleNumber(wine, 2, 4);
+        WineMetadata.setServings(wine, 4);
         WineMetadata.setEffectProfile(
                 wine,
-                WineEffectProfile.AGED_WHITE.id()
+                WineEffectProfile.AGED_RED.id()
         );
-        bottleEntity.setBottle(wine);
 
-        ItemStack serving = bottleEntity.pourServing(
-                new ItemStack(ModItems.COPPER_GOBLET)
-        );
         helper.assertTrue(
-                serving.is(ModItems.FILLED_COPPER_GOBLET),
-                "A copper goblet must return a filled copper goblet"
+                service.insertBottle(wine),
+                "The service should accept a full bottle"
+        );
+        helper.assertFalse(
+                service.insertBottle(wine),
+                "The service must reject a second bottle"
+        );
+        helper.assertValueEqual(
+                service.servings(),
+                4,
+                "A full bottle should expose four tastings"
+        );
+
+        ItemStack serving = service.pourServing();
+        helper.assertTrue(
+                serving.is(ModItems.FILLED_WINE_GLASS),
+                "Pouring should return the existing filled-glass item"
         );
         helper.assertValueEqual(
                 WineMetadata.batchId(serving),
-                99123L,
-                "A goblet serving must preserve batch identity"
+                81301L,
+                "A serving must retain its source batch"
         );
         helper.assertValueEqual(
-                WineMetadata.effectProfile(serving),
-                WineEffectProfile.AGED_WHITE.id(),
-                "A goblet serving must preserve the source profile"
-        );
-        helper.assertValueEqual(
-                bottleEntity.servings(),
+                service.servings(),
                 3,
-                "A goblet pour must consume exactly one serving"
+                "One pour must consume exactly one serving"
+        );
+
+        TastingServiceBlockEntity restored =
+                (TastingServiceBlockEntity) reload(helper, service);
+        helper.assertValueEqual(
+                restored.servings(),
+                3,
+                "Remaining servings must survive save and reload"
+        );
+        ItemStack removed = restored.removeBottle();
+        helper.assertValueEqual(
+                WineMetadata.batchId(removed),
+                81301L,
+                "Removing the bottle must preserve its batch"
+        );
+        helper.assertValueEqual(
+                WineMetadata.bottleNumber(removed),
+                2,
+                "Removing the bottle must preserve its bottle number"
+        );
+        helper.assertValueEqual(
+                WineMetadata.servings(removed),
+                3,
+                "Removing the bottle must preserve remaining servings"
         );
         helper.succeed();
     }
 
     @GameTest(maxTicks = 40)
-    public void placedGobletsPreserveCapacityMaterialAndWineMetadata(
+    public void tastingServiceTracksWhiteWineVisualState(
             GameTestHelper helper
     ) {
-        helper.setBlock(FIRST, ModBlocks.WINE_GLASSES);
-        WineGlassBlockEntity glasses = helper.getBlockEntity(
+        helper.setBlock(FIRST, ModBlocks.TASTING_SERVICE);
+        TastingServiceBlockEntity service = helper.getBlockEntity(
                 FIRST,
-                WineGlassBlockEntity.class
+                TastingServiceBlockEntity.class
         );
-        ItemStack empty = new ItemStack(ModItems.PEWTER_GOBLET);
-        ItemStack red = new ItemStack(ModItems.FILLED_COPPER_GOBLET);
-        ItemStack white = new ItemStack(ModItems.FILLED_GOLDEN_GOBLET);
-        ItemStack fourth = new ItemStack(ModItems.COPPER_GOBLET);
-        ItemStack rejected = new ItemStack(
-                ModItems.FILLED_PEWTER_GOBLET
-        );
-
-        WineMetadata.apply(red, 8, WineQuality.EXCEPTIONAL);
-        WineMetadata.ensureBatchIdentity(red, 81301L);
-        WineMetadata.setEffectProfile(red, WineEffectProfile.AGED_RED.id());
-        WineMetadata.apply(white, 5, WineQuality.FINE);
-        WineMetadata.ensureBatchIdentity(white, 81302L);
-        WineMetadata.setEffectProfile(white, WineEffectProfile.WHITE.id());
-
-        helper.assertTrue(glasses.addGlass(empty), "The first glass should fit");
-        helper.assertTrue(glasses.addGlass(red), "A red serving should fit");
-        helper.assertTrue(glasses.addGlass(white), "A white serving should fit");
-        helper.assertTrue(glasses.addGlass(fourth), "The fourth glass should fit");
-        helper.assertFalse(
-                glasses.addGlass(rejected),
-                "A tabletop setting must reject a fifth goblet"
+        ItemStack white = new ItemStack(ModItems.AGED_WHITE_WINE);
+        WineMetadata.ensureDefaults(white);
+        WineMetadata.setServings(white, 4);
+        WineMetadata.setEffectProfile(
+                white,
+                WineEffectProfile.WHITE.id()
         );
 
-        WineGlassBlockEntity restored =
-                (WineGlassBlockEntity) reload(helper, glasses);
-        helper.assertValueEqual(
-                restored.size(),
-                4,
-                "All four placed goblets must survive save and reload"
-        );
-        List<ItemStack> restoredGlasses = restored.getGlasses();
         helper.assertTrue(
-                restoredGlasses.get(0).is(ModItems.PEWTER_GOBLET),
-                "The empty pewter goblet must retain its material"
-        );
-        helper.assertValueEqual(
-                WineMetadata.batchId(restoredGlasses.get(1)),
-                81301L,
-                "The red serving must retain its batch"
-        );
-        helper.assertValueEqual(
-                WineMetadata.effectProfile(restoredGlasses.get(1)),
-                WineEffectProfile.AGED_RED.id(),
-                "The red serving must retain its wine profile"
+                service.insertBottle(white),
+                "The service should accept white wine"
         );
         helper.assertTrue(
-                restoredGlasses.get(1).is(
-                        ModItems.FILLED_COPPER_GOBLET
+                helper.getBlockState(FIRST).getValue(
+                        com.zenith.vintner.block.TastingServiceBlock.WHITE_WINE
                 ),
-                "The red serving must remain in its copper goblet"
-        );
-        helper.assertValueEqual(
-                WineMetadata.batchId(restoredGlasses.get(2)),
-                81302L,
-                "The white serving must retain its batch"
-        );
-        helper.assertTrue(
-                restoredGlasses.get(2).is(
-                        ModItems.FILLED_GOLDEN_GOBLET
-                ),
-                "The white serving must remain in its golden goblet"
-        );
-        helper.assertValueEqual(
-                WineMetadata.effectProfile(restoredGlasses.get(2)),
-                WineEffectProfile.WHITE.id(),
-                "The white serving must retain its wine profile"
-        );
-
-        ItemStack removed = restored.takeGlass(1);
-        helper.assertValueEqual(
-                WineMetadata.batchId(removed),
-                81301L,
-                "Picking up a glass must return the exact stored serving"
-        );
-        helper.assertValueEqual(
-                restored.size(),
-                3,
-                "Picking up one glass must remove exactly one"
+                "White wine should select the white visual state"
         );
         helper.succeed();
     }

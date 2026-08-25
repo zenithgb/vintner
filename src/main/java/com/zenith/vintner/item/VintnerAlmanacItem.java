@@ -194,8 +194,7 @@ public final class VintnerAlmanacItem extends Item {
 
     public static boolean canInspect(ItemStack stack) {
         return stack.getItem() instanceof WineItem
-                || stack.getItem() instanceof FilledWineGlassItem
-                || stack.getItem() instanceof FilledGobletItem;
+                || stack.getItem() instanceof FilledWineGlassItem;
     }
 
     public static void inspectPlacedWine(

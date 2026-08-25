@@ -10,12 +10,12 @@ import com.zenith.vintner.block.CellarFixtureKind;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapePressBlock;
 import com.zenith.vintner.block.RedGrapevineBlock;
+import com.zenith.vintner.block.TastingServiceBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.block.WhiteGrapevineBlock;
 import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.block.WineBottleBlock;
-import com.zenith.vintner.block.WineGlassBlock;
 import com.zenith.vintner.block.WineRackBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.vineyard.GrapeVariety;
@@ -157,18 +157,13 @@ public final class ModBlocks {
                     .noOcclusion()
     );
 
-    /**
-     * A tabletop setting can hold up to four exact glass ItemStacks. Like the
-     * placed bottle, it is created from the item itself and has no BlockItem.
-     */
-    public static final Block WINE_GLASSES = registerWithoutItem(
-            "wine_glasses",
-            WineGlassBlock::new,
+    public static final Block TASTING_SERVICE = registerWithItem(
+            "tasting_service",
+            TastingServiceBlock::new,
             BlockBehaviour.Properties.of()
-                    .strength(0.2F)
-                    .sound(SoundType.GLASS)
+                    .strength(0.8F)
+                    .sound(SoundType.WOOD)
                     .noOcclusion()
-                    .noCollision()
     );
 
     public static final Map<WoodVariant, Block> WINE_CRATES =
@@ -607,6 +602,7 @@ public final class ModBlocks {
                             .forEach(output::accept);
                     TASTING_CABINETS.values()
                             .forEach(output::accept);
+                    output.accept(TASTING_SERVICE);
                 });
     }
 }

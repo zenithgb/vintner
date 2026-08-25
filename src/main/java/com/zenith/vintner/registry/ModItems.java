@@ -2,11 +2,8 @@ package com.zenith.vintner.registry;
 
 import com.zenith.vintner.item.CompostItem;
 import com.zenith.vintner.item.CoopersMalletItem;
-import com.zenith.vintner.item.FilledGobletItem;
 import com.zenith.vintner.item.GrapeCuttingItem;
 import com.zenith.vintner.item.FilledWineGlassItem;
-import com.zenith.vintner.item.GobletItem;
-import com.zenith.vintner.item.GobletMaterial;
 import com.zenith.vintner.item.WineGlassItem;
 import com.zenith.vintner.item.MustItem;
 import com.zenith.vintner.item.VintnerAlmanacItem;
@@ -149,72 +146,6 @@ public final class ModItems {
             )
     );
 
-    public static final Item PEWTER_GOBLET = register(
-            "pewter_goblet",
-            properties -> new GobletItem(
-                    GobletMaterial.PEWTER,
-                    properties.stacksTo(16)
-            )
-    );
-
-    public static final Item COPPER_GOBLET = register(
-            "copper_goblet",
-            properties -> new GobletItem(
-                    GobletMaterial.COPPER,
-                    properties.stacksTo(16)
-            )
-    );
-
-    public static final Item GOLDEN_GOBLET = register(
-            "golden_goblet",
-            properties -> new GobletItem(
-                    GobletMaterial.GOLD,
-                    properties.stacksTo(16)
-            )
-    );
-
-    public static final Item FILLED_PEWTER_GOBLET = register(
-            "filled_pewter_goblet",
-            properties -> new FilledGobletItem(
-                    GobletMaterial.PEWTER,
-                    properties
-                            .stacksTo(1)
-                            .component(
-                                    DataComponents.CONSUMABLE,
-                                    WineConsumables.WINE
-                            )
-                            .usingConvertsTo(PEWTER_GOBLET)
-            )
-    );
-
-    public static final Item FILLED_COPPER_GOBLET = register(
-            "filled_copper_goblet",
-            properties -> new FilledGobletItem(
-                    GobletMaterial.COPPER,
-                    properties
-                            .stacksTo(1)
-                            .component(
-                                    DataComponents.CONSUMABLE,
-                                    WineConsumables.WINE
-                            )
-                            .usingConvertsTo(COPPER_GOBLET)
-            )
-    );
-
-    public static final Item FILLED_GOLDEN_GOBLET = register(
-            "filled_golden_goblet",
-            properties -> new FilledGobletItem(
-                    GobletMaterial.GOLD,
-                    properties
-                            .stacksTo(1)
-                            .component(
-                                    DataComponents.CONSUMABLE,
-                                    WineConsumables.WINE
-                            )
-                            .usingConvertsTo(GOLDEN_GOBLET)
-            )
-    );
-
     public static final Item VINTNER_ALMANAC = register(
             "vintner_almanac",
             VintnerAlmanacItem::new
@@ -245,14 +176,6 @@ public final class ModItems {
     );
 
     private ModItems() {
-    }
-
-    public static Item filledGoblet(GobletMaterial material) {
-        return switch (material) {
-            case COPPER -> FILLED_COPPER_GOBLET;
-            case GOLD -> FILLED_GOLDEN_GOBLET;
-            default -> FILLED_PEWTER_GOBLET;
-        };
     }
 
     private static Item register(
@@ -313,12 +236,6 @@ public final class ModItems {
                     output.accept(AGED_WHITE_WINE);
                     output.accept(WINE_GLASS);
                     output.accept(FILLED_WINE_GLASS);
-                    output.accept(PEWTER_GOBLET);
-                    output.accept(COPPER_GOBLET);
-                    output.accept(GOLDEN_GOBLET);
-                    output.accept(FILLED_PEWTER_GOBLET);
-                    output.accept(FILLED_COPPER_GOBLET);
-                    output.accept(FILLED_GOLDEN_GOBLET);
                 });
     }
 }

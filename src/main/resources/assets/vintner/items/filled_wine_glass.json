@@ -1,28 +1,6 @@
 {
   "model": {
-    "type": "minecraft:select",
-    "property": "minecraft:display_context",
-    "cases": [
-      {
-        "when": "fixed",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "vintner:item/wine_glass_placed"
-            },
-            {
-              "type": "minecraft:model",
-              "model": "vintner:item/filled_wine_glass_placed_fill"
-            }
-          ]
-        }
-      }
-    ],
-    "fallback": {
-      "type": "minecraft:model",
-      "model": "vintner:item/filled_wine_glass"
-    }
+    "type": "minecraft:model",
+    "model": "vintner:item/filled_wine_glass"
   }
 }

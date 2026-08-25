@@ -2,15 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "I I",
-    " I ",
-    " I "
+    "G G",
+    "PPP",
+    "G G"
   ],
   "key": {
-    "I": "minecraft:gold_ingot"
+    "G": "minecraft:glass_pane",
+    "P": "minecraft:oak_planks"
   },
   "result": {
-    "id": "vintner:golden_goblet",
+    "id": "vintner:tasting_service",
     "count": 1
   }
 }
