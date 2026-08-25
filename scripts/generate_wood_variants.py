@@ -663,7 +663,7 @@ def generate_canonical_bottle_models() -> None:
                 "textures": {
                     **palette,
                     "cork": "minecraft:block/stripped_oak_log_top",
-                    "label": "minecraft:block/smooth_sandstone",
+                    "label": "minecraft:block/sandstone_top",
                     "label_border": "minecraft:block/brown_terracotta",
                     "label_ink": "minecraft:block/brown_concrete",
                     "particle": palette["bottle"],

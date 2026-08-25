@@ -26,7 +26,7 @@ TEXTURES = {
     "bottle_dark": "minecraft:block/green_concrete",
     "bottle_highlight": "minecraft:block/lime_terracotta",
     "cork": "minecraft:block/stripped_spruce_log",
-    "label": "minecraft:block/smooth_sandstone",
+    "label": "minecraft:block/sandstone_top",
     "label_border": "minecraft:block/brown_terracotta",
     "label_ink": "minecraft:block/brown_concrete",
     "neck_foil": "minecraft:block/red_terracotta",
