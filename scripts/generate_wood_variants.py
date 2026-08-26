@@ -199,6 +199,21 @@ def generate_tasting_liquid_textures() -> None:
             rows[y][x] = highlight
         for x, y in shadows:
             rows[y][x] = shadow
+
+        # The tasting service renders one square surface per cup. Transparent
+        # corner pixels turn it into an octagon without assembling several
+        # coplanar translucent model elements, which would produce seams.
+        for y in range(16):
+            for x in range(16):
+                corner_distance = min(
+                    x + y,
+                    x + (15 - y),
+                    (15 - x) + y,
+                    (15 - x) + (15 - y),
+                )
+                if corner_distance < 4:
+                    red, green, blue, _ = rows[y][x]
+                    rows[y][x] = (red, green, blue, 0)
         write_rgba_texture(
             ASSETS / f"textures/block/{texture_name}.png",
             rows,

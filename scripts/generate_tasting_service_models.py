@@ -8,6 +8,7 @@ from pathlib import Path
 
 from generate_wood_variants import (
     bottle_elements as canonical_bottle_elements,
+    generate_tasting_liquid_textures,
 )
 
 
@@ -72,7 +73,12 @@ def top_surface(
     return {
         "from": start,
         "to": end,
-        "faces": {"up": {"texture": f"#{texture}"}},
+        "faces": {
+            "up": {
+                "texture": f"#{texture}",
+                "uv": [0, 0, 16, 16],
+            },
+        },
     }
 
 
@@ -190,37 +196,14 @@ def bottle_elements(colour: str) -> list[dict[str, object]]:
 def fill_elements(texture: str, count: int) -> list[dict[str, object]]:
     result = []
     for center_x, center_z in CUP_CENTERS[:count]:
-        # Five touching, non-overlapping rectangles form an inset octagonal
-        # surface. Keeping the liquid below the ceramic lip prevents clipping,
-        # while top-only faces avoid translucent internal-face artefacts.
-        result.extend(
-            [
-                top_surface(
-                    [center_x - 0.42, 2.86, center_z - 0.42],
-                    [center_x + 0.42, 2.98, center_z + 0.42],
-                    texture,
-                ),
-                top_surface(
-                    [center_x - 0.28, 2.86, center_z - 0.54],
-                    [center_x + 0.28, 2.98, center_z - 0.42],
-                    texture,
-                ),
-                top_surface(
-                    [center_x - 0.28, 2.86, center_z + 0.42],
-                    [center_x + 0.28, 2.98, center_z + 0.54],
-                    texture,
-                ),
-                top_surface(
-                    [center_x - 0.54, 2.86, center_z - 0.28],
-                    [center_x - 0.42, 2.98, center_z + 0.28],
-                    texture,
-                ),
-                top_surface(
-                    [center_x + 0.42, 2.86, center_z - 0.28],
-                    [center_x + 0.54, 2.98, center_z + 0.28],
-                    texture,
-                ),
-            ]
+        # One inset surface per cup avoids translucent seams. The generated
+        # texture supplies transparent corners for the octagonal silhouette.
+        result.append(
+            top_surface(
+                [center_x - 0.54, 2.86, center_z - 0.54],
+                [center_x + 0.54, 2.98, center_z + 0.54],
+                texture,
+            )
         )
     return result
 
@@ -247,6 +230,7 @@ def model(
 BLOCK_MODELS.mkdir(parents=True, exist_ok=True)
 ITEM_MODELS.mkdir(parents=True, exist_ok=True)
 BLOCKSTATES.mkdir(parents=True, exist_ok=True)
+generate_tasting_liquid_textures()
 
 generated: dict[Path, dict[str, object]] = {
     BLOCK_MODELS / "tasting_service_base.json": model(BASE_ELEMENTS),
