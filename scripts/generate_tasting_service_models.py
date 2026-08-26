@@ -64,6 +64,18 @@ def cube(
     }
 
 
+def top_surface(
+    start: list[float],
+    end: list[float],
+    texture: str,
+) -> dict[str, object]:
+    return {
+        "from": start,
+        "to": end,
+        "faces": {"up": {"texture": f"#{texture}"}},
+    }
+
+
 def rotated_cube(
     start: list[float],
     end: list[float],
@@ -178,21 +190,34 @@ def bottle_elements(colour: str) -> list[dict[str, object]]:
 def fill_elements(texture: str, count: int) -> list[dict[str, object]]:
     result = []
     for center_x, center_z in CUP_CENTERS[:count]:
+        # Five touching, non-overlapping rectangles form an inset octagonal
+        # surface. Keeping the liquid below the ceramic lip prevents clipping,
+        # while top-only faces avoid translucent internal-face artefacts.
         result.extend(
             [
-                cube(
-                    [center_x - 0.5, 2.88, center_z - 0.5],
-                    [center_x + 0.5, 3.04, center_z + 0.5],
+                top_surface(
+                    [center_x - 0.42, 2.86, center_z - 0.42],
+                    [center_x + 0.42, 2.98, center_z + 0.42],
                     texture,
                 ),
-                cube(
-                    [center_x - 0.62, 2.88, center_z - 0.3],
-                    [center_x + 0.62, 3.04, center_z + 0.3],
+                top_surface(
+                    [center_x - 0.28, 2.86, center_z - 0.54],
+                    [center_x + 0.28, 2.98, center_z - 0.42],
                     texture,
                 ),
-                cube(
-                    [center_x - 0.3, 2.88, center_z - 0.62],
-                    [center_x + 0.3, 3.04, center_z + 0.62],
+                top_surface(
+                    [center_x - 0.28, 2.86, center_z + 0.42],
+                    [center_x + 0.28, 2.98, center_z + 0.54],
+                    texture,
+                ),
+                top_surface(
+                    [center_x - 0.54, 2.86, center_z - 0.28],
+                    [center_x - 0.42, 2.98, center_z + 0.28],
+                    texture,
+                ),
+                top_surface(
+                    [center_x + 0.42, 2.86, center_z - 0.28],
+                    [center_x + 0.54, 2.98, center_z + 0.28],
                     texture,
                 ),
             ]
