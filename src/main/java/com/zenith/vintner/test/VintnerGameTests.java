@@ -701,7 +701,7 @@ public final class VintnerGameTests {
         glassTaster.setGameMode(GameType.SURVIVAL);
         bottleTaster.setGameMode(GameType.SURVIVAL);
         ItemStack source = new ItemStack(ModItems.RED_WINE);
-        WineMetadata.apply(source, 1, WineQuality.TABLE);
+        WineMetadata.apply(source, 1, WineQuality.GOOD);
         WineMetadata.setEffectProfile(source, WineEffectProfile.RED.id());
 
         for (int serving = 0; serving < 4; serving++) {
@@ -720,7 +720,7 @@ public final class VintnerGameTests {
                 helper.getLevel(),
                 bottleTaster,
                 WineEffectProfile.RED,
-                WineQuality.TABLE,
+                WineQuality.GOOD,
                 WineMetadata.ageStage(source)
         );
 
@@ -2750,6 +2750,40 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void legacyWineBottleDefaultsToFourServings(
+            GameTestHelper helper
+    ) {
+        ItemStack legacyWine = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.apply(legacyWine, 6, WineQuality.FINE);
+        WineMetadata.ensureBatchIdentity(legacyWine, 99117L);
+
+        helper.assertValueEqual(
+                WineMetadata.servings(legacyWine),
+                WineMetadata.SERVINGS_PER_BOTTLE,
+                "A pre-1.3 bottle without serving data must load as full"
+        );
+
+        helper.setBlock(FIRST, ModBlocks.WINE_BOTTLE);
+        WineBottleBlockEntity bottleEntity = helper.getBlockEntity(
+                FIRST,
+                WineBottleBlockEntity.class
+        );
+        bottleEntity.setBottle(legacyWine);
+
+        helper.assertValueEqual(
+                bottleEntity.servings(),
+                WineMetadata.SERVINGS_PER_BOTTLE,
+                "A placed legacy bottle must expose four servings"
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                WineBottleBlock.SERVINGS,
+                WineMetadata.SERVINGS_PER_BOTTLE
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void wineBottleSerializationPreservesMetadata(
             GameTestHelper helper
     ) {
@@ -2924,6 +2958,52 @@ public final class VintnerGameTests {
         helper.assertTrue(
                 bottleEntity.getBottleCopy().is(Items.GLASS_BOTTLE),
                 "The final pour should leave a reusable empty bottle"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void competingPoursCannotDuplicateFinalServing(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_BOTTLE);
+        WineBottleBlockEntity bottleEntity = helper.getBlockEntity(
+                FIRST,
+                WineBottleBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.AGED_WHITE_WINE);
+        WineMetadata.ensureBatchIdentity(wine, 99123L);
+        WineMetadata.setServings(wine, 1);
+        WineMetadata.setEffectProfile(
+                wine,
+                WineEffectProfile.AGED_WHITE.id()
+        );
+        bottleEntity.setBottle(wine);
+
+        ItemStack firstResult = bottleEntity.pourServing();
+        ItemStack secondResult = bottleEntity.pourServing();
+
+        int filledGlasses = 0;
+        if (firstResult.is(ModItems.FILLED_WINE_GLASS)) {
+            filledGlasses++;
+        }
+        if (secondResult.is(ModItems.FILLED_WINE_GLASS)) {
+            filledGlasses++;
+        }
+
+        helper.assertValueEqual(
+                filledGlasses,
+                1,
+                "Competing final pours must create exactly one serving"
+        );
+        helper.assertTrue(
+                bottleEntity.getBottleCopy().is(Items.GLASS_BOTTLE),
+                "The final serving must leave one reusable empty bottle"
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                WineBottleBlock.SERVINGS,
+                0
         );
         helper.succeed();
     }
