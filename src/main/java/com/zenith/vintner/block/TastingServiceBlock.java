@@ -230,10 +230,6 @@ public final class TastingServiceBlock extends BaseEntityBlock {
             Player player,
             BlockHitResult hitResult
     ) {
-        if (!player.isShiftKeyDown()) {
-            return InteractionResult.PASS;
-        }
-
         if (!(level instanceof ServerLevel serverLevel)) {
             return InteractionResult.SUCCESS;
         }
@@ -241,6 +237,30 @@ public final class TastingServiceBlock extends BaseEntityBlock {
         if (!(level.getBlockEntity(pos)
                 instanceof TastingServiceBlockEntity service)) {
             return InteractionResult.PASS;
+        }
+
+        if (!player.isShiftKeyDown()) {
+            ItemStack serving = service.pourServing();
+
+            if (serving.isEmpty()) {
+                player.sendOverlayMessage(
+                        Component.translatable(
+                                "message.vintner.tasting_service.empty"
+                        )
+                );
+                return InteractionResult.SUCCESS;
+            }
+
+            serving.finishUsingItem(serverLevel, player);
+            serverLevel.playSound(
+                    null,
+                    pos,
+                    SoundEvents.GENERIC_DRINK.value(),
+                    SoundSource.PLAYERS,
+                    0.8F,
+                    1.0F
+            );
+            return InteractionResult.SUCCESS;
         }
 
         ItemStack bottle = service.removeBottle();

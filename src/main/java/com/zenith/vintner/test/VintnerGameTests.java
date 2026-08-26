@@ -3138,6 +3138,72 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void survivalPlayerCanDrinkFromTastingService(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.TASTING_SERVICE);
+        TastingServiceBlockEntity service = helper.getBlockEntity(
+                FIRST,
+                TastingServiceBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.apply(wine, 1, WineQuality.GOOD);
+        WineMetadata.setServings(wine, 4);
+        WineMetadata.setEffectProfile(
+                wine,
+                WineEffectProfile.RED.id()
+        );
+        helper.assertTrue(
+                service.insertBottle(wine),
+                "The service should accept wine for the interaction test"
+        );
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        player.setItemInHand(
+                InteractionHand.MAIN_HAND,
+                ItemStack.EMPTY
+        );
+        BlockPos servicePos = helper.absolutePos(FIRST);
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                player.getItemInHand(InteractionHand.MAIN_HAND),
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(servicePos),
+                        Direction.UP,
+                        servicePos,
+                        false
+                )
+        );
+
+        helper.assertValueEqual(
+                service.servings(),
+                3,
+                "Drinking from the service should consume one serving"
+        );
+        helper.assertValueEqual(
+                WineConsumptionManager.state(
+                        player,
+                        helper.getLevel().getGameTime()
+                ).effectiveServingUnits(),
+                1,
+                "A service tasting should count as one glass"
+        );
+        helper.assertTrue(
+                WineEffectProfile.RED.isActive(player),
+                "The served wine profile should become active"
+        );
+        helper.assertTrue(
+                player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty(),
+                "The integrated service cup should remain on the platter"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void tastingServiceTracksWhiteWineVisualState(
             GameTestHelper helper
     ) {
