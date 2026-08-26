@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "G G",
+    "PPP",
+    "G G"
+  ],
+  "key": {
+    "G": "minecraft:glass_pane",
+    "P": "minecraft:warped_planks"
+  },
+  "result": {
+    "id": "vintner:warped_tasting_service",
+    "count": 1
+  }
+}

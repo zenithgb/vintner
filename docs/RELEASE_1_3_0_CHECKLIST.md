@@ -13,12 +13,12 @@ object while preserving the cellar and provenance systems introduced in
 - [x] Bottle placement preserves metadata
 - [x] Survival and Creative retrieval preserve metadata
 - [x] Red, white, aged red, and aged white bottle data are supported
-- [x] Every pour removes one serving and produces one filled glass
+- [x] Every tasting removes exactly one serving
 - [x] A competing final pour cannot duplicate the last serving
 - [x] Final serving leaves one reusable empty bottle
 - [x] Partial bottle save/reload preserves servings and provenance
-- [x] Filled glasses use one-quarter bottle strength
-- [x] Four poured glasses equal one full bottle effect
+- [x] Tasting-service servings use one-quarter bottle strength
+- [x] Four tasting-service servings equal one full bottle effect
 - [x] Direct partial-bottle drinking scales to remaining servings
 - [x] Diminishing returns and impairment use shared consumption state
 - [x] Existing racks, crates, shelves, cabinets, archives, and ageing tests pass
@@ -47,8 +47,8 @@ object while preserving the cellar and provenance systems introduced in
 - [ ] Test two real multiplayer clients targeting the final serving
 - [ ] Verify bottle placement, pouring, drinking, emptying, and pickup sounds
 - [ ] Verify the `A Proper Pour` advancement appears once
-- [ ] Verify concise bottle/glass tooltips and Almanac serving information
-- [ ] Craft the wine glass and tasting service in Survival
+- [ ] Verify concise bottle tooltips and Almanac serving information
+- [ ] Craft oak and non-oak tasting services in Survival
 - [ ] Recheck racks, crates, labelled shelves, tasting cabinets, archives,
   ageing vessels, and cellar catch-up with partial bottles
 

@@ -10,7 +10,7 @@
       "translate": "advancement.vintner.proper_pour.description"
     },
     "icon": {
-      "id": "vintner:filled_wine_glass"
+      "id": "vintner:tasting_service"
     },
     "title": {
       "translate": "advancement.vintner.proper_pour.title"

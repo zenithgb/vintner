@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from generate_wood_variants import (
+    WOODS,
     bottle_elements as canonical_bottle_elements,
     generate_tasting_liquid_textures,
 )
@@ -16,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "src/main/resources/assets/vintner"
 BLOCK_MODELS = ASSETS / "models/block"
 ITEM_MODELS = ASSETS / "models/item"
+ITEM_DEFINITIONS = ASSETS / "items"
 BLOCKSTATES = ASSETS / "blockstates"
 
 TEXTURES = {
@@ -213,8 +215,11 @@ def model(
     *,
     seal_texture: str | None = None,
     neck_foil_texture: str | None = None,
+    texture_overrides: dict[str, object] | None = None,
 ) -> dict[str, object]:
     textures = dict(TEXTURES)
+    if texture_overrides is not None:
+        textures.update(texture_overrides)
     if seal_texture is not None:
         textures["seal"] = seal_texture
     if neck_foil_texture is not None:
@@ -229,11 +234,11 @@ def model(
 
 BLOCK_MODELS.mkdir(parents=True, exist_ok=True)
 ITEM_MODELS.mkdir(parents=True, exist_ok=True)
+ITEM_DEFINITIONS.mkdir(parents=True, exist_ok=True)
 BLOCKSTATES.mkdir(parents=True, exist_ok=True)
 generate_tasting_liquid_textures()
 
 generated: dict[Path, dict[str, object]] = {
-    BLOCK_MODELS / "tasting_service_base.json": model(BASE_ELEMENTS),
     BLOCK_MODELS / "tasting_service_bottle_red.json": model(
         bottle_elements("red"),
         seal_texture=TEXTURES["red_seal"],
@@ -251,87 +256,125 @@ for colour, texture in (("red", "red_wine"), ("white", "white_wine")):
             BLOCK_MODELS / f"tasting_service_fill_{colour}_{count}.json"
         ] = model(fill_elements(texture, count))
 
-display_elements = (
-    BASE_ELEMENTS
-    + bottle_elements("red")
-    + fill_elements("red_wine", 4)
-)
-generated[BLOCK_MODELS / "tasting_service_display.json"] = model(
-    display_elements,
-    seal_texture=TEXTURES["red_seal"],
-)
-generated[ITEM_MODELS / "tasting_service.json"] = {
-    "parent": "vintner:block/tasting_service_display",
-    "display": {
-        "gui": {
-            "rotation": [30, 225, 0],
-            "translation": [0, 0, 0],
-            "scale": [0.62, 0.62, 0.62],
-        },
-        "ground": {
-            "translation": [0, 3, 0],
-            "scale": [0.35, 0.35, 0.35],
-        },
-        "fixed": {"scale": [0.55, 0.55, 0.55]},
-    },
-}
-
-for path, contents in generated.items():
-    path.write_text(json.dumps(contents, indent=2) + "\n")
-
 rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
-multipart: list[dict[str, object]] = []
 
-for facing, y_rotation in rotations.items():
-    apply: dict[str, object] = {
-        "model": "vintner:block/tasting_service_base",
-        "uvlock": True,
+
+def tasting_service_id(wood: str) -> str:
+    return "tasting_service" if wood == "oak" else f"{wood}_tasting_service"
+
+
+display_elements = BASE_ELEMENTS + bottle_elements("red") + fill_elements(
+    "red_wine",
+    4,
+)
+
+for wood, properties in WOODS.items():
+    service_id = tasting_service_id(wood)
+    base_model = f"{service_id}_base"
+    display_model = f"{service_id}_display"
+    texture_overrides = {
+        "wood": f"minecraft:block/{wood}_planks",
+        "rim": properties["beam"],
+        "particle": f"minecraft:block/{wood}_planks",
     }
-    if y_rotation:
-        apply["y"] = y_rotation
-    multipart.append({"when": {"facing": facing}, "apply": apply})
 
-    for colour, white_value in (("red", "false"), ("white", "true")):
-        bottle_apply: dict[str, object] = {
-            "model": f"vintner:block/tasting_service_bottle_{colour}",
+    if wood == "oak":
+        generated[BLOCK_MODELS / f"{base_model}.json"] = model(
+            BASE_ELEMENTS,
+            texture_overrides=texture_overrides,
+        )
+        generated[BLOCK_MODELS / f"{display_model}.json"] = model(
+            display_elements,
+            seal_texture=TEXTURES["red_seal"],
+            texture_overrides=texture_overrides,
+        )
+    else:
+        generated[BLOCK_MODELS / f"{base_model}.json"] = {
+            "parent": "vintner:block/tasting_service_base",
+            "textures": texture_overrides,
+        }
+        generated[BLOCK_MODELS / f"{display_model}.json"] = {
+            "parent": "vintner:block/tasting_service_display",
+            "textures": texture_overrides,
+        }
+    generated[ITEM_MODELS / f"{service_id}.json"] = {
+        "parent": f"vintner:block/{display_model}",
+        "display": {
+            "gui": {
+                "rotation": [30, 225, 0],
+                "translation": [0, 0, 0],
+                "scale": [0.62, 0.62, 0.62],
+            },
+            "ground": {
+                "translation": [0, 3, 0],
+                "scale": [0.35, 0.35, 0.35],
+            },
+            "fixed": {"scale": [0.55, 0.55, 0.55]},
+        },
+    }
+    generated[ITEM_DEFINITIONS / f"{service_id}.json"] = {
+        "model": {
+            "type": "minecraft:model",
+            "model": f"vintner:item/{service_id}",
+        }
+    }
+
+    multipart: list[dict[str, object]] = []
+    for facing, y_rotation in rotations.items():
+        apply: dict[str, object] = {
+            "model": f"vintner:block/{base_model}",
             "uvlock": True,
         }
         if y_rotation:
-            bottle_apply["y"] = y_rotation
-        multipart.append(
-            {
-                "when": {
-                    "facing": facing,
-                    "has_bottle": "true",
-                    "white_wine": white_value,
-                },
-                "apply": bottle_apply,
-            }
-        )
+            apply["y"] = y_rotation
+        multipart.append({"when": {"facing": facing}, "apply": apply})
 
-        for count in range(1, 5):
-            fill_apply: dict[str, object] = {
-                "model": f"vintner:block/tasting_service_fill_{colour}_{count}",
+        for colour, white_value in (("red", "false"), ("white", "true")):
+            bottle_apply: dict[str, object] = {
+                "model": f"vintner:block/tasting_service_bottle_{colour}",
                 "uvlock": True,
             }
             if y_rotation:
-                fill_apply["y"] = y_rotation
+                bottle_apply["y"] = y_rotation
             multipart.append(
                 {
                     "when": {
                         "facing": facing,
-                        "servings": str(count),
+                        "has_bottle": "true",
                         "white_wine": white_value,
                     },
-                    "apply": fill_apply,
+                    "apply": bottle_apply,
                 }
             )
 
-(BLOCKSTATES / "tasting_service.json").write_text(
-    json.dumps({"multipart": multipart}, indent=2) + "\n"
-)
+            for count in range(1, 5):
+                fill_apply: dict[str, object] = {
+                    "model": (
+                        f"vintner:block/tasting_service_fill_{colour}_{count}"
+                    ),
+                    "uvlock": True,
+                }
+                if y_rotation:
+                    fill_apply["y"] = y_rotation
+                multipart.append(
+                    {
+                        "when": {
+                            "facing": facing,
+                            "servings": str(count),
+                            "white_wine": white_value,
+                        },
+                        "apply": fill_apply,
+                    }
+                )
+
+    generated[BLOCKSTATES / f"{service_id}.json"] = {
+        "multipart": multipart
+    }
+
+for path, contents in generated.items():
+    path.write_text(json.dumps(contents, indent=2) + "\n")
 
 print(
-    "Generated tasting-service base, bottle, four red/white fill states, "
-    "display model, and multipart blockstate."
+    "Generated all wood-family tasting-service bases, displays, item models, "
+    "bottle/fill states, item definitions, and multipart blockstates."
 )

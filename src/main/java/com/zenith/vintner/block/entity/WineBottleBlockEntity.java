@@ -1,7 +1,6 @@
 package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.block.WineBottleBlock;
-import com.zenith.vintner.item.FilledWineGlassItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.WineMetadata;
@@ -40,27 +39,6 @@ public final class WineBottleBlockEntity extends BlockEntity {
         bottle = ItemStack.EMPTY;
         setChanged();
         return result;
-    }
-
-    public synchronized ItemStack pourServing() {
-        if (bottle.isEmpty()
-                || bottle.is(Items.GLASS_BOTTLE)
-                || WineMetadata.servings(bottle) <= 0) {
-            return ItemStack.EMPTY;
-        }
-
-        ItemStack glass = FilledWineGlassItem.fromBottle(bottle);
-        int remaining = WineMetadata.servings(bottle) - 1;
-
-        if (remaining <= 0) {
-            bottle = new ItemStack(Items.GLASS_BOTTLE);
-        } else {
-            WineMetadata.setServings(bottle, remaining);
-        }
-
-        setChanged();
-        syncVisualState();
-        return glass;
     }
 
     public int servings() {

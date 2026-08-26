@@ -179,47 +179,7 @@ public final class TastingServiceBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        if (!heldStack.is(ModItems.WINE_GLASS)) {
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
-        }
-
-        if (!(level instanceof ServerLevel serverLevel)) {
-            return InteractionResult.SUCCESS;
-        }
-
-        ItemStack serving = service.pourServing();
-
-        if (serving.isEmpty()) {
-            player.sendOverlayMessage(
-                    Component.translatable(
-                            "message.vintner.tasting_service.empty"
-                    )
-            );
-            return InteractionResult.SUCCESS;
-        }
-
-        if (!player.getAbilities().instabuild) {
-            heldStack.shrink(1);
-        }
-
-        if (!player.addItem(serving)) {
-            popResource(serverLevel, pos, serving);
-        }
-
-        serverLevel.playSound(
-                null,
-                pos,
-                SoundEvents.BOTTLE_FILL,
-                SoundSource.BLOCKS,
-                0.85F,
-                1.1F
-        );
-
-        if (player instanceof ServerPlayer serverPlayer) {
-            ModAdvancements.grantProperPour(serverPlayer);
-        }
-
-        return InteractionResult.SUCCESS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override
@@ -251,7 +211,7 @@ public final class TastingServiceBlock extends BaseEntityBlock {
                 return InteractionResult.SUCCESS;
             }
 
-            serving.finishUsingItem(serverLevel, player);
+            WineItem.consumeServing(serverLevel, player, serving);
             serverLevel.playSound(
                     null,
                     pos,
@@ -260,6 +220,9 @@ public final class TastingServiceBlock extends BaseEntityBlock {
                     0.8F,
                     1.0F
             );
+            if (player instanceof ServerPlayer serverPlayer) {
+                ModAdvancements.grantProperPour(serverPlayer);
+            }
             return InteractionResult.SUCCESS;
         }
 

@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "vintner:item/filled_wine_glass"
+    "model": "vintner:item/spruce_tasting_service"
   }
 }

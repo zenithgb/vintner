@@ -284,6 +284,14 @@ def cabinet_id(wood: str) -> str:
     )
 
 
+def tasting_service_id(wood: str) -> str:
+    return (
+        "tasting_service"
+        if wood == "oak"
+        else f"{wood}_tasting_service"
+    )
+
+
 def grapevine_id(wood: str, color: str) -> str:
     return (
         f"{color}_grapevine"
@@ -788,29 +796,6 @@ def generate_canonical_bottle_models() -> None:
         ASSETS / "blockstates/wine_bottle.json",
         {"variants": variants},
     )
-
-    # Individual glasses are inventory serving tools only. Placed table
-    # presentation belongs to the complete Tasting Service block, so these
-    # stay as clear, stable sprite models instead of regenerating large
-    # three-dimensional drinkware models.
-    for name in ("wine_glass", "filled_wine_glass"):
-        write_json(
-            ASSETS / f"models/item/{name}.json",
-            {
-                "parent": "minecraft:item/generated",
-                "textures": {"layer0": f"vintner:item/{name}"},
-            },
-        )
-        write_json(
-            ASSETS / f"items/{name}.json",
-            {
-                "model": {
-                    "type": "minecraft:model",
-                    "model": f"vintner:item/{name}",
-                }
-            },
-        )
-
 
 def generate_cellar_fixture_base_models() -> None:
     wood_faces = cube_faces("#wood")
@@ -1615,9 +1600,8 @@ def generate_survival_data() -> None:
             stand_id(wood),
             shelf_id(wood),
             cabinet_id(wood),
+            tasting_service_id(wood),
         ]
-        if wood == "oak":
-            ids.insert(6, "tasting_service")
         axe_blocks.extend(f"vintner:{block_id}" for block_id in ids)
 
         recipes = {
@@ -1762,6 +1746,19 @@ def generate_survival_data() -> None:
                 "key": {"P": planks, "G": "minecraft:glass_pane", "B": "minecraft:book"},
                 "result": {"id": f"vintner:{cabinet_id(wood)}", "count": 1},
             },
+            tasting_service_id(wood): {
+                "type": "minecraft:crafting_shaped",
+                "category": "misc",
+                "pattern": ["G G", "PPP", "G G"],
+                "key": {
+                    "G": "minecraft:glass_pane",
+                    "P": planks,
+                },
+                "result": {
+                    "id": f"vintner:{tasting_service_id(wood)}",
+                    "count": 1,
+                },
+            },
         }
 
         for recipe_id, recipe in recipes.items():
@@ -1850,6 +1847,9 @@ def generate_language() -> None:
         )
         language[f"block.vintner.{cabinet_id(wood)}"] = (
             f"{title} Tasting Cabinet"
+        )
+        language[f"block.vintner.{tasting_service_id(wood)}"] = (
+            f"{title} Tasting Service"
         )
         language[
             f"block.vintner.{grapevine_id(wood, 'red')}"
@@ -1997,7 +1997,8 @@ def main() -> None:
     print(
         "Generated 12 wood families for trellises, grape presses, "
         "fermentation barrels, aging barrels, wine racks, wine "
-        "crates, vintage archives, and grapevine supports."
+        "crates, vintage archives, tasting services, and grapevine "
+        "supports."
     )
 
 

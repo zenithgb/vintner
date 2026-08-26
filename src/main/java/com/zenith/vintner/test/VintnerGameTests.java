@@ -20,7 +20,7 @@ import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineBottleBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.item.WineEffectProfile;
-import com.zenith.vintner.item.FilledWineGlassItem;
+import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
@@ -143,6 +143,11 @@ public final class VintnerGameTests {
                 "Every wood family should have a tasting cabinet"
         );
         helper.assertValueEqual(
+                ModBlocks.TASTING_SERVICES.size(),
+                expected,
+                "Every wood family should have a tasting service"
+        );
+        helper.assertValueEqual(
                 ModBlocks.RED_GRAPEVINES.size(),
                 expected,
                 "Every wood family should retain red-vine supports"
@@ -177,6 +182,14 @@ public final class VintnerGameTests {
                     ),
                     woodVariant.id()
                             + " aging barrel should support its block entity"
+            );
+            helper.assertTrue(
+                    ModBlockEntities.TASTING_SERVICE.isValid(
+                            ModBlocks.tastingService(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " tasting service should support its block entity"
             );
             helper.assertTrue(
                     ModBlockEntities.WINE_RACK.isValid(
@@ -693,26 +706,24 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void fourPouredGlassesEqualOneBottleEffect(
+    public void fourTastingServingsEqualOneBottleEffect(
             GameTestHelper helper
     ) {
-        var glassTaster = helper.makeMockServerPlayerInLevel();
+        var serviceTaster = helper.makeMockServerPlayerInLevel();
         var bottleTaster = helper.makeMockServerPlayerInLevel();
-        glassTaster.setGameMode(GameType.SURVIVAL);
+        serviceTaster.setGameMode(GameType.SURVIVAL);
         bottleTaster.setGameMode(GameType.SURVIVAL);
         ItemStack source = new ItemStack(ModItems.RED_WINE);
         WineMetadata.apply(source, 1, WineQuality.GOOD);
         WineMetadata.setEffectProfile(source, WineEffectProfile.RED.id());
 
         for (int serving = 0; serving < 4; serving++) {
-            ItemStack glass = FilledWineGlassItem.fromBottle(source);
-            ItemStack result = glass.finishUsingItem(
+            ItemStack tasting = source.copyWithCount(1);
+            WineMetadata.setServings(tasting, 1);
+            WineItem.consumeServing(
                     helper.getLevel(),
-                    glassTaster
-            );
-            helper.assertTrue(
-                    result.is(ModItems.WINE_GLASS),
-                    "Every poured serving should return a reusable wine glass"
+                    serviceTaster,
+                    tasting
             );
         }
 
@@ -726,20 +737,20 @@ public final class VintnerGameTests {
 
         helper.assertValueEqual(
                 WineConsumptionManager.state(
-                        glassTaster,
+                        serviceTaster,
                         helper.getLevel().getGameTime()
                 ).effectiveServingUnits(),
                 4,
-                "Four glasses should equal one tracked bottle"
+                "Four tasting-service servings should equal one tracked bottle"
         );
         helper.assertValueEqual(
-                WineEffectProfile.RED.remainingDuration(glassTaster),
+                WineEffectProfile.RED.remainingDuration(serviceTaster),
                 WineEffectProfile.RED.remainingDuration(bottleTaster),
                 "Four servings should equal one full bottle effect"
         );
         helper.assertFalse(
-                glassTaster.hasEffect(MobEffects.NAUSEA),
-                "One bottle divided into glasses should not cause impairment"
+                serviceTaster.hasEffect(MobEffects.NAUSEA),
+                "One bottle divided into tastings should not cause impairment"
         );
         helper.succeed();
     }
@@ -2900,13 +2911,13 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void placedBottlePoursFourExactMetadataServings(
+    public void tastingServicePoursFourExactMetadataServings(
             GameTestHelper helper
     ) {
-        helper.setBlock(FIRST, ModBlocks.WINE_BOTTLE);
-        WineBottleBlockEntity bottleEntity = helper.getBlockEntity(
+        helper.setBlock(FIRST, ModBlocks.TASTING_SERVICE);
+        TastingServiceBlockEntity service = helper.getBlockEntity(
                 FIRST,
-                WineBottleBlockEntity.class
+                TastingServiceBlockEntity.class
         );
         ItemStack wine = new ItemStack(ModItems.AGED_RED_WINE);
         WineMetadata.apply(wine, 7, WineQuality.EXCEPTIONAL);
@@ -2916,48 +2927,51 @@ public final class VintnerGameTests {
                 wine,
                 WineEffectProfile.AGED_RED.id()
         );
-        bottleEntity.setBottle(wine);
+        helper.assertTrue(
+                service.insertBottle(wine),
+                "The service should accept the source bottle"
+        );
 
         for (int remaining = 3; remaining >= 0; remaining--) {
-            ItemStack glass = bottleEntity.pourServing();
+            ItemStack serving = service.pourServing();
             helper.assertTrue(
-                    glass.is(ModItems.FILLED_WINE_GLASS),
-                    "Each valid pour should create one filled glass"
+                    serving.is(ModItems.AGED_RED_WINE),
+                    "Each tasting should retain the source wine item"
             );
             helper.assertValueEqual(
-                    WineMetadata.batchId(glass),
+                    WineMetadata.batchId(serving),
                     99121L,
-                    "A poured glass must preserve batch identity"
+                    "A tasting must preserve batch identity"
             );
             helper.assertValueEqual(
-                    WineMetadata.bottleNumber(glass),
+                    WineMetadata.bottleNumber(serving),
                     2,
-                    "A poured glass must preserve bottle numbering"
+                    "A tasting must preserve bottle numbering"
             );
             helper.assertValueEqual(
-                    WineMetadata.effectProfile(glass),
+                    WineMetadata.effectProfile(serving),
                     WineEffectProfile.AGED_RED.id(),
-                    "A poured glass must preserve the source effect profile"
+                    "A tasting must preserve the source effect profile"
             );
             helper.assertValueEqual(
-                    bottleEntity.servings(),
-                    remaining,
-                    "A pour must remove exactly one serving"
+                    WineMetadata.servings(serving),
+                    1,
+                    "A tasting should represent exactly one serving"
             );
-            helper.assertBlockProperty(
-                    FIRST,
-                    WineBottleBlock.SERVINGS,
-                    remaining
+            helper.assertValueEqual(
+                    service.servings(),
+                    remaining,
+                    "A tasting must remove exactly one serving"
             );
         }
 
         helper.assertTrue(
-                bottleEntity.pourServing().isEmpty(),
-                "An empty bottle must reject additional pours"
+                service.pourServing().isEmpty(),
+                "An empty service must reject additional tastings"
         );
         helper.assertTrue(
-                bottleEntity.getBottleCopy().is(Items.GLASS_BOTTLE),
-                "The final pour should leave a reusable empty bottle"
+                service.getBottleCopy().is(Items.GLASS_BOTTLE),
+                "The final tasting should leave a reusable empty bottle"
         );
         helper.succeed();
     }
@@ -2966,10 +2980,10 @@ public final class VintnerGameTests {
     public void competingPoursCannotDuplicateFinalServing(
             GameTestHelper helper
     ) {
-        helper.setBlock(FIRST, ModBlocks.WINE_BOTTLE);
-        WineBottleBlockEntity bottleEntity = helper.getBlockEntity(
+        helper.setBlock(FIRST, ModBlocks.TASTING_SERVICE);
+        TastingServiceBlockEntity service = helper.getBlockEntity(
                 FIRST,
-                WineBottleBlockEntity.class
+                TastingServiceBlockEntity.class
         );
         ItemStack wine = new ItemStack(ModItems.AGED_WHITE_WINE);
         WineMetadata.ensureBatchIdentity(wine, 99123L);
@@ -2978,32 +2992,30 @@ public final class VintnerGameTests {
                 wine,
                 WineEffectProfile.AGED_WHITE.id()
         );
-        bottleEntity.setBottle(wine);
+        helper.assertTrue(
+                service.insertBottle(wine),
+                "The service should accept the final serving"
+        );
 
-        ItemStack firstResult = bottleEntity.pourServing();
-        ItemStack secondResult = bottleEntity.pourServing();
+        ItemStack firstResult = service.pourServing();
+        ItemStack secondResult = service.pourServing();
 
-        int filledGlasses = 0;
-        if (firstResult.is(ModItems.FILLED_WINE_GLASS)) {
-            filledGlasses++;
+        int tastings = 0;
+        if (firstResult.is(ModItems.AGED_WHITE_WINE)) {
+            tastings++;
         }
-        if (secondResult.is(ModItems.FILLED_WINE_GLASS)) {
-            filledGlasses++;
+        if (secondResult.is(ModItems.AGED_WHITE_WINE)) {
+            tastings++;
         }
 
         helper.assertValueEqual(
-                filledGlasses,
+                tastings,
                 1,
                 "Competing final pours must create exactly one serving"
         );
         helper.assertTrue(
-                bottleEntity.getBottleCopy().is(Items.GLASS_BOTTLE),
+                service.getBottleCopy().is(Items.GLASS_BOTTLE),
                 "The final serving must leave one reusable empty bottle"
-        );
-        helper.assertBlockProperty(
-                FIRST,
-                WineBottleBlock.SERVINGS,
-                0
         );
         helper.succeed();
     }
@@ -3020,21 +3032,13 @@ public final class VintnerGameTests {
         ItemStack wine = new ItemStack(ModItems.WHITE_WINE);
         WineMetadata.ensureBatchIdentity(wine, 99122L);
         WineMetadata.setEffectProfile(wine, WineEffectProfile.WHITE.id());
+        WineMetadata.setServings(wine, 2);
         bottleEntity.setBottle(wine);
 
         helper.assertBlockProperty(
                 FIRST,
                 WineBottleBlock.WHITE_WINE,
                 true
-        );
-
-        helper.assertFalse(
-                bottleEntity.pourServing().isEmpty(),
-                "The first serving should pour"
-        );
-        helper.assertFalse(
-                bottleEntity.pourServing().isEmpty(),
-                "The second serving should pour"
         );
 
         WineBottleBlockEntity restored =
@@ -3097,8 +3101,8 @@ public final class VintnerGameTests {
 
         ItemStack serving = service.pourServing();
         helper.assertTrue(
-                serving.is(ModItems.FILLED_WINE_GLASS),
-                "Pouring should return the existing filled-glass item"
+                serving.is(ModItems.AGED_RED_WINE),
+                "Pouring should retain the source wine item internally"
         );
         helper.assertValueEqual(
                 WineMetadata.batchId(serving),

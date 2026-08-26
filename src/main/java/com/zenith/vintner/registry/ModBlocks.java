@@ -160,11 +160,11 @@ public final class ModBlocks {
     public static final Block TASTING_SERVICE = registerWithItem(
             "tasting_service",
             TastingServiceBlock::new,
-            BlockBehaviour.Properties.of()
-                    .strength(0.8F)
-                    .sound(SoundType.WOOD)
-                    .noOcclusion()
+            tastingServiceProperties()
     );
+
+    public static final Map<WoodVariant, Block> TASTING_SERVICES =
+            registerTastingServices();
 
     public static final Map<WoodVariant, Block> WINE_CRATES =
             registerMachineVariants(
@@ -323,6 +323,10 @@ public final class ModBlocks {
         return TASTING_CABINETS.get(woodVariant);
     }
 
+    public static Block tastingService(WoodVariant woodVariant) {
+        return TASTING_SERVICES.get(woodVariant);
+    }
+
     public static Block redGrapevine(WoodVariant woodVariant) {
         return RED_GRAPEVINES.get(woodVariant);
     }
@@ -376,6 +380,10 @@ public final class ModBlocks {
         return orderedBlocks(VINTAGE_ARCHIVES);
     }
 
+    public static Block[] tastingServiceBlocks() {
+        return orderedBlocks(TASTING_SERVICES);
+    }
+
     public static Block[] cellarCollectionBlocks() {
         Block[] shelves = orderedBlocks(LABELLED_CELLAR_SHELVES);
         Block[] cabinets = orderedBlocks(TASTING_CABINETS);
@@ -410,6 +418,29 @@ public final class ModBlocks {
                                     properties
                             ),
                             trellisProperties()
+                    )
+            );
+        }
+
+        return Collections.unmodifiableMap(blocks);
+    }
+
+    private static Map<WoodVariant, Block> registerTastingServices() {
+        EnumMap<WoodVariant, Block> blocks =
+                new EnumMap<>(WoodVariant.class);
+        blocks.put(WoodVariant.OAK, TASTING_SERVICE);
+
+        for (WoodVariant woodVariant : WoodVariant.values()) {
+            if (woodVariant == WoodVariant.OAK) {
+                continue;
+            }
+
+            blocks.put(
+                    woodVariant,
+                    registerWithItem(
+                            woodVariant.tastingServiceId(),
+                            TastingServiceBlock::new,
+                            tastingServiceProperties()
                     )
             );
         }
@@ -502,6 +533,13 @@ public final class ModBlocks {
     private static BlockBehaviour.Properties machineProperties() {
         return BlockBehaviour.Properties.of()
                 .strength(2.5F)
+                .sound(SoundType.WOOD)
+                .noOcclusion();
+    }
+
+    private static BlockBehaviour.Properties tastingServiceProperties() {
+        return BlockBehaviour.Properties.of()
+                .strength(0.8F)
                 .sound(SoundType.WOOD)
                 .noOcclusion();
     }
@@ -602,7 +640,7 @@ public final class ModBlocks {
                             .forEach(output::accept);
                     TASTING_CABINETS.values()
                             .forEach(output::accept);
-                    output.accept(TASTING_SERVICE);
+                    TASTING_SERVICES.values().forEach(output::accept);
                 });
     }
 }

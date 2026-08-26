@@ -106,7 +106,7 @@ public final class ModBlockEntities {
                     ),
                     FabricBlockEntityTypeBuilder.create(
                             TastingServiceBlockEntity::new,
-                            ModBlocks.TASTING_SERVICE
+                            ModBlocks.tastingServiceBlocks()
                     ).build()
             );
 

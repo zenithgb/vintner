@@ -192,4 +192,25 @@ public final class WineItem extends Item {
     public WineEffectProfile effectProfile() {
         return effectProfile;
     }
+
+    public static void consumeServing(
+            ServerLevel level,
+            LivingEntity consumer,
+            ItemStack serving
+    ) {
+        WineEffectProfile profile = serving.getItem() instanceof WineItem wine
+                ? wine.effectProfile()
+                : WineEffectProfile.byId(
+                        WineMetadata.effectProfile(serving)
+                );
+
+        WineConsumptionManager.consume(
+                level,
+                consumer,
+                profile,
+                WineMetadata.quality(serving),
+                WineMetadata.ageStage(serving),
+                1.0F / WineMetadata.SERVINGS_PER_BOTTLE
+        );
+    }
 }

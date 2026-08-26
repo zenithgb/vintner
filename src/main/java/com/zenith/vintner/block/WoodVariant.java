@@ -84,6 +84,12 @@ public enum WoodVariant implements StringRepresentable {
                 : id + "_tasting_cabinet";
     }
 
+    public String tastingServiceId() {
+        return this == OAK
+                ? "tasting_service"
+                : id + "_tasting_service";
+    }
+
     public String grapevineId(boolean red) {
         if (this == OAK) {
             return red ? "red_grapevine" : "white_grapevine";

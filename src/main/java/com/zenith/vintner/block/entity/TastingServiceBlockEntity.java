@@ -1,7 +1,6 @@
 package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.block.TastingServiceBlock;
-import com.zenith.vintner.item.FilledWineGlassItem;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.wine.WineMetadata;
@@ -47,7 +46,8 @@ public final class TastingServiceBlockEntity extends BlockEntity {
             return ItemStack.EMPTY;
         }
 
-        ItemStack serving = FilledWineGlassItem.fromBottle(bottle);
+        ItemStack serving = bottle.copyWithCount(1);
+        WineMetadata.setServings(serving, 1);
         int remaining = WineMetadata.servings(bottle) - 1;
 
         if (remaining <= 0) {

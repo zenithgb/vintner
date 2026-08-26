@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "G G",
+    "PPP",
+    "G G"
+  ],
+  "key": {
+    "G": "minecraft:glass_pane",
+    "P": "minecraft:birch_planks"
+  },
+  "result": {
+    "id": "vintner:birch_tasting_service",
+    "count": 1
+  }
+}

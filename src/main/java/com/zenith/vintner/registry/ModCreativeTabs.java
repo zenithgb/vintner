@@ -71,9 +71,8 @@ public final class ModCreativeTabs {
                                         .forEach(output::accept);
                                 ModBlocks.TASTING_CABINETS.values()
                                         .forEach(output::accept);
-                                output.accept(
-                                        ModBlocks.TASTING_SERVICE
-                                );
+                                ModBlocks.TASTING_SERVICES.values()
+                                        .forEach(output::accept);
                                 output.accept(
                                         ModItems.VINTNER_ALMANAC
                                 );

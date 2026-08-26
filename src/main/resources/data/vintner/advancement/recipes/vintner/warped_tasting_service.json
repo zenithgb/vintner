@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_glass": {
+    "has_material": {
       "conditions": {
         "items": [
           {
-            "items": "minecraft:glass_pane"
+            "items": "minecraft:warped_planks"
           }
         ]
       },
@@ -13,20 +13,20 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:wine_glass"
+        "recipe": "vintner:warped_tasting_service"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
   },
   "requirements": [
     [
-      "has_glass",
+      "has_material",
       "has_the_recipe"
     ]
   ],
   "rewards": {
     "recipes": [
-      "vintner:wine_glass"
+      "vintner:warped_tasting_service"
     ]
   },
   "sends_telemetry_event": false

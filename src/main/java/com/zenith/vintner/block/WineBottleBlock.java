@@ -2,14 +2,12 @@ package com.zenith.vintner.block;
 
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.WineBottleBlockEntity;
-import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.item.VintnerAlmanacItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.WineMetadata;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -187,52 +185,7 @@ public final class WineBottleBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        if (!heldStack.is(ModItems.WINE_GLASS)) {
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
-        }
-
-        if (!(level.getBlockEntity(pos)
-                instanceof WineBottleBlockEntity bottleEntity)) {
-            return InteractionResult.PASS;
-        }
-
-        if (!(level instanceof ServerLevel serverLevel)) {
-            return InteractionResult.SUCCESS;
-        }
-
-        ItemStack filledGlass = bottleEntity.pourServing();
-        if (filledGlass.isEmpty()) {
-            player.sendSystemMessage(
-                    Component.translatable(
-                            "message.vintner.wine_bottle.empty"
-                    )
-            );
-            return InteractionResult.SUCCESS;
-        }
-
-        if (!player.getAbilities().instabuild) {
-            heldStack.shrink(1);
-        }
-
-        if (!player.addItem(filledGlass)) {
-            popResource(serverLevel, pos, filledGlass);
-        }
-
-        serverLevel.playSound(
-                null,
-                pos,
-                SoundEvents.BOTTLE_FILL,
-                SoundSource.BLOCKS,
-                0.9F,
-                1.1F
-        );
-
-        if (player instanceof net.minecraft.server.level.ServerPlayer
-                serverPlayer) {
-            ModAdvancements.grantProperPour(serverPlayer);
-        }
-
-        return InteractionResult.SUCCESS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override
