@@ -76,6 +76,10 @@ public final class TastingServiceBlockEntity extends BlockEntity {
         return bottle.isEmpty() ? ItemStack.EMPTY : bottle.copy();
     }
 
+    public boolean hasEmptyBottle() {
+        return bottle.is(Items.GLASS_BOTTLE);
+    }
+
     public int servings() {
         if (bottle.isEmpty() || bottle.is(Items.GLASS_BOTTLE)) {
             return 0;

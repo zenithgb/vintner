@@ -199,6 +199,10 @@ public final class TastingServiceBlock extends BaseEntityBlock {
             return InteractionResult.PASS;
         }
 
+        if (service.hasEmptyBottle()) {
+            return returnBottle(serverLevel, pos, player, service);
+        }
+
         if (!player.isShiftKeyDown()) {
             ItemStack serving = service.pourServing();
 
@@ -226,6 +230,15 @@ public final class TastingServiceBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
+        return returnBottle(serverLevel, pos, player, service);
+    }
+
+    private static InteractionResult returnBottle(
+            ServerLevel level,
+            BlockPos pos,
+            Player player,
+            TastingServiceBlockEntity service
+    ) {
         ItemStack bottle = service.removeBottle();
 
         if (bottle.isEmpty()) {
@@ -233,10 +246,10 @@ public final class TastingServiceBlock extends BaseEntityBlock {
         }
 
         if (!player.addItem(bottle)) {
-            popResource(serverLevel, pos, bottle);
+            popResource(level, pos, bottle);
         }
 
-        serverLevel.playSound(
+        level.playSound(
                 null,
                 pos,
                 SoundEvents.ITEM_FRAME_REMOVE_ITEM,

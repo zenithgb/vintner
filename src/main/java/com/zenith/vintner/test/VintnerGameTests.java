@@ -3208,6 +3208,79 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void survivalPlayerCanRecoverExhaustedServiceBottle(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.TASTING_SERVICE);
+        TastingServiceBlockEntity service = helper.getBlockEntity(
+                FIRST,
+                TastingServiceBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.ensureDefaults(wine);
+        WineMetadata.setServings(wine, 1);
+        WineMetadata.setEffectProfile(
+                wine,
+                WineEffectProfile.RED.id()
+        );
+        helper.assertTrue(
+                service.insertBottle(wine),
+                "The service should accept its final serving"
+        );
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        player.setItemInHand(
+                InteractionHand.MAIN_HAND,
+                ItemStack.EMPTY
+        );
+        BlockPos servicePos = helper.absolutePos(FIRST);
+        BlockHitResult hit = new BlockHitResult(
+                Vec3.atCenterOf(servicePos),
+                Direction.UP,
+                servicePos,
+                false
+        );
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                ItemStack.EMPTY,
+                InteractionHand.MAIN_HAND,
+                hit
+        );
+        helper.assertTrue(
+                service.hasEmptyBottle(),
+                "The final serving should leave an empty bottle"
+        );
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                ItemStack.EMPTY,
+                InteractionHand.MAIN_HAND,
+                hit
+        );
+        helper.assertTrue(
+                player.getInventory().contains(
+                        new ItemStack(Items.GLASS_BOTTLE)
+                ),
+                "Using an exhausted service should return its empty bottle"
+        );
+        helper.assertTrue(
+                service.getBottleCopy().isEmpty(),
+                "Recovering the empty bottle should clear the service"
+        );
+        helper.assertFalse(
+                helper.getBlockState(FIRST).getValue(
+                        com.zenith.vintner.block.TastingServiceBlock.HAS_BOTTLE
+                ),
+                "Recovering the bottle should clear the bottle visual"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void tastingServiceTracksWhiteWineVisualState(
             GameTestHelper helper
     ) {

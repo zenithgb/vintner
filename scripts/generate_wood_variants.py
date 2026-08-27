@@ -695,6 +695,28 @@ def bottle_elements(
     return elements
 
 
+STORAGE_BOTTLE_SCALE = 0.72
+
+
+def storage_bottle_elements(
+    center_x: float,
+    base_y: float,
+    center_z: float,
+    *,
+    horizontal: bool = False,
+) -> list[dict[str, object]]:
+    """One sealed canonical bottle shared by cellar cabinets and racks."""
+    return bottle_elements(
+        center_x,
+        base_y,
+        center_z,
+        STORAGE_BOTTLE_SCALE,
+        horizontal=horizontal,
+        include_seal=True,
+        profile="red",
+    )
+
+
 def generate_canonical_bottle_models() -> None:
     generate_white_wine_texture()
     generate_tasting_liquid_textures()
@@ -910,7 +932,7 @@ def generate_cellar_fixture_base_models() -> None:
                 ASSETS / f"models/block/cellar_fixture_bottle_slot_{slot}.json",
                 {
                     "parent": "vintner:block/wine_bottle_palette",
-                    "elements": bottle_elements(x, y, 8.0, 0.68),
+                    "elements": storage_bottle_elements(x, y, 8.0),
                 },
             )
 
@@ -1279,11 +1301,10 @@ def generate_rack_bottle_models() -> None:
             ASSETS / f"models/block/wine_rack_bottle_{slot}.json",
             {
                 "parent": "vintner:block/wine_bottle_palette",
-                "elements": bottle_elements(
+                "elements": storage_bottle_elements(
                     x,
                     y,
                     11.6,
-                    0.75,
                     horizontal=True,
                 ),
             },
