@@ -882,11 +882,13 @@ def generate_cellar_fixture_base_models() -> None:
                 # Front lips stop the bottles reading as if they float.
                 {"from": [2, 2, 0.5], "to": [14, 3, 1.5], "faces": copy.deepcopy(wood_faces)},
                 {"from": [2, 9, 0.5], "to": [14, 10, 1.5], "faces": copy.deepcopy(wood_faces)},
-                # One label holder for each storage bay.
-                {"from": [3.25, 6.25, 0.2], "to": [6.75, 7, 0.75], "faces": copy.deepcopy(label_faces)},
-                {"from": [9.25, 6.25, 0.2], "to": [12.75, 7, 0.75], "faces": copy.deepcopy(label_faces)},
-                {"from": [3.25, 13.25, 0.2], "to": [6.75, 14, 0.75], "faces": copy.deepcopy(label_faces)},
-                {"from": [9.25, 13.25, 0.2], "to": [12.75, 14, 0.75], "faces": copy.deepcopy(label_faces)},
+                # Compact copper labels sit on the solid shelf fronts rather
+                # than spanning the openings or sharing a coplanar edge with
+                # the shelf above them.
+                {"from": [3.65, 0.55, 0.6], "to": [6.35, 1.45, 1.05], "faces": copy.deepcopy(label_faces)},
+                {"from": [9.65, 0.55, 0.6], "to": [12.35, 1.45, 1.05], "faces": copy.deepcopy(label_faces)},
+                {"from": [3.65, 7.55, 0.6], "to": [6.35, 8.45, 1.05], "faces": copy.deepcopy(label_faces)},
+                {"from": [9.65, 7.55, 0.6], "to": [12.35, 8.45, 1.05], "faces": copy.deepcopy(label_faces)},
             ],
         },
     )
@@ -925,14 +927,22 @@ def generate_cellar_fixture_base_models() -> None:
     )
 
     slot = 0
-    for y in (2.0, 9.0):
+    # Cellar furniture uses the same horizontal sealed-bottle presentation as
+    # the wine rack. Laying each bottle into its bay keeps the full canonical
+    # proportions without intersecting the shelves above or below it.
+    for y in (4.5, 11.5):
         for x in (3.0, 6.33, 9.67, 13.0):
             slot += 1
             write_json(
                 ASSETS / f"models/block/cellar_fixture_bottle_slot_{slot}.json",
                 {
                     "parent": "vintner:block/wine_bottle_palette",
-                    "elements": storage_bottle_elements(x, y, 8.0),
+                    "elements": storage_bottle_elements(
+                        x,
+                        y,
+                        13.0,
+                        horizontal=True,
+                    ),
                 },
             )
 
