@@ -42,6 +42,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
@@ -83,15 +84,47 @@ public final class TastingServiceBlock extends BaseEntityBlock {
             13.0 / 16.0
     };
     private static final double CUP_CENTER_Z = 5.0 / 16.0;
-    private static final double CUP_TARGET_RADIUS = 1.2 / 16.0;
+    private static final double CUP_TARGET_RADIUS = 1.55 / 16.0;
 
-    private static final VoxelShape SHAPE = Block.box(
+    private static final VoxelShape PLATTER_SHAPE = Block.box(
             1,
             0,
             1,
             15,
-            10,
+            3.25,
             15
+    );
+    private static final VoxelShape NORTH_BOTTLE_SHAPE = Block.box(
+            10.2,
+            2,
+            10,
+            12.8,
+            10,
+            12.5
+    );
+    private static final VoxelShape EAST_BOTTLE_SHAPE = Block.box(
+            3.5,
+            2,
+            10.2,
+            6,
+            10,
+            12.8
+    );
+    private static final VoxelShape SOUTH_BOTTLE_SHAPE = Block.box(
+            3.2,
+            2,
+            3.5,
+            5.8,
+            10,
+            6
+    );
+    private static final VoxelShape WEST_BOTTLE_SHAPE = Block.box(
+            10,
+            2,
+            3.2,
+            12.5,
+            10,
+            5.8
     );
 
     public TastingServiceBlock(BlockBehaviour.Properties properties) {
@@ -127,7 +160,17 @@ public final class TastingServiceBlock extends BaseEntityBlock {
             BlockPos pos,
             CollisionContext context
     ) {
-        return SHAPE;
+        if (!state.getValue(HAS_BOTTLE)) {
+            return PLATTER_SHAPE;
+        }
+
+        VoxelShape bottleShape = switch (state.getValue(FACING)) {
+            case EAST -> EAST_BOTTLE_SHAPE;
+            case SOUTH -> SOUTH_BOTTLE_SHAPE;
+            case WEST -> WEST_BOTTLE_SHAPE;
+            default -> NORTH_BOTTLE_SHAPE;
+        };
+        return Shapes.or(PLATTER_SHAPE, bottleShape);
     }
 
     @Nullable

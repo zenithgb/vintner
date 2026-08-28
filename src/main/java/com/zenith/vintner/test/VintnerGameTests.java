@@ -3370,6 +3370,76 @@ public final class VintnerGameTests {
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 80)
+    public void tastingServiceCupSelectionWorksFromEveryFacing(
+            GameTestHelper helper
+    ) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        player.setItemInHand(
+                InteractionHand.MAIN_HAND,
+                ItemStack.EMPTY
+        );
+        BlockPos servicePos = helper.absolutePos(FIRST);
+        Direction[] facings = {
+                Direction.NORTH,
+                Direction.EAST,
+                Direction.SOUTH,
+                Direction.WEST
+        };
+
+        for (int cupIndex = 0; cupIndex < facings.length; cupIndex++) {
+            Direction facing = facings[cupIndex];
+            helper.setBlock(
+                    FIRST,
+                    ModBlocks.TASTING_SERVICE.defaultBlockState()
+                            .setValue(TastingServiceBlock.FACING, facing)
+            );
+            TastingServiceBlockEntity service = helper.getBlockEntity(
+                    FIRST,
+                    TastingServiceBlockEntity.class
+            );
+            ItemStack wine = new ItemStack(ModItems.RED_WINE);
+            WineMetadata.ensureDefaults(wine);
+            WineMetadata.setServings(wine, 4);
+            helper.assertTrue(
+                    service.insertBottle(wine),
+                    "The service should accept wine facing " + facing
+            );
+
+            player.gameMode.useItemOn(
+                    player,
+                    helper.getLevel(),
+                    ItemStack.EMPTY,
+                    InteractionHand.MAIN_HAND,
+                    new BlockHitResult(
+                            tastingCupLocation(
+                                    servicePos,
+                                    cupIndex,
+                                    facing
+                            ),
+                            Direction.UP,
+                            servicePos,
+                            false
+                    )
+            );
+
+            helper.assertFalse(
+                    service.isCupFilled(cupIndex),
+                    "Facing " + facing
+                            + " should select the targeted cup"
+            );
+            helper.assertValueEqual(
+                    service.servings(),
+                    3,
+                    "Facing " + facing
+                            + " should consume exactly one serving"
+            );
+            service.removeBottle();
+        }
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 40)
     public void survivalPlayerCanRecoverExhaustedServiceBottle(
             GameTestHelper helper
@@ -4942,11 +5012,46 @@ public final class VintnerGameTests {
             BlockPos servicePos,
             int cupIndex
     ) {
+        return tastingCupLocation(
+                servicePos,
+                cupIndex,
+                Direction.NORTH
+        );
+    }
+
+    private static Vec3 tastingCupLocation(
+            BlockPos servicePos,
+            int cupIndex,
+            Direction facing
+    ) {
         double[] cupX = {3.0, 6.35, 9.65, 13.0};
+        double localX = cupX[cupIndex] / 16.0;
+        double localZ = 5.0 / 16.0;
+        double worldX;
+        double worldZ;
+
+        switch (facing) {
+            case EAST -> {
+                worldX = 1.0 - localZ;
+                worldZ = localX;
+            }
+            case SOUTH -> {
+                worldX = 1.0 - localX;
+                worldZ = 1.0 - localZ;
+            }
+            case WEST -> {
+                worldX = localZ;
+                worldZ = 1.0 - localX;
+            }
+            default -> {
+                worldX = localX;
+                worldZ = localZ;
+            }
+        }
         return new Vec3(
-                servicePos.getX() + cupX[cupIndex] / 16.0,
+                servicePos.getX() + worldX,
                 servicePos.getY() + 3.0 / 16.0,
-                servicePos.getZ() + 5.0 / 16.0
+                servicePos.getZ() + worldZ
         );
     }
 
