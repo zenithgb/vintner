@@ -614,6 +614,7 @@ def bottle_elements(
     horizontal: bool = False,
     include_seal: bool = False,
     profile: str = "red",
+    finish_scale: float = 1.0,
 ) -> list[dict[str, object]]:
     if profile not in {"red", "white"}:
         raise ValueError(f"Unknown bottle profile: {profile}")
@@ -623,6 +624,26 @@ def bottle_elements(
         if profile == "white"
         else RED_BOTTLE_CUBOIDS
     )
+
+    if finish_scale != 1.0:
+        cuboids = [
+            (
+                (
+                    start[0] * finish_scale,
+                    start[1],
+                    start[2] * finish_scale,
+                ),
+                (
+                    end[0] * finish_scale,
+                    end[1],
+                    end[2] * finish_scale,
+                ),
+                texture,
+            )
+            if texture in {"#neck_foil", "#cork"}
+            else (start, end, texture)
+            for start, end, texture in cuboids
+        ]
     front_z = -1.38 if profile == "white" else -1.35
 
     # Two slim reflections keep the green glass from reading as one flat
@@ -696,6 +717,7 @@ def bottle_elements(
 
 
 STORAGE_BOTTLE_SCALE = 0.80
+STORAGE_BOTTLE_FINISH_SCALE = 0.85
 STORAGE_BOTTLE_BODY_LOWER_EXTENT = 1.45
 STORAGE_BOTTLE_SURFACE_CLEARANCE = 0.02
 
@@ -726,6 +748,7 @@ def storage_bottle_elements(
         horizontal=horizontal,
         include_seal=True,
         profile="red",
+        finish_scale=STORAGE_BOTTLE_FINISH_SCALE,
     )
 
 
