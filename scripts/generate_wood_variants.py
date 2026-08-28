@@ -913,7 +913,12 @@ def generate_cellar_fixture_base_models() -> None:
                 {"from": [2, 7, 1], "to": [14, 9, 15], "faces": copy.deepcopy(wood_faces)},
                 {"from": [2, 14, 1], "to": [14, 16, 15], "faces": copy.deepcopy(wood_faces)},
                 {"from": [2, 2, 14], "to": [14, 14, 15.5], "faces": copy.deepcopy(wood_faces)},
-                {"from": [7.5, 2, 1], "to": [8.5, 14, 15], "faces": copy.deepcopy(beam_faces)},
+                # Split the centre divider around the middle shelf. Keeping a
+                # full-height divider here made both cuboids occupy the same
+                # volume at Y 7-9, producing a moving triangular artifact on
+                # the front edge.
+                {"from": [7.5, 2, 1], "to": [8.5, 7, 15], "faces": copy.deepcopy(beam_faces)},
+                {"from": [7.5, 9, 1], "to": [8.5, 14, 15], "faces": copy.deepcopy(beam_faces)},
                 # Front lips stop the bottles reading as if they float.
                 {"from": [2, 2, 0.5], "to": [14, 3, 1.5], "faces": copy.deepcopy(wood_faces)},
                 {"from": [2, 9, 0.5], "to": [14, 10, 1.5], "faces": copy.deepcopy(wood_faces)},

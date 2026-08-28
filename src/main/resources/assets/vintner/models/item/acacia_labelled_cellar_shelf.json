@@ -212,6 +212,38 @@
       ],
       "to": [
         8.5,
+        7,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#beam"
+        },
+        "east": {
+          "texture": "#beam"
+        },
+        "south": {
+          "texture": "#beam"
+        },
+        "west": {
+          "texture": "#beam"
+        },
+        "up": {
+          "texture": "#beam"
+        },
+        "down": {
+          "texture": "#beam"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        9,
+        1
+      ],
+      "to": [
+        8.5,
         14,
         15
       ],
