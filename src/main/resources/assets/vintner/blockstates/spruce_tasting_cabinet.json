@@ -41,7 +41,7 @@
         "bottle_count": "1|2|3|4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_1"
+        "model": "vintner:block/tasting_cabinet_bottle_slot_1"
       }
     },
     {
@@ -50,7 +50,7 @@
         "bottle_count": "1|2|3|4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_1",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_1",
         "y": 90
       }
     },
@@ -60,7 +60,7 @@
         "bottle_count": "1|2|3|4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_1",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_1",
         "y": 180
       }
     },
@@ -70,7 +70,7 @@
         "bottle_count": "1|2|3|4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_1",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_1",
         "y": 270
       }
     },
@@ -80,7 +80,7 @@
         "bottle_count": "2|3|4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_2"
+        "model": "vintner:block/tasting_cabinet_bottle_slot_2"
       }
     },
     {
@@ -89,7 +89,7 @@
         "bottle_count": "2|3|4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_2",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_2",
         "y": 90
       }
     },
@@ -99,7 +99,7 @@
         "bottle_count": "2|3|4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_2",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_2",
         "y": 180
       }
     },
@@ -109,7 +109,7 @@
         "bottle_count": "2|3|4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_2",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_2",
         "y": 270
       }
     },
@@ -119,7 +119,7 @@
         "bottle_count": "3|4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_3"
+        "model": "vintner:block/tasting_cabinet_bottle_slot_3"
       }
     },
     {
@@ -128,7 +128,7 @@
         "bottle_count": "3|4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_3",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_3",
         "y": 90
       }
     },
@@ -138,7 +138,7 @@
         "bottle_count": "3|4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_3",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_3",
         "y": 180
       }
     },
@@ -148,7 +148,7 @@
         "bottle_count": "3|4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_3",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_3",
         "y": 270
       }
     },
@@ -158,7 +158,7 @@
         "bottle_count": "4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_4"
+        "model": "vintner:block/tasting_cabinet_bottle_slot_4"
       }
     },
     {
@@ -167,7 +167,7 @@
         "bottle_count": "4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_4",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_4",
         "y": 90
       }
     },
@@ -177,7 +177,7 @@
         "bottle_count": "4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_4",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_4",
         "y": 180
       }
     },
@@ -187,7 +187,7 @@
         "bottle_count": "4|5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_4",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_4",
         "y": 270
       }
     },
@@ -197,7 +197,7 @@
         "bottle_count": "5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_5"
+        "model": "vintner:block/tasting_cabinet_bottle_slot_5"
       }
     },
     {
@@ -206,7 +206,7 @@
         "bottle_count": "5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_5",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_5",
         "y": 90
       }
     },
@@ -216,7 +216,7 @@
         "bottle_count": "5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_5",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_5",
         "y": 180
       }
     },
@@ -226,7 +226,7 @@
         "bottle_count": "5|6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_5",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_5",
         "y": 270
       }
     },
@@ -236,7 +236,7 @@
         "bottle_count": "6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_6"
+        "model": "vintner:block/tasting_cabinet_bottle_slot_6"
       }
     },
     {
@@ -245,7 +245,7 @@
         "bottle_count": "6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_6",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_6",
         "y": 90
       }
     },
@@ -255,7 +255,7 @@
         "bottle_count": "6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_6",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_6",
         "y": 180
       }
     },
@@ -265,7 +265,7 @@
         "bottle_count": "6|7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_6",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_6",
         "y": 270
       }
     },
@@ -275,7 +275,7 @@
         "bottle_count": "7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_7"
+        "model": "vintner:block/tasting_cabinet_bottle_slot_7"
       }
     },
     {
@@ -284,7 +284,7 @@
         "bottle_count": "7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_7",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_7",
         "y": 90
       }
     },
@@ -294,7 +294,7 @@
         "bottle_count": "7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_7",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_7",
         "y": 180
       }
     },
@@ -304,7 +304,7 @@
         "bottle_count": "7|8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_7",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_7",
         "y": 270
       }
     },
@@ -314,7 +314,7 @@
         "bottle_count": "8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_8"
+        "model": "vintner:block/tasting_cabinet_bottle_slot_8"
       }
     },
     {
@@ -323,7 +323,7 @@
         "bottle_count": "8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_8",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_8",
         "y": 90
       }
     },
@@ -333,7 +333,7 @@
         "bottle_count": "8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_8",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_8",
         "y": 180
       }
     },
@@ -343,7 +343,7 @@
         "bottle_count": "8"
       },
       "apply": {
-        "model": "vintner:block/cellar_fixture_bottle_slot_8",
+        "model": "vintner:block/tasting_cabinet_bottle_slot_8",
         "y": 270
       }
     },

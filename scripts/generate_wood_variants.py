@@ -695,7 +695,18 @@ def bottle_elements(
     return elements
 
 
-STORAGE_BOTTLE_SCALE = 0.72
+STORAGE_BOTTLE_SCALE = 0.80
+STORAGE_BOTTLE_BODY_LOWER_EXTENT = 1.45
+STORAGE_BOTTLE_SURFACE_CLEARANCE = 0.02
+
+
+def horizontal_storage_bottle_center_y(surface_y: float) -> float:
+    """Seat the canonical bottle body on a fixture shelf."""
+    return (
+        surface_y
+        + STORAGE_BOTTLE_BODY_LOWER_EXTENT * STORAGE_BOTTLE_SCALE
+        + STORAGE_BOTTLE_SURFACE_CLEARANCE
+    )
 
 
 def storage_bottle_elements(
@@ -704,13 +715,14 @@ def storage_bottle_elements(
     center_z: float,
     *,
     horizontal: bool = False,
+    scale: float = STORAGE_BOTTLE_SCALE,
 ) -> list[dict[str, object]]:
     """One sealed canonical bottle shared by cellar cabinets and racks."""
     return bottle_elements(
         center_x,
         base_y,
         center_z,
-        STORAGE_BOTTLE_SCALE,
+        scale,
         horizontal=horizontal,
         include_seal=True,
         profile="red",
@@ -926,25 +938,39 @@ def generate_cellar_fixture_base_models() -> None:
         },
     )
 
-    slot = 0
-    # Cellar furniture uses the same horizontal sealed-bottle presentation as
-    # the wine rack. Laying each bottle into its bay keeps the full canonical
-    # proportions without intersecting the shelves above or below it.
-    for y in (4.5, 11.5):
-        for x in (3.0, 6.33, 9.67, 13.0):
-            slot += 1
-            write_json(
-                ASSETS / f"models/block/cellar_fixture_bottle_slot_{slot}.json",
-                {
-                    "parent": "vintner:block/wine_bottle_palette",
-                    "elements": storage_bottle_elements(
-                        x,
-                        y,
-                        13.0,
-                        horizontal=True,
-                    ),
-                },
-            )
+    # Cellar fixtures use the exact same sealed bottle scale and silhouette as
+    # the wine rack. Only their shelf heights differ.
+    fixture_bottle_layouts = (
+        (
+            "cellar_fixture_bottle_slot",
+            (3.75, 6.25, 9.75, 12.25),
+            (2.0, 9.0),
+        ),
+        (
+            "tasting_cabinet_bottle_slot",
+            (3.75, 6.25, 9.75, 12.25),
+            (1.5, 9.0),
+        ),
+    )
+
+    for model_prefix, x_centres, shelf_surfaces in fixture_bottle_layouts:
+        slot = 0
+        for surface_y in shelf_surfaces:
+            centre_y = horizontal_storage_bottle_center_y(surface_y)
+            for x in x_centres:
+                slot += 1
+                write_json(
+                    ASSETS / f"models/block/{model_prefix}_{slot}.json",
+                    {
+                        "parent": "vintner:block/wine_bottle_palette",
+                        "elements": storage_bottle_elements(
+                            x,
+                            centre_y,
+                            11.25,
+                            horizontal=True,
+                        ),
+                    },
+                )
 
     glass_faces = {
         "north": {"texture": "#glass"},
@@ -1020,7 +1046,14 @@ def generate_cellar_fixture_blockstates() -> None:
             for slot in range(1, 9):
                 visible = "|".join(str(value) for value in range(slot, 9))
                 for facing, rotation in rotations.items():
-                    apply = {"model": f"vintner:block/cellar_fixture_bottle_slot_{slot}"}
+                    bottle_prefix = (
+                        "tasting_cabinet_bottle_slot"
+                        if block_id == cabinet_id(wood)
+                        else "cellar_fixture_bottle_slot"
+                    )
+                    apply = {
+                        "model": f"vintner:block/{bottle_prefix}_{slot}"
+                    }
                     if rotation:
                         apply["y"] = rotation
                     multipart.append({
@@ -1300,10 +1333,10 @@ def generate_cooperage_kits() -> None:
 
 def generate_rack_bottle_models() -> None:
     slots = (
-        (5.0, 2.875),
-        (11.0, 2.875),
-        (5.0, 10.375),
-        (11.0, 10.375),
+        (5.0, horizontal_storage_bottle_center_y(1.5)),
+        (11.0, horizontal_storage_bottle_center_y(1.5)),
+        (5.0, horizontal_storage_bottle_center_y(9.0)),
+        (11.0, horizontal_storage_bottle_center_y(9.0)),
     )
 
     for slot, (x, y) in enumerate(slots, start=1):
