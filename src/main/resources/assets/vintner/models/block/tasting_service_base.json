@@ -5,7 +5,6 @@
     "wood": "minecraft:block/oak_planks",
     "rim": "minecraft:block/oak_log",
     "ceramic": "minecraft:block/white_terracotta",
-    "cloth": "minecraft:block/red_wool",
     "bottle": "minecraft:block/green_terracotta",
     "bottle_dark": "minecraft:block/green_concrete",
     "bottle_highlight": "minecraft:block/lime_terracotta",
@@ -185,38 +184,6 @@
         },
         "down": {
           "texture": "#rim"
-        }
-      }
-    },
-    {
-      "from": [
-        2.15,
-        1.04,
-        9.6
-      ],
-      "to": [
-        5.65,
-        1.2,
-        13.75
-      ],
-      "faces": {
-        "north": {
-          "texture": "#cloth"
-        },
-        "east": {
-          "texture": "#cloth"
-        },
-        "south": {
-          "texture": "#cloth"
-        },
-        "west": {
-          "texture": "#cloth"
-        },
-        "up": {
-          "texture": "#cloth"
-        },
-        "down": {
-          "texture": "#cloth"
         }
       }
     },

@@ -5,6 +5,7 @@ import com.zenith.vintner.block.CellarGlassColor;
 import com.zenith.vintner.block.CellarCollectionBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapevineBlock;
+import com.zenith.vintner.block.TastingServiceBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.WineBottleBlock;
 import com.zenith.vintner.block.WineCrateBlock;
@@ -60,8 +61,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.crafting.Recipe;
@@ -80,6 +81,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.UUID;
 
 public final class VintnerGameTests {
     private static final BlockPos FIRST = new BlockPos(2, 1, 2);
@@ -2977,6 +2979,167 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void tastingServiceTracksEachCupIndependently(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.TASTING_SERVICE);
+        TastingServiceBlockEntity service = helper.getBlockEntity(
+                FIRST,
+                TastingServiceBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.ensureDefaults(wine);
+        WineMetadata.setServings(wine, 4);
+        helper.assertTrue(
+                service.insertBottle(wine),
+                "The service should accept a full bottle"
+        );
+
+        ItemStack thirdCup = service.pourServing(2);
+        helper.assertTrue(
+                thirdCup.is(ModItems.RED_WINE),
+                "The third cup should serve wine"
+        );
+        helper.assertTrue(
+                service.isCupFilled(0) && service.isCupFilled(1)
+                        && service.isCupFilled(3),
+                "The other three cups should remain filled"
+        );
+        helper.assertFalse(
+                service.isCupFilled(2),
+                "The selected third cup should become empty"
+        );
+        helper.assertTrue(
+                service.pourServing(2).isEmpty(),
+                "An already-empty cup must not duplicate a serving"
+        );
+
+        TastingServiceBlockEntity restored =
+                (TastingServiceBlockEntity) reload(helper, service);
+        helper.assertValueEqual(
+                restored.cupMask(),
+                0b1011,
+                "The exact empty cup should survive save and reload"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void tastingServiceSharedVintageTracksUniqueGuests(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.TASTING_SERVICE);
+        TastingServiceBlockEntity service = helper.getBlockEntity(
+                FIRST,
+                TastingServiceBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.WHITE_WINE);
+        WineMetadata.ensureDefaults(wine);
+        helper.assertTrue(
+                service.insertBottle(wine),
+                "The service should accept a bottle for sharing"
+        );
+
+        UUID firstGuest = UUID.randomUUID();
+        helper.assertTrue(
+                service.recordDrinker(firstGuest),
+                "A new guest should be recorded"
+        );
+        helper.assertFalse(
+                service.recordDrinker(firstGuest),
+                "The same guest must not count twice"
+        );
+        service.recordDrinker(UUID.randomUUID());
+        service.recordDrinker(UUID.randomUUID());
+        service.recordDrinker(UUID.randomUUID());
+        helper.assertValueEqual(
+                service.drinkerCount(),
+                4,
+                "Four unique guests should complete the shared vintage"
+        );
+
+        TastingServiceBlockEntity restored =
+                (TastingServiceBlockEntity) reload(helper, service);
+        helper.assertValueEqual(
+                restored.drinkerCount(),
+                4,
+                "Shared-vintage guests should survive save and reload"
+        );
+
+        service.removeBottle();
+        helper.assertValueEqual(
+                service.drinkerCount(),
+                0,
+                "Removing the bottle should reset its guest list"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void tastingServiceLinenCanBeDyedAndPersistsOnDrop(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.TASTING_SERVICE);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack blueDye = new ItemStack(Items.DYE.pick(DyeColor.BLUE));
+        player.setItemInHand(InteractionHand.MAIN_HAND, blueDye);
+        BlockPos servicePos = helper.absolutePos(FIRST);
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                blueDye,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(servicePos),
+                        Direction.UP,
+                        servicePos,
+                        false
+                )
+        );
+
+        helper.assertBlockProperty(
+                FIRST,
+                TastingServiceBlock.LINEN,
+                DyeColor.BLUE
+        );
+        helper.assertValueEqual(
+                blueDye.getCount(),
+                0,
+                "Survival dyeing should consume one dye"
+        );
+
+        player.gameMode.destroyBlock(servicePos);
+        List<ItemEntity> drops = helper.getLevel().getEntitiesOfClass(
+                ItemEntity.class,
+                new AABB(servicePos).inflate(2.0)
+        );
+        ItemStack serviceDrop = drops.stream()
+                .map(ItemEntity::getItem)
+                .filter(stack -> stack.is(ModBlocks.TASTING_SERVICE.asItem()))
+                .findFirst()
+                .orElse(ItemStack.EMPTY);
+        helper.assertFalse(
+                serviceDrop.isEmpty(),
+                "Breaking the dyed service should drop its block item"
+        );
+        BlockItemStateProperties itemState = serviceDrop.get(
+                DataComponents.BLOCK_STATE
+        );
+        helper.assertTrue(
+                itemState != null,
+                "The dropped service should retain block-state data"
+        );
+        helper.assertValueEqual(
+                itemState.get(TastingServiceBlock.LINEN),
+                DyeColor.BLUE,
+                "The dropped service should retain its linen colour"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void competingPoursCannotDuplicateFinalServing(
             GameTestHelper helper
     ) {
@@ -3176,7 +3339,7 @@ public final class VintnerGameTests {
                 player.getItemInHand(InteractionHand.MAIN_HAND),
                 InteractionHand.MAIN_HAND,
                 new BlockHitResult(
-                        Vec3.atCenterOf(servicePos),
+                        tastingCupLocation(servicePos, 0),
                         Direction.UP,
                         servicePos,
                         false
@@ -3236,7 +3399,7 @@ public final class VintnerGameTests {
         );
         BlockPos servicePos = helper.absolutePos(FIRST);
         BlockHitResult hit = new BlockHitResult(
-                Vec3.atCenterOf(servicePos),
+                tastingCupLocation(servicePos, 0),
                 Direction.UP,
                 servicePos,
                 false
@@ -4773,6 +4936,18 @@ public final class VintnerGameTests {
                 "A saved block entity must deserialize"
         );
         return restored;
+    }
+
+    private static Vec3 tastingCupLocation(
+            BlockPos servicePos,
+            int cupIndex
+    ) {
+        double[] cupX = {3.0, 6.35, 9.65, 13.0};
+        return new Vec3(
+                servicePos.getX() + cupX[cupIndex] / 16.0,
+                servicePos.getY() + 3.0 / 16.0,
+                servicePos.getZ() + 5.0 / 16.0
+        );
     }
 
     private static WineRackBlockEntity reloadRackWithElapsedTime(

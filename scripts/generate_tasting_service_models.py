@@ -24,7 +24,6 @@ TEXTURES = {
     "wood": "minecraft:block/oak_planks",
     "rim": "minecraft:block/stripped_oak_log",
     "ceramic": "minecraft:block/white_terracotta",
-    "cloth": "minecraft:block/red_wool",
     "bottle": "minecraft:block/green_terracotta",
     "bottle_dark": "minecraft:block/green_concrete",
     "bottle_highlight": "minecraft:block/lime_terracotta",
@@ -46,6 +45,25 @@ TEXTURES = {
     },
     "particle": "minecraft:block/oak_planks",
 }
+
+DYE_COLOURS = (
+    "white",
+    "orange",
+    "magenta",
+    "light_blue",
+    "yellow",
+    "lime",
+    "pink",
+    "gray",
+    "light_gray",
+    "cyan",
+    "purple",
+    "blue",
+    "brown",
+    "green",
+    "red",
+    "black",
+)
 
 
 def faces(texture: str) -> dict[str, dict[str, str]]:
@@ -176,6 +194,9 @@ BASE_ELEMENTS = [
     cube([1.0, 1.0, 14.4], [15.0, 2.0, 15.0], "rim"),
     cube([1.0, 1.0, 1.6], [1.6, 2.0, 14.4], "rim"),
     cube([14.4, 1.0, 1.6], [15.0, 2.0, 14.4], "rim"),
+]
+
+LINEN_ELEMENTS = [
     cube([2.15, 1.04, 9.6], [5.65, 1.2, 13.75], "cloth"),
 ]
 
@@ -195,19 +216,17 @@ def bottle_elements(colour: str) -> list[dict[str, object]]:
     )
 
 
-def fill_elements(texture: str, count: int) -> list[dict[str, object]]:
-    result = []
-    for center_x, center_z in CUP_CENTERS[:count]:
-        # One inset surface per cup avoids translucent seams. The generated
-        # texture supplies transparent corners for the octagonal silhouette.
-        result.append(
-            top_surface(
-                [center_x - 0.54, 2.86, center_z - 0.54],
-                [center_x + 0.54, 2.98, center_z + 0.54],
-                texture,
-            )
+def fill_elements(texture: str, cup_index: int) -> list[dict[str, object]]:
+    center_x, center_z = CUP_CENTERS[cup_index]
+    # One inset surface per cup avoids translucent seams. Each cup is its own
+    # multipart model so a player may empty any serving in any order.
+    return [
+        top_surface(
+            [center_x - 0.54, 2.86, center_z - 0.54],
+            [center_x + 0.54, 2.98, center_z + 0.54],
+            texture,
         )
-    return result
+    ]
 
 
 def model(
@@ -251,10 +270,21 @@ generated: dict[Path, dict[str, object]] = {
 }
 
 for colour, texture in (("red", "red_wine"), ("white", "white_wine")):
-    for count in range(1, 5):
+    for cup_index in range(4):
         generated[
-            BLOCK_MODELS / f"tasting_service_fill_{colour}_{count}.json"
-        ] = model(fill_elements(texture, count))
+            BLOCK_MODELS
+            / f"tasting_service_fill_{colour}_cup_{cup_index + 1}.json"
+        ] = model(fill_elements(texture, cup_index))
+
+for dye_colour in DYE_COLOURS:
+    generated[
+        BLOCK_MODELS / f"tasting_service_linen_{dye_colour}.json"
+    ] = model(
+        LINEN_ELEMENTS,
+        texture_overrides={
+            "cloth": f"minecraft:block/{dye_colour}_wool",
+        },
+    )
 
 rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
 
@@ -263,9 +293,15 @@ def tasting_service_id(wood: str) -> str:
     return "tasting_service" if wood == "oak" else f"{wood}_tasting_service"
 
 
-display_elements = BASE_ELEMENTS + bottle_elements("red") + fill_elements(
-    "red_wine",
-    4,
+display_elements = (
+    BASE_ELEMENTS
+    + LINEN_ELEMENTS
+    + bottle_elements("red")
+    + [
+        element
+        for cup_index in range(4)
+        for element in fill_elements("red_wine", cup_index)
+    ]
 )
 
 for wood, properties in WOODS.items():
@@ -286,7 +322,10 @@ for wood, properties in WOODS.items():
         generated[BLOCK_MODELS / f"{display_model}.json"] = model(
             display_elements,
             seal_texture=TEXTURES["red_seal"],
-            texture_overrides=texture_overrides,
+            texture_overrides={
+                **texture_overrides,
+                "cloth": "minecraft:block/red_wool",
+            },
         )
     else:
         generated[BLOCK_MODELS / f"{base_model}.json"] = {
@@ -329,6 +368,26 @@ for wood, properties in WOODS.items():
             apply["y"] = y_rotation
         multipart.append({"when": {"facing": facing}, "apply": apply})
 
+        for dye_colour in DYE_COLOURS:
+            linen_apply: dict[str, object] = {
+                "model": (
+                    "vintner:block/"
+                    f"tasting_service_linen_{dye_colour}"
+                ),
+                "uvlock": True,
+            }
+            if y_rotation:
+                linen_apply["y"] = y_rotation
+            multipart.append(
+                {
+                    "when": {
+                        "facing": facing,
+                        "linen": dye_colour,
+                    },
+                    "apply": linen_apply,
+                }
+            )
+
         for colour, white_value in (("red", "false"), ("white", "true")):
             bottle_apply: dict[str, object] = {
                 "model": f"vintner:block/tasting_service_bottle_{colour}",
@@ -347,10 +406,11 @@ for wood, properties in WOODS.items():
                 }
             )
 
-            for count in range(1, 5):
+            for cup_index in range(4):
                 fill_apply: dict[str, object] = {
                     "model": (
-                        f"vintner:block/tasting_service_fill_{colour}_{count}"
+                        "vintner:block/"
+                        f"tasting_service_fill_{colour}_cup_{cup_index + 1}"
                     ),
                     "uvlock": True,
                 }
@@ -360,7 +420,7 @@ for wood, properties in WOODS.items():
                     {
                         "when": {
                             "facing": facing,
-                            "servings": str(count),
+                            f"cup_{cup_index + 1}": "true",
                             "white_wine": white_value,
                         },
                         "apply": fill_apply,
@@ -376,5 +436,5 @@ for path, contents in generated.items():
 
 print(
     "Generated all wood-family tasting-service bases, displays, item models, "
-    "bottle/fill states, item definitions, and multipart blockstates."
+    "bottle/cup/linen states, item definitions, and multipart blockstates."
 )

@@ -1,0 +1,64 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "wood": "minecraft:block/oak_planks",
+    "rim": "minecraft:block/stripped_oak_log",
+    "ceramic": "minecraft:block/white_terracotta",
+    "bottle": "minecraft:block/green_terracotta",
+    "bottle_dark": "minecraft:block/green_concrete",
+    "bottle_highlight": "minecraft:block/lime_terracotta",
+    "cork": "minecraft:block/stripped_spruce_log",
+    "label": "minecraft:block/sandstone_top",
+    "label_border": "minecraft:block/brown_terracotta",
+    "label_ink": "minecraft:block/brown_concrete",
+    "neck_foil": "minecraft:block/red_terracotta",
+    "seal": "minecraft:block/red_terracotta",
+    "red_seal": "minecraft:block/red_terracotta",
+    "white_seal": "vintner:block/white_wine",
+    "red_wine": {
+      "force_translucent": true,
+      "sprite": "vintner:block/red_wine_liquid"
+    },
+    "white_wine": {
+      "force_translucent": true,
+      "sprite": "vintner:block/white_wine_liquid"
+    },
+    "particle": "minecraft:block/oak_planks",
+    "cloth": "minecraft:block/pink_wool"
+  },
+  "elements": [
+    {
+      "from": [
+        2.15,
+        1.04,
+        9.6
+      ],
+      "to": [
+        5.65,
+        1.2,
+        13.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cloth"
+        },
+        "east": {
+          "texture": "#cloth"
+        },
+        "south": {
+          "texture": "#cloth"
+        },
+        "west": {
+          "texture": "#cloth"
+        },
+        "up": {
+          "texture": "#cloth"
+        },
+        "down": {
+          "texture": "#cloth"
+        }
+      }
+    }
+  ]
+}

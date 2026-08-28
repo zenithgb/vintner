@@ -1,0 +1,28 @@
+{
+  "parent": "vintner:vintner/proper_pour",
+  "criteria": {
+    "good_company": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.to_good_company.description"
+    },
+    "icon": {
+      "id": "vintner:tasting_service"
+    },
+    "title": {
+      "translate": "advancement.vintner.to_good_company.title"
+    }
+  },
+  "requirements": [
+    [
+      "good_company"
+    ]
+  ],
+  "rewards": {
+    "experience": 25
+  },
+  "sends_telemetry_event": false
+}

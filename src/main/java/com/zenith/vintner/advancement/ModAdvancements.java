@@ -83,6 +83,14 @@ public final class ModAdvancements {
         );
     }
 
+    public static void grantGoodCompany(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/to_good_company",
+                "good_company"
+        );
+    }
+
     public static void grantIdealCellar(ServerPlayer player) {
         grant(
                 player,
