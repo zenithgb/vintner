@@ -109,6 +109,21 @@ consuming it. Rescanning the same batch updates its entry rather than using
 another slot. Use the Almanac on the Archive to cycle through its sixteen
 records, or use an empty hand for a collection summary.
 
+## Serving wine
+
+Wine bottles can be placed directly in the world without losing their vintage,
+quality, provenance, age, or remaining contents. Each full bottle contains four
+servings and visibly empties as it is used. Breaking or retrieving a partial
+bottle preserves its exact remaining servings and metadata.
+
+Tasting Services provide four independently selectable cups for sharing one
+bottle. Use a wine bottle on an empty service to set it out, then use an empty
+hand on an individual cup to drink that serving. The final serving leaves the
+reusable empty bottle behind. Services are available in every supported wood
+family, and their linen can be recoloured with any vanilla dye. Shared tastings
+retain Vintner's existing consumption, impairment, provenance, and advancement
+systems.
+
 Trellises connect independently on all four horizontal faces. Vertically
 stacked trellises form separate same-height rows; they do not create diagonal
 wires between elevations. Shift-placement creates an isolated trellis that

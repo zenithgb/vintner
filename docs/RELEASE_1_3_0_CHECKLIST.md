@@ -8,7 +8,7 @@ object while preserving the cellar and provenance systems introduced in
 
 - [x] Clean build
 - [x] Release asset audit (1,242 JSON files)
-- [x] Full required GameTest suite
+- [x] Full required GameTest suite (95 tests)
 - [x] Legacy bottles without serving data default to four servings
 - [x] Bottle placement preserves metadata
 - [x] Survival and Creative retrieval preserve metadata
@@ -41,7 +41,7 @@ object while preserving the cellar and provenance systems introduced in
 - [x] Red and white tasting liquid fill
 - [x] Tasting liquid seams and clipping
 - [x] Partial-serving visual states
-- [ ] Independent cup-empty visual states from every viewing angle
+- [x] Independent cup-empty visual states from every viewing angle
 - [ ] All sixteen linen colours on oak and non-oak services
 
 ## Manual in-game gate
@@ -49,7 +49,7 @@ object while preserving the cellar and provenance systems introduced in
 - [ ] Load an existing 1.2.0 world and inspect old wine bottles
 - [ ] Place old bottles and verify that each begins with four servings
 - [ ] Pour 4, 3, 2, 1, and final servings from red, white, and aged bottles
-- [ ] Drink the cups in a non-sequential order and confirm only the selected
+- [x] Drink the cups in a non-sequential order and confirm only the selected
   cup becomes empty
 - [ ] Test pickup and breaking in Survival and Creative with a full inventory
 - [ ] Unload and reload chunks containing full and partial bottles
@@ -69,11 +69,16 @@ object while preserving the cellar and provenance systems introduced in
 
 ## Release preparation gate
 
-- [ ] Update `docs/RELEASE_SCHEDULE.md` so 1.3.0 is `Wine at the Table`
-- [ ] Freeze the candidate commit
-- [ ] Change release metadata only after explicit approval
-- [ ] Build the final candidate JAR
+- [x] Update `docs/RELEASE_SCHEDULE.md` so 1.3.0 is `Wine at the Table`
+- [x] Freeze the candidate commit
+- [x] Change release metadata only after explicit approval
+- [x] Build the final candidate JAR
 - [ ] Install the JAR in a clean Minecraft profile
-- [ ] Record and verify the final SHA-256
-- [ ] Prepare changelog and screenshots
+- [x] Record and verify the final SHA-256
+- [x] Prepare changelog and screenshots
 - [ ] Upload, tag, and publish only after explicit approval
+
+Final candidate artifact:
+
+- `vintner-1.3.0.jar`
+- SHA-256: `48444c94808e399d8fb032281745ab0fb507ee4a66e93b183b90975d61de68eb`
