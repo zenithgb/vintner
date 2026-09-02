@@ -1,6 +1,6 @@
 # Vintner Release Schedule
 
-Last updated: August 28, 2026
+Last updated: September 2, 2026
 
 This schedule replaces the original `0.x` proposal in the full development
 roadmap. Vintner is already publicly released at `1.0.1`, so future feature
@@ -27,7 +27,7 @@ than weakening a release's stability.
 | --- | --- | --- | --- | --- |
 | **1.1.0 — Useful First Vintage** | **August 7, 2026** | July 23–August 2 | August 3–6 | Complete Phase 2: wine profiles, consumption limits, first food pairings, survival recipe audit, advancement coverage, save/reload verification |
 | **1.2.0 — Cellar and Identity** | **October 2, 2026** | August 10–September 20 | September 21–October 1 | Phase 3: deeper batch identity, tasting profiles, bottle ageing, cellar conditions, wine racks and storage |
-| **1.3.0 — Wine at the Table** | **August 28, 2026** | August 14–27 | August 28 | Placeable wine bottles, persistent partial servings, shareable Tasting Services, unified bottle presentation, and multiplayer-safe serving |
+| **1.3.0 — Wine at the Table** | **September 2, 2026** | August 14–27 | August 28–September 2 | Placeable wine bottles, persistent partial servings, shareable Tasting Services, unified bottle presentation, and multiplayer-safe serving |
 | **1.4.0 — Vineyard Expansion** | **February 12, 2027** | December 7–January 31 | February 1–11 | Phase 5: more varieties, vine age, propagation, grafting, threats and yield management |
 | **1.5.0 — Table and Pantry** | **April 16, 2027** | February 15–April 4 | April 5–15 | Phase 6: expanded benefits, cooking, meal pairings, Farmer's Delight integration, feasts and by-products |
 | **1.6.0 — Estates** | **June 25, 2027** | April 19–June 13 | June 14–24 | Phase 7: estate registration, plots, ledger, upgrades, reputation and labels |
