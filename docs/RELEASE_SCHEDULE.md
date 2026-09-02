@@ -29,10 +29,10 @@ than weakening a release's stability.
 | **1.2.0 — Cellar and Identity** | **October 2, 2026** | August 10–September 20 | September 21–October 1 | Phase 3: deeper batch identity, tasting profiles, bottle ageing, cellar conditions, wine racks and storage |
 | **1.3.0 — Wine at the Table** | **September 2, 2026** | August 14–27 | August 28–September 2 | Placeable wine bottles, persistent partial servings, shareable Tasting Services, unified bottle presentation, and multiplayer-safe serving |
 | **1.3.1 — Cellar Crafting Patch** | **September 2, 2026** | Patch | Patch verification | More accessible cellar recipes and expanded recipe validation |
-| **1.4.0 — Vineyard Expansion** | **February 12, 2027** | December 7–January 31 | February 1–11 | Phase 5: more varieties, vine age, propagation, grafting, threats and yield management |
+| **1.4.0 — Vineyard Expansion** | **February 12, 2027** | December 7–January 31 | February 1–11 | Vineyard expansion plus estate oversight: cultivars, vine age, propagation, grafting, threats, yield management, named plots, ledger, reputation, Estate Management Desk and Estate Atlas |
 | **1.5.0 — Table and Pantry** | **April 16, 2027** | February 15–April 4 | April 5–15 | Phase 6: expanded benefits, cooking, meal pairings, Farmer's Delight integration, feasts and by-products |
-| **1.6.0 — Estates** | **June 25, 2027** | April 19–June 13 | June 14–24 | Phase 7: estate registration, plots, ledger, upgrades, reputation and labels |
-| **1.7.0 — Trade** | **September 3, 2027** | June 28–August 22 | August 23–September 2 | Phase 8: pricing, buyers, regional demand, contracts, routes and market variation |
+| **1.6.0 — Estates** | **June 25, 2027** | April 19–June 13 | June 14–24 | Phase 7 continuation: deeper physical upgrades, estate labels, hospitality, awards and estate progression beyond the 1.4 management foundation |
+| **1.7.0 — Trade** | **September 3, 2027** | June 28–August 22 | August 23–September 2 | Transactional Phase 8: contracts, negotiations, sales, routes and changing demand beyond the read-only 1.4 market outlook |
 | **1.8.0 — World and Exploration** | **November 12, 2027** | September 6–October 31 | November 1–11 | Phase 9: wild grapes, abandoned vineyards, winery structures, rare cuttings and exploration rewards |
 | **1.9.0 — Settlements** | **February 4, 2028** | November 15–January 23 | January 24–February 3 | Phase 10: optional Modern Settlements integration, vineyard professions, construction, production, caravans and cultural wines |
 | **2.0.0 — Complete Vineyard Experience** | **May 12, 2028** | February 7–April 30 | May 1–11 | Stable vineyard-to-estate progression, compatibility programme, multiplayer hardening, accessibility, balancing, documentation and visual/audio polish |

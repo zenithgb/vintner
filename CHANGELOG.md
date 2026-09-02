@@ -4,6 +4,29 @@ All notable changes to Vintner are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Twelve persistent grape cultivars with distinct site preferences, yields,
+  resistance, wine styles, benefits, and ageing potential.
+- Vine age, grafting, nursery propagation, strategic rootstocks, vineyard
+  netting, and balanced, quality-focused, or high-yield management modes.
+- Seasonal vineyard weather and pressure from drought, frost, heat, rot,
+  mildew, pests, birds, and nutrient imbalance, with physical counterplay.
+- Estate registration, named vineyard plots, a persistent activity ledger,
+  physical facility recognition, reputation progression, and irrigation
+  reporting.
+- Estate Management Desks and Surveyor's Map Tables for all twelve wood
+  families, with a server-authored management screen and interactive atlas.
+- Read-only regional market and buyer guidance for planning future vintages.
+
+### Changed
+
+- The Vintner's Almanac now provides contextual vineyard, estate, appraisal,
+  and market reports while the Estate Management Desk supplies the broader
+  fixed-location overview.
+- Vineyard and management recipes participate in the complete recipe-book and
+  release-asset validation gates.
+
 ## [1.3.0] - 2026-09-02
 
 ### Added
