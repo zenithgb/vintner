@@ -29,14 +29,15 @@ permanent recipe validation without changing saved world data.
 - [x] Build the final `vintner-1.3.1.jar`
 - [x] Record and verify the final SHA-256
 - [x] Commit and push the final release metadata
-- [ ] Tag the release commit as `v1.3.1`
-- [ ] Publish the GitHub release and candidate JAR
+- [x] Tag the release commit as `v1.3.1`
+- [x] Publish the GitHub release and candidate JAR
 - [ ] Upload the matching file to Modrinth
-- [ ] Verify the public GitHub and Modrinth artifact checksums
+- [x] Verify the public GitHub artifact checksum
+- [ ] Verify the public Modrinth artifact checksum
 
 Final candidate artifact:
 
 - `vintner-1.3.1.jar`
 - SHA-256: `8e6a260228ccbe6573b1d37180fb686b487fa01c5c2bb8af90801060c31e766d`
 - Modrinth version: pending
-- GitHub release: pending
+- GitHub release: `https://github.com/zenithgb/vintner/releases/tag/v1.3.1`
