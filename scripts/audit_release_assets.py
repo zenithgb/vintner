@@ -21,6 +21,7 @@ from generate_wood_variants import (
     rack_id,
     shelf_id,
     stand_id,
+    tasting_service_id,
     trellis_id,
 )
 
@@ -33,6 +34,8 @@ LANG_PATH = ASSETS / "lang/en_us.json"
 AXE_TAG_PATH = (
     RESOURCES / "data/minecraft/tags/block/mineable/axe.json"
 )
+RECIPE_PATH = DATA / "recipe"
+RECIPE_ADVANCEMENT_PATH = DATA / "advancement/recipes/vintner"
 
 errors: list[str] = []
 documents: dict[Path, Any] = {}
@@ -309,6 +312,7 @@ def expected_resource_ids() -> tuple[set[str], set[str]]:
                 stand_id(wood),
                 shelf_id(wood),
                 cabinet_id(wood),
+                tasting_service_id(wood),
             }
         )
         grapevines.update(
@@ -400,6 +404,7 @@ def audit_wood_families() -> tuple[set[str], set[str]]:
 def audit_cooperage_kits() -> None:
     lang = load_json(LANG_PATH)
     for item_id in (
+        "coopers_mallet",
         "toasting_kit",
         "seasoning_kit",
         "cask_conversion_kit",
@@ -416,6 +421,162 @@ def audit_cooperage_kits() -> None:
             key = f"item.vintner.{item_id}"
             if key not in lang:
                 fail(f"{item_id}: missing language key {key}")
+
+
+def recipe_result_id(recipe: Any) -> str | None:
+    if not isinstance(recipe, dict):
+        return None
+    result = recipe.get("result")
+    if isinstance(result, str):
+        return result
+    if isinstance(result, dict) and isinstance(result.get("id"), str):
+        return result["id"]
+    return None
+
+
+def ingredient_signature(value: Any) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"))
+
+
+def audit_recipes() -> int:
+    recipe_paths = sorted(RECIPE_PATH.glob("*.json"))
+    advancement_paths = sorted(RECIPE_ADVANCEMENT_PATH.glob("*.json"))
+    recipe_ids = {path.stem for path in recipe_paths}
+    advancement_ids = {path.stem for path in advancement_paths}
+    signatures: dict[str, list[str]] = {}
+
+    for missing in sorted(recipe_ids - advancement_ids):
+        fail(f"recipe {missing}: missing recipe advancement")
+    for orphan in sorted(advancement_ids - recipe_ids):
+        fail(f"recipe advancement {orphan}: missing recipe")
+
+    for path in recipe_paths:
+        recipe = load_json(path)
+        if not isinstance(recipe, dict):
+            continue
+
+        recipe_id = f"vintner:{path.stem}"
+        recipe_type = recipe.get("type")
+        signature: Any = None
+        if recipe_type == "minecraft:crafting_shaped":
+            pattern = recipe.get("pattern")
+            key = recipe.get("key")
+            if (
+                not isinstance(pattern, list)
+                or not 1 <= len(pattern) <= 3
+                or not all(isinstance(row, str) for row in pattern)
+                or not pattern
+                or not 1 <= len(pattern[0]) <= 3
+                or any(len(row) != len(pattern[0]) for row in pattern)
+            ):
+                fail(f"recipe {path.stem}: invalid shaped pattern")
+            elif not isinstance(key, dict):
+                fail(f"recipe {path.stem}: invalid shaped key")
+            else:
+                used_symbols = set("".join(pattern)) - {" "}
+                key_symbols = set(key)
+                if used_symbols != key_symbols:
+                    fail(
+                        f"recipe {path.stem}: pattern symbols "
+                        f"{sorted(used_symbols)} do not match key symbols "
+                        f"{sorted(key_symbols)}"
+                    )
+                if not used_symbols:
+                    fail(f"recipe {path.stem}: shaped pattern is empty")
+                if any(
+                    not isinstance(symbol, str)
+                    or len(symbol) != 1
+                    or symbol == " "
+                    for symbol in key
+                ):
+                    fail(f"recipe {path.stem}: invalid shaped key symbol")
+                grid = [
+                    [None if symbol == " " else key.get(symbol) for symbol in row]
+                    for row in pattern
+                ]
+                mirrored_grid = [list(reversed(row)) for row in grid]
+                signature = "shaped:" + min(
+                    ingredient_signature(grid),
+                    ingredient_signature(mirrored_grid),
+                )
+        elif recipe_type == "minecraft:crafting_shapeless":
+            ingredients = recipe.get("ingredients")
+            if (
+                not isinstance(ingredients, list)
+                or not 1 <= len(ingredients) <= 9
+            ):
+                fail(f"recipe {path.stem}: invalid shapeless ingredients")
+            else:
+                signature = "shapeless:" + ingredient_signature(
+                    sorted(
+                        (ingredient_signature(value) for value in ingredients)
+                    )
+                )
+        else:
+            fail(f"recipe {path.stem}: unsupported type {recipe_type!r}")
+
+        if signature is not None:
+            signatures.setdefault(signature, []).append(path.stem)
+
+        result_id = recipe_result_id(recipe)
+        if not isinstance(result_id, str):
+            fail(f"recipe {path.stem}: missing result id")
+        elif result_id != recipe_id:
+            fail(
+                f"recipe {path.stem}: result is {result_id}, expected "
+                f"{recipe_id}"
+            )
+        elif result_id.startswith("vintner:"):
+            item_id = result_id.removeprefix("vintner:")
+            if not (ASSETS / f"items/{item_id}.json").is_file():
+                fail(
+                    f"recipe {path.stem}: result {result_id} has no "
+                    "item definition"
+                )
+
+        result = recipe.get("result")
+        if isinstance(result, dict):
+            count = result.get("count", 1)
+            if not isinstance(count, int) or isinstance(count, bool) or count < 1:
+                fail(f"recipe {path.stem}: invalid result count {count!r}")
+
+        advancement_path = RECIPE_ADVANCEMENT_PATH / path.name
+        if not advancement_path.is_file():
+            continue
+        advancement = load_json(advancement_path)
+        if not isinstance(advancement, dict):
+            continue
+        rewards = advancement.get("rewards")
+        rewarded_recipes = (
+            rewards.get("recipes") if isinstance(rewards, dict) else None
+        )
+        if rewarded_recipes != [recipe_id]:
+            fail(
+                f"recipe advancement {path.stem}: rewards must be "
+                f"exactly [{recipe_id!r}]"
+            )
+        criteria = advancement.get("criteria")
+        recipe_condition = None
+        if isinstance(criteria, dict):
+            recipe_unlocked = criteria.get("has_the_recipe")
+            if isinstance(recipe_unlocked, dict):
+                conditions = recipe_unlocked.get("conditions")
+                if isinstance(conditions, dict):
+                    recipe_condition = conditions.get("recipe")
+        if recipe_condition != recipe_id:
+            fail(
+                f"recipe advancement {path.stem}: has_the_recipe must "
+                f"reference {recipe_id}"
+            )
+
+    for duplicate_ids in signatures.values():
+        if len(duplicate_ids) > 1:
+            fail(
+                "conflicting crafting inputs: "
+                + ", ".join(sorted(duplicate_ids))
+            )
+
+    return len(recipe_paths)
 
 
 def audit_axe_tag(public_blocks: set[str]) -> None:
@@ -527,6 +688,7 @@ def main() -> int:
     audit_model_textures(reachable_models)
     public_blocks, grapevines = audit_wood_families()
     audit_cooperage_kits()
+    recipe_count = audit_recipes()
     audit_axe_tag(public_blocks)
     audit_translations()
     audit_young_grapevine_wires(grapevines)
@@ -545,6 +707,7 @@ def main() -> int:
     print(
         "Vintner release asset audit passed: "
         f"{len(documents)} JSON files, "
+        f"{recipe_count} recipes, "
         f"{len(public_blocks)} public wood-family blocks, "
         f"{len(grapevines)} wood-preserving grapevine states."
     )

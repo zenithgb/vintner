@@ -1178,6 +1178,10 @@ public final class VintnerGameTests {
         triggerInventoryChange(player, ModItems.RED_GRAPES);
         triggerInventoryChange(player, ModItems.WHITE_GRAPES);
         triggerInventoryChange(player, Items.BOOK);
+        triggerInventoryChange(player, Items.IRON_INGOT);
+        triggerInventoryChange(player, Items.CHARCOAL);
+        triggerInventoryChange(player, Items.HONEYCOMB);
+        triggerInventoryChange(player, Items.COPPER_INGOT);
 
         helper.succeedWhen(() -> {
             for (WoodVariant woodVariant : WoodVariant.values()) {
@@ -1211,6 +1215,31 @@ public final class VintnerGameTests {
                         player,
                         woodVariant.wineCrateId()
                 );
+                assertRecipeKnown(
+                        helper,
+                        player,
+                        woodVariant.vintageArchiveId()
+                );
+                assertRecipeKnown(
+                        helper,
+                        player,
+                        woodVariant.barrelStandId()
+                );
+                assertRecipeKnown(
+                        helper,
+                        player,
+                        woodVariant.labelledCellarShelfId()
+                );
+                assertRecipeKnown(
+                        helper,
+                        player,
+                        woodVariant.tastingCabinetId()
+                );
+                assertRecipeKnown(
+                        helper,
+                        player,
+                        woodVariant.tastingServiceId()
+                );
             }
             assertRecipeKnown(
                     helper,
@@ -1221,6 +1250,26 @@ public final class VintnerGameTests {
                     helper,
                     player,
                     "vintner_almanac"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "coopers_mallet"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "toasting_kit"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "seasoning_kit"
+            );
+            assertRecipeKnown(
+                    helper,
+                    player,
+                    "cask_conversion_kit"
             );
         });
     }
