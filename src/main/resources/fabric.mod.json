@@ -11,7 +11,7 @@
     "sources": "https://github.com/zenithgb/vintner",
     "issues": "https://github.com/zenithgb/vintner/issues"
   },
-  "license": "MIT",
+  "license": "LGPL-3.0-or-later",
   "icon": "assets/vintner/icon.png",
   "environment": "*",
   "entrypoints": {

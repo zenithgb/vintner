@@ -7,7 +7,9 @@ import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.EstateManagementDeskBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.block.entity.SurveyorsMapTableBlockEntity;
+import com.zenith.vintner.block.entity.TastingServiceBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
+import com.zenith.vintner.block.entity.WineBottleBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -81,6 +83,32 @@ public final class ModBlockEntities {
                     FabricBlockEntityTypeBuilder.create(
                             WineCrateBlockEntity::new,
                             ModBlocks.wineCrateBlocks()
+                    ).build()
+            );
+
+    public static final BlockEntityType<WineBottleBlockEntity>
+            WINE_BOTTLE = Registry.register(
+                    BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                    Identifier.fromNamespaceAndPath(
+                            Vintner.MOD_ID,
+                            "wine_bottle"
+                    ),
+                    FabricBlockEntityTypeBuilder.create(
+                            WineBottleBlockEntity::new,
+                            ModBlocks.WINE_BOTTLE
+                    ).build()
+            );
+
+    public static final BlockEntityType<TastingServiceBlockEntity>
+            TASTING_SERVICE = Registry.register(
+                    BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                    Identifier.fromNamespaceAndPath(
+                            Vintner.MOD_ID,
+                            "tasting_service"
+                    ),
+                    FabricBlockEntityTypeBuilder.create(
+                            TastingServiceBlockEntity::new,
+                            ModBlocks.tastingServiceBlocks()
                     ).build()
             );
 

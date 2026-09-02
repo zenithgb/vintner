@@ -7,7 +7,7 @@
     "PCP"
   ],
   "key": {
-    "P": "minecraft:spruce_planks",
+    "P": "#minecraft:planks",
     "C": "minecraft:copper_ingot"
   },
   "result": {

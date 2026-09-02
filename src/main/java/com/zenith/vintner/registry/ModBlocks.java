@@ -13,10 +13,12 @@ import com.zenith.vintner.block.GrapePressBlock;
 import com.zenith.vintner.block.NurseryBedBlock;
 import com.zenith.vintner.block.RedGrapevineBlock;
 import com.zenith.vintner.block.SurveyorsMapTableBlock;
+import com.zenith.vintner.block.TastingServiceBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.block.WhiteGrapevineBlock;
 import com.zenith.vintner.block.WineCrateBlock;
+import com.zenith.vintner.block.WineBottleBlock;
 import com.zenith.vintner.block.WineRackBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.vineyard.GrapeVariety;
@@ -144,6 +146,28 @@ public final class ModBlocks {
             WineCrateBlock::new,
             machineProperties()
     );
+
+    /**
+     * A placed wine bottle has no standalone BlockItem. It is created by
+     * using a WineItem on a block and returns that exact WineItem on removal.
+     */
+    public static final Block WINE_BOTTLE = registerWithoutItem(
+            "wine_bottle",
+            WineBottleBlock::new,
+            BlockBehaviour.Properties.of()
+                    .strength(0.3F)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion()
+    );
+
+    public static final Block TASTING_SERVICE = registerWithItem(
+            "tasting_service",
+            TastingServiceBlock::new,
+            tastingServiceProperties()
+    );
+
+    public static final Map<WoodVariant, Block> TASTING_SERVICES =
+            registerTastingServices();
 
     public static final Map<WoodVariant, Block> WINE_CRATES =
             registerMachineVariants(
@@ -350,6 +374,10 @@ public final class ModBlocks {
         return SURVEYORS_MAP_TABLES.get(woodVariant);
     }
 
+    public static Block tastingService(WoodVariant woodVariant) {
+        return TASTING_SERVICES.get(woodVariant);
+    }
+
     public static Block redGrapevine(WoodVariant woodVariant) {
         return RED_GRAPEVINES.get(woodVariant);
     }
@@ -407,6 +435,10 @@ public final class ModBlocks {
         return orderedBlocks(VINTAGE_ARCHIVES);
     }
 
+    public static Block[] tastingServiceBlocks() {
+        return orderedBlocks(TASTING_SERVICES);
+    }
+
     public static Block[] cellarCollectionBlocks() {
         Block[] shelves = orderedBlocks(LABELLED_CELLAR_SHELVES);
         Block[] cabinets = orderedBlocks(TASTING_CABINETS);
@@ -449,6 +481,29 @@ public final class ModBlocks {
                                     properties
                             ),
                             trellisProperties()
+                    )
+            );
+        }
+
+        return Collections.unmodifiableMap(blocks);
+    }
+
+    private static Map<WoodVariant, Block> registerTastingServices() {
+        EnumMap<WoodVariant, Block> blocks =
+                new EnumMap<>(WoodVariant.class);
+        blocks.put(WoodVariant.OAK, TASTING_SERVICE);
+
+        for (WoodVariant woodVariant : WoodVariant.values()) {
+            if (woodVariant == WoodVariant.OAK) {
+                continue;
+            }
+
+            blocks.put(
+                    woodVariant,
+                    registerWithItem(
+                            woodVariant.tastingServiceId(),
+                            TastingServiceBlock::new,
+                            tastingServiceProperties()
                     )
             );
         }
@@ -541,6 +596,13 @@ public final class ModBlocks {
     private static BlockBehaviour.Properties machineProperties() {
         return BlockBehaviour.Properties.of()
                 .strength(2.5F)
+                .sound(SoundType.WOOD)
+                .noOcclusion();
+    }
+
+    private static BlockBehaviour.Properties tastingServiceProperties() {
+        return BlockBehaviour.Properties.of()
+                .strength(0.8F)
                 .sound(SoundType.WOOD)
                 .noOcclusion();
     }
@@ -646,6 +708,7 @@ public final class ModBlocks {
                             .forEach(output::accept);
                     TASTING_CABINETS.values()
                             .forEach(output::accept);
+                    TASTING_SERVICES.values().forEach(output::accept);
                 });
     }
 }

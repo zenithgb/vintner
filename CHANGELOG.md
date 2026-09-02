@@ -4,6 +4,42 @@ All notable changes to Vintner are documented in this file.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-09-02
+
+### Added
+
+- Placeable red, white, and aged wine bottles that retain their vintage,
+  quality, provenance, age, bottle number, and remaining contents.
+- Four persistent servings per bottle with visible partial-fill states.
+- Four-cup Tasting Services with independently selectable servings, variants
+  for all twelve supported wood families, and all sixteen vanilla linen dyes.
+- `A Proper Pour` and `To Good Company` advancements for serving and sharing
+  wine.
+- Almanac reporting for remaining bottle and Tasting Service servings.
+
+### Changed
+
+- Directly drinking a partial bottle now scales its effects to the remaining
+  contents.
+- Tasting Service pours apply one-quarter of the bottle's normal effects, so
+  four servings equal one full bottle.
+- Placed bottles and bottles displayed in racks, crates, cellar shelves, and
+  tasting cabinets now share a consistent visual language.
+- Empty bottles can be recovered after the final serving.
+- Detailed serving and provenance information remains in the Almanac while
+  normal bottle tooltips stay concise.
+
+### Fixed
+
+- Individual Tasting Service cups can be selected and consumed in any order
+  from every horizontal facing without emptying a neighboring cup.
+- Remaining servings and exact cup state persist through placement,
+  retrieval, save/reload, and chunk unloading.
+- Server-authoritative final-serving handling prevents duplicate pours or
+  drinks during competing interactions.
+
+## [1.2.0] - 2026-08-12
+
 ### Added
 
 - Persistent wine provenance from pressing through fermentation, barrel

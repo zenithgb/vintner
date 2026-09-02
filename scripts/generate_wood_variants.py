@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 import copy
+import binascii
 import json
+import struct
+import zlib
 from pathlib import Path
 
 
@@ -101,6 +104,122 @@ def write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, indent=2) + "\n")
 
 
+def write_rgba_texture(
+    path: Path,
+    rows: list[list[tuple[int, int, int, int]]],
+) -> None:
+    """Write a small RGBA texture without adding a Pillow dependency."""
+    width = len(rows[0])
+    height = len(rows)
+    if width == 0 or any(len(row) != width for row in rows):
+        raise ValueError("Texture rows must have one non-zero width")
+
+    def chunk(kind: bytes, payload: bytes) -> bytes:
+        checksum = binascii.crc32(kind + payload) & 0xFFFFFFFF
+        return (
+            struct.pack(">I", len(payload))
+            + kind
+            + payload
+            + struct.pack(">I", checksum)
+        )
+
+    raw = b"".join(
+        b"\x00" + bytes(channel for pixel in row for channel in pixel)
+        for row in rows
+    )
+    header = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
+    png = (
+        b"\x89PNG\r\n\x1a\n"
+        + chunk(b"IHDR", header)
+        + chunk(b"IDAT", zlib.compress(raw, level=9))
+        + chunk(b"IEND", b"")
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(png)
+
+
+def generate_white_wine_texture() -> None:
+    """Generate pale straw wine centred on the requested #EEEDC4."""
+    base = (0xEE, 0xED, 0xC4, 0xFF)
+    highlight = (0xF7, 0xF6, 0xDD, 0xFF)
+    shadow = (0xD9, 0xD6, 0xAD, 0xFF)
+    warm = (0xE7, 0xE3, 0xB5, 0xFF)
+    rows = [[base for _ in range(16)] for _ in range(16)]
+
+    # Sparse, low-contrast pixel clusters retain the exact base colour over
+    # most of the surface while preventing the liquid from reading as a flat
+    # debug swatch in the tasting cups and bottle label medallion.
+    for x, y in (
+        (2, 2), (3, 2), (11, 3), (12, 3), (7, 6), (8, 6),
+        (3, 10), (4, 10), (12, 12), (13, 12),
+    ):
+        rows[y][x] = highlight
+    for x, y in (
+        (5, 3), (6, 3), (13, 6), (2, 7), (9, 10), (10, 10),
+        (5, 14), (6, 14),
+    ):
+        rows[y][x] = shadow
+    for x, y in ((9, 2), (4, 6), (11, 8), (7, 12), (8, 12)):
+        rows[y][x] = warm
+
+    write_rgba_texture(
+        ASSETS / "textures/block/white_wine.png",
+        rows,
+    )
+
+
+def generate_tasting_liquid_textures() -> None:
+    """Generate subtly translucent wine used only in poured tasting cups."""
+    alpha = 0xE0
+    accents = (
+        (2, 2), (3, 2), (11, 3), (12, 3), (7, 6), (8, 6),
+        (3, 10), (4, 10), (12, 12), (13, 12),
+    )
+    shadows = (
+        (5, 3), (6, 3), (13, 6), (2, 7), (9, 10), (10, 10),
+        (5, 14), (6, 14),
+    )
+
+    palettes = {
+        "red_wine_liquid": (
+            (0x79, 0x18, 0x28, alpha),
+            (0x98, 0x29, 0x3B, alpha),
+            (0x55, 0x10, 0x1C, alpha),
+        ),
+        "white_wine_liquid": (
+            (0xEE, 0xED, 0xC4, alpha),
+            (0xF7, 0xF6, 0xDD, alpha),
+            (0xD9, 0xD6, 0xAD, alpha),
+        ),
+    }
+
+    for texture_name, (base, highlight, shadow) in palettes.items():
+        rows = [[base for _ in range(16)] for _ in range(16)]
+        for x, y in accents:
+            rows[y][x] = highlight
+        for x, y in shadows:
+            rows[y][x] = shadow
+
+        # The tasting service renders one square surface per cup. Transparent
+        # corner pixels turn it into an octagon without assembling several
+        # coplanar translucent model elements, which would produce seams.
+        for y in range(16):
+            for x in range(16):
+                corner_distance = min(
+                    x + y,
+                    x + (15 - y),
+                    (15 - x) + y,
+                    (15 - x) + (15 - y),
+                )
+                if corner_distance < 4:
+                    red, green, blue, _ = rows[y][x]
+                    rows[y][x] = (red, green, blue, 0)
+        write_rgba_texture(
+            ASSETS / f"textures/block/{texture_name}.png",
+            rows,
+        )
+
+
 def read_json(path: Path) -> object:
     return json.loads(path.read_text())
 
@@ -178,6 +297,14 @@ def surveyors_map_table_id(wood: str) -> str:
         "surveyors_map_table"
         if wood == "oak"
         else f"{wood}_surveyors_map_table"
+    )
+
+
+def tasting_service_id(wood: str) -> str:
+    return (
+        "tasting_service"
+        if wood == "oak"
+        else f"{wood}_tasting_service"
     )
 
 
@@ -527,6 +654,286 @@ def cube_faces(texture: str) -> dict[str, dict[str, str]]:
     }
 
 
+RED_BOTTLE_CUBOIDS = (
+    # Bordeaux-inspired: a firm heel, long straight body, squared shoulders,
+    # foil collar, and proud cork. The extra transitions give the bottle a
+    # crafted silhouette without making storage displays visually noisy.
+    ((-1.55, 0.0, -1.45), (1.55, 0.38, 1.45), "#bottle_dark"),
+    ((-1.45, 0.28, -1.35), (1.45, 5.05, 1.35), "#bottle"),
+    ((-1.38, 5.05, -1.28), (1.38, 5.48, 1.28), "#bottle"),
+    ((-1.12, 5.48, -1.06), (1.12, 5.88, 1.06), "#bottle"),
+    ((-0.78, 5.88, -0.72), (0.78, 6.28, 0.72), "#bottle_dark"),
+    ((-0.5, 6.22, -0.48), (0.5, 9.35, 0.48), "#bottle_dark"),
+    ((-0.66, 8.9, -0.62), (0.66, 9.58, 0.62), "#neck_foil"),
+    ((-0.42, 9.48, -0.4), (0.42, 10.28, 0.4), "#cork"),
+)
+
+
+WHITE_BOTTLE_CUBOIDS = (
+    # Burgundy-inspired: a broader body and five gentler shoulder steps make
+    # white bottles identifiable by form as well as by their pale label mark.
+    ((-1.58, 0.0, -1.48), (1.58, 0.38, 1.48), "#bottle_dark"),
+    ((-1.48, 0.28, -1.38), (1.48, 4.55, 1.38), "#bottle"),
+    ((-1.4, 4.55, -1.3), (1.4, 4.98, 1.3), "#bottle"),
+    ((-1.24, 4.98, -1.16), (1.24, 5.36, 1.16), "#bottle"),
+    ((-1.04, 5.36, -0.98), (1.04, 5.72, 0.98), "#bottle"),
+    ((-0.82, 5.72, -0.76), (0.82, 6.08, 0.76), "#bottle"),
+    ((-0.62, 6.08, -0.58), (0.62, 6.38, 0.58), "#bottle_dark"),
+    ((-0.5, 6.32, -0.48), (0.5, 9.35, 0.48), "#bottle_dark"),
+    ((-0.66, 8.9, -0.62), (0.66, 9.58, 0.62), "#neck_foil"),
+    ((-0.42, 9.48, -0.4), (0.42, 10.28, 0.4), "#cork"),
+)
+
+
+def bottle_elements(
+    center_x: float,
+    base_y: float,
+    center_z: float,
+    scale: float,
+    *,
+    horizontal: bool = False,
+    include_seal: bool = False,
+    profile: str = "red",
+    finish_scale: float = 1.0,
+) -> list[dict[str, object]]:
+    if profile not in {"red", "white"}:
+        raise ValueError(f"Unknown bottle profile: {profile}")
+
+    cuboids = list(
+        WHITE_BOTTLE_CUBOIDS
+        if profile == "white"
+        else RED_BOTTLE_CUBOIDS
+    )
+
+    if finish_scale != 1.0:
+        cuboids = [
+            (
+                (
+                    start[0] * finish_scale,
+                    start[1],
+                    start[2] * finish_scale,
+                ),
+                (
+                    end[0] * finish_scale,
+                    end[1],
+                    end[2] * finish_scale,
+                ),
+                texture,
+            )
+            if texture in {"#neck_foil", "#cork"}
+            else (start, end, texture)
+            for start, end, texture in cuboids
+        ]
+    front_z = -1.38 if profile == "white" else -1.35
+
+    # Two slim reflections keep the green glass from reading as one flat
+    # cuboid. They remain subtle enough to survive the reduced rack scale.
+    cuboids.extend((
+        ((-1.08, 0.62, front_z - 0.035),
+         (-0.78, 4.72, front_z + 0.005),
+         "#bottle_highlight"),
+        ((-0.34, 6.48, -0.505),
+         (-0.18, 8.78, -0.475),
+         "#bottle_highlight"),
+    ))
+
+    # A bordered paper label, fine rules, and a central vintage medallion
+    # create a real front face while leaving the sides and back as glass.
+    cuboids.extend((
+        ((-1.08, 1.42, front_z - 0.08),
+         (1.08, 4.05, front_z - 0.015),
+         "#label_border"),
+        ((-0.94, 1.58, front_z - 0.145),
+         (0.94, 3.89, front_z - 0.085),
+         "#label"),
+        ((-0.62, 1.84, front_z - 0.205),
+         (0.62, 2.02, front_z - 0.15),
+         "#label_ink"),
+        ((-0.62, 3.46, front_z - 0.205),
+         (0.62, 3.64, front_z - 0.15),
+         "#label_ink"),
+    ))
+
+    if include_seal:
+        cuboids.append(
+            ((-0.44, 2.36, front_z - 0.27),
+             (0.44, 3.12, front_z - 0.21),
+             "#seal")
+        )
+
+    elements = []
+
+    for start, end, texture in cuboids:
+        if horizontal:
+            world_from = [
+                center_x + start[0] * scale,
+                base_y + start[2] * scale,
+                center_z - end[1] * scale,
+            ]
+            world_to = [
+                center_x + end[0] * scale,
+                base_y + end[2] * scale,
+                center_z - start[1] * scale,
+            ]
+        else:
+            world_from = [
+                center_x + start[0] * scale,
+                base_y + start[1] * scale,
+                center_z + start[2] * scale,
+            ]
+            world_to = [
+                center_x + end[0] * scale,
+                base_y + end[1] * scale,
+                center_z + end[2] * scale,
+            ]
+
+        elements.append({
+            "from": [round(value, 4) for value in world_from],
+            "to": [round(value, 4) for value in world_to],
+            "faces": cube_faces(texture),
+        })
+
+    return elements
+
+
+STORAGE_BOTTLE_SCALE = 0.80
+STORAGE_BOTTLE_FINISH_SCALE = 0.85
+STORAGE_BOTTLE_BODY_LOWER_EXTENT = 1.45
+STORAGE_BOTTLE_SURFACE_CLEARANCE = 0.02
+
+
+def horizontal_storage_bottle_center_y(surface_y: float) -> float:
+    """Seat the canonical bottle body on a fixture shelf."""
+    return (
+        surface_y
+        + STORAGE_BOTTLE_BODY_LOWER_EXTENT * STORAGE_BOTTLE_SCALE
+        + STORAGE_BOTTLE_SURFACE_CLEARANCE
+    )
+
+
+def storage_bottle_elements(
+    center_x: float,
+    base_y: float,
+    center_z: float,
+    *,
+    horizontal: bool = False,
+    scale: float = STORAGE_BOTTLE_SCALE,
+) -> list[dict[str, object]]:
+    """One sealed canonical bottle shared by cellar cabinets and racks."""
+    return bottle_elements(
+        center_x,
+        base_y,
+        center_z,
+        scale,
+        horizontal=horizontal,
+        include_seal=True,
+        profile="red",
+        finish_scale=STORAGE_BOTTLE_FINISH_SCALE,
+    )
+
+
+def generate_canonical_bottle_models() -> None:
+    generate_white_wine_texture()
+    generate_tasting_liquid_textures()
+    palettes = {
+        "red": {
+            "bottle": "minecraft:block/green_terracotta",
+            "bottle_dark": "minecraft:block/green_concrete",
+            "bottle_highlight": "minecraft:block/lime_terracotta",
+            "neck_foil": "minecraft:block/red_terracotta",
+            "seal": "minecraft:block/red_terracotta",
+        },
+        "white": {
+            "bottle": "minecraft:block/green_terracotta",
+            "bottle_dark": "minecraft:block/green_concrete",
+            "bottle_highlight": "minecraft:block/lime_terracotta",
+            "neck_foil": "vintner:block/white_wine",
+            "seal": "vintner:block/white_wine",
+        },
+    }
+
+    for colour, palette in palettes.items():
+        write_json(
+            ASSETS / f"models/block/wine_bottle_palette_{colour}.json",
+            {
+                "parent": "minecraft:block/block",
+                "ambientocclusion": False,
+                "textures": {
+                    **palette,
+                    "cork": "minecraft:block/stripped_oak_log_top",
+                    "label": "minecraft:block/sandstone_top",
+                    "label_border": "minecraft:block/brown_terracotta",
+                    "label_ink": "minecraft:block/brown_concrete",
+                    "particle": palette["bottle"],
+                },
+            },
+        )
+
+        for servings in range(5):
+            write_json(
+                ASSETS
+                / f"models/block/wine_bottle_{colour}_fill_{servings}.json",
+                {
+                    "parent": f"vintner:block/wine_bottle_palette_{colour}",
+                    "ambientocclusion": False,
+                    "elements": bottle_elements(
+                        8.0,
+                        0.0,
+                        8.0,
+                        1.0,
+                        include_seal=servings > 0,
+                        profile=colour,
+                    ),
+                },
+            )
+
+    # Preserve the original palette/model names for storage fixtures and
+    # external resource packs that use the established canonical bottle.
+    write_json(
+        ASSETS / "models/block/wine_bottle_palette.json",
+        {
+            "parent": "vintner:block/wine_bottle_palette_red",
+        },
+    )
+    for servings in range(5):
+        write_json(
+            ASSETS / f"models/block/wine_bottle_fill_{servings}.json",
+            {
+                "parent": f"vintner:block/wine_bottle_red_fill_{servings}",
+            },
+        )
+
+    # Keep the canonical model name as the fully sealed bottle for existing
+    # model references and asset previews.
+    write_json(
+        ASSETS / "models/block/wine_bottle.json",
+        {
+            "parent": "vintner:block/wine_bottle_fill_4",
+        },
+    )
+
+    variants = {}
+    rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
+    for facing, rotation in rotations.items():
+        for colour, white_wine in (("red", "false"), ("white", "true")):
+            for servings in range(5):
+                entry = {
+                    "model": (
+                        f"vintner:block/wine_bottle_{colour}_fill_{servings}"
+                    ),
+                }
+                if rotation:
+                    entry["y"] = rotation
+                variants[
+                    f"facing={facing},servings={servings},"
+                    f"white_wine={white_wine}"
+                ] = entry
+
+    write_json(
+        ASSETS / "blockstates/wine_bottle.json",
+        {"variants": variants},
+    )
+
 def generate_cellar_fixture_base_models() -> None:
     wood_faces = cube_faces("#wood")
     beam_faces = cube_faces("#beam")
@@ -586,15 +993,22 @@ def generate_cellar_fixture_base_models() -> None:
                 {"from": [2, 7, 1], "to": [14, 9, 15], "faces": copy.deepcopy(wood_faces)},
                 {"from": [2, 14, 1], "to": [14, 16, 15], "faces": copy.deepcopy(wood_faces)},
                 {"from": [2, 2, 14], "to": [14, 14, 15.5], "faces": copy.deepcopy(wood_faces)},
-                {"from": [7.5, 2, 1], "to": [8.5, 14, 15], "faces": copy.deepcopy(beam_faces)},
+                # Split the centre divider around the middle shelf. Keeping a
+                # full-height divider here made both cuboids occupy the same
+                # volume at Y 7-9, producing a moving triangular artifact on
+                # the front edge.
+                {"from": [7.5, 2, 1], "to": [8.5, 7, 15], "faces": copy.deepcopy(beam_faces)},
+                {"from": [7.5, 9, 1], "to": [8.5, 14, 15], "faces": copy.deepcopy(beam_faces)},
                 # Front lips stop the bottles reading as if they float.
                 {"from": [2, 2, 0.5], "to": [14, 3, 1.5], "faces": copy.deepcopy(wood_faces)},
                 {"from": [2, 9, 0.5], "to": [14, 10, 1.5], "faces": copy.deepcopy(wood_faces)},
-                # One label holder for each storage bay.
-                {"from": [3.25, 6.25, 0.2], "to": [6.75, 7, 0.75], "faces": copy.deepcopy(label_faces)},
-                {"from": [9.25, 6.25, 0.2], "to": [12.75, 7, 0.75], "faces": copy.deepcopy(label_faces)},
-                {"from": [3.25, 13.25, 0.2], "to": [6.75, 14, 0.75], "faces": copy.deepcopy(label_faces)},
-                {"from": [9.25, 13.25, 0.2], "to": [12.75, 14, 0.75], "faces": copy.deepcopy(label_faces)},
+                # Compact copper labels sit on the solid shelf fronts rather
+                # than spanning the openings or sharing a coplanar edge with
+                # the shelf above them.
+                {"from": [3.65, 0.55, 0.6], "to": [6.35, 1.45, 1.05], "faces": copy.deepcopy(label_faces)},
+                {"from": [9.65, 0.55, 0.6], "to": [12.35, 1.45, 1.05], "faces": copy.deepcopy(label_faces)},
+                {"from": [3.65, 7.55, 0.6], "to": [6.35, 8.45, 1.05], "faces": copy.deepcopy(label_faces)},
+                {"from": [9.65, 7.55, 0.6], "to": [12.35, 8.45, 1.05], "faces": copy.deepcopy(label_faces)},
             ],
         },
     )
@@ -632,28 +1046,39 @@ def generate_cellar_fixture_base_models() -> None:
         },
     )
 
-    bottle_faces = cube_faces("#bottle")
-    cork_faces = cube_faces("#cork")
-    slot = 0
-    for y in (2.0, 9.0):
-        for x in (3.0, 6.33, 9.67, 13.0):
-            slot += 1
-            write_json(
-                ASSETS / f"models/block/cellar_fixture_bottle_slot_{slot}.json",
-                {
-                    "parent": "minecraft:block/block",
-                    "textures": {
-                        "bottle": "minecraft:block/green_concrete",
-                        "cork": "minecraft:block/stripped_oak_log_top",
-                        "particle": "minecraft:block/green_concrete",
+    # Cellar fixtures use the exact same sealed bottle scale and silhouette as
+    # the wine rack. Only their shelf heights differ.
+    fixture_bottle_layouts = (
+        (
+            "cellar_fixture_bottle_slot",
+            (3.75, 6.25, 9.75, 12.25),
+            (2.0, 9.0),
+        ),
+        (
+            "tasting_cabinet_bottle_slot",
+            (3.75, 6.25, 9.75, 12.25),
+            (1.5, 9.0),
+        ),
+    )
+
+    for model_prefix, x_centres, shelf_surfaces in fixture_bottle_layouts:
+        slot = 0
+        for surface_y in shelf_surfaces:
+            centre_y = horizontal_storage_bottle_center_y(surface_y)
+            for x in x_centres:
+                slot += 1
+                write_json(
+                    ASSETS / f"models/block/{model_prefix}_{slot}.json",
+                    {
+                        "parent": "vintner:block/wine_bottle_palette",
+                        "elements": storage_bottle_elements(
+                            x,
+                            centre_y,
+                            11.25,
+                            horizontal=True,
+                        ),
                     },
-                    "elements": [
-                        {"from": [x - 0.8, y, 6.7], "to": [x + 0.8, y + 4.4, 9.3], "faces": copy.deepcopy(bottle_faces)},
-                        {"from": [x - 0.45, y + 4.4, 7.1], "to": [x + 0.45, y + 6.0, 8.9], "faces": copy.deepcopy(bottle_faces)},
-                        {"from": [x - 0.48, y + 6.0, 7.05], "to": [x + 0.48, y + 6.4, 8.95], "faces": copy.deepcopy(cork_faces)},
-                    ],
-                },
-            )
+                )
 
     glass_faces = {
         "north": {"texture": "#glass"},
@@ -729,7 +1154,14 @@ def generate_cellar_fixture_blockstates() -> None:
             for slot in range(1, 9):
                 visible = "|".join(str(value) for value in range(slot, 9))
                 for facing, rotation in rotations.items():
-                    apply = {"model": f"vintner:block/cellar_fixture_bottle_slot_{slot}"}
+                    bottle_prefix = (
+                        "tasting_cabinet_bottle_slot"
+                        if block_id == cabinet_id(wood)
+                        else "cellar_fixture_bottle_slot"
+                    )
+                    apply = {
+                        "model": f"vintner:block/{bottle_prefix}_{slot}"
+                    }
                     if rotation:
                         apply["y"] = rotation
                     multipart.append({
@@ -930,7 +1362,7 @@ def generate_cooperage_kits() -> None:
         "cask_conversion_kit": {
             "pattern": ["PCP", "PPP", "PCP"],
             "key": {
-                "P": "minecraft:spruce_planks",
+                "P": "#minecraft:planks",
                 "C": "minecraft:copper_ingot",
             },
             "unlock": "minecraft:copper_ingot",
@@ -1006,15 +1438,30 @@ def generate_cooperage_kits() -> None:
     write_json(master_path, master)
 
 
+def generate_rack_bottle_models() -> None:
+    slots = (
+        (5.0, horizontal_storage_bottle_center_y(1.5)),
+        (11.0, horizontal_storage_bottle_center_y(1.5)),
+        (5.0, horizontal_storage_bottle_center_y(9.0)),
+        (11.0, horizontal_storage_bottle_center_y(9.0)),
+    )
+
+    for slot, (x, y) in enumerate(slots, start=1):
+        write_json(
+            ASSETS / f"models/block/wine_rack_bottle_{slot}.json",
+            {
+                "parent": "vintner:block/wine_bottle_palette",
+                "elements": storage_bottle_elements(
+                    x,
+                    y,
+                    11.6,
+                    horizontal=True,
+                ),
+            },
+        )
+
+
 def generate_crate_bottle_models() -> None:
-    bottle_faces = {
-        face: {"texture": "#bottle"}
-        for face in ("north", "east", "south", "west", "up", "down")
-    }
-    cork_faces = {
-        face: {"texture": "#cork"}
-        for face in ("north", "east", "south", "west", "up", "down")
-    }
     centers = (3.0, 6.33, 9.67, 13.0)
 
     slot = 0
@@ -1022,39 +1469,16 @@ def generate_crate_bottle_models() -> None:
     for z_center in centers:
         for x_center in centers:
             slot += 1
-            elements = [
-                {
-                    "from": [x_center - 1, 2, z_center - 1],
-                    "to": [x_center + 1, 8, z_center + 1],
-                    "faces": copy.deepcopy(bottle_faces),
-                },
-                {
-                    "from": [x_center - 0.72, 8, z_center - 0.72],
-                    "to": [x_center + 0.72, 9, z_center + 0.72],
-                    "faces": copy.deepcopy(bottle_faces),
-                },
-                {
-                    "from": [x_center - 0.38, 9, z_center - 0.38],
-                    "to": [x_center + 0.38, 11.3, z_center + 0.38],
-                    "faces": copy.deepcopy(bottle_faces),
-                },
-                {
-                    "from": [x_center - 0.43, 11.3, z_center - 0.43],
-                    "to": [x_center + 0.43, 11.8, z_center + 0.43],
-                    "faces": copy.deepcopy(cork_faces),
-                },
-            ]
-
             write_json(
                 ASSETS / f"models/block/wine_crate_bottle_slot_{slot}.json",
                 {
-                    "parent": "minecraft:block/block",
-                    "textures": {
-                        "bottle": "minecraft:block/green_concrete",
-                        "cork": "minecraft:block/stripped_oak_log_top",
-                        "particle": "minecraft:block/green_concrete",
-                    },
-                    "elements": elements,
+                    "parent": "vintner:block/wine_bottle_palette",
+                    "elements": bottle_elements(
+                        x_center,
+                        2.0,
+                        z_center,
+                        0.68,
+                    ),
                 },
             )
 
@@ -1350,12 +1774,28 @@ def recipe_advancement(
     }
 
 
+def generate_vineyard_recipe_advancements() -> None:
+    unlocks = {
+        "grafting_knife": "minecraft:iron_ingot",
+        "nursery_bed": "vintner:vineyard_soil",
+        "resistant_rootstock_cutting": "minecraft:nether_wart",
+        "rootstock_cutting_from_red": "vintner:red_grape_cutting",
+        "rootstock_cutting_from_white": "vintner:white_grape_cutting",
+        "vineyard_netting": "minecraft:string",
+    }
+    for recipe_id, material in unlocks.items():
+        write_json(
+            DATA / f"advancement/recipes/vintner/{recipe_id}.json",
+            recipe_advancement(recipe_id, material),
+        )
+
+
 def generate_survival_data() -> None:
     axe_blocks: list[str] = []
 
     for wood in WOODS:
         planks = f"minecraft:{wood}_planks"
-        ids = (
+        ids = [
             trellis_id(wood),
             press_id(wood),
             fermentation_id(wood),
@@ -1368,7 +1808,8 @@ def generate_survival_data() -> None:
             cabinet_id(wood),
             estate_desk_id(wood),
             surveyors_map_table_id(wood),
-        )
+            tasting_service_id(wood),
+        ]
         axe_blocks.extend(f"vintner:{block_id}" for block_id in ids)
 
         recipes = {
@@ -1497,13 +1938,13 @@ def generate_survival_data() -> None:
                 "category": "misc",
                 "pattern": ["S S", "PSP", "P P"],
                 "key": {"P": planks, "S": f"minecraft:{wood}_slab"},
-                "result": {"id": f"vintner:{stand_id(wood)}", "count": 1},
+                "result": {"id": f"vintner:{stand_id(wood)}", "count": 2},
             },
             shelf_id(wood): {
                 "type": "minecraft:crafting_shaped",
                 "category": "misc",
                 "pattern": ["PPP", "SPS", "PNP"],
-                "key": {"P": planks, "S": "minecraft:stick", "N": "minecraft:name_tag"},
+                "key": {"P": planks, "S": "minecraft:stick", "N": "minecraft:paper"},
                 "result": {"id": f"vintner:{shelf_id(wood)}", "count": 1},
             },
             cabinet_id(wood): {
@@ -1541,6 +1982,19 @@ def generate_survival_data() -> None:
                 },
                 "result": {
                     "id": f"vintner:{surveyors_map_table_id(wood)}",
+                    "count": 1,
+                },
+            },
+            tasting_service_id(wood): {
+                "type": "minecraft:crafting_shaped",
+                "category": "misc",
+                "pattern": ["G G", "PPP", "G G"],
+                "key": {
+                    "G": "minecraft:glass_pane",
+                    "P": planks,
+                },
+                "result": {
+                    "id": f"vintner:{tasting_service_id(wood)}",
                     "count": 1,
                 },
             },
@@ -1638,6 +2092,9 @@ def generate_language() -> None:
         )
         language[f"block.vintner.{surveyors_map_table_id(wood)}"] = (
             f"{title} Surveyor's Map Table"
+        )
+        language[f"block.vintner.{tasting_service_id(wood)}"] = (
+            f"{title} Tasting Service"
         )
         language[
             f"block.vintner.{grapevine_id(wood, 'red')}"
@@ -1769,21 +2226,25 @@ def main() -> None:
     generate_trellis_blockstates()
     generate_grapevine_blockstates()
     generate_machine_models()
+    generate_canonical_bottle_models()
     generate_cellar_fixture_base_models()
     generate_cellar_fixture_blockstates()
     generate_special_aging_vessels()
     generate_cooperage_kits()
+    generate_rack_bottle_models()
     generate_crate_bottle_models()
     generate_crate_blockstate()
     generate_machine_blockstates()
     generate_items()
     generate_survival_data()
+    generate_vineyard_recipe_advancements()
     generate_craft_trellis_advancement()
     generate_language()
     print(
         "Generated 12 wood families for trellises, grape presses, "
         "fermentation barrels, aging barrels, wine racks, wine "
-        "crates, vintage archives, and grapevine supports."
+        "crates, vintage archives, tasting services, and grapevine "
+        "supports."
     )
 
 

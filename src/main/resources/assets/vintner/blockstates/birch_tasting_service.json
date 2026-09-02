@@ -1,0 +1,1201 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north"
+      },
+      "apply": {
+        "model": "vintner:block/birch_tasting_service_base",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "white"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_white",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "orange"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_orange",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "magenta"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_magenta",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "light_blue"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_light_blue",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "yellow"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_yellow",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "lime"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_lime",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "pink"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_pink",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "gray"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_gray",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "light_gray"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_light_gray",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "cyan"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_cyan",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "purple"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_purple",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "blue"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_blue",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "brown"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_brown",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "green"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_green",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "red"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_red",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "linen": "black"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_black",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "has_bottle": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_bottle_red",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "cup_1": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_1",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "cup_2": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_2",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "cup_3": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_3",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "cup_4": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_4",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "has_bottle": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_bottle_white",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "cup_1": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_1",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "cup_2": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_2",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "cup_3": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_3",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "cup_4": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_4",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "east"
+      },
+      "apply": {
+        "model": "vintner:block/birch_tasting_service_base",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "white"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_white",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "orange"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_orange",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "magenta"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_magenta",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "light_blue"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_light_blue",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "yellow"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_yellow",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "lime"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_lime",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "pink"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_pink",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "gray"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_gray",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "light_gray"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_light_gray",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "cyan"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_cyan",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "purple"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_purple",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "blue"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_blue",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "brown"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_brown",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "green"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_green",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "red"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_red",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "linen": "black"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_black",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "has_bottle": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_bottle_red",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "cup_1": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_1",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "cup_2": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_2",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "cup_3": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_3",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "cup_4": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_4",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "has_bottle": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_bottle_white",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "cup_1": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_1",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "cup_2": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_2",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "cup_3": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_3",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "cup_4": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_4",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south"
+      },
+      "apply": {
+        "model": "vintner:block/birch_tasting_service_base",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "white"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_white",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "orange"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_orange",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "magenta"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_magenta",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "light_blue"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_light_blue",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "yellow"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_yellow",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "lime"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_lime",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "pink"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_pink",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "gray"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_gray",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "light_gray"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_light_gray",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "cyan"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_cyan",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "purple"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_purple",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "blue"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_blue",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "brown"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_brown",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "green"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_green",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "red"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_red",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "linen": "black"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_black",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "has_bottle": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_bottle_red",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "cup_1": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_1",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "cup_2": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_2",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "cup_3": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_3",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "cup_4": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_4",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "has_bottle": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_bottle_white",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "cup_1": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_1",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "cup_2": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_2",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "cup_3": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_3",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "cup_4": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_4",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west"
+      },
+      "apply": {
+        "model": "vintner:block/birch_tasting_service_base",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "white"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_white",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "orange"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_orange",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "magenta"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_magenta",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "light_blue"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_light_blue",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "yellow"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_yellow",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "lime"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_lime",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "pink"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_pink",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "gray"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_gray",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "light_gray"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_light_gray",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "cyan"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_cyan",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "purple"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_purple",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "blue"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_blue",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "brown"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_brown",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "green"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_green",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "red"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_red",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "linen": "black"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_linen_black",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "has_bottle": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_bottle_red",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "cup_1": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_1",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "cup_2": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_2",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "cup_3": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_3",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "cup_4": "true",
+        "white_wine": "false"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_red_cup_4",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "has_bottle": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_bottle_white",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "cup_1": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_1",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "cup_2": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_2",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "cup_3": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_3",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "cup_4": "true",
+        "white_wine": "true"
+      },
+      "apply": {
+        "model": "vintner:block/tasting_service_fill_white_cup_4",
+        "uvlock": true,
+        "y": 270
+      }
+    }
+  ]
+}

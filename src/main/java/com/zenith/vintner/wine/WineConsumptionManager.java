@@ -28,7 +28,8 @@ public final class WineConsumptionManager {
                 consumer,
                 profile,
                 quality,
-                WineAgeStage.DEVELOPING
+                WineAgeStage.DEVELOPING,
+                1.0F
         );
     }
 
@@ -39,6 +40,24 @@ public final class WineConsumptionManager {
             WineQuality quality,
             WineAgeStage ageStage
     ) {
+        return consume(
+                level,
+                consumer,
+                profile,
+                quality,
+                ageStage,
+                1.0F
+        );
+    }
+
+    public static ConsumptionResult consume(
+            ServerLevel level,
+            LivingEntity consumer,
+            WineEffectProfile profile,
+            WineQuality quality,
+            WineAgeStage ageStage,
+            float consumptionMultiplier
+    ) {
         AttachmentTarget target = (AttachmentTarget) consumer;
         long gameTime = level.getGameTime();
 
@@ -47,55 +66,90 @@ public final class WineConsumptionManager {
                 WineConsumptionState.SOBER
         ).activeAt(gameTime);
 
-        int nextDrinkCount = Math.min(
-                MAX_TRACKED_DRINKS,
-                current.drinks() + 1
+        int previousUnits = current.effectiveServingUnits();
+        int consumedUnits = Math.clamp(
+                Math.round(consumptionMultiplier * 4.0F),
+                1,
+                4
+        );
+        int nextUnits = Math.min(
+                MAX_TRACKED_DRINKS * 4,
+                previousUnits + consumedUnits
+        );
+        int nextDrinkCount = Math.clamp(
+                (nextUnits + 3) / 4,
+                1,
+                MAX_TRACKED_DRINKS
         );
         float benefitMultiplier =
                 benefitMultiplier(nextDrinkCount)
-                        * ageStage.benefitMultiplier();
+                        * ageStage.benefitMultiplier()
+                        * consumptionMultiplier;
 
         target.setAttached(
                 ModAttachments.WINE_CONSUMPTION,
                 new WineConsumptionState(
                         nextDrinkCount,
-                        gameTime + RECOVERY_TICKS
+                        gameTime + RECOVERY_TICKS,
+                        nextUnits
                 )
         );
 
-        profile.apply(
-                consumer,
-                quality,
-                benefitMultiplier
-        );
+        if (consumptionMultiplier < 1.0F) {
+            profile.applyAccumulating(
+                    consumer,
+                    quality,
+                    benefitMultiplier
+            );
+        } else {
+            profile.apply(
+                    consumer,
+                    quality,
+                    benefitMultiplier
+            );
+        }
 
         boolean impaired = applyImpairment(
                 consumer,
-                nextDrinkCount
+                previousUnits,
+                nextUnits
         );
 
         if (ageStage == WineAgeStage.SPOILED) {
             consumer.addEffect(
                     new MobEffectInstance(
                             MobEffects.NAUSEA,
-                            20 * 20,
+                            Math.max(
+                                    1,
+                                    Math.round(
+                                            20 * 20
+                                                    * consumptionMultiplier
+                                    )
+                            ),
                             0
                     )
             );
             impaired = true;
         } else if (quality.negativeEffectChance() > 0.0F
                 && level.getRandom().nextFloat()
-                < quality.negativeEffectChance()) {
+                < quality.negativeEffectChance()
+                * consumptionMultiplier) {
             consumer.addEffect(
                     new MobEffectInstance(
                             MobEffects.NAUSEA,
-                            8 * 20,
+                            Math.max(
+                                    1,
+                                    Math.round(
+                                            8 * 20
+                                                    * consumptionMultiplier
+                                    )
+                            ),
                             0
                     )
             );
             impaired = true;
         }
-        sendFeedback(consumer, nextDrinkCount);
+        sendFeedback(consumer, previousUnits, nextUnits);
         WinePairingManager.onWineConsumed(
                 level,
                 consumer,
@@ -185,9 +239,10 @@ public final class WineConsumptionManager {
 
     private static boolean applyImpairment(
             LivingEntity consumer,
-            int drinkCount
+            int previousUnits,
+            int nextUnits
     ) {
-        if (drinkCount == 3) {
+        if (previousUnits < 12 && nextUnits >= 12) {
             consumer.addEffect(
                     new MobEffectInstance(
                             MobEffects.NAUSEA,
@@ -198,7 +253,7 @@ public final class WineConsumptionManager {
             return true;
         }
 
-        if (drinkCount >= 4) {
+        if (previousUnits < 16 && nextUnits >= 16) {
             consumer.addEffect(
                     new MobEffectInstance(
                             MobEffects.NAUSEA,
@@ -228,18 +283,24 @@ public final class WineConsumptionManager {
 
     private static void sendFeedback(
             LivingEntity consumer,
-            int drinkCount
+            int previousUnits,
+            int nextUnits
     ) {
         if (!(consumer instanceof Player player)) {
             return;
         }
 
-        String messageKey = switch (drinkCount) {
-            case 2 -> "message.vintner.wine_diminishing";
-            case 3 -> "message.vintner.wine_impaired";
-            case 4 -> "message.vintner.wine_overindulged";
-            default -> null;
-        };
+        String messageKey;
+
+        if (previousUnits < 16 && nextUnits >= 16) {
+            messageKey = "message.vintner.wine_overindulged";
+        } else if (previousUnits < 12 && nextUnits >= 12) {
+            messageKey = "message.vintner.wine_impaired";
+        } else if (previousUnits < 8 && nextUnits >= 8) {
+            messageKey = "message.vintner.wine_diminishing";
+        } else {
+            messageKey = null;
+        }
 
         if (messageKey != null) {
             player.sendOverlayMessage(

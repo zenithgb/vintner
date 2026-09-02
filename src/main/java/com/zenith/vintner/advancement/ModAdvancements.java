@@ -83,6 +83,22 @@ public final class ModAdvancements {
         );
     }
 
+    public static void grantProperPour(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/proper_pour",
+                "proper_pour"
+        );
+    }
+
+    public static void grantGoodCompany(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/to_good_company",
+                "good_company"
+        );
+    }
+
     public static void grantIdealCellar(ServerPlayer player) {
         grant(
                 player,

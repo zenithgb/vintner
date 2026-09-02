@@ -9,7 +9,7 @@
   "key": {
     "P": "minecraft:mangrove_planks",
     "S": "minecraft:stick",
-    "N": "minecraft:name_tag"
+    "N": "minecraft:paper"
   },
   "result": {
     "id": "vintner:mangrove_labelled_cellar_shelf",
