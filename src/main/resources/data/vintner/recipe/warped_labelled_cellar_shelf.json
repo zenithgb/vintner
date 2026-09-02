@@ -9,7 +9,7 @@
   "key": {
     "P": "minecraft:warped_planks",
     "S": "minecraft:stick",
-    "N": "minecraft:name_tag"
+    "N": "minecraft:paper"
   },
   "result": {
     "id": "vintner:warped_labelled_cellar_shelf",

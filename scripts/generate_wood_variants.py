@@ -1282,7 +1282,7 @@ def generate_cooperage_kits() -> None:
         "cask_conversion_kit": {
             "pattern": ["PCP", "PPP", "PCP"],
             "key": {
-                "P": "minecraft:spruce_planks",
+                "P": "#minecraft:planks",
                 "C": "minecraft:copper_ingot",
             },
             "unlock": "minecraft:copper_ingot",
@@ -1822,13 +1822,13 @@ def generate_survival_data() -> None:
                 "category": "misc",
                 "pattern": ["S S", "PSP", "P P"],
                 "key": {"P": planks, "S": f"minecraft:{wood}_slab"},
-                "result": {"id": f"vintner:{stand_id(wood)}", "count": 1},
+                "result": {"id": f"vintner:{stand_id(wood)}", "count": 2},
             },
             shelf_id(wood): {
                 "type": "minecraft:crafting_shaped",
                 "category": "misc",
                 "pattern": ["PPP", "SPS", "PNP"],
-                "key": {"P": planks, "S": "minecraft:stick", "N": "minecraft:name_tag"},
+                "key": {"P": planks, "S": "minecraft:stick", "N": "minecraft:paper"},
                 "result": {"id": f"vintner:{shelf_id(wood)}", "count": 1},
             },
             cabinet_id(wood): {

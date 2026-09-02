@@ -9,7 +9,7 @@
   "key": {
     "P": "minecraft:spruce_planks",
     "S": "minecraft:stick",
-    "N": "minecraft:name_tag"
+    "N": "minecraft:paper"
   },
   "result": {
     "id": "vintner:spruce_labelled_cellar_shelf",

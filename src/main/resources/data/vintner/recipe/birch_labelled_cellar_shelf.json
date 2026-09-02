@@ -9,7 +9,7 @@
   "key": {
     "P": "minecraft:birch_planks",
     "S": "minecraft:stick",
-    "N": "minecraft:name_tag"
+    "N": "minecraft:paper"
   },
   "result": {
     "id": "vintner:birch_labelled_cellar_shelf",
