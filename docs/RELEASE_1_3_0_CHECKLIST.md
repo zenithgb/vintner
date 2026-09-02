@@ -76,9 +76,15 @@ object while preserving the cellar and provenance systems introduced in
 - [ ] Install the JAR in a clean Minecraft profile
 - [x] Record and verify the final SHA-256
 - [x] Prepare changelog and screenshots
-- [ ] Upload, tag, and publish only after explicit approval
+- [x] Receive explicit publication approval
+- [x] Upload to Modrinth and verify the public artifact checksum
+- [x] Tag the release commit as `v1.3.0`
+- [x] Publish the matching GitHub release and candidate JAR
+- [x] Verify the public Modrinth and GitHub release records
 
 Final candidate artifact:
 
 - `vintner-1.3.0.jar`
 - SHA-256: `48444c94808e399d8fb032281745ab0fb507ee4a66e93b183b90975d61de68eb`
+- Modrinth version: `Ej54nog2`
+- GitHub release: `https://github.com/zenithgb/vintner/releases/tag/v1.3.0`
