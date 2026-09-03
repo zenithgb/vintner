@@ -1,6 +1,8 @@
 package com.zenith.vintner.registry;
 
 import com.zenith.vintner.Vintner;
+import com.zenith.vintner.block.WoodVariant;
+import com.zenith.vintner.vineyard.GrapeCultivar;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -10,7 +12,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import com.zenith.vintner.vineyard.GrapeCultivar;
 
 public final class ModCreativeTabs {
     private static final ResourceKey<CreativeModeTab> VINTNER_TAB_KEY =
@@ -34,6 +35,12 @@ public final class ModCreativeTabs {
                                     ModItems.RED_GRAPES
                             ))
                             .displayItems((parameters, output) -> {
+                                output.accept(ModItems.VINTNER_ALMANAC);
+                                output.accept(
+                                        ModBlocks.ESTATE_MANAGEMENT_DESK
+                                );
+                                output.accept(ModBlocks.SURVEYORS_MAP_TABLE);
+                                output.accept(ModItems.SOIL_PROBE);
                                 output.accept(ModItems.COMPOST);
                                 output.accept(ModBlocks.VINEYARD_SOIL);
                                 ModBlocks.TRELLISES.values()
@@ -83,16 +90,22 @@ public final class ModCreativeTabs {
                                         .forEach(output::accept);
                                 ModBlocks.TASTING_CABINETS.values()
                                         .forEach(output::accept);
-                                ModBlocks.ESTATE_MANAGEMENT_DESKS.values()
+                                ModBlocks.ESTATE_MANAGEMENT_DESKS
+                                        .entrySet()
+                                        .stream()
+                                        .filter(entry -> entry.getKey()
+                                                != WoodVariant.OAK)
+                                        .map(java.util.Map.Entry::getValue)
                                         .forEach(output::accept);
-                                ModBlocks.SURVEYORS_MAP_TABLES.values()
+                                ModBlocks.SURVEYORS_MAP_TABLES
+                                        .entrySet()
+                                        .stream()
+                                        .filter(entry -> entry.getKey()
+                                                != WoodVariant.OAK)
+                                        .map(java.util.Map.Entry::getValue)
                                         .forEach(output::accept);
-                                output.accept(ModItems.SOIL_PROBE);
                                 ModBlocks.TASTING_SERVICES.values()
                                         .forEach(output::accept);
-                                output.accept(
-                                        ModItems.VINTNER_ALMANAC
-                                );
                             })
                             .build()
             );

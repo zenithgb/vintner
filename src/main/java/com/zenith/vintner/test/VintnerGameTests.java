@@ -46,6 +46,7 @@ import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
+import com.zenith.vintner.registry.ModCreativeTabs;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.registry.ModGameRules;
 import com.zenith.vintner.registry.ModTrades;
@@ -121,6 +122,7 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
@@ -622,6 +624,45 @@ public final class VintnerGameTests {
                 "Every specialist ageing vessel should support barrel data"
         );
 
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 20)
+    public void creativeTabContainsEstateManagementItems(
+            GameTestHelper helper
+    ) {
+        ModCreativeTabs.VINTNER_TAB.buildContents(
+                new CreativeModeTab.ItemDisplayParameters(
+                        helper.getLevel().enabledFeatures(),
+                        true,
+                        helper.getLevel().registryAccess()
+                )
+        );
+
+        helper.assertTrue(
+                ModCreativeTabs.VINTNER_TAB.contains(
+                        new ItemStack(ModBlocks.ESTATE_MANAGEMENT_DESK)
+                ),
+                "Vintner tab should contain the oak Estate Management Desk"
+        );
+        for (WoodVariant woodVariant : WoodVariant.values()) {
+            helper.assertTrue(
+                    ModCreativeTabs.VINTNER_TAB.contains(
+                            new ItemStack(
+                                    ModBlocks.estateManagementDesk(woodVariant)
+                            )
+                    ),
+                    "Vintner tab should contain every Estate Management Desk"
+            );
+            helper.assertTrue(
+                    ModCreativeTabs.VINTNER_TAB.contains(
+                            new ItemStack(
+                                    ModBlocks.surveyorsMapTable(woodVariant)
+                            )
+                    ),
+                    "Vintner tab should contain every Surveyor's Map Table"
+            );
+        }
         helper.succeed();
     }
 
