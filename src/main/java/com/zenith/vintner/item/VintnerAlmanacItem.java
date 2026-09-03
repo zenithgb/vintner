@@ -435,7 +435,12 @@ public final class VintnerAlmanacItem extends Item {
                 ).withStyle(ChatFormatting.GRAY),
                 Component.translatable(
                         "message.vintner.almanac.guide.wine"
-                ).withStyle(ChatFormatting.GRAY),
+                ).withStyle(ChatFormatting.GRAY)
+        );
+        report.page(
+                Component.translatable(
+                        "message.vintner.almanac.guide.management_title"
+                ),
                 Component.translatable(
                         "message.vintner.almanac.guide.estate"
                 ).withStyle(ChatFormatting.GRAY),

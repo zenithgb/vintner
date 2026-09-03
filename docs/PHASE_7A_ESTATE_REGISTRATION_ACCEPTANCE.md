@@ -19,7 +19,8 @@ inside a physical winery workflow rather than a detached menu.
 ## Using the identity
 
 - Use the Almanac in the air to open its guide, current estate status, and any
-  active plot survey.
+  active plot survey. Long entries flow onto additional pages instead of being
+  clipped at the bottom of Minecraft's book interface.
 - Pressed batches made by the founder inherit the registered estate name.
 - Fermentation, ageing, bottling, archives, racks, and crates preserve that
   metadata through the existing wine provenance path.

@@ -40,8 +40,9 @@ import com.zenith.vintner.estate.LedgerEventType;
 import com.zenith.vintner.estate.VineyardPlot;
 import com.zenith.vintner.estate.VineyardPlotReport;
 import com.zenith.vintner.estate.VineyardPlotSavedData;
-import com.zenith.vintner.item.WineEffectProfile;
+import com.zenith.vintner.item.AlmanacReport;
 import com.zenith.vintner.item.GraftingKnifeItem;
+import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModBlockEntities;
@@ -159,6 +160,31 @@ public final class VintnerGameTests {
     private static final BlockPos FIRST = new BlockPos(2, 1, 2);
     private static final BlockPos EAST = FIRST.east();
     private static final BlockPos UPPER = FIRST.above();
+
+    @GameTest(maxTicks = 40)
+    public void almanacReportPaginatesLongEntries(
+            GameTestHelper helper
+    ) {
+        AlmanacReport report = new AlmanacReport();
+        report.page(
+                Component.literal("Vintner's Almanac"),
+                Component.literal(
+                        "Inspect vineyard land, grapevines, fermentation "
+                                + "barrels, and ageing barrels."
+                ),
+                Component.literal(
+                        "Hold a wine bottle in the other hand, then use the "
+                                + "Almanac in the air."
+                ),
+                Component.empty()
+        );
+
+        helper.assertTrue(
+                report.pageCount() > 1,
+                "Long Almanac content should flow onto another book page"
+        );
+        helper.succeed();
+    }
 
     @GameTest(maxTicks = 40)
     public void estateManagementDeskIsDirectionalAndRegistered(

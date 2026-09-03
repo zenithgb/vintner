@@ -12,22 +12,42 @@ import java.util.List;
 
 /** A small paged report rendered by Minecraft's native book interface. */
 public final class AlmanacReport {
+    private static final int ESTIMATED_CHARACTERS_PER_LINE = 18;
+    private static final int MAX_ESTIMATED_LINES_PER_PAGE = 13;
+    private static final int ENTRY_GAP_LINES = 2;
     private final List<Component> pages = new ArrayList<>();
 
     public AlmanacReport page(
             Component heading,
             Component... entries
     ) {
-        MutableComponent page = heading.copy().withStyle(
-                ChatFormatting.GOLD,
-                ChatFormatting.BOLD
-        );
+        MutableComponent page = heading(heading);
+        int estimatedLines = estimatedLines(heading);
+        boolean hasEntry = false;
         for (Component entry : entries) {
+            if (entry.getString().isBlank()) {
+                continue;
+            }
+            int entryLines = ENTRY_GAP_LINES + estimatedLines(entry);
+            if (hasEntry
+                    && estimatedLines + entryLines
+                    > MAX_ESTIMATED_LINES_PER_PAGE) {
+                pages.add(page);
+                page = heading(heading);
+                estimatedLines = estimatedLines(heading);
+                hasEntry = false;
+            }
             page.append(Component.literal("\n\n"));
             page.append(entry);
+            estimatedLines += entryLines;
+            hasEntry = true;
         }
         pages.add(page);
         return this;
+    }
+
+    public int pageCount() {
+        return pages.size();
     }
 
     public boolean isEmpty() {
@@ -42,5 +62,24 @@ public final class AlmanacReport {
                 player,
                 new AlmanacReportPayload(pages)
         );
+    }
+
+    private static MutableComponent heading(Component heading) {
+        return heading.copy().withStyle(
+                ChatFormatting.GOLD,
+                ChatFormatting.BOLD
+        );
+    }
+
+    private static int estimatedLines(Component component) {
+        int lines = 0;
+        for (String line : component.getString().split("\n", -1)) {
+            lines += Math.max(
+                    1,
+                    (line.length() + ESTIMATED_CHARACTERS_PER_LINE - 1)
+                            / ESTIMATED_CHARACTERS_PER_LINE
+            );
+        }
+        return lines;
     }
 }
