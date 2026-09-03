@@ -16,10 +16,9 @@ row of redundant one-purpose tools.
 - Tasting notebook: hold the Almanac and a wine bottle in opposite hands, then
   use the Almanac.
 - Cooperage reference: sneak-use the Almanac on an Aging Barrel.
-- Vineyard survey map: sneak-use the Almanac on a recognized site to bookmark
-  its location and summary; use the Almanac in the air without a bottle to
-  recall it. The foldout record lives in the field book rather than occupying a
-  second inventory slot.
+- Almanac field guide: use the Almanac in the air to review its inspection,
+  wine, estate, and plot actions. After founding an estate, sneak-use two
+  vineyard corners to define a managed plot.
 
 ## Automated acceptance
 
@@ -29,7 +28,8 @@ row of redundant one-purpose tools.
   remaining process time without modifying inventory.
 - Unrelated construction blocks do not produce misleading terroir reports.
 - Existing survey and wine-inspection advancements remain one-time awards.
-- Survey bookmarks persist through item copies and save/load data components.
+- An unfinished first plot corner persists through item copies and save/load
+  data components.
 - The complete build, asset audit, and GameTest suite pass.
 
 ## Manual acceptance

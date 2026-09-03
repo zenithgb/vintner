@@ -3,9 +3,7 @@ package com.zenith.vintner.item;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.estate.EstateProfile;
-import com.zenith.vintner.estate.EstateInfrastructureReport;
 import com.zenith.vintner.estate.EstateLedgerSavedData;
-import com.zenith.vintner.estate.EstateReputationProfile;
 import com.zenith.vintner.estate.EstateReputationSavedData;
 import com.zenith.vintner.estate.EstateReputationTier;
 import com.zenith.vintner.estate.EstateSavedData;
@@ -51,11 +49,10 @@ public final class VintnerAlmanacItem extends Item {
     public InteractionResult useOn(UseOnContext context) {
         if (context.getLevel() instanceof ServerLevel serverLevel
                 && context.getPlayer() != null
-                && context.getPlayer().isShiftKeyDown()
                 && context.getLevel().getBlockState(
                         context.getClickedPos()
                 ).getBlock() instanceof VintageArchiveBlock) {
-            VintageArchiveBlock.registerEstate(
+            VintageArchiveBlock.useAlmanac(
                     serverLevel,
                     context.getClickedPos(),
                     context.getPlayer(),
@@ -73,8 +70,7 @@ public final class VintnerAlmanacItem extends Item {
             AlmanacReport report = AlmanacInspection.inspect(
                     serverLevel,
                     context.getClickedPos(),
-                    player,
-                    context.getItemInHand()
+                    player
             );
             if (!player.isShiftKeyDown()) {
                 appendContainingPlot(
@@ -100,34 +96,17 @@ public final class VintnerAlmanacItem extends Item {
             return InteractionResult.SUCCESS;
         }
 
-        if (player.isShiftKeyDown()) {
-            var estate = EstateSavedData.get(serverLevel)
-                    .find(player.getUUID());
-            if (estate.isPresent()) {
-                openEstateProfile(serverPlayer, estate.get());
-                return InteractionResult.SUCCESS;
-            }
-        }
-
         InteractionHand otherHand = hand == InteractionHand.MAIN_HAND
                 ? InteractionHand.OFF_HAND
                 : InteractionHand.MAIN_HAND;
         ItemStack bottle = player.getItemInHand(otherHand);
 
         if (!canInspect(bottle)) {
-            var survey = VineyardSurveyRecord.read(
+            openGuide(
+                    serverLevel,
+                    serverPlayer,
                     player.getItemInHand(hand)
             );
-            if (survey.isPresent()) {
-                openSurveyBookmark(serverPlayer, survey.get());
-            } else {
-                serverPlayer.sendSystemMessage(
-                        Component.translatable(
-                                "message.vintner.almanac.no_wine"
-                        ).withStyle(ChatFormatting.GRAY),
-                        true
-                );
-            }
             return InteractionResult.SUCCESS;
         }
 
@@ -378,12 +357,21 @@ public final class VintnerAlmanacItem extends Item {
                         "tooltip.vintner.almanac.inspect"
                 ).withStyle(ChatFormatting.DARK_GRAY)
         );
+        tooltip.accept(
+                Component.translatable(
+                        "tooltip.vintner.almanac.estate"
+                ).withStyle(ChatFormatting.DARK_GRAY)
+        );
+        tooltip.accept(
+                Component.translatable(
+                        "tooltip.vintner.almanac.plot"
+                ).withStyle(ChatFormatting.DARK_GRAY)
+        );
         if (stack.getCustomName() != null) {
-            tooltip.accept(
-                    Component.translatable(
-                            "tooltip.vintner.almanac.estate"
-                    ).withStyle(ChatFormatting.DARK_GRAY)
-            );
+            tooltip.accept(Component.translatable(
+                    "tooltip.vintner.almanac.custom_name",
+                    stack.getCustomName()
+            ).withStyle(ChatFormatting.GOLD));
         }
         VineyardSurveyRecord.read(stack).ifPresent(record ->
                 tooltip.accept(Component.translatable(
@@ -395,11 +383,12 @@ public final class VintnerAlmanacItem extends Item {
         );
     }
 
-    private static void openSurveyBookmark(
-            ServerPlayer player,
-            VineyardSurveyRecord record
+    private static void appendSurveyBookmark(
+            AlmanacReport report,
+            VineyardSurveyRecord record,
+            String plotName
     ) {
-        new AlmanacReport().page(
+        report.page(
                 Component.translatable(
                         "message.vintner.almanac.bookmark_title"
                 ),
@@ -422,108 +411,84 @@ public final class VintnerAlmanacItem extends Item {
                         Component.translatable(
                                 "terroir_rating.vintner." + record.rating()
                         )
-                ).withStyle(ChatFormatting.DARK_GREEN)
-        ).open(player);
+                ).withStyle(ChatFormatting.DARK_GREEN),
+                Component.translatable(
+                        "message.vintner.almanac.guide.corner_next",
+                        plotName
+                ).withStyle(ChatFormatting.AQUA)
+        );
     }
 
-    private static void openEstateProfile(
+    private static void openGuide(
+            ServerLevel level,
             ServerPlayer player,
-            EstateProfile profile
+            ItemStack almanac
     ) {
-        var plots = VineyardPlotSavedData.get(
-                (ServerLevel) player.level()
-        ).plots(player.getUUID());
-        int totalArea = plots.stream().mapToInt(VineyardPlot::area).sum();
-        EstateInfrastructureReport infrastructure =
-                EstateInfrastructureReport.survey(
-                        player.level(),
-                        player.blockPosition()
-                );
-        EstateReputationSavedData reputationData =
-                EstateReputationSavedData.get((ServerLevel) player.level());
-        EstateReputationProfile reputation = reputationData.syncFromLedger(
-                player.getUUID(),
-                EstateLedgerSavedData.get((ServerLevel) player.level())
-                        .entries(player.getUUID())
-        );
-        reputation = reputationData.recordInfrastructure(
-                player.getUUID(),
-                infrastructure
-        );
-        EstateReputationTier next = reputation.tier().next();
-        Component reputationSummary = next == null
-                ? Component.translatable(
-                        "message.vintner.estate.reputation.max",
-                        Component.translatable(reputation.tier().translationKey()),
-                        reputation.score()
-                )
-                : Component.translatable(
-                        "message.vintner.estate.reputation.progress",
-                        Component.translatable(reputation.tier().translationKey()),
-                        reputation.score(),
-                        next.minimumScore()
-                );
         AlmanacReport report = new AlmanacReport();
         report.page(
                 Component.translatable(
-                        "message.vintner.estate.summary",
-                        profile.estateName(),
-                        profile.foundingYear()
+                        "message.vintner.almanac.guide_title"
                 ),
                 Component.translatable(
-                        "message.vintner.estate.vineyard",
-                        profile.vineyardName(),
-                        profile.homeRegionDisplayName()
+                        "message.vintner.almanac.guide.inspect"
                 ).withStyle(ChatFormatting.GRAY),
                 Component.translatable(
-                        "message.vintner.estate.identity",
-                        profile.bottleLabel(),
-                        Component.translatable(
-                                "color.minecraft." + profile.crestColor()
-                        )
-                ).withStyle(ChatFormatting.DARK_GRAY),
+                        "message.vintner.almanac.guide.wine"
+                ).withStyle(ChatFormatting.GRAY),
                 Component.translatable(
-                        "message.vintner.estate.plots",
-                        plots.size(),
-                        totalArea
-                ).withStyle(ChatFormatting.DARK_GREEN),
-                reputationSummary.copy().withStyle(ChatFormatting.LIGHT_PURPLE)
+                        "message.vintner.almanac.guide.estate"
+                ).withStyle(ChatFormatting.GRAY),
+                Component.translatable(
+                        "message.vintner.almanac.guide.plot"
+                ).withStyle(ChatFormatting.GRAY)
         );
-        report.page(
-                Component.translatable("message.vintner.almanac.facilities_title"),
-                Component.translatable(
-                        "message.vintner.estate.infrastructure",
-                        facilityProgress(
-                                infrastructure.hasBarrelWorkshop(),
-                                infrastructure.mountedBarrels(),
-                                EstateInfrastructureReport.WORKSHOP_BARRELS
+
+        var estate = EstateSavedData.get(level).find(player.getUUID());
+        var plots = VineyardPlotSavedData.get(level).plots(player.getUUID());
+        int totalArea = plots.stream().mapToInt(VineyardPlot::area).sum();
+        if (estate.isPresent()) {
+            EstateProfile profile = estate.get();
+            report.page(
+                    Component.translatable(
+                            "message.vintner.almanac.guide.estate_title"
+                    ),
+                    Component.translatable(
+                            "message.vintner.almanac.guide.estate_registered",
+                            profile.estateName(),
+                            plots.size(),
+                            totalArea
+                    ).withStyle(ChatFormatting.DARK_GREEN),
+                    Component.translatable(
+                            "message.vintner.almanac.guide.desk"
+                    ).withStyle(ChatFormatting.GRAY)
+            );
+        } else {
+            report.page(
+                    Component.translatable(
+                            "message.vintner.almanac.guide.estate_title"
+                    ),
+                    Component.translatable(
+                            "message.vintner.almanac.guide.estate_unregistered"
+                    ).withStyle(ChatFormatting.GOLD)
+            );
+        }
+
+        VineyardSurveyRecord.read(almanac).ifPresentOrElse(
+                record -> appendSurveyBookmark(
+                        report,
+                        record,
+                        desiredPlotName(level, player, almanac)
+                ),
+                () -> report.page(
+                        Component.translatable(
+                                "message.vintner.almanac.bookmark_title"
                         ),
-                        facilityProgress(
-                                infrastructure.hasControlledCellar(),
-                                infrastructure.idealCellarStations(),
-                                EstateInfrastructureReport.CONTROLLED_CELLAR_STATIONS
-                        ),
-                        facilityProgress(
-                                infrastructure.hasWarehouse(),
-                                infrastructure.storageFixtures(),
-                                EstateInfrastructureReport.WAREHOUSE_FIXTURES
-                        ),
-                        infrastructure.hasTastingRoom()
-                                ? Component.translatable("estate_facility.vintner.ready")
-                                : Component.translatable("estate_facility.vintner.incomplete")
-                ).withStyle(ChatFormatting.DARK_AQUA)
+                        Component.translatable(
+                                "message.vintner.almanac.guide.no_corner"
+                        ).withStyle(ChatFormatting.GRAY)
+                )
         );
         report.open(player);
-    }
-
-    private static Component facilityProgress(
-            boolean ready,
-            int current,
-            int required
-    ) {
-        return ready
-                ? Component.translatable("estate_facility.vintner.ready")
-                : Component.literal(current + "/" + required);
     }
 
     private static boolean tryRegisterPlot(
@@ -532,29 +497,33 @@ public final class VintnerAlmanacItem extends Item {
             UseOnContext context
     ) {
         if (!player.isShiftKeyDown()
-                || context.getItemInHand().getCustomName() == null
                 || AlmanacInspection.classify(
                         level,
                         context.getClickedPos()
-                ) != AlmanacInspection.Target.VINEYARD_SITE
-                || EstateSavedData.get(level)
-                        .find(player.getUUID())
-                        .isEmpty()) {
+                ) != AlmanacInspection.Target.VINEYARD_SITE) {
             return false;
+        }
+
+        if (EstateSavedData.get(level)
+                .find(player.getUUID())
+                .isEmpty()) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.vintner.plot.requires_estate"
+            ).withStyle(ChatFormatting.RED), true);
+            return true;
         }
 
         var firstCorner = VineyardSurveyRecord.read(
                 context.getItemInHand()
         );
         if (firstCorner.isEmpty()) {
-            return false;
+            startPlotSurvey(level, player, context);
+            return true;
         }
 
         String dimension = level.dimension().identifier().toString();
         if (!firstCorner.get().dimension().equals(dimension)) {
-            player.sendSystemMessage(Component.translatable(
-                    "message.vintner.plot.dimension_mismatch"
-            ).withStyle(ChatFormatting.RED));
+            startPlotSurvey(level, player, context);
             return true;
         }
 
@@ -568,9 +537,11 @@ public final class VintnerAlmanacItem extends Item {
                         level,
                         firstCorner.get().position(),
                         secondCorner,
-                        context.getItemInHand()
-                                .getCustomName()
-                                .getString()
+                        desiredPlotName(
+                                level,
+                                player,
+                                context.getItemInHand()
+                        )
                 );
 
         if (!registration.successful()) {
@@ -613,6 +584,55 @@ public final class VintnerAlmanacItem extends Item {
         appendPlotReport(level, plot, report);
         report.open(player);
         return true;
+    }
+
+    private static void startPlotSurvey(
+            ServerLevel level,
+            ServerPlayer player,
+            UseOnContext context
+    ) {
+        BlockPos firstCorner = TerroirEvaluator.resolveSitePosition(
+                level,
+                context.getClickedPos()
+        );
+        VineyardSurveyRecord.capture(
+                level,
+                firstCorner,
+                TerroirEvaluator.inspect(level, firstCorner)
+        ).save(context.getItemInHand());
+        player.sendSystemMessage(Component.translatable(
+                "message.vintner.plot.first_corner",
+                firstCorner.getX(),
+                firstCorner.getZ(),
+                desiredPlotName(level, player, context.getItemInHand())
+        ).withStyle(ChatFormatting.GREEN), true);
+    }
+
+    private static String desiredPlotName(
+            ServerLevel level,
+            ServerPlayer player,
+            ItemStack almanac
+    ) {
+        Component customName = almanac.getCustomName();
+        var estate = EstateSavedData.get(level).find(player.getUUID());
+        if (customName != null
+                && estate.map(profile -> !profile.estateName()
+                        .equalsIgnoreCase(customName.getString()))
+                        .orElse(true)) {
+            return EstateProfile.sanitizeName(customName.getString());
+        }
+
+        var plots = VineyardPlotSavedData.get(level).plots(player.getUUID());
+        for (int index = 1;
+                index <= VineyardPlotSavedData.MAX_PLOTS_PER_ESTATE + 1;
+                index++) {
+            String candidate = "Vineyard Plot " + index;
+            if (plots.stream().noneMatch(plot ->
+                    plot.name().equalsIgnoreCase(candidate))) {
+                return candidate;
+            }
+        }
+        return "Vineyard Plot " + (plots.size() + 1);
     }
 
     private static void appendContainingPlot(

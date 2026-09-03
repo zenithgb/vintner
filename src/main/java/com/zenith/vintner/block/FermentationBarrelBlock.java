@@ -138,8 +138,7 @@ public final class FermentationBarrelBlock
                 AlmanacInspection.inspect(
                         serverLevel,
                         pos,
-                        serverPlayer,
-                        heldStack
+                        serverPlayer
                 ).open(serverPlayer);
             }
             return InteractionResult.SUCCESS;

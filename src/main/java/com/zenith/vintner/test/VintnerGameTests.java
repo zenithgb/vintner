@@ -3803,6 +3803,124 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void unnamedAlmanacFoundsDefaultEstateWithoutSneaking(
+            GameTestHelper helper
+    ) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        BlockPos archivePos = new BlockPos(1, 1, 1);
+        helper.setBlock(archivePos, ModBlocks.VINTAGE_ARCHIVE);
+        ItemStack almanac = new ItemStack(ModItems.VINTNER_ALMANAC);
+        owner.setItemInHand(InteractionHand.MAIN_HAND, almanac);
+
+        BlockPos absoluteArchive = helper.absolutePos(archivePos);
+        owner.gameMode.useItemOn(
+                owner,
+                helper.getLevel(),
+                almanac,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteArchive),
+                        Direction.UP,
+                        absoluteArchive,
+                        false
+                )
+        );
+
+        EstateProfile profile = EstateSavedData.get(helper.getLevel())
+                .find(owner.getUUID())
+                .orElse(null);
+        helper.assertTrue(
+                profile != null,
+                "Using an unnamed Almanac should found an estate"
+        );
+        helper.assertValueEqual(
+                profile.estateName(),
+                owner.getGameProfile().name() + "'s Estate",
+                "An unnamed Almanac should use a clear default estate name"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void unnamedAlmanacRegistersDefaultPlotInTwoSteps(
+            GameTestHelper helper
+    ) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        EstateSavedData.get(helper.getLevel()).register(
+                owner,
+                helper.getLevel(),
+                helper.absolutePos(new BlockPos(1, 1, 1)),
+                "Stone Hill Estate",
+                DyeColor.BLUE
+        );
+
+        BlockPos firstGround = new BlockPos(1, 0, 1);
+        BlockPos secondGround = new BlockPos(4, 0, 4);
+        helper.setBlock(firstGround, Blocks.CALCITE);
+        helper.setBlock(secondGround, Blocks.CALCITE);
+        ItemStack almanac = new ItemStack(ModItems.VINTNER_ALMANAC);
+        owner.setItemInHand(InteractionHand.MAIN_HAND, almanac);
+        owner.setShiftKeyDown(true);
+
+        BlockPos absoluteFirst = helper.absolutePos(firstGround);
+        owner.gameMode.useItemOn(
+                owner,
+                helper.getLevel(),
+                almanac,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteFirst),
+                        Direction.UP,
+                        absoluteFirst,
+                        false
+                )
+        );
+        helper.assertTrue(
+                VineyardSurveyRecord.read(almanac).isPresent(),
+                "The first corner should be visibly recorded on the Almanac"
+        );
+        helper.assertTrue(
+                VineyardPlotSavedData.get(helper.getLevel())
+                        .plots(owner.getUUID())
+                        .isEmpty(),
+                "The first corner alone should not create a plot"
+        );
+
+        BlockPos absoluteSecond = helper.absolutePos(secondGround);
+        owner.gameMode.useItemOn(
+                owner,
+                helper.getLevel(),
+                almanac,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteSecond),
+                        Direction.UP,
+                        absoluteSecond,
+                        false
+                )
+        );
+        owner.setShiftKeyDown(false);
+
+        var plots = VineyardPlotSavedData.get(helper.getLevel())
+                .plots(owner.getUUID());
+        helper.assertValueEqual(
+                plots.size(),
+                1,
+                "The opposite corner should complete the plot"
+        );
+        helper.assertValueEqual(
+                plots.getFirst().name(),
+                "Vineyard Plot 1",
+                "An unnamed Almanac should assign a clear default plot name"
+        );
+        helper.assertTrue(
+                VineyardSurveyRecord.read(almanac).isEmpty(),
+                "Completing the plot should clear its pending corner"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void namedPlotsTrackBoundariesAndLiveVines(
             GameTestHelper helper
     ) {
@@ -7920,7 +8038,7 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void almanacSurveyBookmarksPersistOnTheItem(
+    public void almanacPlotCornersPersistOnTheItem(
             GameTestHelper helper
     ) {
         helper.setBlock(FIRST, Blocks.CALCITE);
@@ -7943,12 +8061,12 @@ public final class VintnerGameTests {
         helper.assertValueEqual(
                 restored,
                 captured,
-                "A copied Almanac should retain its vineyard survey bookmark"
+                "A copied Almanac should retain its pending plot corner"
         );
         helper.assertValueEqual(
                 restored.siteScore(),
                 report.siteScore(),
-                "The bookmark should preserve the evaluated site score"
+                "The pending corner should preserve its evaluated site score"
         );
         helper.succeed();
     }

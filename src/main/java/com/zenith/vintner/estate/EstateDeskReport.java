@@ -70,7 +70,6 @@ public final class EstateDeskReport {
                 vineyards(level, plots),
                 cellar(infrastructure),
                 markets(market),
-                contracts(),
                 ledger(entries),
                 map()
         );
@@ -112,7 +111,6 @@ public final class EstateDeskReport {
                 "vineyards",
                 "cellar",
                 "markets",
-                "contracts",
                 "ledger",
                 "map"
         )) {
@@ -233,14 +231,6 @@ public final class EstateDeskReport {
                 line("markets.local", market.displayName()),
                 line("markets.buyer", market.buyerType().displayName()),
                 line("markets.guidance")
-                        .withStyle(ChatFormatting.DARK_GRAY)
-        );
-    }
-
-    private static EstateDeskPayload.Section contracts() {
-        return section("contracts",
-                line("contracts.empty"),
-                line("contracts.future")
                         .withStyle(ChatFormatting.DARK_GRAY)
         );
     }

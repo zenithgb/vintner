@@ -20,7 +20,8 @@ the world; the management layer reports, organizes, and explains that work.
 
 ## Included estate management
 
-- Estate registration through a renamed Vintner's Almanac and Vintage Archive.
+- Estate registration by using a Vintner's Almanac on a Vintage Archive, with
+  optional anvil naming for a custom estate identity.
 - Up to sixteen named 32 by 32 vineyard plots per estate.
 - A bounded persistent estate ledger and reputation progression.
 - Recognition of physical barrel workshop, controlled-cellar, warehouse,
@@ -29,9 +30,7 @@ the world; the management layer reports, organizes, and explains that work.
   and no currency or reward is created by this release.
 - Estate Management Desks and Surveyor's Map Tables in all supported wood
   families.
-- Seven management tabs: Overview, Vineyards, Cellar, Markets, Contracts,
-  Ledger, and Map. Contracts remains an honest empty destination until the
-  transactional trade release.
+- Six management tabs: Overview, Vineyards, Cellar, Markets, Ledger, and Map.
 - An interactive Estate Atlas using up to nine compatible explored maps, with
   vineyard overlays, selection, panning, and zoom.
 

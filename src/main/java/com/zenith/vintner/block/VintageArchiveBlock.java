@@ -128,17 +128,14 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
         }
 
         if (heldStack.is(ModItems.VINTNER_ALMANAC)) {
-            if (level instanceof ServerLevel serverLevel
-                    && player.isShiftKeyDown()) {
-                registerEstate(
+            if (level instanceof ServerLevel serverLevel) {
+                useAlmanac(
                         serverLevel,
                         pos,
                         player,
                         hand,
                         heldStack
                 );
-            } else if (level instanceof ServerLevel) {
-                archive.reportNext(player);
             }
             return InteractionResult.SUCCESS;
         }
@@ -202,6 +199,39 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
         return InteractionResult.SUCCESS;
     }
 
+    public static void useAlmanac(
+            ServerLevel level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand,
+            ItemStack almanac
+    ) {
+        if (!(player instanceof net.minecraft.server.level.ServerPlayer owner)) {
+            return;
+        }
+
+        var existing = EstateSavedData.get(level).find(owner.getUUID());
+        Component customName = almanac.getCustomName();
+        InteractionHand otherHand = hand == InteractionHand.MAIN_HAND
+                ? InteractionHand.OFF_HAND
+                : InteractionHand.MAIN_HAND;
+        boolean hasCrest = player.getItemInHand(otherHand)
+                .getItem() instanceof BannerItem;
+        boolean changesName = existing.isPresent()
+                && customName != null
+                && !existing.get().estateName()
+                        .equalsIgnoreCase(customName.getString());
+
+        if (existing.isPresent() && !changesName && !hasCrest
+                && level.getBlockEntity(pos)
+                        instanceof VintageArchiveBlockEntity archive) {
+            archive.reportNext(player);
+            return;
+        }
+
+        registerEstate(level, pos, player, hand, almanac);
+    }
+
     public static void registerEstate(
             ServerLevel level,
             BlockPos pos,
@@ -209,13 +239,7 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
             InteractionHand hand,
             ItemStack almanac
     ) {
-        Component customName = almanac.getCustomName();
-
-        if (!(player instanceof net.minecraft.server.level.ServerPlayer owner)
-                || customName == null) {
-            player.sendSystemMessage(Component.translatable(
-                    "message.vintner.estate.rename_almanac"
-            ));
+        if (!(player instanceof net.minecraft.server.level.ServerPlayer owner)) {
             return;
         }
 
@@ -227,12 +251,25 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
                 ? banner.getColor()
                 : null;
         EstateSavedData estates = EstateSavedData.get(level);
-        boolean updating = estates.find(owner.getUUID()).isPresent();
+        var existing = estates.find(owner.getUUID());
+        Component customName = almanac.getCustomName();
+        if (existing.isPresent() && customName == null) {
+            owner.sendSystemMessage(Component.translatable(
+                    "message.vintner.estate.already_registered",
+                    existing.get().estateName()
+            ).withStyle(net.minecraft.ChatFormatting.GRAY), true);
+            return;
+        }
+
+        boolean updating = existing.isPresent();
+        String requestedName = customName == null
+                ? owner.getGameProfile().name() + "'s Estate"
+                : customName.getString();
         EstateProfile profile = estates.register(
                 owner,
                 level,
                 pos,
-                customName.getString(),
+                requestedName,
                 crest
         );
         EstateLedgerSavedData.get(level).record(
@@ -254,6 +291,11 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
                 profile.foundingYear(),
                 profile.homeRegionDisplayName()
         ));
+        if (!updating && customName == null) {
+            owner.sendSystemMessage(Component.translatable(
+                    "message.vintner.estate.custom_name_hint"
+            ).withStyle(net.minecraft.ChatFormatting.GRAY), true);
+        }
         level.playSound(
                 null,
                 pos,

@@ -15,7 +15,6 @@ import com.zenith.vintner.vineyard.TerroirReport;
 import com.zenith.vintner.vineyard.VineyardIrrigation;
 import com.zenith.vintner.vineyard.VineyardManagementAdvice;
 import com.zenith.vintner.vineyard.VineyardProtection;
-import com.zenith.vintner.vineyard.VineyardSurveyRecord;
 import com.zenith.vintner.vineyard.VineyardThreat;
 import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import net.minecraft.ChatFormatting;
@@ -23,7 +22,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -59,8 +57,7 @@ public final class AlmanacInspection {
     public static AlmanacReport inspect(
             ServerLevel level,
             BlockPos pos,
-            ServerPlayer player,
-            ItemStack almanac
+            ServerPlayer player
     ) {
         AlmanacReport report = new AlmanacReport();
         switch (classify(level, pos)) {
@@ -80,7 +77,6 @@ public final class AlmanacInspection {
                     level,
                     pos,
                     player,
-                    almanac,
                     report
             );
             case NONE -> report.page(
@@ -97,7 +93,6 @@ public final class AlmanacInspection {
             ServerLevel level,
             BlockPos pos,
             ServerPlayer player,
-            ItemStack almanac,
             AlmanacReport almanacReport
     ) {
         TerroirReport report = TerroirEvaluator.inspect(level, pos);
@@ -135,23 +130,6 @@ public final class AlmanacInspection {
                 cultivation(protectedCultivation, irrigated)
         );
 
-        if (player.isShiftKeyDown()) {
-            VineyardSurveyRecord record = VineyardSurveyRecord.capture(
-                    level,
-                    pos,
-                    report
-            );
-            record.save(almanac);
-            player.sendSystemMessage(
-                    Component.translatable(
-                            "message.vintner.almanac.survey_recorded",
-                            record.position().getX(),
-                            record.position().getY(),
-                            record.position().getZ()
-                    ).withStyle(ChatFormatting.GREEN),
-                    true
-            );
-        }
         grantSurvey(player);
     }
 
@@ -409,7 +387,7 @@ public final class AlmanacInspection {
             ).withStyle(ChatFormatting.AQUA);
         }
         return Component.translatable(
-                "message.vintner.almanac.sneak_to_record"
+                "message.vintner.almanac.cultivation_open"
         ).withStyle(ChatFormatting.DARK_GRAY);
     }
 
