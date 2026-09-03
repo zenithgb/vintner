@@ -1,5 +1,6 @@
 package com.zenith.vintner.block;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import com.zenith.vintner.estate.EstateLedgerSavedData;
 import com.zenith.vintner.estate.LedgerEventType;
 import com.zenith.vintner.estate.VineyardPlotSavedData;
@@ -596,7 +597,7 @@ public abstract class GrapevineBlock
                     0.8F,
                     1.15F
             );
-            player.sendSystemMessage(Component.translatable(
+            VintnerNotifications.send(player, Component.translatable(
                     "message.vintner.netting.removed"
             ));
         }
@@ -644,7 +645,7 @@ public abstract class GrapevineBlock
                     managedUpper,
                     Block.UPDATE_ALL
             );
-            player.sendSystemMessage(Component.translatable(
+            VintnerNotifications.send(player, Component.translatable(
                     "message.vintner.vine_yield_mode",
                     mode.displayName(),
                     mode.harvestAdjustment(),
@@ -757,7 +758,7 @@ public abstract class GrapevineBlock
                                 rootPos
                         );
 
-                player.sendSystemMessage(
+                VintnerNotifications.send(player,
                         Component.translatable(
                                 "message.vintner.vineyard_quick_status",
                                 qualityText(

@@ -1,5 +1,6 @@
 package com.zenith.vintner.item;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.vineyard.VineManagementSavedData;
 import net.minecraft.ChatFormatting;
@@ -44,7 +45,7 @@ public final class VineyardNettingItem extends Item {
                 || root.getValue(GrapevineBlock.UPPER)
                 || root.getValue(GrapevineBlock.AGE) < 2) {
             if (!context.getLevel().isClientSide() && player != null) {
-                player.sendSystemMessage(Component.translatable(
+                VintnerNotifications.send(player, Component.translatable(
                         "message.vintner.netting.requires_trained_vine"
                 ).withStyle(ChatFormatting.GRAY));
             }
@@ -56,7 +57,7 @@ public final class VineyardNettingItem extends Item {
                     VineManagementSavedData.get(level);
             if (management.netted(rootPos)) {
                 if (player != null) {
-                    player.sendSystemMessage(Component.translatable(
+                    VintnerNotifications.send(player, Component.translatable(
                             "message.vintner.netting.already_installed"
                     ).withStyle(ChatFormatting.GRAY));
                 }
@@ -76,7 +77,7 @@ public final class VineyardNettingItem extends Item {
                     1.25F
             );
             if (player != null) {
-                player.sendSystemMessage(Component.translatable(
+                VintnerNotifications.send(player, Component.translatable(
                         "message.vintner.netting.installed"
                 ).withStyle(ChatFormatting.GREEN));
             }

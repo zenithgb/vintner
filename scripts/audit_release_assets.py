@@ -38,6 +38,10 @@ AXE_TAG_PATH = (
 )
 RECIPE_PATH = DATA / "recipe"
 RECIPE_ADVANCEMENT_PATH = DATA / "advancement/recipes/vintner"
+JAVA_SOURCE = ROOT / "src/main/java/com/zenith/vintner"
+NOTIFICATION_GATE_PATH = (
+    JAVA_SOURCE / "util/VintnerNotifications.java"
+)
 
 RECIPE_OUTPUT_OVERRIDES = {
     "rootstock_cutting_from_red": "vintner:rootstock_cutting",
@@ -986,6 +990,27 @@ def audit_surveyors_map_table() -> None:
             fail(f"{block_id}: stored-map overlay is missing a facing")
 
 
+def audit_notification_delivery() -> None:
+    require_file(NOTIFICATION_GATE_PATH)
+    for path in sorted(JAVA_SOURCE.rglob("*.java")):
+        if path == NOTIFICATION_GATE_PATH:
+            continue
+        try:
+            lines = path.read_text().splitlines()
+        except (OSError, UnicodeError) as error:
+            fail(
+                "cannot inspect notification delivery: "
+                f"{relative(path)}: {error}"
+            )
+            continue
+        for line_number, line in enumerate(lines, start=1):
+            if ".sendSystemMessage(" in line:
+                fail(
+                    f"{relative(path)}:{line_number}: Vintner notifications "
+                    "must use VintnerNotifications to avoid client/server duplicates"
+                )
+
+
 def main() -> int:
     audit_all_json()
     reachable_models = audit_model_references()
@@ -1000,6 +1025,7 @@ def main() -> int:
     audit_barrel_status_indicators()
     audit_estate_management_desk()
     audit_surveyors_map_table()
+    audit_notification_delivery()
 
     if errors:
         print(

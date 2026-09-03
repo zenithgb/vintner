@@ -60,3 +60,5 @@ the world; the management layer reports, organizes, and explains that work.
    common GUI scales, overflowing plot lists, map selection, pan, and zoom.
 7. The release JAR passes a clean-profile smoke test without development
    resources.
+8. Interaction QA confirms each player action produces at most one Vintner
+   chat or action-bar notification, with no client/server duplicates.

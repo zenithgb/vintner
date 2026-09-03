@@ -1,5 +1,6 @@
 package com.zenith.vintner.block;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
@@ -142,7 +143,7 @@ public final class WineRackBlock extends BaseEntityBlock {
                         level,
                         pos
                 );
-                player.sendSystemMessage(
+                VintnerNotifications.send(player,
                         Component.translatable(
                                 "message.vintner.cellar.report",
                                 conditions.rating().displayName(),
@@ -218,7 +219,7 @@ public final class WineRackBlock extends BaseEntityBlock {
 
         if (!rack.canInsert(heldStack)) {
             if (level instanceof ServerLevel) {
-                player.sendSystemMessage(
+                VintnerNotifications.send(player,
                         Component.translatable(
                                 "message.vintner.wine_rack.full"
                         )
@@ -280,7 +281,7 @@ public final class WineRackBlock extends BaseEntityBlock {
         ItemStack bottle = rack.takeLastBottle();
 
         if (bottle.isEmpty()) {
-            player.sendSystemMessage(
+            VintnerNotifications.send(player,
                     Component.translatable(
                             "message.vintner.wine_rack.empty"
                     )

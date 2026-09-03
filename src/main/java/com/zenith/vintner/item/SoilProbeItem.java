@@ -1,5 +1,6 @@
 package com.zenith.vintner.item;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.vineyard.TerroirEvaluator;
 import com.zenith.vintner.vineyard.TerroirMessages;
@@ -35,7 +36,7 @@ public final class SoilProbeItem extends Item {
         )) {
             if (!context.getLevel().isClientSide()
                     && context.getPlayer() != null) {
-                context.getPlayer().sendSystemMessage(
+                VintnerNotifications.send(context.getPlayer(),
                         Component.translatable(
                                 "message.vintner.soil_probe.invalid_target"
                         ).withStyle(ChatFormatting.GRAY)

@@ -1,5 +1,6 @@
 package com.zenith.vintner.block.entity;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.wine.WineMetadata;
@@ -65,7 +66,7 @@ public final class VintageArchiveBlockEntity extends BlockEntity {
         int count = getRecordCount();
 
         if (count == 0) {
-            player.sendSystemMessage(
+            VintnerNotifications.send(player,
                     Component.translatable(
                             "message.vintner.vintage_archive.empty"
                     ).withStyle(ChatFormatting.GRAY)
@@ -77,7 +78,7 @@ public final class VintageArchiveBlockEntity extends BlockEntity {
         ItemStack bottle = records.get(slot);
         int ordinal = occupiedOrdinal(slot);
 
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.vintage_archive.entry",
                         ordinal,
@@ -86,7 +87,7 @@ public final class VintageArchiveBlockEntity extends BlockEntity {
                         WineMetadata.batchCode(bottle)
                 ).withStyle(ChatFormatting.GOLD)
         );
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 WineTastingProfile.from(bottle)
                         .description()
                         .copy()
@@ -97,7 +98,7 @@ public final class VintageArchiveBlockEntity extends BlockEntity {
                 WineMetadata.provenance(bottle);
 
         if (provenance.known()) {
-            player.sendSystemMessage(
+            VintnerNotifications.send(player,
                     Component.translatable(
                             "message.vintner.vintage_archive.provenance",
                             provenance.varietyDisplayName(),
@@ -106,14 +107,14 @@ public final class VintageArchiveBlockEntity extends BlockEntity {
                     ).withStyle(ChatFormatting.DARK_GRAY)
             );
         } else {
-            player.sendSystemMessage(
+            VintnerNotifications.send(player,
                     Component.translatable(
                             "message.vintner.almanac.provenance_legacy"
                     ).withStyle(ChatFormatting.DARK_GRAY)
             );
         }
 
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.vintage_archive.condition",
                         WineMetadata.qualityScore(bottle),

@@ -1,5 +1,6 @@
 package com.zenith.vintner.item;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.NurseryBedBlock;
 import com.zenith.vintner.block.TrellisBlock;
@@ -116,7 +117,7 @@ public final class GraftingKnifeItem extends Item {
                         graftedCutting
                 );
             }
-            player.sendSystemMessage(
+            VintnerNotifications.send(player,
                     net.minecraft.network.chat.Component.translatable(
                             "message.vintner.grafted_cutting",
                             rootstock.displayName()

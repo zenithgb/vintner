@@ -48,6 +48,7 @@ plots, or the Almanac's portable inspection role.
 13. Place a Surveyor's Map Table within two blocks, add compatible explored
     maps, and confirm Map displays the atlas. Select plots, pan, zoom, and
     verify that removing or moving the table removes its atlas on refresh.
+    Confirm each map insertion and table-status action reports exactly once.
 
 ## Release boundary
 

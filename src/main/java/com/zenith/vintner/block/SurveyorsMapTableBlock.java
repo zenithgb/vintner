@@ -1,5 +1,6 @@
 package com.zenith.vintner.block;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.SurveyorsMapTableBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -92,7 +93,7 @@ public final class SurveyorsMapTableBlock extends BaseEntityBlock {
                     1.0F
             );
         }
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.surveyors_map_table."
                                 + result.name().toLowerCase(Locale.ROOT),
@@ -133,7 +134,7 @@ public final class SurveyorsMapTableBlock extends BaseEntityBlock {
             }
             return InteractionResult.SUCCESS;
         }
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.surveyors_map_table.status",
                         table.getMapCount(),

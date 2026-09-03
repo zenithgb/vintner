@@ -1,5 +1,6 @@
 package com.zenith.vintner.block;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.estate.EstateProfile;
@@ -171,7 +172,7 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
             );
         }
 
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         result.translationKey(),
                         WineMetadata.batchCode(heldStack),
@@ -254,7 +255,7 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
         var existing = estates.find(owner.getUUID());
         Component customName = almanac.getCustomName();
         if (existing.isPresent() && customName == null) {
-            owner.sendSystemMessage(Component.translatable(
+            VintnerNotifications.send(owner, Component.translatable(
                     "message.vintner.estate.already_registered",
                     existing.get().estateName()
             ).withStyle(net.minecraft.ChatFormatting.GRAY), true);
@@ -283,7 +284,7 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
                 0
         );
 
-        player.sendSystemMessage(Component.translatable(
+        VintnerNotifications.send(player, Component.translatable(
                 updating
                         ? "message.vintner.estate.updated"
                         : "message.vintner.estate.registered",
@@ -292,7 +293,7 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
                 profile.homeRegionDisplayName()
         ));
         if (!updating && customName == null) {
-            owner.sendSystemMessage(Component.translatable(
+            VintnerNotifications.send(owner, Component.translatable(
                     "message.vintner.estate.custom_name_hint"
             ).withStyle(net.minecraft.ChatFormatting.GRAY), true);
         }
@@ -322,7 +323,7 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
         } else if (level instanceof ServerLevel
                 && level.getBlockEntity(pos)
                 instanceof VintageArchiveBlockEntity archive) {
-            player.sendSystemMessage(
+            VintnerNotifications.send(player,
                     Component.translatable(
                             "message.vintner.vintage_archive.summary",
                             archive.getRecordCount(),
@@ -339,7 +340,7 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
             net.minecraft.server.level.ServerPlayer owner
     ) {
         if (EstateSavedData.get(level).find(owner.getUUID()).isEmpty()) {
-            owner.sendSystemMessage(Component.translatable(
+            VintnerNotifications.send(owner, Component.translatable(
                     "message.vintner.ledger.unregistered"
             ));
             return;
@@ -347,13 +348,13 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
 
         EstateLedgerSavedData ledger = EstateLedgerSavedData.get(level);
         List<EstateLedgerEvent> entries = ledger.entries(owner.getUUID());
-        owner.sendSystemMessage(Component.translatable(
+        VintnerNotifications.send(owner, Component.translatable(
                 "message.vintner.ledger.summary",
                 entries.size(),
                 EstateLedgerSavedData.MAX_EVENTS_PER_ESTATE
         ));
         if (entries.isEmpty()) {
-            owner.sendSystemMessage(Component.translatable(
+            VintnerNotifications.send(owner, Component.translatable(
                     "message.vintner.ledger.empty"
             ));
             return;
@@ -361,7 +362,7 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
 
         EstateLedgerEvent best = ledger.bestVintage(owner.getUUID());
         if (best != null) {
-            owner.sendSystemMessage(Component.translatable(
+            VintnerNotifications.send(owner, Component.translatable(
                     "message.vintner.ledger.best",
                     best.detail(),
                     best.quality()
@@ -373,7 +374,7 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
                     event.eventType().translationKey()
             );
             if (event.quality() > 0 && event.amount() > 1) {
-                owner.sendSystemMessage(Component.translatable(
+                VintnerNotifications.send(owner, Component.translatable(
                         "message.vintner.ledger.entry.amount_quality",
                         event.day(),
                         type,
@@ -382,7 +383,7 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
                         event.quality()
                 ));
             } else if (event.quality() > 0) {
-                owner.sendSystemMessage(Component.translatable(
+                VintnerNotifications.send(owner, Component.translatable(
                         "message.vintner.ledger.entry.quality",
                         event.day(),
                         type,
@@ -390,7 +391,7 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
                         event.quality()
                 ));
             } else if (event.amount() > 1) {
-                owner.sendSystemMessage(Component.translatable(
+                VintnerNotifications.send(owner, Component.translatable(
                         "message.vintner.ledger.entry.amount",
                         event.day(),
                         type,
@@ -398,7 +399,7 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
                         event.amount()
                 ));
             } else {
-                owner.sendSystemMessage(Component.translatable(
+                VintnerNotifications.send(owner, Component.translatable(
                         "message.vintner.ledger.entry",
                         event.day(),
                         type,

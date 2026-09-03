@@ -1,5 +1,6 @@
 package com.zenith.vintner.block;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.CellarCollectionBlockEntity;
 import com.zenith.vintner.item.WineItem;
@@ -194,7 +195,7 @@ public class CellarCollectionBlock extends BaseEntityBlock {
         }
 
         if (!collection.insertOne(heldStack)) {
-            player.sendSystemMessage(
+            VintnerNotifications.send(player,
                     Component.translatable(
                             "message.vintner."
                                     + kind.messagePrefix()
@@ -227,7 +228,7 @@ public class CellarCollectionBlock extends BaseEntityBlock {
             BlockPos pos
     ) {
         ItemStack selected = collection.nextBottleCopy();
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner." + kind.messagePrefix() + ".summary",
                         collection.getBottleCount(),
@@ -241,7 +242,7 @@ public class CellarCollectionBlock extends BaseEntityBlock {
             return;
         }
 
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.cellar_collection.selection",
                         WineMetadata.quality(selected).displayName(),
@@ -250,7 +251,7 @@ public class CellarCollectionBlock extends BaseEntityBlock {
                         WineReadiness.from(selected).displayName()
                 ).withStyle(ChatFormatting.GOLD)
         );
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 WineTastingProfile.from(selected)
                         .description()
                         .copy()
@@ -276,7 +277,7 @@ public class CellarCollectionBlock extends BaseEntityBlock {
 
         ItemStack bottle = collection.takeLastBottle();
         if (bottle.isEmpty()) {
-            player.sendSystemMessage(
+            VintnerNotifications.send(player,
                     Component.translatable(
                             "message.vintner."
                                     + kind.messagePrefix()

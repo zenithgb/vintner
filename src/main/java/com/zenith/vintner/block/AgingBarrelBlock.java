@@ -1,5 +1,6 @@
 package com.zenith.vintner.block;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
@@ -175,7 +176,7 @@ public class AgingBarrelBlock extends BaseEntityBlock {
 
         if (vesselForKit(heldStack) != null) {
             if (!level.isClientSide()) {
-                player.sendSystemMessage(Component.translatable(
+                VintnerNotifications.send(player, Component.translatable(
                         "message.vintner.aging.mallet_required"
                 ).withStyle(ChatFormatting.YELLOW));
             }
@@ -259,7 +260,7 @@ public class AgingBarrelBlock extends BaseEntityBlock {
                 String message = activeVessel == requestedVessel
                         ? "message.vintner.aging.upgrade_already_applied"
                         : "message.vintner.aging.upgrade_recover_first";
-                player.sendSystemMessage(Component.translatable(
+                VintnerNotifications.send(player, Component.translatable(
                         message,
                         activeVessel.displayName()
                 ).withStyle(ChatFormatting.YELLOW));
@@ -269,7 +270,7 @@ public class AgingBarrelBlock extends BaseEntityBlock {
 
         if (!barrel.isEmpty()) {
             if (!level.isClientSide()) {
-                player.sendSystemMessage(Component.translatable(
+                VintnerNotifications.send(player, Component.translatable(
                         "message.vintner.aging.upgrade_empty_required"
                 ).withStyle(ChatFormatting.RED));
             }
@@ -303,7 +304,7 @@ public class AgingBarrelBlock extends BaseEntityBlock {
                 0.65F,
                 1.15F
         );
-        player.sendSystemMessage(Component.translatable(
+        VintnerNotifications.send(player, Component.translatable(
                 "message.vintner.aging.upgrade_applied",
                 requestedVessel.displayName()
         ).withStyle(ChatFormatting.GREEN));
@@ -332,7 +333,7 @@ public class AgingBarrelBlock extends BaseEntityBlock {
 
         if (activeVessel == AgingVessel.OAK) {
             if (!level.isClientSide()) {
-                player.sendSystemMessage(Component.translatable(
+                VintnerNotifications.send(player, Component.translatable(
                         "message.vintner.aging.treatment_none"
                 ).withStyle(ChatFormatting.YELLOW));
             }
@@ -341,7 +342,7 @@ public class AgingBarrelBlock extends BaseEntityBlock {
 
         if (!barrel.isEmpty()) {
             if (!level.isClientSide()) {
-                player.sendSystemMessage(Component.translatable(
+                VintnerNotifications.send(player, Component.translatable(
                         "message.vintner.aging.upgrade_empty_required"
                 ).withStyle(ChatFormatting.RED));
             }
@@ -377,7 +378,7 @@ public class AgingBarrelBlock extends BaseEntityBlock {
                 0.55F,
                 0.8F
         );
-        player.sendSystemMessage(Component.translatable(
+        VintnerNotifications.send(player, Component.translatable(
                 "message.vintner.aging.treatment_removed",
                 activeVessel.displayName()
         ).withStyle(ChatFormatting.GREEN));
@@ -471,25 +472,25 @@ public class AgingBarrelBlock extends BaseEntityBlock {
             Player player,
             AgingVessel activeVessel
     ) {
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.almanac.vessel_guide",
                         activeVessel.displayName()
                 ).withStyle(ChatFormatting.GOLD)
         );
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.almanac.vessel_capacity",
                         activeVessel.capacity(),
                         activeVessel.agingTimeSeconds()
                 ).withStyle(ChatFormatting.GRAY)
         );
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 activeVessel.guide()
                         .copy()
                         .withStyle(ChatFormatting.GRAY)
         );
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 activeVessel.craftingHint()
                         .copy()
                         .withStyle(ChatFormatting.DARK_GRAY)

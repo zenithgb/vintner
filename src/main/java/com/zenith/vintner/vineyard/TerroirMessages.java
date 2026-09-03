@@ -1,5 +1,6 @@
 package com.zenith.vintner.vineyard;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -14,13 +15,13 @@ public final class TerroirMessages {
             Player player,
             TerroirReport report
     ) {
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.soil_probe.title",
                         report.soil().type().displayName()
                 ).withStyle(ChatFormatting.GOLD)
         );
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.soil_probe.properties",
                         report.soil().drainageRating().displayName(),
@@ -29,7 +30,7 @@ public final class TerroirMessages {
                         report.soil().rootDepthRating().displayName()
                 ).withStyle(ChatFormatting.GRAY)
         );
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.terroir.potential",
                         report.siteScore(),
@@ -44,7 +45,7 @@ public final class TerroirMessages {
             TerroirReport report
     ) {
         for (Component entry : fullReportEntries(report)) {
-            player.sendSystemMessage(entry);
+            VintnerNotifications.send(player, entry);
         }
     }
 
@@ -93,7 +94,7 @@ public final class TerroirMessages {
             Player player,
             TerroirReport report
     ) {
-        player.sendSystemMessage(varietyRecommendation(report));
+        VintnerNotifications.send(player, varietyRecommendation(report));
     }
 
     private static Component varietyRecommendation(

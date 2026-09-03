@@ -1,5 +1,6 @@
 package com.zenith.vintner.item;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.estate.EstateProfile;
@@ -305,7 +306,7 @@ public final class VintnerAlmanacItem extends Item {
         }
 
         WineMetadata.ensureDefaults(bottle);
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.almanac.identity",
                         WineMetadata.quality(bottle).displayName(),
@@ -313,20 +314,20 @@ public final class VintnerAlmanacItem extends Item {
                         WineMetadata.batchCode(bottle)
                 ).withStyle(ChatFormatting.GOLD)
         );
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 WineTastingProfile.from(bottle)
                         .description()
                         .copy()
                         .withStyle(ChatFormatting.GRAY)
         );
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.almanac.servings",
                         WineMetadata.servings(bottle),
                         WineMetadata.SERVINGS_PER_BOTTLE
                 ).withStyle(ChatFormatting.DARK_GRAY)
         );
-        player.sendSystemMessage(
+        VintnerNotifications.send(player,
                 Component.translatable(
                         "message.vintner.almanac.readiness",
                         WineReadiness.from(bottle).displayName()
@@ -507,7 +508,7 @@ public final class VintnerAlmanacItem extends Item {
         if (EstateSavedData.get(level)
                 .find(player.getUUID())
                 .isEmpty()) {
-            player.sendSystemMessage(Component.translatable(
+            VintnerNotifications.send(player, Component.translatable(
                     "message.vintner.plot.requires_estate"
             ).withStyle(ChatFormatting.RED), true);
             return true;
@@ -549,7 +550,7 @@ public final class VintnerAlmanacItem extends Item {
                     == VineyardPlotSavedData.Status.TOO_LARGE
                     ? "message.vintner.plot.too_large"
                     : "message.vintner.plot.full";
-            player.sendSystemMessage(Component.translatable(
+            VintnerNotifications.send(player, Component.translatable(
                     key,
                     VineyardPlot.MAX_SIDE,
                     VineyardPlotSavedData.MAX_PLOTS_PER_ESTATE
@@ -570,7 +571,7 @@ public final class VintnerAlmanacItem extends Item {
                 0L,
                 0
         );
-        player.sendSystemMessage(Component.translatable(
+        VintnerNotifications.send(player, Component.translatable(
                 registration.status()
                         == VineyardPlotSavedData.Status.UPDATED
                         ? "message.vintner.plot.updated"
@@ -600,7 +601,7 @@ public final class VintnerAlmanacItem extends Item {
                 firstCorner,
                 TerroirEvaluator.inspect(level, firstCorner)
         ).save(context.getItemInHand());
-        player.sendSystemMessage(Component.translatable(
+        VintnerNotifications.send(player, Component.translatable(
                 "message.vintner.plot.first_corner",
                 firstCorner.getX(),
                 firstCorner.getZ(),

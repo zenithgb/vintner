@@ -1,10 +1,10 @@
 package com.zenith.vintner.wine;
 
+import com.zenith.vintner.util.VintnerNotifications;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 public final class WinemakingFeedback {
@@ -208,11 +208,6 @@ public final class WinemakingFeedback {
     }
 
     private static void show(Player player, Component message) {
-        if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(
-                    message,
-                    true
-            );
-        }
+        VintnerNotifications.send(player, message, true);
     }
 }
