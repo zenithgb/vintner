@@ -7,3 +7,5 @@ out/
 .DS_Store
 .dev-backups/
 tmp/
+__pycache__/
+*.py[cod]
