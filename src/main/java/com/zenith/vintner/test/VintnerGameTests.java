@@ -4125,6 +4125,250 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void identicalPlotCoordinatesAreAllowedAcrossDimensions(
+            GameTestHelper helper
+    ) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerLevel overworld = helper.getLevel();
+        ServerLevel nether = overworld.getServer().getLevel(Level.NETHER);
+        helper.assertTrue(
+                nether != null,
+                "The GameTest server should expose its Nether level"
+        );
+
+        BlockPos firstCorner = helper.absolutePos(new BlockPos(1, 1, 1));
+        BlockPos secondCorner = helper.absolutePos(new BlockPos(5, 1, 5));
+        VineyardPlotSavedData plots = VineyardPlotSavedData.get(overworld);
+        VineyardPlotSavedData.Registration overworldRegistration =
+                plots.register(
+                        owner,
+                        overworld,
+                        firstCorner,
+                        secondCorner,
+                        "Overworld Rows"
+                );
+        VineyardPlotSavedData.Registration netherRegistration =
+                plots.register(
+                        owner,
+                        nether,
+                        firstCorner,
+                        secondCorner,
+                        "Nether Rows"
+                );
+
+        helper.assertValueEqual(
+                overworldRegistration.status(),
+                VineyardPlotSavedData.Status.CREATED,
+                "The first dimension-specific plot should register"
+        );
+        helper.assertValueEqual(
+                netherRegistration.status(),
+                VineyardPlotSavedData.Status.CREATED,
+                "Matching coordinates in another dimension should register"
+        );
+        helper.assertValueEqual(
+                overworldRegistration.plot().minX(),
+                netherRegistration.plot().minX(),
+                "Cross-dimension plots should retain identical minimum X"
+        );
+        helper.assertValueEqual(
+                overworldRegistration.plot().minZ(),
+                netherRegistration.plot().minZ(),
+                "Cross-dimension plots should retain identical minimum Z"
+        );
+        helper.assertValueEqual(
+                overworldRegistration.plot().maxX(),
+                netherRegistration.plot().maxX(),
+                "Cross-dimension plots should retain identical maximum X"
+        );
+        helper.assertValueEqual(
+                overworldRegistration.plot().maxZ(),
+                netherRegistration.plot().maxZ(),
+                "Cross-dimension plots should retain identical maximum Z"
+        );
+
+        List<VineyardPlot> registered = plots.plots(owner.getUUID());
+        helper.assertValueEqual(
+                registered.size(),
+                2,
+                "Both dimension-specific plots should remain registered"
+        );
+        helper.assertValueEqual(
+                registered.get(0),
+                overworldRegistration.plot(),
+                "Plot retrieval should preserve overworld insertion order"
+        );
+        helper.assertValueEqual(
+                registered.get(1),
+                netherRegistration.plot(),
+                "Plot retrieval should preserve Nether insertion order"
+        );
+        helper.assertValueEqual(
+                registered.get(0).dimension(),
+                overworld.dimension().identifier().toString(),
+                "The first plot should retain the overworld dimension"
+        );
+        helper.assertValueEqual(
+                registered.get(1).dimension(),
+                nether.dimension().identifier().toString(),
+                "The second plot should retain the Nether dimension"
+        );
+        helper.assertValueEqual(
+                plots.plots(owner.getUUID()),
+                registered,
+                "Repeated plot retrieval should remain deterministic"
+        );
+
+        VineyardPlotSavedData.Registration sameDimensionOverlap =
+                plots.register(
+                        owner,
+                        overworld,
+                        firstCorner,
+                        secondCorner,
+                        "Overlapping Rows"
+                );
+        helper.assertValueEqual(
+                sameDimensionOverlap.status(),
+                VineyardPlotSavedData.Status.OVERLAPPING,
+                "Cross-dimension reuse must not weaken same-dimension rules"
+        );
+        helper.assertValueEqual(
+                plots.plots(owner.getUUID()),
+                registered,
+                "A later same-dimension overlap must not alter either plot"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void rejectedOverlapPreservesPlotLedgerAndReputation(
+            GameTestHelper helper
+    ) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerLevel level = helper.getLevel();
+        EstateSavedData.get(level).register(
+                owner,
+                level,
+                helper.absolutePos(new BlockPos(1, 1, 1)),
+                "Stone Hill Estate",
+                DyeColor.BLUE
+        );
+
+        VineyardPlotSavedData plots = VineyardPlotSavedData.get(level);
+        VineyardPlotSavedData.Registration first = plots.register(
+                owner,
+                level,
+                helper.absolutePos(new BlockPos(1, 1, 1)),
+                helper.absolutePos(new BlockPos(5, 1, 5)),
+                "Upper Slope"
+        );
+        helper.assertValueEqual(
+                first.status(),
+                VineyardPlotSavedData.Status.CREATED,
+                "The original plot should register before rejection testing"
+        );
+
+        VineyardPlot original = plots.plots(owner.getUUID()).getFirst();
+        EstateLedgerSavedData ledger = EstateLedgerSavedData.get(level);
+        ledger.record(
+                owner,
+                LedgerEventType.PLOT_REGISTERED,
+                original.name(),
+                original.area(),
+                0L,
+                0
+        );
+        List<EstateLedgerEvent> ledgerBefore = ledger.entries(owner.getUUID());
+        EstateReputationSavedData reputation =
+                EstateReputationSavedData.get(level);
+        EstateReputationProfile reputationBefore = reputation.profile(
+                owner.getUUID()
+        );
+
+        VineyardPlotSavedData.Registration rejected = plots.register(
+                owner,
+                level,
+                helper.absolutePos(new BlockPos(4, 1, 4)),
+                helper.absolutePos(new BlockPos(8, 1, 8)),
+                "Lower Slope"
+        );
+        List<VineyardPlot> plotsAfter = plots.plots(owner.getUUID());
+        VineyardPlot preserved = plotsAfter.getFirst();
+
+        helper.assertValueEqual(
+                rejected.status(),
+                VineyardPlotSavedData.Status.OVERLAPPING,
+                "The differently named overlapping plot should be rejected"
+        );
+        helper.assertValueEqual(
+                plotsAfter.size(),
+                1,
+                "Rejected overlap must not change the plot count"
+        );
+        helper.assertTrue(
+                preserved == original,
+                "Rejected overlap must not replace the original plot record"
+        );
+        helper.assertValueEqual(
+                preserved.name(),
+                original.name(),
+                "Rejected overlap must preserve the original name"
+        );
+        helper.assertValueEqual(
+                preserved.dimension(),
+                original.dimension(),
+                "Rejected overlap must preserve the original dimension"
+        );
+        helper.assertValueEqual(
+                preserved.minX(),
+                original.minX(),
+                "Rejected overlap must preserve the minimum X"
+        );
+        helper.assertValueEqual(
+                preserved.minZ(),
+                original.minZ(),
+                "Rejected overlap must preserve the minimum Z"
+        );
+        helper.assertValueEqual(
+                preserved.maxX(),
+                original.maxX(),
+                "Rejected overlap must preserve the maximum X"
+        );
+        helper.assertValueEqual(
+                preserved.maxZ(),
+                original.maxZ(),
+                "Rejected overlap must preserve the maximum Z"
+        );
+        helper.assertValueEqual(
+                preserved.area(),
+                original.area(),
+                "Rejected overlap must preserve the original area"
+        );
+        helper.assertValueEqual(
+                preserved.createdDay(),
+                original.createdDay(),
+                "Rejected overlap must preserve the creation day"
+        );
+        helper.assertFalse(
+                plotsAfter.stream().anyMatch(
+                        plot -> plot.name().equals("Lower Slope")
+                ),
+                "The rejected plot must not be inserted"
+        );
+        helper.assertValueEqual(
+                ledger.entries(owner.getUUID()),
+                ledgerBefore,
+                "Rejected overlap must not add a ledger event"
+        );
+        helper.assertValueEqual(
+                reputation.profile(owner.getUUID()),
+                reputationBefore,
+                "Rejected overlap must not change estate reputation"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void plotReportsResolveAndGuardSavedDimensions(
             GameTestHelper helper
     ) {

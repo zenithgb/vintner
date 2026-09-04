@@ -1,8 +1,7 @@
 # Vintner 1.4.0 development handoff
 
 - **Branch:** `feat/1.4.0-vineyard-management`
-- **HEAD:** `576b684eb7127d0cc94df21b9f97552d8ee4e1a8` (`Fix estate plot reporting and validation`)
-- **Remote state:** Local HEAD matches `origin/feat/1.4.0-vineyard-management` (`0` ahead, `0` behind).
+- **Gate B base:** `a020bc4` (`Document Vintner 1.4.0 integration state`), the local Gate A housekeeping commit; it remains unpushed.
 - **Stable public version:** Vintner 1.3.1 — Cellar Crafting Patch.
 - **Development version:** `mod_version=1.3.1`; the 1.4.0 bump remains release-preparation work.
 
@@ -12,30 +11,59 @@ The 1.4.0 branch implements the agreed Vineyard Expansion scope: expanded cultiv
 
 Deferred scope remains unchanged: pantry and cooking work (1.5.0), deeper estates and hospitality (1.6.0), transactional trade (1.7.0), and later labour/logistics automation.
 
-- **Automated validation:** Integration Gate A passed at this HEAD. Focused plot tests passed 6/6; standard and Serene Seasons suites each passed 162/162; clean build and release audit passed.
-- **Manual QA:** Pending for plot overlap/dimension behavior, unloaded-plot desk presentation, desk UI/scrolling, multiplayer ownership isolation, and broader release visual gates.
-- **Known risks:** Loaded plots are analyzed synchronously when the desk opens. The work is bounded (16 plots, 32×32 columns, 10 vertical positions), and unloaded regions are guarded by non-loading chunk-presence checks, but no runtime timing test covers the worst case. Several integration assertions listed below also lack direct GameTest coverage.
+- **Automated validation:** Integration Gate B passed. Its focused plot tests passed 8/8; the Winemaker recovery passed three isolated runs, two consecutive 164/164 standard suites, and a 164/164 Serene Seasons suite; the final clean build and release audit passed.
+- **Manual QA:** Pending for unloaded-plot desk presentation, desk UI/scrolling, multiplayer ownership isolation, and broader release visual gates.
+- **Known risks:** Loaded plots are analyzed synchronously when the desk opens. The work is bounded (16 plots, 32×32 columns, 10 vertical positions), but no runtime timing test covers the worst case. Unloaded regions are guarded by non-loading chunk-presence checks, but the behavior still lacks direct GameTest coverage.
 - **Documentation discrepancy:** `docs/RELEASE_SCHEDULE.md` appears to place the 1.2.0 release date after 1.3.0; leave for a later documentation correction.
 
 ## Integration Gate A evidence
 
-- `JAVA_TOOL_OPTIONS='-Dfabric-api.gametest.filter=vintner:vintner_game_tests_*plot*' ./gradlew runGameTest` — 6/6 passed in 646.2 ms (124.42 s invocation). Report: `build/test-results/gametest/TEST-vintner-focused.xml`.
-- `./gradlew clean build auditReleaseAssets` — passed in 3.22 s. Audit: 1,567 JSON files, 169 recipes, 159 public wood-family blocks, and 24 wood-preserving grapevine states.
-- `./gradlew runGameTest` — 162/162 passed in 1.404 s (128.10 s invocation), using `build/gametest-standard-run`. Report: `build/test-results/gametest/TEST-vintner-standard.xml`.
-- `./gradlew runGameTest -PsereneSeasonsTest` — 162/162 passed in 1.617 s (145.85 s invocation), using `build/gametest-serene-run`. Report: `build/test-results/gametest/TEST-vintner-serene.xml`.
-- `git diff --check` — passed.
-- Required-test failures: none. Clean GameTest directories log missing initial `server.properties`/`eula.txt`; the Fabric headless server then starts and completes normally. Compilation reports deprecated mock-player API usage.
+- Housekeeping and the initial handoff were committed locally as `a020bc4` (`Document Vintner 1.4.0 integration state`). The commit added the Python-bytecode ignore rules and did not change production code.
+- Focused plot tests passed 6/6; standard and Serene Seasons suites each passed 162/162; clean build, release audit, and `git diff --check` passed.
+- The Gate A audit counted 1,567 JSON files, 169 recipes, 159 public wood-family blocks, and 24 wood-preserving grapevine states.
 
-### Focused coverage
+## Integration Gate B evidence
 
-- `overlappingNamedPlotsAreRejected` covers rejection of a differently named overlap in the same dimension and confirms plot count remains one.
-- `plotReportsResolveAndGuardSavedDimensions` covers correct server-level resolution and refuses analysis against the wrong dimension.
-- The focused wildcard also runs `unnamedAlmanacRegistersDefaultPlotInTwoSteps`, `namedPlotsTrackBoundariesAndLiveVines`, `namedPlotRecognizesPhysicalIrrigation`, and `almanacPlotCornersPersistOnTheItem`.
+### Plot coverage
 
-Direct coverage is still missing for coordinate reuse across dimensions; complete preservation of the original plot after rejection; unchanged ledger/reputation after rejection; same-dimension unloaded analysis without chunk loading; and static unloaded `PlotSummary` identity/dimension/bounds with unavailable live metrics. Desk multiplayer payload isolation is code-enforced but has no direct two-player payload test.
+- `identicalPlotCoordinatesAreAllowedAcrossDimensions` proves that identical bounds can coexist in the Overworld and Nether while preserving deterministic insertion order and same-dimension overlap rejection.
+- `rejectedOverlapPreservesPlotLedgerAndReputation` proves that a rejected overlap retains the original plot object and every persisted plot field, does not insert the rejected name, and leaves ledger entries and reputation unchanged.
+- The focused plot filter passed 8/8 in 619.0 ms (121.80 s invocation).
+- No production source was changed.
 
-### Code-backed findings
+### Original standard-suite failure and recovery
 
-`EstateDeskReport` selects estate, ledger, reputation, and plot data by the requesting player's UUID and sends the resulting payload only to that player. Each plot resolves through its saved dimension. `VineyardPlotReport.analyzeIfLoaded` checks every required chunk with `hasChunk` before analysis, so an unloaded plot does not call the block-scanning path. Unloaded summaries retain name, dimension, bounds, and area; `loaded=false` makes both desk sections and map details show unavailable rather than presenting placeholder zeroes as live values.
+The first Gate B standard suite passed 163/164 in 1.641 s (124.48 s invocation). `unemployedVillagerClaimsGrapePress` failed at tick 302 because the naturally spawned unemployed villager had not acquired the registered Winemaker profession before the test's 300-tick limit. The paired Cooper workstation test passed. Gate B paused immediately; Serene Seasons was not run at that point.
 
-- **Next smallest task:** With approval, add a focused GameTest-only coverage slice for rejected-overlap preservation and cross-dimension coordinate reuse, without changing gameplay behavior.
+The test uses ordinary villager POI discovery and job-site acquisition during work time. The grape press is registered under the `vintner:winemaker` POI and both profession predicates use that POI. The empty GameTest template contributes no authored villager or competing POI. The test waits for eventual profession acquisition rather than assuming a fixed delay, so AI scheduling within its timeout is the apparent nondeterministic dependency.
+
+The exact isolated filter was:
+
+`JAVA_TOOL_OPTIONS='-Dfabric-api.gametest.filter=vintner:vintner_game_tests_unemployed_villager_claims_grape_press' ./gradlew runGameTest`
+
+- Isolated run 1: 1/1 passed; 487.7 ms GameTest completion, 0.060 s testcase duration, 143.89 s invocation. Report: `/tmp/vintner-winemaker-isolated-1.xml`.
+- Isolated run 2: 1/1 passed; 475.4 ms GameTest completion, 0.062 s testcase duration, 122.97 s invocation. Report: `/tmp/vintner-winemaker-isolated-2.xml`.
+- Isolated run 3: 1/1 passed; 495.7 ms GameTest completion, 0.060 s testcase duration, 126.87 s invocation. Report: `/tmp/vintner-winemaker-isolated-3.xml`.
+- Standard recovery run 1: 164/164 passed in 1.533 s (126.38 s invocation). Report: `/tmp/vintner-standard-recovery-1.xml`.
+- Standard recovery run 2: 164/164 passed in 1.613 s (127.41 s invocation). Report: `/tmp/vintner-standard-recovery-2.xml`.
+- Serene Seasons: 164/164 passed in 1.393 s (126.78 s invocation), using `build/gametest-serene-run`. Report: `/tmp/vintner-serene-recovery.xml`.
+
+The failure was not reproduced. Record it as: **A non-reproduced timing or suite-load failure observed once during Gate B.** No correction was made, it is not classified as definitively fixed, and no production defect was established.
+
+### Final validation
+
+- `./gradlew clean build` passed in 2.67 s. The build's `check` dependency ran the release asset audit successfully: 1,567 JSON files, 169 recipes, 159 public wood-family blocks, and 24 wood-preserving grapevine states.
+- `git diff --check` passed.
+- Ignored generated Python bytecode was removed; no `.pyc` or `.pyo` files remain under `scripts/`.
+- Compilation continues to report existing deprecation warnings for the GameTest mock-player helper and other deprecated APIs.
+
+## Remaining coverage gaps
+
+- Same-dimension unloaded plot reporting without loading chunks.
+- Static unloaded payload-field validation, including identity, dimension, bounds, area, `loaded=false`, and unavailable live metrics.
+- Two-player Estate Management Desk payload isolation.
+- Loaded-plot scan performance characterization.
+
+## Next integration gate
+
+**Integration Gate C — Unloaded Plot Reporting:** add a focused test-only slice proving same-dimension unloaded plot reporting does not load chunks and returns correct static fields with live metrics unavailable. Do not change gameplay logic unless the test establishes a defect and a correction is separately approved.
