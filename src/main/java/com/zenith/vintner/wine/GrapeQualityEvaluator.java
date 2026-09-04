@@ -41,6 +41,18 @@ public final class GrapeQualityEvaluator {
                 level,
                 vinePos
         );
+        return inspectWithTerroir(level, vinePos, terroir);
+    }
+
+    /**
+     * Evaluates one vine using a representative terroir report that has already
+     * been calculated for its plot.
+     */
+    public static VineyardConditionReport inspectWithTerroir(
+            Level level,
+            BlockPos vinePos,
+            TerroirReport terroir
+    ) {
         boolean openSky = terroir.terrain().sunExposure() >= 50;
         boolean suitableTemperature =
                 terroir.climate().suitability() >= 45;

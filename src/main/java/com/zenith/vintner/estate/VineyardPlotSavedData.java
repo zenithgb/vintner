@@ -110,6 +110,15 @@ public final class VineyardPlotSavedData extends SavedData {
             }
         }
 
+        for (int index = 0; index < plots.size(); index++) {
+            VineyardPlot plot = plots.get(index);
+            if (index != existingIndex
+                    && plot.ownerId().equals(ownerKey)
+                    && candidate.overlaps(plot)) {
+                return new Registration(Status.OVERLAPPING, candidate);
+            }
+        }
+
         if (existingIndex >= 0) {
             VineyardPlot existing = plots.get(existingIndex);
             VineyardPlot updated = new VineyardPlot(
@@ -151,6 +160,7 @@ public final class VineyardPlotSavedData extends SavedData {
         CREATED,
         UPDATED,
         TOO_LARGE,
+        OVERLAPPING,
         FULL
     }
 }

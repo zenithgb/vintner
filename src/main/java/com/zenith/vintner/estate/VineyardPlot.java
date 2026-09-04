@@ -3,8 +3,15 @@ package com.zenith.vintner.estate;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+
+import java.util.Optional;
 
 /** A named, player-owned rectangular vineyard boundary. */
 public record VineyardPlot(
@@ -100,6 +107,27 @@ public record VineyardPlot(
                 && pos.getX() <= maxX
                 && pos.getZ() >= minZ
                 && pos.getZ() <= maxZ;
+    }
+
+    public boolean overlaps(VineyardPlot other) {
+        return other != null
+                && dimension.equals(other.dimension())
+                && minX <= other.maxX()
+                && maxX >= other.minX()
+                && minZ <= other.maxZ()
+                && maxZ >= other.minZ();
+    }
+
+    public Optional<ServerLevel> resolveLevel(MinecraftServer server) {
+        Identifier identifier = Identifier.tryParse(dimension);
+        if (server == null || identifier == null) {
+            return Optional.empty();
+        }
+        ResourceKey<Level> key = ResourceKey.create(
+                Registries.DIMENSION,
+                identifier
+        );
+        return Optional.ofNullable(server.getLevel(key));
     }
 
     public BlockPos center() {

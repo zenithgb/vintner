@@ -14,6 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Locale;
+import java.util.Optional;
 
 /** Live operational summary for one named plot. */
 public record VineyardPlotReport(
@@ -30,6 +31,7 @@ public record VineyardPlotReport(
         int healthPercent
 ) {
     private static final int MAX_CONDITION_SAMPLES = 32;
+    private static final int ANALYSIS_MARGIN = 12;
     public static final int IMPROVED_IRRIGATION_MINIMUM_VINES = 4;
     public static final int IMPROVED_IRRIGATION_PERCENT = 75;
 
@@ -37,6 +39,10 @@ public record VineyardPlotReport(
             ServerLevel level,
             VineyardPlot plot
     ) {
+        TerroirReport terroir = TerroirEvaluator.inspect(
+                level,
+                plot.center()
+        );
         int vines = 0;
         int red = 0;
         int white = 0;
@@ -82,7 +88,11 @@ public record VineyardPlotReport(
 
                     if (conditionSamples < MAX_CONDITION_SAMPLES) {
                         VineyardConditionReport condition =
-                                GrapeQualityEvaluator.inspect(level, pos);
+                                GrapeQualityEvaluator.inspectWithTerroir(
+                                        level,
+                                        pos,
+                                        terroir
+                                );
                         qualityTotal += condition.qualityScore();
                         healthTotal += condition.vineHealthPoints();
                         conditionSamples++;
@@ -92,10 +102,6 @@ public record VineyardPlotReport(
             }
         }
 
-        TerroirReport terroir = TerroirEvaluator.inspect(
-                level,
-                plot.center()
-        );
         return new VineyardPlotReport(
                 plot.area(),
                 vines,
@@ -118,6 +124,39 @@ public record VineyardPlotReport(
                                 100
                         )
         );
+    }
+
+    public static Optional<VineyardPlotReport> analyzeIfLoaded(
+            ServerLevel level,
+            VineyardPlot plot
+    ) {
+        if (!level.dimension().identifier().toString().equals(plot.dimension())
+                || !hasLoadedAnalysisArea(level, plot)) {
+            return Optional.empty();
+        }
+        return Optional.of(analyze(level, plot));
+    }
+
+    private static boolean hasLoadedAnalysisArea(
+            ServerLevel level,
+            VineyardPlot plot
+    ) {
+        int minimumChunkX = (plot.minX() - ANALYSIS_MARGIN) >> 4;
+        int maximumChunkX = (plot.maxX() + ANALYSIS_MARGIN) >> 4;
+        int minimumChunkZ = (plot.minZ() - ANALYSIS_MARGIN) >> 4;
+        int maximumChunkZ = (plot.maxZ() + ANALYSIS_MARGIN) >> 4;
+        for (int chunkX = minimumChunkX;
+                chunkX <= maximumChunkX;
+                chunkX++) {
+            for (int chunkZ = minimumChunkZ;
+                    chunkZ <= maximumChunkZ;
+                    chunkZ++) {
+                if (!level.getChunkSource().hasChunk(chunkX, chunkZ)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public String varietySummary() {

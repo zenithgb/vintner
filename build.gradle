@@ -32,7 +32,9 @@ loom {
 		gameTest {
 			server()
 			name = "Vintner Game Tests"
-			runDir = "build/gametest-run"
+			runDir = providers.gradleProperty("sereneSeasonsTest").isPresent()
+					? "build/gametest-serene-run"
+					: "build/gametest-standard-run"
 			vmArg "-Dfabric-api.gametest"
 			vmArg "-Dfabric-api.gametest.report-file=${file("build/test-results/gametest/TEST-vintner.xml")}"
 		}

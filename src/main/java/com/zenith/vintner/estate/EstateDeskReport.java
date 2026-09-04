@@ -59,6 +59,7 @@ public final class EstateDeskReport {
                 );
         List<VineyardPlot> plots = VineyardPlotSavedData.get(level)
                 .plots(player.getUUID());
+        List<PlotSnapshot> plotSnapshots = analyzePlots(level, plots);
         WineMarketRegion market = WineMarketRegion.from(
                 level,
                 deskPos,
@@ -67,7 +68,7 @@ public final class EstateDeskReport {
 
         List<EstateDeskPayload.Section> sections = List.of(
                 overview(profile, reputation, plots, infrastructure, market),
-                vineyards(level, plots),
+                vineyards(plotSnapshots),
                 cellar(infrastructure),
                 markets(market),
                 ledger(entries),
@@ -96,7 +97,7 @@ public final class EstateDeskReport {
                         sections,
                         maps,
                         atlas.connected(),
-                        plotSummaries(level, plots)
+                        plotSummaries(plotSnapshots)
                 )
         );
     }
@@ -164,37 +165,45 @@ public final class EstateDeskReport {
     }
 
     private static EstateDeskPayload.Section vineyards(
-            ServerLevel level,
-            List<VineyardPlot> plots
+            List<PlotSnapshot> snapshots
     ) {
         List<Component> lines = new ArrayList<>();
-        if (plots.isEmpty()) {
+        if (snapshots.isEmpty()) {
             lines.add(line("vineyards.empty"));
         } else {
-            for (VineyardPlot plot : plots.stream()
+            for (PlotSnapshot snapshot : snapshots.stream()
                     .limit(MAX_PLOT_REPORTS)
                     .toList()) {
-                VineyardPlotReport report = VineyardPlotReport.analyze(
-                        level,
-                        plot
-                );
-                lines.add(line("vineyards.plot",
-                        plot.name(),
-                        plot.width(),
-                        plot.depth(),
-                        report.vineCount(),
-                        report.varietySummary()));
-                lines.add(line("vineyards.condition",
-                        report.healthPercent(),
-                        report.projectedYield(),
-                        report.projectedQuality(),
-                        report.irrigationPercent())
-                        .withStyle(ChatFormatting.DARK_GRAY));
+                VineyardPlot plot = snapshot.plot();
+                if (snapshot.report().isPresent()) {
+                    VineyardPlotReport report = snapshot.report().get();
+                    lines.add(line("vineyards.plot",
+                            plot.name(),
+                            plot.dimension(),
+                            plot.width(),
+                            plot.depth(),
+                            report.vineCount(),
+                            report.varietySummary()));
+                    lines.add(line("vineyards.condition",
+                            report.healthPercent(),
+                            report.projectedYield(),
+                            report.projectedQuality(),
+                            report.irrigationPercent())
+                            .withStyle(ChatFormatting.DARK_GRAY));
+                } else {
+                    lines.add(line("vineyards.plot_unloaded",
+                            plot.name(),
+                            plot.dimension(),
+                            plot.width(),
+                            plot.depth()));
+                    lines.add(line("vineyards.unloaded")
+                            .withStyle(ChatFormatting.DARK_GRAY));
+                }
             }
-            if (plots.size() > MAX_PLOT_REPORTS) {
+            if (snapshots.size() > MAX_PLOT_REPORTS) {
                 lines.add(line(
                         "vineyards.more",
-                        plots.size() - MAX_PLOT_REPORTS
+                        snapshots.size() - MAX_PLOT_REPORTS
                 ));
             }
         }
@@ -392,34 +401,60 @@ public final class EstateDeskReport {
     private record AtlasSource(List<ItemStack> maps, boolean connected) {
     }
 
-    private static List<EstateDeskPayload.PlotSummary> plotSummaries(
-            ServerLevel level,
+    private static List<PlotSnapshot> analyzePlots(
+            ServerLevel deskLevel,
             List<VineyardPlot> plots
     ) {
         return plots.stream()
-                .limit(32)
                 .map(plot -> {
-                    VineyardPlotReport report = VineyardPlotReport.analyze(
-                            level,
-                            plot
+                    Optional<VineyardPlotReport> report = plot.resolveLevel(
+                            deskLevel.getServer()
+                    ).flatMap(plotLevel ->
+                            VineyardPlotReport.analyzeIfLoaded(plotLevel, plot)
                     );
+                    return new PlotSnapshot(plot, report);
+                })
+                .toList();
+    }
+
+    private static List<EstateDeskPayload.PlotSummary> plotSummaries(
+            List<PlotSnapshot> snapshots
+    ) {
+        return snapshots.stream()
+                .limit(32)
+                .map(snapshot -> {
+                    VineyardPlot plot = snapshot.plot();
+                    Optional<VineyardPlotReport> report = snapshot.report();
                     return new EstateDeskPayload.PlotSummary(
                             plot.name(),
                             plot.dimension(),
+                            report.isPresent(),
                             plot.minX(),
                             plot.minZ(),
                             plot.maxX(),
                             plot.maxZ(),
                             plot.area(),
-                            report.vineCount(),
-                            report.varietySummary(),
-                            report.healthPercent(),
-                            report.projectedYield(),
-                            report.projectedQuality(),
-                            report.irrigationPercent()
+                            report.map(VineyardPlotReport::vineCount)
+                                    .orElse(0),
+                            report.map(VineyardPlotReport::varietySummary)
+                                    .orElse("Unavailable"),
+                            report.map(VineyardPlotReport::healthPercent)
+                                    .orElse(0),
+                            report.map(VineyardPlotReport::projectedYield)
+                                    .orElse(0),
+                            report.map(VineyardPlotReport::projectedQuality)
+                                    .orElse(0),
+                            report.map(VineyardPlotReport::irrigationPercent)
+                                    .orElse(0)
                     );
                 })
                 .toList();
+    }
+
+    private record PlotSnapshot(
+            VineyardPlot plot,
+            Optional<VineyardPlotReport> report
+    ) {
     }
 
     private static EstateDeskPayload.Section section(

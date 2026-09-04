@@ -551,15 +551,28 @@ public final class VintnerAlmanacItem extends Item {
                 );
 
         if (!registration.successful()) {
-            String key = registration.status()
-                    == VineyardPlotSavedData.Status.TOO_LARGE
-                    ? "message.vintner.plot.too_large"
-                    : "message.vintner.plot.full";
-            VintnerNotifications.send(player, Component.translatable(
-                    key,
-                    VineyardPlot.MAX_SIDE,
-                    VineyardPlotSavedData.MAX_PLOTS_PER_ESTATE
-            ).withStyle(ChatFormatting.RED));
+            Component failure = switch (registration.status()) {
+                case TOO_LARGE -> Component.translatable(
+                        "message.vintner.plot.too_large",
+                        VineyardPlot.MAX_SIDE,
+                        VineyardPlot.MAX_SIDE
+                );
+                case OVERLAPPING -> Component.translatable(
+                        "message.vintner.plot.overlapping"
+                );
+                case FULL -> Component.translatable(
+                        "message.vintner.plot.full",
+                        VineyardPlotSavedData.MAX_PLOTS_PER_ESTATE
+                );
+                default -> throw new IllegalStateException(
+                        "Unexpected failed plot registration: "
+                                + registration.status()
+                );
+            };
+            VintnerNotifications.send(
+                    player,
+                    failure.copy().withStyle(ChatFormatting.RED)
+            );
             return true;
         }
 

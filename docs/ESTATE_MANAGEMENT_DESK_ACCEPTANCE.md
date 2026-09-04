@@ -35,6 +35,8 @@ plots, or the Almanac's portable inspection role.
 7. Register multiple plots. Confirm Vineyards lists their dimensions, vines,
    varieties, health, projected yield and quality, and irrigation; test mouse
    wheel scrolling with enough entries to overflow the page.
+   Move far enough away for a plot's chunks to unload and confirm the desk marks
+   its live conditions unavailable without loading those chunks synchronously.
 8. Add and remove nearby aging barrels, barrel stands, storage, tasting
    cabinets, and archives. Reopen the desk and confirm Cellar reflects the
    current physical setup.

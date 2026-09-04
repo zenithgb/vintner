@@ -15,6 +15,8 @@ detached map menu.
    registered and the corner bookmark is cleared.
 5. Plots are limited to 32 by 32 blocks and 16 plots per estate. Reusing an
    existing name updates that plot while preserving its original creation day.
+6. Two differently named plots in the same dimension cannot overlap. Plots in
+   different dimensions may reuse the same coordinates.
 
 ## Reading a plot
 
@@ -38,3 +40,5 @@ detached map menu.
 7. Exit and reload the world, then confirm the estate and named plots remain.
 8. Repeat with an unnamed Almanac and confirm the two corners create
    `Vineyard Plot 1` without requiring an anvil.
+9. Try to register a differently named boundary that overlaps an existing plot
+   and confirm it is rejected without increasing plot count or reputation.

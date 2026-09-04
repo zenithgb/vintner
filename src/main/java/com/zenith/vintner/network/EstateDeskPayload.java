@@ -89,6 +89,7 @@ public record EstateDeskPayload(
                 plots.add(new PlotSummary(
                         buffer.readUtf(64),
                         buffer.readUtf(128),
+                        buffer.readBoolean(),
                         buffer.readInt(),
                         buffer.readInt(),
                         buffer.readInt(),
@@ -149,6 +150,7 @@ public record EstateDeskPayload(
             for (PlotSummary plot : payload.plots()) {
                 buffer.writeUtf(plot.name(), 64);
                 buffer.writeUtf(plot.dimension(), 128);
+                buffer.writeBoolean(plot.loaded());
                 buffer.writeInt(plot.minX());
                 buffer.writeInt(plot.minZ());
                 buffer.writeInt(plot.maxX());
@@ -225,6 +227,7 @@ public record EstateDeskPayload(
     public record PlotSummary(
             String name,
             String dimension,
+            boolean loaded,
             int minX,
             int minZ,
             int maxX,

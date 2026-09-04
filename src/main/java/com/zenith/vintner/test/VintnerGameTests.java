@@ -112,6 +112,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffects;
@@ -135,6 +136,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -4077,6 +4079,83 @@ public final class VintnerGameTests {
         helper.assertTrue(
                 report.projectedYield() > 0,
                 "Mature vines should contribute to projected yield"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void overlappingNamedPlotsAreRejected(
+            GameTestHelper helper
+    ) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        VineyardPlotSavedData plots = VineyardPlotSavedData.get(
+                helper.getLevel()
+        );
+        VineyardPlotSavedData.Registration first = plots.register(
+                owner,
+                helper.getLevel(),
+                helper.absolutePos(new BlockPos(1, 1, 1)),
+                helper.absolutePos(new BlockPos(5, 1, 5)),
+                "Upper Slope"
+        );
+        VineyardPlotSavedData.Registration overlapping = plots.register(
+                owner,
+                helper.getLevel(),
+                helper.absolutePos(new BlockPos(4, 1, 4)),
+                helper.absolutePos(new BlockPos(8, 1, 8)),
+                "Lower Slope"
+        );
+
+        helper.assertValueEqual(
+                first.status(),
+                VineyardPlotSavedData.Status.CREATED,
+                "The first distinct vineyard boundary should be registered"
+        );
+        helper.assertValueEqual(
+                overlapping.status(),
+                VineyardPlotSavedData.Status.OVERLAPPING,
+                "A differently named overlapping boundary should be rejected"
+        );
+        helper.assertValueEqual(
+                plots.plots(owner.getUUID()).size(),
+                1,
+                "Rejected overlap must not increase the estate plot count"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void plotReportsResolveAndGuardSavedDimensions(
+            GameTestHelper helper
+    ) {
+        var server = helper.getLevel().getServer();
+        ServerLevel nether = server.getLevel(Level.NETHER);
+        helper.assertTrue(
+                nether != null,
+                "The GameTest server should expose its Nether level"
+        );
+        VineyardPlot netherPlot = new VineyardPlot(
+                UUID.randomUUID().toString(),
+                "Nether Terrace",
+                Level.NETHER.identifier().toString(),
+                0,
+                0,
+                3,
+                3,
+                64,
+                0L
+        );
+
+        helper.assertTrue(
+                netherPlot.resolveLevel(server).orElse(null) == nether,
+                "A saved plot dimension should resolve to its matching level"
+        );
+        helper.assertTrue(
+                VineyardPlotReport.analyzeIfLoaded(
+                        helper.getLevel(),
+                        netherPlot
+                ).isEmpty(),
+                "A plot must never be analyzed against a different dimension"
         );
         helper.succeed();
     }

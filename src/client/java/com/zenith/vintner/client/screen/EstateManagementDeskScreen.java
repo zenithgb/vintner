@@ -674,29 +674,41 @@ public final class EstateManagementDeskScreen extends Screen {
         }
 
         EstateDeskPayload.PlotSummary plot = payload.plots().get(selectedPlot);
-        List<Component> lines = List.of(
-                Component.translatable(
-                        "screen.vintner.estate_desk.map.size",
-                        plot.width(),
-                        plot.depth(),
-                        plot.area()
-                ),
-                Component.translatable(
-                        "screen.vintner.estate_desk.map.vines",
-                        plot.vineCount(),
-                        plot.variety()
-                ),
-                Component.translatable(
-                        "screen.vintner.estate_desk.map.condition",
-                        plot.health(),
-                        plot.projectedQuality()
-                ),
-                Component.translatable(
-                        "screen.vintner.estate_desk.map.output",
-                        plot.projectedYield(),
-                        plot.irrigation()
+        List<Component> lines = plot.loaded()
+                ? List.of(
+                        Component.translatable(
+                                "screen.vintner.estate_desk.map.size",
+                                plot.width(),
+                                plot.depth(),
+                                plot.area()
+                        ),
+                        Component.translatable(
+                                "screen.vintner.estate_desk.map.vines",
+                                plot.vineCount(),
+                                plot.variety()
+                        ),
+                        Component.translatable(
+                                "screen.vintner.estate_desk.map.condition",
+                                plot.health(),
+                                plot.projectedQuality()
+                        ),
+                        Component.translatable(
+                                "screen.vintner.estate_desk.map.output",
+                                plot.projectedYield(),
+                                plot.irrigation()
+                        )
                 )
-        );
+                : List.of(
+                        Component.translatable(
+                                "screen.vintner.estate_desk.map.size",
+                                plot.width(),
+                                plot.depth(),
+                                plot.area()
+                        ),
+                        Component.translatable(
+                                "screen.vintner.estate_desk.map.unloaded"
+                        )
+                );
         int y = detailsY;
         for (Component line : lines) {
             for (FormattedCharSequence wrapped : font.split(
