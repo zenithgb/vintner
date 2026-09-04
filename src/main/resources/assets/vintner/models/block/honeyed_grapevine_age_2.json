@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "vintner:block/honeyed_grapevine_age_2"
+  }
+}

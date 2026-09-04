@@ -1060,7 +1060,7 @@ public final class VintnerGameTests {
         assertTradeProgression(
                 helper,
                 winemaker,
-                new int[]{4, 9, 15, 19, 23},
+                new int[]{4, 9, 13, 17, 19},
                 "Winemaker"
         );
         assertTradeProgression(
@@ -1072,7 +1072,7 @@ public final class VintnerGameTests {
 
         helper.assertValueEqual(
                 winemaker.getOffers().size(),
-                23,
+                19,
                 "A master Winemaker should expose all five trade tiers"
         );
         helper.assertValueEqual(
@@ -1128,7 +1128,7 @@ public final class VintnerGameTests {
         ModTrades.refreshVillagerOffers(cooper);
         helper.assertValueEqual(
                 winemaker.getOffers().size(),
-                23,
+                19,
                 "Refreshing Winemaker trades must not create duplicates"
         );
         helper.assertValueEqual(
@@ -8233,7 +8233,9 @@ public final class VintnerGameTests {
         ages.plant(absoluteRoot, 12L);
 
         ItemStack knife = new ItemStack(ModItems.GRAFTING_KNIFE);
-        ItemStack cutting = new ItemStack(ModItems.WHITE_GRAPE_CUTTING);
+        ItemStack cutting = ModItems.cultivarCutting(
+                GrapeCultivar.STONEFLOWER
+        );
 
         helper.assertValueEqual(
                 GraftingKnifeItem.graft(
@@ -8251,6 +8253,16 @@ public final class VintnerGameTests {
         helper.assertBlockPresent(whiteUpper, UPPER);
         helper.assertBlockProperty(FIRST, GrapevineBlock.AGE, 2);
         helper.assertBlockProperty(UPPER, GrapevineBlock.AGE, 2);
+        helper.assertBlockProperty(
+                FIRST,
+                GrapevineBlock.CULTIVAR,
+                GrapeCultivar.STONEFLOWER.visualIndex()
+        );
+        helper.assertBlockProperty(
+                UPPER,
+                GrapevineBlock.CULTIVAR,
+                GrapeCultivar.STONEFLOWER.visualIndex()
+        );
         helper.assertValueEqual(
                 ages.ageDays(absoluteRoot, 108L),
                 96L,
@@ -8806,23 +8818,33 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void expandedCultivarRosterHasDistinctStrategies(
+    public void focusedCultivarRosterHasDistinctStrategiesAndVisuals(
             GameTestHelper helper
     ) {
         helper.assertValueEqual(
-                GrapeCultivar.values().length,
-                12,
-                "The expanded roster should contain twelve cultivars"
+                GrapeCultivar.activeValues().size(),
+                8,
+                "The release roster should contain eight cultivars"
         );
         helper.assertTrue(
-                GrapeCultivar.SUNCREST.maximumHarvest()
+                GrapeCultivar.activeValues().stream().allMatch(
+                        GrapeCultivar::isActive
+                ),
+                "Every released cultivar should be marked active"
+        );
+        helper.assertFalse(
+                GrapeCultivar.IRONWOOD_RED.isActive(),
+                "Retired pre-release cultivars should remain readable only"
+        );
+        helper.assertTrue(
+                GrapeCultivar.RIVER_GARNET.maximumHarvest()
                         > GrapeCultivar.EMBER_NOIR.maximumHarvest(),
-                "Suncrest should trade cellar potential for higher yield"
+                "Riverside should trade cellar potential for higher yield"
         );
         helper.assertTrue(
-                GrapeCultivar.IRONWOOD_RED.ageingPotential()
+                GrapeCultivar.EMBER_NOIR.ageingPotential()
                         > GrapeCultivar.SUNCREST.ageingPotential(),
-                "Ironwood Red should be the stronger cellaring choice"
+                "Crimson should be the stronger cellaring choice"
         );
         helper.assertTrue(
                 GrapeCultivar.FROSTLING.healthBonus(
@@ -8830,8 +8852,30 @@ public final class VintnerGameTests {
                 ) > GrapeCultivar.HONEYCREST.healthBonus(
                         VineyardThreat.FROST_DAMAGE
                 ),
-                "Frostling should reward cold-climate planting"
+                "Frosted should reward cold-climate planting"
         );
+        for (GrapeCultivar cultivar : GrapeCultivar.activeValues()) {
+            helper.assertValueEqual(
+                    ModItems.cultivarCutting(cultivar).get(
+                            DataComponents.ITEM_MODEL
+                    ),
+                    Identifier.fromNamespaceAndPath(
+                            "vintner",
+                            cultivar.visualName() + "_grape_cutting"
+                    ),
+                    "Each cultivar cutting should select its own item model"
+            );
+            helper.assertValueEqual(
+                    ModItems.cultivarGrapes(cultivar).get(
+                            DataComponents.ITEM_MODEL
+                    ),
+                    Identifier.fromNamespaceAndPath(
+                            "vintner",
+                            cultivar.visualName() + "_grapes"
+                    ),
+                    "Each cultivar harvest should select its own item model"
+            );
+        }
         helper.succeed();
     }
 
@@ -8848,7 +8892,7 @@ public final class VintnerGameTests {
         helper.setBlock(FIRST, ModBlocks.OAK_TRELLIS);
 
         ItemStack cutting = ModItems.cultivarCutting(
-                GrapeCultivar.NIGHTBERRY
+                GrapeCultivar.RIVER_GARNET
         );
         player.setItemInHand(InteractionHand.MAIN_HAND, cutting);
         helper.assertValueEqual(
@@ -8869,8 +8913,15 @@ public final class VintnerGameTests {
         );
         helper.assertValueEqual(
                 management.cultivar(absoluteRoot, GrapeVariety.RED),
-                GrapeCultivar.NIGHTBERRY,
+                GrapeCultivar.RIVER_GARNET,
                 "Planting should preserve cultivar identity"
+        );
+        helper.assertValueEqual(
+                helper.getBlockState(FIRST).getValue(
+                        GrapevineBlock.CULTIVAR
+                ),
+                GrapeCultivar.RIVER_GARNET.visualIndex(),
+                "Planting should select the cultivar's vine palette"
         );
         management.remove(absoluteRoot);
         helper.succeed();
@@ -8885,7 +8936,7 @@ public final class VintnerGameTests {
         BlockPos absoluteBed = helper.absolutePos(FIRST);
         helper.setBlock(FIRST, ModBlocks.NURSERY_BED);
         ItemStack cutting = ModItems.cultivarCutting(
-                GrapeCultivar.SILVERLEAF
+                GrapeCultivar.FROSTLING
         );
         player.setItemInHand(InteractionHand.MAIN_HAND, cutting);
         player.gameMode.useItemOn(
@@ -8924,7 +8975,11 @@ public final class VintnerGameTests {
                         && GraftedCuttingData.cultivar(
                                 stack,
                                 GrapeVariety.WHITE
-                        ) == GrapeCultivar.SILVERLEAF
+                        ) == GrapeCultivar.FROSTLING
+                        && Identifier.fromNamespaceAndPath(
+                                "vintner",
+                                "frosted_grape_cutting"
+                        ).equals(stack.get(DataComponents.ITEM_MODEL))
         );
         helper.assertTrue(
                 found,
@@ -8944,8 +8999,8 @@ public final class VintnerGameTests {
         WineMetadata.applyProfile(first, 2, WineQualityProfile.vineyard(55));
         WineMetadata.applyProfile(second, 2, WineQualityProfile.vineyard(55));
         WineMetadata.applyProfile(different, 2, WineQualityProfile.vineyard(55));
-        WineMetadata.applyCultivar(first, GrapeCultivar.IRONWOOD_RED);
-        WineMetadata.applyCultivar(second, GrapeCultivar.IRONWOOD_RED);
+        WineMetadata.applyCultivar(first, GrapeCultivar.EMBER_NOIR);
+        WineMetadata.applyCultivar(second, GrapeCultivar.EMBER_NOIR);
         WineMetadata.applyCultivar(different, GrapeCultivar.VALE_PINOT);
         helper.assertTrue(
                 ItemStack.isSameItemSameComponents(first, second),
@@ -8970,7 +9025,7 @@ public final class VintnerGameTests {
         );
         helper.assertValueEqual(
                 WineMetadata.provenance(press.bottleOneMust()).variety(),
-                GrapeCultivar.IRONWOOD_RED.serializedName(),
+                GrapeCultivar.EMBER_NOIR.serializedName(),
                 "Pressing should establish cultivar-specific provenance"
         );
         helper.succeed();
@@ -8980,7 +9035,7 @@ public final class VintnerGameTests {
     public void cultivarAgeingPotentialChangesWineTimeline(
             GameTestHelper helper
     ) {
-        long cellarAge = 50L * 24000L;
+        long cellarAge = 40L * 24000L;
         WineAgeStage fastAgeing = WineAgeStage.from(
                 cellarAge,
                 0,
@@ -8991,7 +9046,7 @@ public final class VintnerGameTests {
                 cellarAge,
                 0,
                 WineQuality.TABLE,
-                GrapeCultivar.IRONWOOD_RED.ageingMultiplier()
+                GrapeCultivar.EMBER_NOIR.ageingMultiplier()
         );
 
         helper.assertValueEqual(

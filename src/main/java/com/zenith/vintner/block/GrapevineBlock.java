@@ -60,6 +60,8 @@ public abstract class GrapevineBlock
     public static final IntegerProperty AGE = BlockStateProperties.AGE_3;
     public static final BooleanProperty UPPER =
             BooleanProperty.create("upper");
+    public static final IntegerProperty CULTIVAR =
+            IntegerProperty.create("cultivar", 0, 3);
 
     private static final VoxelShape YOUNG_VINE_SHAPE =
             Block.box(5.0, 0.0, 5.0, 11.0, 12.0, 11.0);
@@ -91,6 +93,7 @@ public abstract class GrapevineBlock
                         .setValue(HAS_ABOVE, false)
                         .setValue(HAS_BELOW, false)
                         .setValue(UPPER, false)
+                        .setValue(CULTIVAR, 0)
                         .setValue(AGE, 0)
         );
     }
@@ -210,6 +213,9 @@ public abstract class GrapevineBlock
                 state = state.setValue(
                         AGE,
                         neighbourState.getValue(AGE)
+                ).setValue(
+                        CULTIVAR,
+                        neighbourState.getValue(CULTIVAR)
                 );
             } else {
                 return copyTrellisProperties(
@@ -268,6 +274,19 @@ public abstract class GrapevineBlock
         SeasonalContext seasonalContext = SeasonalContext.current(level);
         GrapeCultivar cultivar = VineManagementSavedData.get(level)
                 .cultivar(pos, variety);
+        int visualIndex = cultivar.visualIndex();
+        if (state.getValue(CULTIVAR) != visualIndex) {
+            state = state.setValue(CULTIVAR, visualIndex);
+            level.setBlock(pos, state, Block.UPDATE_CLIENTS);
+            BlockState upperState = level.getBlockState(pos.above());
+            if (isMatchingUpper(upperState)) {
+                level.setBlock(
+                        pos.above(),
+                        upperState.setValue(CULTIVAR, visualIndex),
+                        Block.UPDATE_CLIENTS
+                );
+            }
+        }
         if (age < MAX_AGE
                 && seasonalContext.season().shouldGrow(
                         random,
@@ -383,7 +402,12 @@ public abstract class GrapevineBlock
                 .setValue(AGE, age);
 
         BlockState grownUpper = isMatchingUpper(upperState)
-                ? upperState.setValue(AGE, age)
+                ? upperState
+                        .setValue(AGE, age)
+                        .setValue(
+                                CULTIVAR,
+                                rootState.getValue(CULTIVAR)
+                        )
                 : copyTrellisProperties(
                         upperState,
                         ModBlocks.grapevine(
@@ -393,6 +417,10 @@ public abstract class GrapevineBlock
                         ).defaultBlockState()
                 )
                 .setValue(UPPER, true)
+                .setValue(
+                        CULTIVAR,
+                        rootState.getValue(CULTIVAR)
+                )
                 .setValue(AGE, age);
 
         level.setBlock(
@@ -988,6 +1016,7 @@ public abstract class GrapevineBlock
                 HAS_ABOVE,
                 HAS_BELOW,
                 UPPER,
+                CULTIVAR,
                 AGE
         );
     }

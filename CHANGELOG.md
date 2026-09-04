@@ -6,8 +6,9 @@ All notable changes to Vintner are documented in this file.
 
 ### Added
 
-- Twelve persistent grape cultivars with distinct site preferences, yields,
-  resistance, wine styles, benefits, and ageing potential.
+- Eight focused grape cultivars with distinct names, cutting and fruit icons,
+  planted-vine palettes, site preferences, yields, resistance, wine styles,
+  benefits, and ageing potential.
 - Vine age, grafting, nursery propagation, strategic rootstocks, vineyard
   netting, and balanced, quality-focused, or high-yield management modes.
 - Seasonal vineyard weather and pressure from drought, frost, heat, rot,

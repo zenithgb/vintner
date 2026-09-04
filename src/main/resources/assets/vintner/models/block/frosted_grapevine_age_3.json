@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "vintner:block/frosted_grapevine_age_3"
+  }
+}

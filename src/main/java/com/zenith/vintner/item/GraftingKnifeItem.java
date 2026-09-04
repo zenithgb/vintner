@@ -184,11 +184,31 @@ public final class GraftingKnifeItem extends Item {
         if (level instanceof ServerLevel serverLevel) {
             boolean changesColour = rootVine.getVariety() != targetVariety;
             BlockState graftedRoot = changesColour
-                    ? graftedState(rootState, targetVariety, false)
-                    : rootState.setValue(GrapevineBlock.AGE, 2);
+                    ? graftedState(
+                            rootState,
+                            targetVariety,
+                            targetCultivar,
+                            false
+                    )
+                    : rootState
+                            .setValue(GrapevineBlock.AGE, 2)
+                            .setValue(
+                                    GrapevineBlock.CULTIVAR,
+                                    targetCultivar.visualIndex()
+                            );
             BlockState graftedUpper = changesColour
-                    ? graftedState(upperState, targetVariety, true)
-                    : upperState.setValue(GrapevineBlock.AGE, 2);
+                    ? graftedState(
+                            upperState,
+                            targetVariety,
+                            targetCultivar,
+                            true
+                    )
+                    : upperState
+                            .setValue(GrapevineBlock.AGE, 2)
+                            .setValue(
+                                    GrapevineBlock.CULTIVAR,
+                                    targetCultivar.visualIndex()
+                            );
 
             int atomicFlags = Block.UPDATE_CLIENTS
                     | Block.UPDATE_KNOWN_SHAPE;
@@ -246,6 +266,7 @@ public final class GraftingKnifeItem extends Item {
     private static BlockState graftedState(
             BlockState source,
             GrapeVariety targetVariety,
+            GrapeCultivar targetCultivar,
             boolean upper
     ) {
         WoodVariant woodVariant =
@@ -265,6 +286,10 @@ public final class GraftingKnifeItem extends Item {
                 .setValue(TrellisBlock.HAS_ABOVE, source.getValue(TrellisBlock.HAS_ABOVE))
                 .setValue(TrellisBlock.HAS_BELOW, source.getValue(TrellisBlock.HAS_BELOW))
                 .setValue(GrapevineBlock.UPPER, upper)
+                .setValue(
+                        GrapevineBlock.CULTIVAR,
+                        targetCultivar.visualIndex()
+                )
                 .setValue(GrapevineBlock.AGE, 2);
     }
 

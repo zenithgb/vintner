@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "vintner:block/riverside_grapevine_age_3"
+  }
+}

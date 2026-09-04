@@ -2,6 +2,7 @@ package com.zenith.vintner.vineyard;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 
@@ -45,6 +46,13 @@ public final class GraftedCuttingData {
         ).copyTag();
         tag.putString(CULTIVAR_KEY, cultivar.serializedName());
         cutting.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        cutting.set(
+                DataComponents.ITEM_MODEL,
+                Identifier.fromNamespaceAndPath(
+                        "vintner",
+                        cultivar.visualName() + "_grape_cutting"
+                )
+        );
     }
 
     public static GrapeCultivar cultivar(

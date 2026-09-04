@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import copy
 import binascii
+import colorsys
 import json
 import struct
 import zlib
@@ -98,6 +99,23 @@ GLASS_COLORS = (
     "black",
 )
 
+CULTIVAR_VISUALS = {
+    "red": (
+        ("crimson", 0.98, 0.82, 0.24, 0.72),
+        ("shaded", 0.91, 0.66, 0.39, 0.52),
+        ("sunlit", 0.03, 0.84, 0.19, 0.66),
+        ("riverside", 0.95, 0.70, 0.30, 0.74),
+    ),
+    "white": (
+        ("golden", 0.14, 0.62, 0.26, 0.66),
+        ("frosted", 0.20, 0.20, 0.43, 0.42),
+        ("honeyed", 0.10, 0.72, 0.22, 0.54),
+        ("stony", 0.23, 0.28, 0.31, 0.38),
+    ),
+}
+
+GRAPEVINE_STAGES = ("0", "1", "2", "3", "3_b", "3_c")
+
 
 def write_json(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -136,6 +154,154 @@ def write_rgba_texture(
     )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(png)
+
+
+def read_rgba_texture(
+    path: Path,
+) -> list[list[tuple[int, int, int, int]]]:
+    """Read the small non-interlaced RGBA PNGs used as palette sources."""
+    contents = path.read_bytes()
+    if contents[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError(f"Not a PNG: {path}")
+
+    offset = 8
+    compressed = bytearray()
+    width = height = bit_depth = color_type = interlace = None
+    while offset < len(contents):
+        length = struct.unpack(">I", contents[offset:offset + 4])[0]
+        kind = contents[offset + 4:offset + 8]
+        payload = contents[offset + 8:offset + 8 + length]
+        offset += length + 12
+        if kind == b"IHDR":
+            (
+                width,
+                height,
+                bit_depth,
+                color_type,
+                _,
+                _,
+                interlace,
+            ) = struct.unpack(">IIBBBBB", payload)
+        elif kind == b"IDAT":
+            compressed.extend(payload)
+        elif kind == b"IEND":
+            break
+
+    if bit_depth != 8 or color_type != 6 or interlace != 0:
+        raise ValueError(f"Expected a non-interlaced RGBA PNG: {path}")
+
+    data = zlib.decompress(bytes(compressed))
+    stride = width * 4
+    previous = [0] * stride
+    rows = []
+    cursor = 0
+
+    for _ in range(height):
+        filter_type = data[cursor]
+        cursor += 1
+        scanline = list(data[cursor:cursor + stride])
+        cursor += stride
+        decoded = []
+
+        for index, value in enumerate(scanline):
+            left = decoded[index - 4] if index >= 4 else 0
+            above = previous[index]
+            upper_left = previous[index - 4] if index >= 4 else 0
+            if filter_type == 0:
+                predictor = 0
+            elif filter_type == 1:
+                predictor = left
+            elif filter_type == 2:
+                predictor = above
+            elif filter_type == 3:
+                predictor = (left + above) // 2
+            elif filter_type == 4:
+                estimate = left + above - upper_left
+                distances = (
+                    abs(estimate - left),
+                    abs(estimate - above),
+                    abs(estimate - upper_left),
+                )
+                predictor = (left, above, upper_left)[distances.index(min(distances))]
+            else:
+                raise ValueError(f"Unsupported PNG filter {filter_type}: {path}")
+            decoded.append((value + predictor) & 0xFF)
+
+        rows.append([
+            tuple(decoded[index:index + 4])
+            for index in range(0, stride, 4)
+        ])
+        previous = decoded
+
+    return rows
+
+
+def recolor_pixel(
+    pixel: tuple[int, int, int, int],
+    hue: float,
+    saturation: float,
+) -> tuple[int, int, int, int]:
+    red, green, blue, alpha = pixel
+    _, _, value = colorsys.rgb_to_hsv(
+        red / 255.0,
+        green / 255.0,
+        blue / 255.0,
+    )
+    recolored = colorsys.hsv_to_rgb(hue, saturation, value)
+    return tuple(round(channel * 255) for channel in recolored) + (alpha,)
+
+
+def recolor_cultivar_texture(
+    rows: list[list[tuple[int, int, int, int]]],
+    color: str,
+    fruit_hue: float,
+    fruit_saturation: float,
+    leaf_hue: float,
+    leaf_saturation: float,
+) -> list[list[tuple[int, int, int, int]]]:
+    recolored = []
+    for row in rows:
+        output_row = []
+        for pixel in row:
+            red, green, blue, alpha = pixel
+            if alpha == 0:
+                output_row.append(pixel)
+                continue
+
+            is_leaf = (
+                green > red * 1.10
+                and green > blue * 1.35
+            )
+            is_red_fruit = (
+                color == "red"
+                and red > 45
+                and green < red * 0.46
+                and blue < red * 0.55
+            )
+            is_white_fruit = (
+                color == "white"
+                and red > 88
+                and green >= red * 0.68
+                and green <= red * 1.20
+                and blue < red * 0.62
+            )
+
+            if is_red_fruit or is_white_fruit:
+                output_row.append(recolor_pixel(
+                    pixel,
+                    fruit_hue,
+                    fruit_saturation,
+                ))
+            elif is_leaf:
+                output_row.append(recolor_pixel(
+                    pixel,
+                    leaf_hue,
+                    leaf_saturation,
+                ))
+            else:
+                output_row.append(pixel)
+        recolored.append(output_row)
+    return recolored
 
 
 def generate_white_wine_texture() -> None:
@@ -389,6 +555,174 @@ def generate_trellis_blockstates() -> None:
             ASSETS / f"blockstates/{trellis_id(wood)}.json",
             state,
         )
+
+
+def apply_uses_grapevine_model(value: object, color: str) -> bool:
+    if isinstance(value, dict):
+        return any(
+            apply_uses_grapevine_model(child, color)
+            for child in value.values()
+        )
+    if isinstance(value, list):
+        return any(
+            apply_uses_grapevine_model(child, color)
+            for child in value
+        )
+    return (
+        isinstance(value, str)
+        and value.startswith(f"vintner:block/{color}_grapevine_age_")
+    ) or (
+        isinstance(value, str)
+        and any(
+            value.startswith(f"vintner:block/{name}_grapevine_age_")
+            for name, *_ in CULTIVAR_VISUALS[color]
+        )
+    )
+
+
+def cultivar_vine_parts(color: str) -> list[dict[str, object]]:
+    parts = []
+    for index, (name, *_) in enumerate(CULTIVAR_VISUALS[color]):
+        parts.extend((
+            {
+                "when": {
+                    "age": "0",
+                    "cultivar": str(index),
+                    "upper": "false",
+                },
+                "apply": {
+                    "model": f"vintner:block/{name}_grapevine_age_0",
+                },
+            },
+            {
+                "when": {
+                    "age": "1|2|3",
+                    "cultivar": str(index),
+                    "upper": "false",
+                },
+                "apply": {
+                    "model": f"vintner:block/{name}_grapevine_age_1",
+                },
+            },
+            {
+                "when": {
+                    "age": "2",
+                    "cultivar": str(index),
+                    "upper": "true",
+                },
+                "apply": {
+                    "model": f"vintner:block/{name}_grapevine_age_2",
+                },
+            },
+            {
+                "when": {
+                    "age": "3",
+                    "cultivar": str(index),
+                    "upper": "true",
+                },
+                "apply": [
+                    {
+                        "model": f"vintner:block/{name}_grapevine_age_3",
+                    },
+                    {
+                        "model": f"vintner:block/{name}_grapevine_age_3_b",
+                    },
+                    {
+                        "model": f"vintner:block/{name}_grapevine_age_3_c",
+                    },
+                ],
+            },
+        ))
+    return parts
+
+
+def generate_cultivar_assets() -> None:
+    for color, cultivars in CULTIVAR_VISUALS.items():
+        for (
+            name,
+            fruit_hue,
+            fruit_saturation,
+            leaf_hue,
+            leaf_saturation,
+        ) in cultivars:
+            for stage in GRAPEVINE_STAGES:
+                source = ASSETS / f"textures/block/{color}_grapevine_age_{stage}.png"
+                rows = read_rgba_texture(source)
+                write_rgba_texture(
+                    ASSETS / f"textures/block/{name}_grapevine_age_{stage}.png",
+                    recolor_cultivar_texture(
+                        rows,
+                        color,
+                        fruit_hue,
+                        fruit_saturation,
+                        leaf_hue,
+                        leaf_saturation,
+                    ),
+                )
+                write_json(
+                    ASSETS / f"models/block/{name}_grapevine_age_{stage}.json",
+                    {
+                        "parent": "minecraft:block/cross",
+                        "textures": {
+                            "cross": f"vintner:block/{name}_grapevine_age_{stage}",
+                        },
+                    },
+                )
+
+            source_grapes = read_rgba_texture(
+                ASSETS / f"textures/item/{color}_grapes.png"
+            )
+            write_rgba_texture(
+                ASSETS / f"textures/item/{name}_grapes.png",
+                recolor_cultivar_texture(
+                    source_grapes,
+                    color,
+                    fruit_hue,
+                    fruit_saturation,
+                    leaf_hue,
+                    leaf_saturation,
+                ),
+            )
+
+            item_models = {
+                f"{name}_grape_cutting": (
+                    f"vintner:block/{name}_grapevine_age_0"
+                ),
+                f"{name}_grapes": f"vintner:item/{name}_grapes",
+            }
+            for item_id, texture in item_models.items():
+                write_json(
+                    ASSETS / f"models/item/{item_id}.json",
+                    {
+                        "parent": "minecraft:item/generated",
+                        "textures": {"layer0": texture},
+                    },
+                )
+                write_json(
+                    ASSETS / f"items/{item_id}.json",
+                    {
+                        "model": {
+                            "type": "minecraft:model",
+                            "model": f"vintner:item/{item_id}",
+                        }
+                    },
+                )
+
+        state_path = ASSETS / f"blockstates/{color}_grapevine.json"
+        state = read_json(state_path)
+        multipart = state["multipart"]
+        first_vine = next(
+            index
+            for index, part in enumerate(multipart)
+            if apply_uses_grapevine_model(part.get("apply", {}), color)
+        )
+        retained = [
+            part
+            for part in multipart
+            if not apply_uses_grapevine_model(part.get("apply", {}), color)
+        ]
+        retained[first_vine:first_vine] = cultivar_vine_parts(color)
+        write_json(state_path, {"multipart": retained})
 
 
 def generate_grapevine_blockstates() -> None:
@@ -2224,6 +2558,7 @@ def generate_language() -> None:
 def main() -> None:
     generate_trellis_models()
     generate_trellis_blockstates()
+    generate_cultivar_assets()
     generate_grapevine_blockstates()
     generate_machine_models()
     generate_canonical_bottle_models()

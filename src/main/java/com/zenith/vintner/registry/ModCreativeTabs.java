@@ -46,7 +46,7 @@ public final class ModCreativeTabs {
                                 ModBlocks.TRELLISES.values()
                                         .forEach(output::accept);
                                 for (GrapeCultivar cultivar
-                                        : GrapeCultivar.values()) {
+                                        : GrapeCultivar.activeValues()) {
                                     output.accept(
                                             ModItems.cultivarCutting(cultivar)
                                     );
@@ -58,8 +58,12 @@ public final class ModCreativeTabs {
                                 output.accept(ModItems.GRAFTING_KNIFE);
                                 output.accept(ModItems.VINEYARD_NETTING);
                                 output.accept(ModBlocks.NURSERY_BED);
-                                output.accept(ModItems.RED_GRAPES);
-                                output.accept(ModItems.WHITE_GRAPES);
+                                for (GrapeCultivar cultivar
+                                        : GrapeCultivar.activeValues()) {
+                                    output.accept(
+                                            ModItems.cultivarGrapes(cultivar)
+                                    );
+                                }
                                 ModBlocks.GRAPE_PRESSES.values()
                                         .forEach(output::accept);
                                 output.accept(ModItems.RED_MUST);

@@ -77,6 +77,10 @@ public final class GrapeCuttingItem extends Item {
 
         if (level instanceof ServerLevel serverLevel) {
             Player player = context.getPlayer();
+            GrapeCultivar cultivar = GraftedCuttingData.cultivar(
+                    context.getItemInHand(),
+                    variety
+            );
             BlockState plantedState = grapevine
                     .defaultBlockState()
                     .setValue(
@@ -110,6 +114,10 @@ public final class GrapeCuttingItem extends Item {
                     .setValue(
                             TrellisBlock.HAS_BELOW,
                             trellisState.getValue(TrellisBlock.HAS_BELOW)
+                    )
+                    .setValue(
+                            GrapevineBlock.CULTIVAR,
+                            cultivar.visualIndex()
                     );
 
             serverLevel.setBlock(
@@ -125,10 +133,7 @@ public final class GrapeCuttingItem extends Item {
             );
             VineManagementSavedData.get(serverLevel).setCultivar(
                     plantingPos,
-                    GraftedCuttingData.cultivar(
-                            context.getItemInHand(),
-                            variety
-                    )
+                    cultivar
             );
             serverLevel.gameEvent(
                     GameEvent.BLOCK_CHANGE,
@@ -148,10 +153,7 @@ public final class GrapeCuttingItem extends Item {
                 EstateLedgerSavedData.get(serverLevel).record(
                         serverPlayer,
                         LedgerEventType.PLANTING,
-                        plotName + GraftedCuttingData.cultivar(
-                                context.getItemInHand(),
-                                variety
-                        ).serializedName(),
+                        plotName + cultivar.serializedName(),
                         1,
                         0L,
                         0

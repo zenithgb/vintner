@@ -15,6 +15,7 @@ import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.vineyard.GrapeCultivar;
 import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.vineyard.GraftedCuttingData;
+import com.zenith.vintner.wine.WineMetadata;
 import net.minecraft.core.component.DataComponents;
 import com.zenith.vintner.Vintner;
 import com.zenith.vintner.item.GrapeItem;
@@ -232,7 +233,7 @@ public final class ModItems {
                 )
                 .register(output -> {
                     output.accept(COMPOST);
-                    for (GrapeCultivar cultivar : GrapeCultivar.values()) {
+                    for (GrapeCultivar cultivar : GrapeCultivar.activeValues()) {
                         output.accept(cultivarCutting(cultivar));
                     }
                     output.accept(ROOTSTOCK_CUTTING);
@@ -251,8 +252,9 @@ public final class ModItems {
                         CreativeModeTabs.FOOD_AND_DRINKS
                 )
                 .register(output -> {
-                    output.accept(RED_GRAPES);
-                    output.accept(WHITE_GRAPES);
+                    for (GrapeCultivar cultivar : GrapeCultivar.activeValues()) {
+                        output.accept(cultivarGrapes(cultivar));
+                    }
                     output.accept(RED_MUST);
                     output.accept(WHITE_MUST);
                     output.accept(RED_WINE);
@@ -270,5 +272,15 @@ public final class ModItems {
         );
         GraftedCuttingData.applyCultivar(cutting, cultivar);
         return cutting;
+    }
+
+    public static ItemStack cultivarGrapes(GrapeCultivar cultivar) {
+        ItemStack grapes = new ItemStack(
+                cultivar.variety() == GrapeVariety.RED
+                        ? RED_GRAPES
+                        : WHITE_GRAPES
+        );
+        WineMetadata.applyCultivar(grapes, cultivar);
+        return grapes;
     }
 }

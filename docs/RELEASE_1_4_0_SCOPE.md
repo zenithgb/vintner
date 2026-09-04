@@ -6,8 +6,9 @@ the world; the management layer reports, organizes, and explains that work.
 
 ## Included vineyard systems
 
-- Twelve named red and white cultivars carried through cutting, planting,
-  grafting, harvest, pressing, fermentation, ageing, storage, and inspection.
+- Eight named red and white cultivars, each with distinct cutting, grape, and
+  planted-vine visuals, carried through planting, grafting, harvest, pressing,
+  fermentation, ageing, storage, and inspection.
 - Persistent vine age with separate yield and quality trade-offs.
 - Nursery Bed propagation, adapted and resistant rootstocks, and grafting.
 - Balanced, Quality Focus, and High Yield vineyard management.

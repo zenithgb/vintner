@@ -99,9 +99,7 @@ public final class ModTrades {
 
         if (level >= 3) {
             addCultivarOffer(offers, 3, GrapeCultivar.SUNCREST, 15);
-            addCultivarOffer(offers, 3, GrapeCultivar.GREENWAKE, 15);
-            addCultivarOffer(offers, 3, GrapeCultivar.IRONWOOD_RED, 15);
-            addCultivarOffer(offers, 3, GrapeCultivar.SILVERLEAF, 15);
+            addCultivarOffer(offers, 3, GrapeCultivar.HONEYCREST, 15);
             addSellOffer(
                     offers,
                     5,
@@ -119,15 +117,13 @@ public final class ModTrades {
         }
 
         if (level >= 4) {
-            addCultivarOffer(offers, 4, GrapeCultivar.NIGHTBERRY, 20);
-            addCultivarOffer(offers, 4, GrapeCultivar.HONEYCREST, 20);
+            addCultivarOffer(offers, 4, GrapeCultivar.RIVER_GARNET, 20);
+            addCultivarOffer(offers, 4, GrapeCultivar.STONEFLOWER, 20);
             addBuyOffer(offers, ModItems.RED_WINE, 1, 3, 20);
             addBuyOffer(offers, ModItems.WHITE_WINE, 1, 3, 20);
         }
 
         if (level >= 5) {
-            addCultivarOffer(offers, 6, GrapeCultivar.RIVER_GARNET, 30);
-            addCultivarOffer(offers, 6, GrapeCultivar.STONEFLOWER, 30);
             addSellOffer(
                     offers,
                     12,

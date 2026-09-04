@@ -6,6 +6,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 
@@ -310,6 +311,13 @@ public final class WineMetadata {
         CompoundTag tag = getTagCopy(stack);
         tag.putString(VARIETY_KEY, cultivar.serializedName());
         setTag(stack, tag);
+        stack.set(
+                DataComponents.ITEM_MODEL,
+                Identifier.fromNamespaceAndPath(
+                        "vintner",
+                        cultivar.visualName() + "_grapes"
+                )
+        );
     }
 
     public static GrapeCultivar cultivar(

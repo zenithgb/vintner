@@ -3,6 +3,7 @@ package com.zenith.vintner.vineyard;
 import net.minecraft.network.chat.Component;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -35,6 +36,17 @@ public enum GrapeCultivar {
             0, 1, 1, 1, "mid", "lush", "warm_climates"),
     STONEFLOWER(GrapeVariety.WHITE, 0.76F, 38, 36, 90, 34, 66, 92,
             1, 0, 2, 2, "late", "floral", "poor_soils");
+
+    private static final List<GrapeCultivar> ACTIVE_VALUES = List.of(
+            EMBER_NOIR,
+            VALE_PINOT,
+            SUNCREST,
+            RIVER_GARNET,
+            GOLDEN_VALE,
+            FROSTLING,
+            HONEYCREST,
+            STONEFLOWER
+    );
 
     private final GrapeVariety variety;
     private final float preferredTemperature;
@@ -170,6 +182,47 @@ public enum GrapeCultivar {
 
     public String serializedName() {
         return name().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * Cultivars available in normal 1.4.0 play. The remaining enum values stay
+     * readable so development worlds and stacks made before the roster was
+     * narrowed do not lose their identity.
+     */
+    public boolean isActive() {
+        return ACTIVE_VALUES.contains(this);
+    }
+
+    public static List<GrapeCultivar> activeValues() {
+        return ACTIVE_VALUES;
+    }
+
+    /** Index stored in the block state to select the cultivar vine palette. */
+    public int visualIndex() {
+        return switch (this) {
+            case EMBER_NOIR, IRONWOOD_RED -> 0;
+            case VALE_PINOT, NIGHTBERRY -> 1;
+            case SUNCREST -> 2;
+            case RIVER_GARNET -> 3;
+            case GOLDEN_VALE, GREENWAKE -> 0;
+            case FROSTLING, SILVERLEAF -> 1;
+            case HONEYCREST -> 2;
+            case STONEFLOWER -> 3;
+        };
+    }
+
+    /** Stable asset name, independent of the legacy serialized identity. */
+    public String visualName() {
+        return switch (this) {
+            case EMBER_NOIR, IRONWOOD_RED -> "crimson";
+            case VALE_PINOT, NIGHTBERRY -> "shaded";
+            case SUNCREST -> "sunlit";
+            case RIVER_GARNET -> "riverside";
+            case GOLDEN_VALE, GREENWAKE -> "golden";
+            case FROSTLING, SILVERLEAF -> "frosted";
+            case HONEYCREST -> "honeyed";
+            case STONEFLOWER -> "stony";
+        };
     }
 
     public static GrapeCultivar defaultFor(GrapeVariety variety) {

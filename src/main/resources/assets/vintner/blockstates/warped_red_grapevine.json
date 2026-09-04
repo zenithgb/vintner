@@ -94,44 +94,192 @@
     {
       "when": {
         "age": "0",
+        "cultivar": "0",
         "upper": "false"
       },
       "apply": {
-        "model": "vintner:block/red_grapevine_age_0"
+        "model": "vintner:block/crimson_grapevine_age_0"
       }
     },
     {
       "when": {
         "age": "1|2|3",
+        "cultivar": "0",
         "upper": "false"
       },
       "apply": {
-        "model": "vintner:block/red_grapevine_age_1"
+        "model": "vintner:block/crimson_grapevine_age_1"
       }
     },
     {
       "when": {
         "age": "2",
+        "cultivar": "0",
         "upper": "true"
       },
       "apply": {
-        "model": "vintner:block/red_grapevine_age_2"
+        "model": "vintner:block/crimson_grapevine_age_2"
       }
     },
     {
       "when": {
         "age": "3",
+        "cultivar": "0",
         "upper": "true"
       },
       "apply": [
         {
-          "model": "vintner:block/red_grapevine_age_3"
+          "model": "vintner:block/crimson_grapevine_age_3"
         },
         {
-          "model": "vintner:block/red_grapevine_age_3_b"
+          "model": "vintner:block/crimson_grapevine_age_3_b"
         },
         {
-          "model": "vintner:block/red_grapevine_age_3_c"
+          "model": "vintner:block/crimson_grapevine_age_3_c"
+        }
+      ]
+    },
+    {
+      "when": {
+        "age": "0",
+        "cultivar": "1",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/shaded_grapevine_age_0"
+      }
+    },
+    {
+      "when": {
+        "age": "1|2|3",
+        "cultivar": "1",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/shaded_grapevine_age_1"
+      }
+    },
+    {
+      "when": {
+        "age": "2",
+        "cultivar": "1",
+        "upper": "true"
+      },
+      "apply": {
+        "model": "vintner:block/shaded_grapevine_age_2"
+      }
+    },
+    {
+      "when": {
+        "age": "3",
+        "cultivar": "1",
+        "upper": "true"
+      },
+      "apply": [
+        {
+          "model": "vintner:block/shaded_grapevine_age_3"
+        },
+        {
+          "model": "vintner:block/shaded_grapevine_age_3_b"
+        },
+        {
+          "model": "vintner:block/shaded_grapevine_age_3_c"
+        }
+      ]
+    },
+    {
+      "when": {
+        "age": "0",
+        "cultivar": "2",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/sunlit_grapevine_age_0"
+      }
+    },
+    {
+      "when": {
+        "age": "1|2|3",
+        "cultivar": "2",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/sunlit_grapevine_age_1"
+      }
+    },
+    {
+      "when": {
+        "age": "2",
+        "cultivar": "2",
+        "upper": "true"
+      },
+      "apply": {
+        "model": "vintner:block/sunlit_grapevine_age_2"
+      }
+    },
+    {
+      "when": {
+        "age": "3",
+        "cultivar": "2",
+        "upper": "true"
+      },
+      "apply": [
+        {
+          "model": "vintner:block/sunlit_grapevine_age_3"
+        },
+        {
+          "model": "vintner:block/sunlit_grapevine_age_3_b"
+        },
+        {
+          "model": "vintner:block/sunlit_grapevine_age_3_c"
+        }
+      ]
+    },
+    {
+      "when": {
+        "age": "0",
+        "cultivar": "3",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/riverside_grapevine_age_0"
+      }
+    },
+    {
+      "when": {
+        "age": "1|2|3",
+        "cultivar": "3",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/riverside_grapevine_age_1"
+      }
+    },
+    {
+      "when": {
+        "age": "2",
+        "cultivar": "3",
+        "upper": "true"
+      },
+      "apply": {
+        "model": "vintner:block/riverside_grapevine_age_2"
+      }
+    },
+    {
+      "when": {
+        "age": "3",
+        "cultivar": "3",
+        "upper": "true"
+      },
+      "apply": [
+        {
+          "model": "vintner:block/riverside_grapevine_age_3"
+        },
+        {
+          "model": "vintner:block/riverside_grapevine_age_3_b"
+        },
+        {
+          "model": "vintner:block/riverside_grapevine_age_3_c"
         }
       ]
     },
