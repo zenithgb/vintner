@@ -17,6 +17,7 @@ Deferred scope remains unchanged: pantry and cooking work (1.5.0), deeper estate
 - **Automated validation:** Gates C and D passed. R5: Winemaker standard 10/10 and compatibility 10/10; ownership 1/1; estate 11/11; village/workstation 7/7; complete standard and Serene Seasons suites each 166/166; clean build, release audit and formatting checks passed. Earlier failed-run evidence remains below.
 - **Manual QA:** Pending for unloaded-plot desk presentation, desk UI/scrolling, multiplayer ownership isolation, and broader release visual gates.
 - **Latest automated validation:** Gate H passed plot 10/10, estate 11/11, ownership 1/1, standard 167/167 and Serene Seasons 167/167, followed by clean build and release audit. Prior gate evidence remains below.
+- **Gate I focused validation:** facility persistence 1/1, estate 12/12 and ownership 1/1 passed. Recognition, disk persistence and removal/rebuilding match the documented persistent-reputation model; production code is unchanged.
 - **Known risks:** Loaded plots are analyzed synchronously when the desk opens. Gate H reduced the measured maximum-estate range to 5.848–13.666 ms per report (median 11.717 ms) on the recorded development machine. The remaining cost needs final release-risk assessment; this is not a whole-tick measurement or comprehensive worst-case guarantee. Gate C covers a same-dimension unloaded region and its outgoing payload; client rendering still needs manual QA.
 - **Documentation discrepancy:** `docs/RELEASE_SCHEDULE.md` appears to place the 1.2.0 release date after 1.3.0; leave for a later documentation correction.
 
@@ -729,12 +730,45 @@ Baseline below is Gate F's comparable unmodified-production run on the same envi
 - Existing ownership and Winemaker test logic remains unchanged. No payload format, persistence, cooldown, global cache or version change is included; development version remains `1.3.1`.
 - This evidence is from one machine, ten timed calls per scenario and synthetic rain-fed fixtures; it does not measure whole-tick latency, worst possible water density, map/cellar inventory or multiplayer concurrency. Reporting remains synchronous and retriggerable. The remaining on-demand cost belongs in final release-risk assessment, not another dedicated optimisation phase without a newly demonstrated reason.
 
+## Gate I — Facility and reputation persistence verification
+
+### Baseline and production model
+
+- Started on `feat/1.4.0-vineyard-management`, HEAD `1f374e1`, remote-only/local-only `0 8`, clean tree, nothing staged, no Python bytecode, development version `1.3.1`, and passing `git diff --check`. Gate G/H commits were present. No performance work or production changes were made.
+- `EstateInfrastructureReport.survey` scans a 33×17×33 box around the report origin. It derives four facility bits: workshop (two aging barrels on stands), controlled cellar (two stations rated IDEAL), warehouse (four racks/crates/collection fixtures), and tasting room (a tasting cabinet plus archive). Current readiness is not saved; removing required blocks changes the next survey.
+- `EstateDeskReport.open` finds the requesting owner's estate, imports existing ledger evidence through `syncFromLedger`, surveys infrastructure, calls `recordInfrastructure`, and authors the payload. Recognition itself creates no ledger event. Opening the report intentionally mutates reputation when a new facility type is first recognized.
+- `EstateReputationProfile.withFacilities` ORs the observed mask into historical evidence. `score` adds ten points per distinct bit, not per building or recognition. `EstateReputationSavedData.storeIfChanged` stores and marks dirty only changed records. Its public `TYPE` codec persists complete profiles, including `facility_mask`, in overworld saved data keyed by owner UUID. Ledger synchronization preserves the mask.
+- This agrees with `PHASE_7D_PHYSICAL_ESTATE_UPGRADES_ACCEPTANCE.md` facility behavior and `PHASE_7E_ESTATE_REPUTATION_ACCEPTANCE.md` manual steps 6–7: newly recognized facilities earn persistent points; removal changes Ready status but retains earned reputation. Rebuilding the same type therefore cannot earn another bit. No removal/rebuild design ambiguity was found.
+
+### Representative test and evidence
+
+- Added `estateFacilityReputationPersistsAcrossReloadAndRebuild`. Four real wine crates form a warehouse in a cleared survey region offset from neighboring GameTests. This avoids cellar geometry/weather setup; all four facilities share the same mask/persistence machinery.
+- Uses existing public packet-listener capture and real `EstateDeskReport.open`, nine openings total. Asserts exact outgoing facility-ready components and reputation components, real survey counts/mask, and full reputation/profile/plot/ledger equality where appropriate. No direct reputation award, synthetic infrastructure record, ledger insertion or production visibility seam is used.
+- Initial recognition: score **5 → 15**, mask **0 → WAREHOUSE_MASK**, reputation marked dirty. Repeated openings retain **15** and do not mark the unchanged store dirty.
+- Save/reload: writes the actual earned reputation store with Minecraft `SavedDataStorage` into a temporary directory, closes it, reads it through a new storage instance, verifies a distinct reconstructed object with every reputation field equal, and installs it through the public saved-data API before reopening the desk. Real disk encoding/decoding and post-load production report behavior are exercised. This is not a whole-server restart or a facility-chunk reload; world blocks remain present during this step.
+- Removal: four crates become three, current warehouse readiness disappears and the live storage count changes to three. Earned score/mask remain unchanged with no ledger event or additional dirty mark. Restoration returns count/readiness to four/Ready, retaining the same historical reputation without another award.
+- Chunk unload/reload was deliberately not exercised. Infrastructure survey directly calls `getBlockState` in its local box, with no loaded-area guard or unavailable-facility representation. Unlike plot reporting, it does not establish a no-force-load contract. This gate makes no claim that facility reporting avoids loading absent chunks; chunk/server restart behavior remains outside this focused persistence round trip.
+- Evidence directory: `/tmp/vintner-gate-i-pXwOGe`. Each required run preserves its own XML, full launcher log, summary JSON and run/world directory. The actual serialized stores are also preserved in `facility-saved-data` and `estate-saved-data`.
+
+| Required validation | Result | Evidence |
+| --- | --- | --- |
+| Exact facility persistence test | 1/1 passed | `facility.xml`, `facility.log` |
+| Estate-focused group, including the new test | 12/12 passed | `estate.xml`, `estate.log` |
+| Exact ownership isolation test | 1/1 passed | `ownership.xml`, `ownership.log` |
+| `git diff --check` | Passed | Final review |
+| Repository hygiene | Only test/documentation changes; no bytecode; version 1.3.1 | Final review |
+
+### Decision and limitations
+
+- **PASS — intended behavior verified.** All required focused validation passed; no production defect or unintended report mutation was demonstrated. Only GameTest coverage and this document changed, committed together as `Verify estate facility reputation persistence`. Nothing was pushed. Full standard/Serene suites, clean build and audit were not rerun for this test/documentation-only gate.
+- This verifies historical facility reputation through the shared persistence path, not every facility's detection geometry, aging bonuses, whole-server restart, chunk unloading, or manual client presentation. Existing Gate D ownership assertions remain unchanged. Gate H performance evidence and release-audit counts were not remeasured.
+
 ## Remaining coverage gaps
 
 - Remaining synchronous maximum-estate reporting cost is a reduced release concern after Gate H; final release-risk assessment remains pending.
 - Manual unloaded-plot desk presentation, UI/scrolling QA, and broader release visual/in-game acceptance.
-- Desk-open reputation persistence when newly recognized facilities are discovered.
+- Whole-server/chunk lifecycle and manual facility presentation beyond Gate I's reputation disk round trip.
 
 ## Next integration gate
 
-**Smallest next integration task:** assess the remaining on-demand report cost against final release risks using Gate H's evidence. This ends dedicated 1.4.0 performance optimisation unless a new demonstrated reason appears. Facility/reputation persistence, manual desk presentation/scrolling and multiplayer/in-game acceptance remain separate work.
+**Smallest next integration task:** final 1.4.0 release-risk assessment using Gate H performance and Gate I persistence evidence, with manual desk presentation/scrolling and multiplayer/in-game acceptance still pending. Dedicated performance optimisation remains closed unless a new demonstrated reason appears.

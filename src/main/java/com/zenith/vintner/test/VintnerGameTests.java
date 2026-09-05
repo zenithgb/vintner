@@ -4642,6 +4642,99 @@ public final class VintnerGameTests {
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 40)
+    public void estateFacilityReputationPersistsAcrossReloadAndRebuild(
+            GameTestHelper helper
+    ) throws Exception {
+        ServerLevel level = helper.getLevel();
+        // Keep the entire survey away from neighboring GameTest facilities.
+        BlockPos desk = helper.absolutePos(new BlockPos(128, 1, 128));
+        for (BlockPos pos : BlockPos.betweenClosed(desk.offset(-16, -8, -16),
+                desk.offset(16, 8, 16))) {
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
+        }
+        List<EstateDeskPayload> captured = new ArrayList<>();
+        ServerPlayer owner = makeDeskPayloadCapturePlayer(level, "facility-owner", captured);
+        EstateSavedData.get(level).register(owner, level, desk, "Warehouse Estate", DyeColor.BLUE);
+        DeskOwnerState before = deskOwnerState(level, owner);
+        helper.assertValueEqual(before.reputation().score(), 5, "Founding score before recognition");
+        helper.assertValueEqual(before.reputation().facilityMask(), 0, "No facilities earned yet");
+        for (int x = 1; x <= 4; x++) {
+            level.setBlock(desk.offset(x, 0, 0), ModBlocks.WINE_CRATE.defaultBlockState(), 2);
+        }
+        EstateReputationSavedData reputation = EstateReputationSavedData.get(level);
+        reputation.setDirty(false);
+        EstateDeskReport.open(level, desk, owner);
+        EstateReputationProfile earned = reputation.profile(owner.getUUID());
+        helper.assertValueEqual(earned.facilityMask(), EstateInfrastructureReport.WAREHOUSE_MASK,
+                "Physical warehouse must earn exactly its facility bit");
+        helper.assertValueEqual(earned.score(), 15, "First recognition must award exactly ten points");
+        helper.assertTrue(reputation.isDirty(), "New facility progress must be marked for saving");
+        assertWarehouseDeskState(helper, desk, captured.getLast(), true);
+
+        for (int phase = 0; phase < 4; phase++) {
+            if (phase == 1) {
+                // Real SavedDataStorage disk write/read, not an in-memory profile copy.
+                var directory = java.nio.file.Files.createTempDirectory("vintner-facility-persistence-");
+                var fixer = net.minecraft.util.datafix.DataFixers.getDataFixer();
+                try (var saved = new net.minecraft.world.level.storage.SavedDataStorage(
+                        directory, fixer, level.registryAccess())) {
+                    saved.set(EstateReputationSavedData.TYPE, reputation);
+                }
+                try (var loaded = new net.minecraft.world.level.storage.SavedDataStorage(
+                        directory, fixer, level.registryAccess())) {
+                    var restored = loaded.get(EstateReputationSavedData.TYPE);
+                    helper.assertTrue(restored != null && restored != reputation,
+                            "Disk reload must reconstruct a distinct reputation store");
+                    helper.assertValueEqual(restored.profile(owner.getUUID()), earned,
+                            "Disk reload must preserve every earned reputation field");
+                    level.getServer().overworld().getDataStorage()
+                            .set(EstateReputationSavedData.TYPE, restored);
+                    reputation = restored;
+                }
+            }
+            if (phase >= 2) {
+                level.setBlock(desk.offset(4, 0, 0), (phase == 2 ? Blocks.AIR : ModBlocks.WINE_CRATE)
+                        .defaultBlockState(), 2);
+            }
+            boolean warehouse = phase != 2;
+            for (int repeat = 0; repeat < 2; repeat++) {
+                reputation.setDirty(false);
+                EstateDeskReport.open(level, desk, owner);
+                assertWarehouseDeskState(helper, desk, captured.getLast(), warehouse);
+                helper.assertValueEqual(reputation.profile(owner.getUUID()), earned,
+                        "Repeat/reload/removal/rebuild must preserve earned progress, phase " + phase);
+                helper.assertFalse(reputation.isDirty(), "Unchanged recognition must not dirty reputation");
+                DeskOwnerState after = deskOwnerState(level, owner);
+                helper.assertValueEqual(after.estate(), before.estate(), "Recognition must preserve estate identity");
+                helper.assertValueEqual(after.plots(), before.plots(), "Recognition must preserve plots");
+                helper.assertValueEqual(after.ledger(), before.ledger(), "Facilities must not fabricate ledger events");
+            }
+        }
+        helper.assertValueEqual(captured.size(), 9, "Every real opening must send exactly one payload");
+        helper.succeed();
+    }
+
+    private static void assertWarehouseDeskState(GameTestHelper helper, BlockPos desk,
+                                                EstateDeskPayload payload, boolean warehouse) {
+        var survey = EstateInfrastructureReport.survey(helper.getLevel(), desk);
+        helper.assertValueEqual(survey.facilityMask(),
+                warehouse ? EstateInfrastructureReport.WAREHOUSE_MASK : 0,
+                "Live recognition must follow the physical warehouse threshold");
+        helper.assertValueEqual(survey.storageFixtures(), warehouse ? 4 : 3, "Live fixture count");
+        Component present = Component.translatable("screen.vintner.estate_desk.present")
+                .withStyle(ChatFormatting.DARK_GREEN);
+        Component absent = Component.translatable("screen.vintner.estate_desk.absent")
+                .withStyle(ChatFormatting.RED);
+        helper.assertValueEqual(payload.sections().get(2).lines().get(4), Component.translatable(
+                "screen.vintner.estate_desk.cellar.facilities", absent, absent,
+                warehouse ? present : absent, absent), "Actual outbound facility readiness");
+        helper.assertValueEqual(payload.sections().get(0).lines().get(0), Component.translatable(
+                "screen.vintner.estate_desk.overview.reputation",
+                Component.translatable(EstateReputationTier.NEW_ESTATE.translationKey()), 15),
+                "Actual outbound report must retain the earned score");
+    }
+
     private static ServerPlayer makeDeskPayloadCapturePlayer(
             ServerLevel level, String name, List<EstateDeskPayload> captured
     ) {
