@@ -126,6 +126,7 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
@@ -999,6 +1000,14 @@ public final class VintnerGameTests {
     ) {
         BlockPos pressPos = FIRST;
 
+        // Support both the workstation and every approach cell. A floating
+        // press above the empty template's barrier floor can leave a villager
+        // within waypoint tolerance but outside profession-assignment range.
+        for (int x = 0; x < 8; x++) {
+            for (int z = 0; z < 8; z++) {
+                helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+            }
+        }
         helper.setBlock(pressPos, ModBlocks.GRAPE_PRESS);
         helper.getLevel()
                 .dimensionType()
@@ -1009,17 +1018,37 @@ public final class VintnerGameTests {
 
         Villager winemaker = helper.spawn(
                 EntityTypes.VILLAGER,
-                pressPos.west()
+                pressPos.east(3)
         );
 
         helper.succeedWhen(() -> {
+            boolean acquired = winemaker.getVillagerData()
+                    .profession().is(ModVillagers.WINEMAKER);
             helper.assertTrue(
-                    winemaker.getVillagerData()
-                            .profession()
-                            .is(ModVillagers.WINEMAKER),
+                    acquired,
                     "The villager beside a grape press should become a Winemaker"
+                            + (acquired ? "" : "; " + winemakerAcquisitionState(helper, winemaker, pressPos))
             );
         });
+    }
+
+    private static String winemakerAcquisitionState(
+            GameTestHelper helper, Villager villager, BlockPos relativePress
+    ) {
+        BlockPos press = helper.absolutePos(relativePress);
+        var poi = helper.getLevel().getPoiManager().getType(press);
+        var poiDebug = helper.getLevel().getPoiManager().getDebugPoiInfo(press);
+        return "testTick=" + helper.getTick()
+                + " profession=" + villager.getVillagerData().profession()
+                        .unwrapKey().map(key -> key.identifier().toString()).orElse("unkeyed")
+                + " position=" + villager.position()
+                + " distance=" + Math.sqrt(villager.distanceToSqr(Vec3.atCenterOf(press)))
+                + " potential=" + villager.getBrain().getMemory(MemoryModuleType.POTENTIAL_JOB_SITE)
+                + " job=" + villager.getBrain().getMemory(MemoryModuleType.JOB_SITE)
+                + " expectedPress=" + press + " block=" + helper.getLevel().getBlockState(press)
+                + " poi=" + poi.map(holder -> holder.unwrapKey().orElseThrow()
+                        .identifier().toString()).orElse("absent")
+                + " freeTickets=" + (poiDebug == null ? "absent" : poiDebug.freeTicketCount());
     }
 
     @GameTest(maxTicks = 300)
@@ -4529,6 +4558,184 @@ public final class VintnerGameTests {
                         + "mark live metrics unavailable, and omit live values"
         );
         helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void estateDeskPayloadsRemainIsolatedBetweenOwners(
+            GameTestHelper helper
+    ) {
+        ServerLevel level = helper.getLevel();
+        BlockPos deskPos = helper.absolutePos(new BlockPos(1, 1, 1));
+        List<EstateDeskPayload> capturedA = new ArrayList<>();
+        List<EstateDeskPayload> capturedB = new ArrayList<>();
+        ServerPlayer ownerA = makeDeskPayloadCapturePlayer(level, "amber-owner", capturedA);
+        ServerPlayer ownerB = makeDeskPayloadCapturePlayer(level, "cobalt-owner", capturedB);
+        helper.assertFalse(ownerA.getUUID().equals(ownerB.getUUID()), "Owners must differ");
+
+        EstateSavedData estates = EstateSavedData.get(level);
+        estates.register(ownerA, level, deskPos, "Amber Estate", DyeColor.ORANGE);
+        estates.register(ownerB, level, deskPos, "Cobalt Estate", DyeColor.BLUE);
+        VineyardPlotSavedData plots = VineyardPlotSavedData.get(level);
+        EstateLedgerSavedData ledger = EstateLedgerSavedData.get(level);
+        for (ServerPlayer owner : List.of(ownerA, ownerB)) {
+            boolean amber = owner == ownerA;
+            String prefix = amber ? "Amber" : "Cobalt";
+            for (int index = 0; index < (amber ? 1 : 2); index++) {
+                int minimumX = 1_000_000 + index * 64;
+                var registration = plots.register(
+                        owner, level,
+                        new BlockPos(minimumX, 64, -1_000_000),
+                        new BlockPos(minimumX + 7, 64, -999_995),
+                        prefix + " Rows " + (index + 1)
+                );
+                helper.assertValueEqual(
+                        registration.status(), VineyardPlotSavedData.Status.CREATED,
+                        "Each owner-specific plot must register"
+                );
+                // Both owners deliberately share the first plot's coordinates;
+                // ownership, not location, must select the reported plot.
+                assertPlotAnalysisChunksAbsent(helper, registration.plot(), "during setup");
+                ledger.record(owner, LedgerEventType.PLOT_REGISTERED,
+                        registration.plot().name(), registration.plot().area(), 0L, 0);
+            }
+            ledger.record(owner, LedgerEventType.HARVEST,
+                    prefix + " Harvest", amber ? 11 : 29, 0L, 0);
+            ledger.record(owner, LedgerEventType.BOTTLING,
+                    prefix + " Vintage", 1, amber ? 101L : 202L, amber ? 61 : 89);
+        }
+        DeskOwnerState beforeA = deskOwnerState(level, ownerA);
+        DeskOwnerState beforeB = deskOwnerState(level, ownerB);
+        helper.assertValueEqual(beforeA.estate().ownerId(), ownerA.getUUID().toString(),
+                "Estate A must belong to player A");
+        helper.assertValueEqual(beforeB.estate().ownerId(), ownerB.getUUID().toString(),
+                "Estate B must belong to player B");
+        helper.assertValueEqual(beforeA.estate().ownerName(), "amber-owner", "Owner A name");
+        helper.assertValueEqual(beforeB.estate().ownerName(), "cobalt-owner", "Owner B name");
+        helper.assertValueEqual(beforeA.plots().size(), 1, "Estate A plot count");
+        helper.assertValueEqual(beforeB.plots().size(), 2, "Estate B plot count");
+        helper.assertValueEqual(beforeA.ledger().size(), 3, "Estate A ledger count");
+        helper.assertValueEqual(beforeB.ledger().size(), 4, "Estate B ledger count");
+        helper.assertValueEqual(beforeA.reputation().harvestedGrapes(), 11, "A harvest");
+        helper.assertValueEqual(beforeB.reputation().harvestedGrapes(), 29, "B harvest");
+        helper.assertValueEqual(beforeA.reputation().bestQuality(), 61, "A quality");
+        helper.assertValueEqual(beforeB.reputation().bestQuality(), 89, "B quality");
+
+        for (int opening = 0; opening < 3; opening++) {
+            boolean amber = opening != 1;
+            EstateDeskReport.open(level, deskPos, amber ? ownerA : ownerB);
+            helper.assertValueEqual(capturedA.size(), opening == 2 ? 2 : 1,
+                    "Only A's openings may send to A, opening " + opening);
+            helper.assertValueEqual(capturedB.size(), opening == 0 ? 0 : 1,
+                    "Only B's opening may send to B, opening " + opening);
+            helper.assertValueEqual(deskOwnerState(level, ownerA), beforeA,
+                    "Opening " + opening + " must preserve all A persistent records");
+            helper.assertValueEqual(deskOwnerState(level, ownerB), beforeB,
+                    "Opening " + opening + " must preserve all B persistent records");
+            assertDeskPayloadOwner(helper,
+                    (amber ? capturedA : capturedB).getLast(), amber ? beforeA : beforeB);
+        }
+        helper.assertValueEqual(capturedA.get(1), capturedA.getFirst(),
+                "A reopened after B must receive the same A-authored snapshot");
+        for (VineyardPlot plot : beforeB.plots()) {
+            assertPlotAnalysisChunksAbsent(helper, plot, "after all desk openings");
+        }
+        helper.succeed();
+    }
+
+    private static ServerPlayer makeDeskPayloadCapturePlayer(
+            ServerLevel level, String name, List<EstateDeskPayload> captured
+    ) {
+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(
+                new GameProfile(UUID.randomUUID(), name), false);
+        ServerPlayer player = new ServerPlayer(level.getServer(), level,
+                cookie.gameProfile(), cookie.clientInformation());
+        // Same public packet-listener capture as Gate C; no world insertion.
+        new ServerGamePacketListenerImpl(level.getServer(),
+                new Connection(PacketFlow.SERVERBOUND), player, cookie) {
+            @Override
+            public void send(Packet<?> packet) {
+                if (packet instanceof ClientboundCustomPayloadPacket custom
+                        && custom.payload() instanceof EstateDeskPayload payload) {
+                    captured.add(payload);
+                }
+            }
+        };
+        return player;
+    }
+
+    private record DeskOwnerState(
+            EstateProfile estate,
+            List<VineyardPlot> plots,
+            List<EstateLedgerEvent> ledger,
+            EstateReputationProfile reputation
+    ) {
+    }
+
+    private static DeskOwnerState deskOwnerState(ServerLevel level, ServerPlayer owner) {
+        return new DeskOwnerState(
+                EstateSavedData.get(level).find(owner.getUUID()).orElseThrow(),
+                VineyardPlotSavedData.get(level).plots(owner.getUUID()),
+                EstateLedgerSavedData.get(level).entries(owner.getUUID()),
+                EstateReputationSavedData.get(level).profile(owner.getUUID())
+        );
+    }
+
+    private static void assertDeskPayloadOwner(
+            GameTestHelper helper, EstateDeskPayload payload, DeskOwnerState expected
+    ) {
+        String name = expected.estate().estateName();
+        helper.assertValueEqual(payload.estateName(), Component.literal(name),
+                "The payload must identify its requesting owner's estate");
+        helper.assertValueEqual(payload.subtitle(), Component.translatable(
+                "screen.vintner.estate_desk.subtitle", expected.estate().foundingYear(),
+                expected.estate().homeRegionDisplayName()), "Owner-specific subtitle");
+        helper.assertValueEqual(payload.plots(), expected.plots().stream().map(plot ->
+                new EstateDeskPayload.PlotSummary(plot.name(), plot.dimension(), false,
+                        plot.minX(), plot.minZ(), plot.maxX(), plot.maxZ(), plot.area(),
+                        0, "Unavailable", 0, 0, 0, 0)).toList(),
+                name + " must contain exactly its own plot records, with no foreign plots");
+
+        helper.assertValueEqual(payload.sections().stream().map(
+                EstateDeskPayload.Section::title).toList(),
+                List.of("overview", "vineyards", "cellar", "markets", "ledger", "map")
+                        .stream().map(id -> Component.translatable(
+                                "screen.vintner.estate_desk.tab." + id)).toList(),
+                "The report must retain the expected section structure");
+        List<Component> overview = payload.sections().get(0).lines();
+        helper.assertValueEqual(overview.size(), 6, "Overview must have six lines");
+        helper.assertValueEqual(overview.get(0), Component.translatable(
+                "screen.vintner.estate_desk.overview.reputation",
+                Component.translatable(expected.reputation().tier().translationKey()),
+                expected.reputation().score()), name + " reputation must be owner-specific");
+        helper.assertValueEqual(overview.get(1), Component.translatable(
+                "screen.vintner.estate_desk.overview.vineyards", expected.plots().size(),
+                expected.plots().stream().mapToInt(VineyardPlot::area).sum()),
+                name + " overview must use only its own plot count and area");
+        helper.assertValueEqual(overview.get(2), Component.translatable(
+                "screen.vintner.estate_desk.overview.harvest",
+                expected.reputation().harvestedGrapes(), expected.reputation().bestQuality()),
+                name + " harvest and best quality must be owner-specific");
+        helper.assertValueEqual(overview.get(5), Component.translatable(
+                "screen.vintner.estate_desk.overview.label", expected.estate().bottleLabel()),
+                name + " bottle label must exclude the other estate's identity");
+        List<Component> vineyardLines = new ArrayList<>();
+        for (VineyardPlot plot : expected.plots()) {
+            vineyardLines.add(Component.translatable(
+                    "screen.vintner.estate_desk.vineyards.plot_unloaded", plot.name(),
+                    plot.dimension(), plot.width(), plot.depth()));
+            vineyardLines.add(Component.translatable(
+                    "screen.vintner.estate_desk.vineyards.unloaded")
+                    .withStyle(ChatFormatting.DARK_GRAY));
+        }
+        helper.assertValueEqual(payload.sections().get(1).lines(), vineyardLines,
+                name + " vineyard section must contain exactly its own plots");
+        helper.assertValueEqual(payload.sections().get(4).lines(),
+                expected.ledger().stream().map(event -> Component.translatable(
+                        "screen.vintner.estate_desk.ledger.entry", event.day(),
+                        Component.translatable(event.eventType().translationKey()),
+                        Component.literal(event.detail()), event.amount(), event.quality()))
+                        .toList(),
+                name + " ledger must contain exactly its own events and values");
     }
 
     private static void assertPlotAnalysisChunksAbsent(
