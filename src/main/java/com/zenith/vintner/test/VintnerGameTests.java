@@ -1,5 +1,6 @@
 package com.zenith.vintner.test;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Pair;
 import com.zenith.vintner.block.AgingBarrelBlock;
 import com.zenith.vintner.block.CellarGlassColor;
@@ -44,6 +45,7 @@ import com.zenith.vintner.item.AlmanacReport;
 import com.zenith.vintner.item.GraftingKnifeItem;
 import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.item.WineItem;
+import com.zenith.vintner.network.EstateDeskPayload;
 import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
@@ -98,6 +100,7 @@ import com.zenith.vintner.vineyard.VineRootstock;
 import com.zenith.vintner.vineyard.VineYieldMode;
 import com.zenith.vintner.vineyard.VineyardThreat;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.ChatFormatting;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
@@ -109,11 +112,17 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -4402,6 +4411,151 @@ public final class VintnerGameTests {
                 "A plot must never be analyzed against a different dimension"
         );
         helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void unloadedPlotReportPreservesStaticDataWithoutLoadingChunks(
+            GameTestHelper helper
+    ) {
+        ServerLevel level = helper.getLevel();
+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(
+                new GameProfile(UUID.randomUUID(), "unloaded-plot-test"),
+                false
+        );
+        ServerPlayer owner = new ServerPlayer(
+                level.getServer(), level,
+                cookie.gameProfile(), cookie.clientInformation()
+        );
+        List<EstateDeskPayload> captured = new ArrayList<>();
+        // Capture the real send path without adding a player or chunk tickets.
+        new ServerGamePacketListenerImpl(
+                level.getServer(), new Connection(PacketFlow.SERVERBOUND),
+                owner, cookie
+        ) {
+            @Override
+            public void send(Packet<?> packet) {
+                if (packet instanceof ClientboundCustomPayloadPacket custom
+                        && custom.payload() instanceof EstateDeskPayload payload) {
+                    captured.add(payload);
+                }
+            }
+        };
+
+        BlockPos deskPos = helper.absolutePos(new BlockPos(1, 1, 1));
+        EstateSavedData.get(level).register(
+                owner, level, deskPos, "Remote Rows Estate", DyeColor.BLUE
+        );
+        // Coordinates alone never establish unloaded state. Only metadata is
+        // registered here; every required chunk is checked below without reads.
+        VineyardPlotSavedData.Registration registration =
+                VineyardPlotSavedData.get(level).register(
+                        owner, level,
+                        new BlockPos(1_000_000, 64, -1_000_000),
+                        new BlockPos(1_000_007, 64, -999_995),
+                        "Remote Rows"
+                );
+        helper.assertValueEqual(
+                registration.status(), VineyardPlotSavedData.Status.CREATED,
+                "The remote same-dimension plot should register"
+        );
+        VineyardPlot plot = registration.plot();
+        helper.assertValueEqual(
+                plot.dimension(), level.dimension().identifier().toString(),
+                "The unloaded case must use the reporting level's dimension"
+        );
+        helper.assertTrue(
+                plot.resolveLevel(level.getServer()).orElse(null) == level,
+                "The remote plot must resolve to the same reporting level"
+        );
+        assertPlotAnalysisChunksAbsent(helper, plot, "before reporting");
+        var report = VineyardPlotReport.analyzeIfLoaded(level, plot);
+        assertPlotAnalysisChunksAbsent(helper, plot, "after analyzeIfLoaded");
+        helper.assertTrue(
+                report.isEmpty(),
+                "An unloaded same-dimension plot must return no live report"
+        );
+
+        EstateDeskReport.open(level, deskPos, owner);
+        assertPlotAnalysisChunksAbsent(helper, plot, "after EstateDeskReport.open");
+        helper.assertValueEqual(
+                captured.size(), 1,
+                "Opening the registered estate should send one desk payload"
+        );
+        EstateDeskPayload payload = captured.getFirst();
+        helper.assertValueEqual(
+                payload.plots().size(), 1,
+                "The desk payload should contain the registered remote plot"
+        );
+        EstateDeskPayload.PlotSummary summary = payload.plots().getFirst();
+        helper.assertValueEqual(summary.name(), "Remote Rows", "Static plot name");
+        helper.assertValueEqual(
+                summary.dimension(), level.dimension().identifier().toString(),
+                "Static plot dimension"
+        );
+        helper.assertValueEqual(summary.minX(), 1_000_000, "Static minimum X");
+        helper.assertValueEqual(summary.minZ(), -1_000_000, "Static minimum Z");
+        helper.assertValueEqual(summary.maxX(), 1_000_007, "Static maximum X");
+        helper.assertValueEqual(summary.maxZ(), -999_995, "Static maximum Z");
+        helper.assertValueEqual(summary.width(), 8, "Inclusive static width");
+        helper.assertValueEqual(summary.depth(), 6, "Inclusive static depth");
+        helper.assertValueEqual(summary.area(), 48, "Static plot area");
+        helper.assertFalse(summary.loaded(), "Live plot metrics must be unavailable");
+        helper.assertValueEqual(
+                summary.variety(), "Unavailable",
+                "An unloaded plot must not be described as unplanted"
+        );
+
+        EstateDeskPayload.Section vineyards = payload.sections().stream()
+                .filter(section -> section.title().equals(Component.translatable(
+                        "screen.vintner.estate_desk.tab.vineyards"
+                )))
+                .findFirst().orElseThrow();
+        // Numeric transport placeholders are not evidence of availability.
+        // Require explicit unavailable text and no live condition/health/yield/
+        // quality/irrigation line, matching the client's loaded=false branch.
+        helper.assertValueEqual(
+                vineyards.lines(),
+                List.of(
+                        Component.translatable(
+                                "screen.vintner.estate_desk.vineyards.plot_unloaded",
+                                "Remote Rows", level.dimension().identifier().toString(),
+                                8, 6
+                        ),
+                        Component.translatable(
+                                "screen.vintner.estate_desk.vineyards.unloaded"
+                        ).withStyle(ChatFormatting.DARK_GRAY)
+                ),
+                "Unloaded presentation must retain identity and size, explicitly "
+                        + "mark live metrics unavailable, and omit live values"
+        );
+        helper.succeed();
+    }
+
+    private static void assertPlotAnalysisChunksAbsent(
+            GameTestHelper helper,
+            VineyardPlot plot,
+            String phase
+    ) {
+        // Cover the production analysis contract, including its 12-block margin.
+        int minimumChunkX = Math.floorDiv(plot.minX() - 12, 16);
+        int maximumChunkX = Math.floorDiv(plot.maxX() + 12, 16);
+        int minimumChunkZ = Math.floorDiv(plot.minZ() - 12, 16);
+        int maximumChunkZ = Math.floorDiv(plot.maxZ() + 12, 16);
+        int checked = 0;
+        for (int chunkX = minimumChunkX; chunkX <= maximumChunkX; chunkX++) {
+            for (int chunkZ = minimumChunkZ; chunkZ <= maximumChunkZ; chunkZ++) {
+                helper.assertFalse(
+                        helper.getLevel().getChunkSource().hasChunk(chunkX, chunkZ),
+                        "Analysis chunk (" + chunkX + ", " + chunkZ
+                                + ") must remain absent " + phase
+                );
+                checked++;
+            }
+        }
+        helper.assertValueEqual(
+                checked, 9,
+                "The remote fixture must check all nine margin-inclusive chunks " + phase
+        );
     }
 
     @GameTest(maxTicks = 40)

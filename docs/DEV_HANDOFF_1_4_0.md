@@ -2,6 +2,7 @@
 
 - **Branch:** `feat/1.4.0-vineyard-management`
 - **Gate B base:** `a020bc4` (`Document Vintner 1.4.0 integration state`), the local Gate A housekeeping commit; it remains unpushed.
+- **Gate C base:** `6abf06c` (`Add plot persistence and dimension GameTests`); Gate A and B remain local and unpushed. Gate C changes are uncommitted.
 - **Stable public version:** Vintner 1.3.1 — Cellar Crafting Patch.
 - **Development version:** `mod_version=1.3.1`; the 1.4.0 bump remains release-preparation work.
 
@@ -11,9 +12,9 @@ The 1.4.0 branch implements the agreed Vineyard Expansion scope: expanded cultiv
 
 Deferred scope remains unchanged: pantry and cooking work (1.5.0), deeper estates and hospitality (1.6.0), transactional trade (1.7.0), and later labour/logistics automation.
 
-- **Automated validation:** Integration Gate B passed. Its focused plot tests passed 8/8; the Winemaker recovery passed three isolated runs, two consecutive 164/164 standard suites, and a 164/164 Serene Seasons suite; the final clean build and release audit passed.
+- **Automated validation:** Integration Gate C passed: exact unloaded-plot test 1/1, focused plot tests 9/9, clean build and release audit, standard suite 165/165, and Serene Seasons suite 165/165. Gate B evidence and its non-reproduced timing incident remain recorded below.
 - **Manual QA:** Pending for unloaded-plot desk presentation, desk UI/scrolling, multiplayer ownership isolation, and broader release visual gates.
-- **Known risks:** Loaded plots are analyzed synchronously when the desk opens. The work is bounded (16 plots, 32×32 columns, 10 vertical positions), but no runtime timing test covers the worst case. Unloaded regions are guarded by non-loading chunk-presence checks, but the behavior still lacks direct GameTest coverage.
+- **Known risks:** Loaded plots are analyzed synchronously when the desk opens. The work is bounded (16 plots, 32×32 columns, 10 vertical positions), but no runtime timing test covers the worst case. Gate C now directly covers a same-dimension unloaded region and its outgoing desk payload; client rendering still needs manual QA.
 - **Documentation discrepancy:** `docs/RELEASE_SCHEDULE.md` appears to place the 1.2.0 release date after 1.3.0; leave for a later documentation correction.
 
 ## Integration Gate A evidence
@@ -57,13 +58,49 @@ The failure was not reproduced. Record it as: **A non-reproduced timing or suite
 - Ignored generated Python bytecode was removed; no `.pyc` or `.pyo` files remain under `scripts/`.
 - Compilation continues to report existing deprecation warnings for the GameTest mock-player helper and other deprecated APIs.
 
+## Integration Gate C evidence
+
+- Initial repository verification matched the handoff exactly: branch `feat/1.4.0-vineyard-management`, HEAD `6abf06c`, clean working tree, origin comparison `0 2`, passing `git diff --check`, and no Python bytecode under `scripts/`.
+- Only `src/main/java/com/zenith/vintner/test/VintnerGameTests.java` and this handoff changed. No production code, visibility seam, gameplay logic, release metadata, or version changed. No production defect was established.
+
+### Report path and test design
+
+- `VineyardPlotReport.analyzeIfLoaded` rejects a mismatched dimension and calls `hasLoadedAnalysisArea` before the block-scanning `analyze` path. That guard checks `ServerChunkCache.hasChunk` for the entire plot plus a 12-block X/Z margin and returns `Optional.empty()` if any required chunk is unavailable.
+- `EstateDeskReport.open` retrieves the owner's plots, calls private `analyzePlots` (including saved-dimension resolution and `analyzeIfLoaded`), builds the private `vineyards` section and `plotSummaries`, and sends an `EstateDeskPayload` through `ServerPlayNetworking.send`.
+- `unloadedPlotReportPreservesStaticDataWithoutLoadingChunks` uses Minecraft's existing public `ServerPlayer` and `ServerGamePacketListenerImpl` constructors, with a test-local `send` override capturing the real outgoing payload. The player is not inserted into the level/player list, and no network channel or target-region chunk tickets are created by the fixture.
+- The plot is registered as metadata in the reporting level's dimension, from `(1000000, 64, -1000000)` to `(1000007, 64, -999995)`. Registration uses coordinate/time metadata, with no target-region block access, `getChunk`, teleportation, or entity spawning.
+- The margin-inclusive analysis area covers chunk X `62499..62501` and chunk Z `-62501..-62499`: nine chunks. Every chunk is asserted absent via `hasChunk` before reporting, after `analyzeIfLoaded`, and after the real `EstateDeskReport.open` call. The direct analysis must also return no live report. Passing these 27 presence assertions proves the tested report paths did not synchronously load the target analysis region.
+
+### Exact payload and unavailable-data assertions
+
+- The captured desk payload must contain exactly one plot: name `Remote Rows`, dimension equal to the reporting level (`minecraft:overworld` in these runs), `minX=1000000`, `minZ=-1000000`, `maxX=1000007`, `maxZ=-999995`, `width=8`, `depth=6`, and `area=48`.
+- `loaded=false` and `variety="Unavailable"` are required. The vineyard section must contain exactly `vineyards.plot_unloaded` with the name, dimension, width, and depth, followed by the dark-gray `vineyards.unloaded` component with no metric arguments. No live condition/health/yield/quality/irrigation line is allowed.
+- Numeric payload slots still contain existing transport zero placeholders; zero is **not** asserted or interpreted as unavailable data. Availability is established by the explicit flag and unavailable presentation components. Source inspection confirms the client's `loaded=false` branch shows static size and `map.unloaded`, omitting live metrics. This GameTest captures server output; it does not execute or visually validate the client screen or exercise codec round-tripping.
+
+### Validation and preserved reports
+
+Validation followed the requested order, with each XML copied outside `build/` before a later run or clean could overwrite it:
+
+| Check | Result | Preserved evidence |
+| --- | --- | --- |
+| Exact Gate C filter | 1/1 passed; 689.1 ms suite completion; Gradle 2m 22s | `/tmp/vintner-gate-c-20260904/focused.xml`, `focused.log` |
+| `vintner:vintner_game_tests_*plot*` | 9/9 passed; 676.5 ms; Gradle 2m 20s | `/tmp/vintner-gate-c-20260904/plots.xml`, `plots.log` |
+| `./gradlew clean build` | Passed; Gradle 2s; release audit executed through `check` | `/tmp/vintner-gate-c-20260904/build.log` |
+| Complete standard suite | 165/165 passed; 1.581 s; Gradle 2m 4s | `/tmp/vintner-gate-c-20260904/standard.xml`, `standard.log` |
+| Serene Seasons suite | 165/165 passed; 1.567 s; Gradle 2m 6s; separate `build/gametest-serene-run` directory | `/tmp/vintner-gate-c-20260904/serene.xml`, `serene.log` |
+
+- The release audit passed with 1,567 JSON files, 169 recipes, 159 public wood-family blocks, and 24 wood-preserving grapevine states.
+- All four preserved XML reports have zero failures and zero errors, and each includes the Gate C test. The Gate B Winemaker test also passed in the complete standard suite; the earlier incident remains **A non-reproduced timing or suite-load failure observed once during Gate B.** No fix is claimed.
+- `git diff --check` passed before testing and after validation. Ignored audit-generated Python bytecode was removed; final inspection found no `.pyc` or `.pyo` under `scripts/`.
+- No staging, commit, push, merge, tag, or publication was performed. HEAD remains `6abf06c`, with the two prior local commits preserved and origin comparison `0 2`.
+- Proposed commit message, only if separately authorized: `Add unloaded plot reporting GameTest`.
+
 ## Remaining coverage gaps
 
-- Same-dimension unloaded plot reporting without loading chunks.
-- Static unloaded payload-field validation, including identity, dimension, bounds, area, `loaded=false`, and unavailable live metrics.
 - Two-player Estate Management Desk payload isolation.
 - Loaded-plot scan performance characterization.
+- Manual unloaded-plot desk presentation, UI/scrolling QA, and broader release visual/in-game acceptance.
 
 ## Next integration gate
 
-**Integration Gate C — Unloaded Plot Reporting:** add a focused test-only slice proving same-dimension unloaded plot reporting does not load chunks and returns correct static fields with live metrics unavailable. Do not change gameplay logic unless the test establishes a defect and a correction is separately approved.
+**Smallest next integration task:** add one test-only two-player Estate Management Desk payload-isolation test, reusing the public packet-capture approach to assert that each player receives only their own estate and plot data. Do not expand it into scan-performance or manual UI work.
