@@ -4828,6 +4828,38 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void plotIrrigationInfluenceMatchesDirectQueriesAcrossHeights(
+            GameTestHelper helper
+    ) {
+        BlockPos origin = helper.absolutePos(new BlockPos(2, 1, 2));
+        helper.setBlock(new BlockPos(4, 0, 4), Blocks.WATER);
+        var isolated = new VineyardIrrigation.PlotInfluence(
+                helper.getLevel(), origin.getX(), origin.getZ(), 4, 4, origin.getY(), 3);
+        helper.assertFalse(isolated.isIrrigated(helper.absolutePos(new BlockPos(4, 1, 4))),
+                "Water directly beneath a root must retain the zero-offset exclusion");
+        List<BlockPos> channels = List.of(new BlockPos(1, 0, 2), new BlockPos(6, 1, 5),
+                new BlockPos(4, 3, 4), new BlockPos(2, 2, 2), new BlockPos(5, 0, 6));
+        for (BlockPos channel : channels) helper.setBlock(channel, Blocks.WATER);
+        for (int pass = 0; pass < 2; pass++) {
+            var influence = new VineyardIrrigation.PlotInfluence(
+                    helper.getLevel(), origin.getX(), origin.getZ(), 4, 4, origin.getY(), 3);
+            for (int x = 0; x < 4; x++) {
+                for (int z = 0; z < 4; z++) {
+                    for (int y = 0; y < 3; y++) {
+                        BlockPos root = origin.offset(x, y, z);
+                        helper.assertValueEqual(influence.isIrrigated(root),
+                                VineyardIrrigation.isIrrigated(helper.getLevel(), root),
+                                "Plot influence must match direct irrigation at " + root + ", pass " + pass);
+                    }
+                }
+            }
+            for (BlockPos channel : channels) helper.setBlock(channel, Blocks.AIR);
+            helper.setBlock(new BlockPos(4, 0, 4), Blocks.AIR);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void estateLedgerAggregatesAndBoundsHistory(
             GameTestHelper helper
     ) {

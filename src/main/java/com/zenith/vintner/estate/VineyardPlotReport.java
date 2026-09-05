@@ -57,6 +57,12 @@ public record VineyardPlotReport(
                 SeasonalContext.TICKS_PER_DAY
         );
         VineAgeSavedData ages = VineAgeSavedData.get(level);
+        // Only widen the traversal inside chunks already confirmed present.
+        // Direct callers with a partially loaded plot retain the original path.
+        VineyardIrrigation.PlotInfluence irrigation = hasLoadedAnalysisArea(level, plot)
+                ? new VineyardIrrigation.PlotInfluence(level, plot.minX(), plot.minZ(),
+                        plot.width(), plot.depth(), plot.anchorY() - 4, 10)
+                : null;
 
         for (int x = plot.minX(); x <= plot.maxX(); x++) {
             for (int z = plot.minZ(); z <= plot.maxZ(); z++) {
@@ -78,7 +84,10 @@ public record VineyardPlotReport(
                     } else {
                         white++;
                     }
-                    if (VineyardIrrigation.isIrrigated(level, pos)) {
+                    boolean irrigated = irrigation == null
+                            ? VineyardIrrigation.isIrrigated(level, pos)
+                            : irrigation.isIrrigated(pos);
+                    if (irrigated) {
                         irrigatedVines++;
                     }
                     if (state.getValue(GrapevineBlock.AGE)
@@ -91,7 +100,8 @@ public record VineyardPlotReport(
                                 GrapeQualityEvaluator.inspectWithTerroir(
                                         level,
                                         pos,
-                                        terroir
+                                        terroir,
+                                        irrigated
                                 );
                         qualityTotal += condition.qualityScore();
                         healthTotal += condition.vineHealthPoints();

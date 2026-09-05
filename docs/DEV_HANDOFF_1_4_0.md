@@ -16,7 +16,8 @@ Deferred scope remains unchanged: pantry and cooking work (1.5.0), deeper estate
 
 - **Automated validation:** Gates C and D passed. R5: Winemaker standard 10/10 and compatibility 10/10; ownership 1/1; estate 11/11; village/workstation 7/7; complete standard and Serene Seasons suites each 166/166; clean build, release audit and formatting checks passed. Earlier failed-run evidence remains below.
 - **Manual QA:** Pending for unloaded-plot desk presentation, desk UI/scrolling, multiplayer ownership isolation, and broader release visual gates.
-- **Known risks:** Loaded plots are analyzed synchronously when the desk opens. Gate E measured a populated maximum estate at 18.032–29.042 ms per report (median 25.994 ms) on the recorded development machine. This is a material server-thread cost, not a whole-tick measurement or comprehensive worst-case guarantee. Gate C covers a same-dimension unloaded region and its outgoing payload; client rendering still needs manual QA.
+- **Latest automated validation:** Gate H passed plot 10/10, estate 11/11, ownership 1/1, standard 167/167 and Serene Seasons 167/167, followed by clean build and release audit. Prior gate evidence remains below.
+- **Known risks:** Loaded plots are analyzed synchronously when the desk opens. Gate H reduced the measured maximum-estate range to 5.848–13.666 ms per report (median 11.717 ms) on the recorded development machine. The remaining cost needs final release-risk assessment; this is not a whole-tick measurement or comprehensive worst-case guarantee. Gate C covers a same-dimension unloaded region and its outgoing payload; client rendering still needs manual QA.
 - **Documentation discrepancy:** `docs/RELEASE_SCHEDULE.md` appears to place the 1.2.0 release date after 1.3.0; leave for a later documentation correction.
 
 ## Integration Gate A evidence
@@ -651,12 +652,89 @@ Maximum-estate report durations in milliseconds; changes are candidate minus com
 - **Maximum-estate reporting remains a release concern:** production still performs the original synchronous work, and rapid reopen requests remain possible. This experiment establishes duplicate-read/allocation removal without sufficient elapsed-time benefit; it does not demonstrate a whole-tick overrun or require persistent caching. Dry synthetic fixtures, short same-machine runs, JIT/GC/sampling variation and no real multiplayer load constrain interpretation.
 - **Smallest next action:** roadmap review of a bounded per-plot irrigation evaluation that reduces the repeated per-vine probe loop itself, rather than only memoizing its world queries. Any new implementation requires a separate scope decision; facility persistence and manual client/multiplayer QA remain separate.
 
+## Gate H — Final irrigation enumeration optimisation
+
+### Starting state and scope
+
+- Verified expected branch, HEAD `a26e9c0`, remote-only/local-only comparison `0 6`, development version `1.3.1`, only the accepted Gate G handoff modified, nothing staged, no unrelated files or bytecode, and passing `git diff --check`. Inspected the Gate G diff and committed it separately as **`63a5e0a` — `Document irrigation optimization experiment`**. The tree was clean afterward. Prior commits were preserved and nothing was pushed.
+- This is the final dedicated 1.4.0 performance optimisation attempt. No cooldown, persistent world-state cache, async access, background index, payload/save-format change or general estate optimisation is included.
+
+### Enumeration finding and candidate
+
+- The original irrigation method executes a 9×9 horizontal loop for every root and every sampled condition: 81 radius/distance checks, retaining 40 nonzero Manhattan-radius-four offsets at two heights. Neighbors and sampled roots repeat the same geometry. There are no coordinate streams/lists, but offsets allocate positions repeatedly. Gate G removed many world queries while retaining those per-vine loops/map probes, which explains why that experiment did not by itself demonstrate sufficient CPU reduction.
+- Plot bounds and the fixed ten-level root scan provide a natural bounded alternative. The candidate creates one `VineyardIrrigation.PlotInfluence` inside an already-loaded plot analysis. On the first root at a given Y, it examines water at Y-1/Y across the plot rectangle expanded by four blocks. For each water column, it marks the **exact nonzero Manhattan-radius-four** root influence into a `boolean[width * depth]` grid. Subsequent roots at that height read one grid entry. Only heights actually containing scanned roots allocate/build a grid; at most ten grids exist per analysis.
+- This inverts the geometry without changing its predicate: a root is irrigated iff a water-tagged fluid exists at horizontal distance 1–4 and vertical offset -1 or 0. The water column directly under/at the root remains excluded. Influence markings are idempotent and dimension-local. Each vine's resulting boolean is reused for its condition sample through an overload of `inspectWithTerroir`; other callers retain direct irrigation calculation.
+- Each analysis discards its level-bound grids on return. No context survives into the payload, another plot, another tick or another opening. The original direct irrigation method remains available and unchanged. `VineyardPlotReport.analyze` uses the grid only if the existing 12-block-margin chunk guard passes; partially loaded direct callers, including the Almanac path, retain the original per-root traversal. The desk's `analyzeIfLoaded` guard and wrong-dimension behavior are unchanged.
+- The rectangular scan reads some positions outside the union of actual vine neighborhoods, but only within the already-loaded guard. It creates no new chunk requirement. Wet columns execute the exact influence loop; dry columns do not enumerate geometric offsets. Very wet/dense terrain is a performance limitation to assess separately, not an approximation of the irrigation result.
+
+Calculated dry-fixture counts (not instrumented counters), preserved in `calculated-enumeration.json`:
+
+| Fixture | Original horizontal checks | Original fluid probes | Unique original probe positions (per-plot sum) | Candidate water columns | Candidate fluid probes |
+| --- | --- | --- | --- | --- | --- |
+| 1×8×8 / 32 roots | 5,184 | 5,120 | 388 | 256 | 512 |
+| 1×32×32 / 512 roots | 44,064 | 43,520 | 2,980 | 1,600 | 3,200 |
+| 16×32×32 / 8,192 roots | 705,024 | 696,320 | 47,680 | 25,600 | 51,200 |
+
+- Original probe duplication is 92.4% / 93.2% / 93.2% relative to unique positions. The candidate deliberately uses a simple bounded rectangle rather than a hash-based unique-position set. For these dry fixtures it performs no water-influence offset loop, removing the repeated per-root geometric work rather than merely accelerating its world queries.
+
+### Equivalence before timing
+
+- Evidence directory: **`/tmp/vintner-gate-h-iDP6vEsj`**. A separate untimed `equivalence-run` used the preserved three deterministic populated fixtures and compared complete production-authored `EstateDeskPayload` record values against the unmodified-production Gate F baselines (`expected-small.txt`, `expected-large.txt`, `expected-maximum.txt`).
+- **All three payload comparisons passed before timing.** Estate/ownership presentation, every section, loaded flags, plot bounds, irrigation, condition/yield/quality metrics and map/atlas fields matched exactly. Empty facility/ledger/map fixture content remains a coverage limit. Per-call checks confirmed all plots loaded, expected root counts and unchanged loaded chunks (**2,854 → 2,854**). No unexpected loading or meaningful payload difference occurred.
+- Added one permanent regression test, `plotIrrigationInfluenceMatchesDirectQueriesAcrossHeights`: compares the grid to the original direct query at 48 positions across three heights, repeats after channel removal using a fresh grid, and explicitly checks zero-horizontal-offset exclusion. Existing plot tests also verify physical irrigation coverage and fresh dry results after removing water.
+
+### Timing and JFR
+
+- Same standard environment and fixture as E/F/G: M4 Pro/24 GiB, macOS 26.6.2, OpenJDK 25.0.3, 2 GiB heap, Minecraft 26.2, Fabric Loader 0.19.3, Fabric API 0.155.2+26.2, Vintner 1.3.1, no Serene Seasons or connected players. Fresh flat seed-0 world, alternating mature red/white rows, 32/512/8,192 roots, maximum 4×4 plot grid at 48-block pitch, all chunk/fixture preparation outside timing.
+- In a fresh `measurement-run`, the first 48 calls were unprofiled: each scenario had a separately recorded first call, five warm-ups and ten measured calls, five ordinary server ticks apart. Timer brackets only real `EstateDeskReport.open` and public packet capture; validation/logging, setup, socket/client work and the rest of the tick are excluded. Scenario order small → large → maximum is fixed; only the first small call is process-cold.
+- Then JFR recorded 60 additional warmed maximum-estate calls with the same 1 ms execution sampling and 1,000/s allocation sampling as F/G. No broad campaign or repeated full suites were used for measurement. `measurement.log`, `samples.json`, `timing-summary.json`, `comparison.json`, `report.jfr`, `events.json` and `profile-summary.json` preserve raw evidence. All 108 calls passed loaded-payload/chunk-count checks.
+
+Baseline below is Gate F's comparable unmodified-production run on the same environment, not either rejected candidate. Durations are ms, first / minimum / median / maximum:
+
+| Fixture | Baseline | Gate H | Median change |
+| --- | --- | --- | --- |
+| One 8×8 | 33.228 / 2.859 / 4.295 / 5.506 | 19.400 / 2.823 / 3.458 / 4.379 | -19.5% |
+| One 32×32 | 9.910 / 1.875 / 5.915 / 7.543 | 4.394 / 1.668 / 4.122 / 5.476 | -30.3% |
+| Sixteen 32×32 | 27.717 / 19.972 / 26.341 / 29.991 | 15.714 / 5.848 / 11.717 / 13.666 | **-14.624 ms / -55.5%** |
+
+- All ten maximum-estate measured calls fall below the baseline's measured minimum. The result is also substantially below Gate E's 25.994 ms and Gate G's 25.625 ms medians. This clears the 15–20% practical retention threshold within the bounded evidence; smaller fixtures show no meaningful regression.
+
+| Maximum-estate profile, 60 calls | Gate F baseline | Gate H |
+| --- | --- | --- |
+| Report-stack CPU samples | 1,019 | 436 |
+| Irrigation inclusive CPU share | 73.9% | **14.5%** |
+| Terroir inclusive CPU share | 5.6% | 16.7% |
+| Infrastructure CPU share | 4.9% | 14.7% |
+| Condition evaluator CPU share | 6.2% | 4.8% |
+| Total report allocation sample weight | 1,267,875,656 bytes | 337,715,448 bytes |
+| Irrigation inclusive allocation share | 79.3% | 22.4% |
+
+- Profile attribution filters stacks containing `EstateDeskReport.open`, exported with stack depth 128. Inclusive percentages overlap; allocation weight is statistical rather than exact bytes. The remaining vineyard block/age work, terroir and infrastructure occupy larger relative shares after irrigation falls. Their relative increases do not establish new regressions. Gate H has allocation weight similar to G but much lower irrigation CPU and elapsed time, supporting the enumeration-focused decision. No additional hotspot was optimised.
+
+### Acceptance validation and release boundary
+
+- **Retained and accepted for Gate H:** exact payload equivalence, unchanged observed chunk counts, substantial latency/CPU reduction and all mandatory validation passed. Temporary profiling source/hook has been removed and preserved externally. The optimisation, regression test and this record are committed together as `Compute plot irrigation influence once per height`; nothing is pushed.
+
+| Validation | Result | Preserved evidence under `/tmp/vintner-gate-h-iDP6vEsj` |
+| --- | --- | --- |
+| Plot-focused group, including new equivalence test | 10/10 passed | `plots.xml`, `plots.log` |
+| Estate-focused group | 11/11 passed | `estate.xml`, `estate.log` |
+| Exact ownership isolation | 1/1 passed | `ownership.xml`, `ownership.log` |
+| Complete standard suite | 167/167 passed | `full-standard.xml`, `full-standard.log` |
+| Complete Serene Seasons suite | 167/167 passed | `full-serene.xml`, `full-serene.log` |
+| Clean build | Passed; audit ran through `check` | `build.log` |
+| Explicit release audit | Passed: 1,567 JSON files, 169 recipes, 159 public wood-family blocks, 24 wood-preserving grapevine states | `audit.log` |
+| Final hygiene | `git diff --check` passed; ignored audit bytecode removed; only five intended source/test/documentation files included | Final Git review |
+
+- Existing ownership and Winemaker test logic remains unchanged. No payload format, persistence, cooldown, global cache or version change is included; development version remains `1.3.1`.
+- This evidence is from one machine, ten timed calls per scenario and synthetic rain-fed fixtures; it does not measure whole-tick latency, worst possible water density, map/cellar inventory or multiplayer concurrency. Reporting remains synchronous and retriggerable. The remaining on-demand cost belongs in final release-risk assessment, not another dedicated optimisation phase without a newly demonstrated reason.
+
 ## Remaining coverage gaps
 
-- Maximum-estate irrigation cost remains a release concern after Gate F/G attribution and rejection of both limited candidates.
+- Remaining synchronous maximum-estate reporting cost is a reduced release concern after Gate H; final release-risk assessment remains pending.
 - Manual unloaded-plot desk presentation, UI/scrolling QA, and broader release visual/in-game acceptance.
 - Desk-open reputation persistence when newly recognized facilities are discovered.
 
 ## Next integration gate
 
-**Smallest next integration task:** review a bounded per-plot irrigation evaluation that reduces repeated probe enumeration, using Gate G's duplicate-read and latency evidence. Facility/reputation persistence, manual desk presentation/scrolling and multiplayer/in-game acceptance remain separate work.
+**Smallest next integration task:** assess the remaining on-demand report cost against final release risks using Gate H's evidence. This ends dedicated 1.4.0 performance optimisation unless a new demonstrated reason appears. Facility/reputation persistence, manual desk presentation/scrolling and multiplayer/in-game acceptance remain separate work.

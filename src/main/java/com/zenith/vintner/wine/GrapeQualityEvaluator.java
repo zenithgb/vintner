@@ -53,6 +53,17 @@ public final class GrapeQualityEvaluator {
             BlockPos vinePos,
             TerroirReport terroir
     ) {
+        return inspectWithTerroir(level, vinePos, terroir,
+                VineyardIrrigation.isIrrigated(level, vinePos));
+    }
+
+    /** Reuses irrigation calculated during the same synchronous plot analysis. */
+    public static VineyardConditionReport inspectWithTerroir(
+            Level level,
+            BlockPos vinePos,
+            TerroirReport terroir,
+            boolean irrigated
+    ) {
         boolean openSky = terroir.terrain().sunExposure() >= 50;
         boolean suitableTemperature =
                 terroir.climate().suitability() >= 45;
@@ -103,10 +114,6 @@ public final class GrapeQualityEvaluator {
                 ? SeasonalContext.current(serverLevel)
                 : SeasonalContext.atDay(0, 8);
         boolean protectedCultivation = VineyardProtection.isProtected(
-                level,
-                vinePos
-        );
-        boolean irrigated = VineyardIrrigation.isIrrigated(
                 level,
                 vinePos
         );
