@@ -529,12 +529,69 @@ Durations in milliseconds. Min/median/max use only the ten post-warm-up samples;
 - Initial `./gradlew compileJava`, the dedicated-server measurement invocation, and final `./gradlew compileJava` after cleanup all passed. Existing deprecated mock-player warnings remain unchanged. No full suites, clean build, release audit or Gate D repetition ran.
 - Final source matches HEAD, including all tests, production code and version. Only this handoff is modified; nothing staged/committed/pushed, four local commits preserved, no Python bytecode, and `git diff --check` passed.
 
+## Gate F — Maximum-estate CPU/allocation attribution
+
+### Baseline and preserved Gate E commit
+
+- Verified expected branch, HEAD `9c8ee9f`, origin comparison `0 4`, version `1.3.1`, only the Gate E handoff modified, nothing staged, no unrelated/untracked files or bytecode, and passing `git diff --check`. Reviewed the entire Gate E documentation diff and committed it separately as **`4e3a699` — `Document loaded estate reporting performance`**. The tree was clean afterward; comparison became `0 5`. No push occurred.
+- Re-inspection confirmed the Gate E path: every eligible desk opening runs a fresh infrastructure survey, one analysis per registered plot, per-vine irrigation, up to 32 condition samples per plot, shared per-plot terroir, and payload assembly. Per-call plot snapshots are already shared by text/structured sections. The broad fluid neighborhoods overlap spatially between vines, and sampled vines repeat irrigation in condition evaluation. Transient report lists/components exist, but their cost must be distinguished from the world lookups.
+- A player can close/reopen to request another full report. No Vintner server-side cooldown or duplicate-request guard is present. Screen navigation itself does not regenerate the report. This is code-path evidence of retriggerability, not a measured multiplayer request-rate experiment.
+
+### Profile method and evidence
+
+- Unique evidence directory: **`/tmp/vintner-gate-f-hJE515RG`**. `report.jfr`, `events.json`, `profile-summary.json`, and `profile.log` preserve the profile and analysis; `before.log`, `after.log`, `comparison.json`, and `payloads.json` preserve controlled timing/payload evidence. Separate disposable worlds remain in `run`, `before-run`, and `after-run`.
+- Reused Gate E's fixture/observer: three owners, 32/512/8,192 mature rain-fed roots, maximum 4×4 grid of sixteen 32×32 plots at 48-block pitch, preloaded margins and desk-survey halo. Same M4 Pro/24 GiB/macOS 26.6.2, OpenJDK 25.0.3, standard Minecraft 26.2/Fabric/Vintner mod set, 2 GiB heap, no players, and paced normal server thread. No new dependency or production profiling seam.
+- The original 48-call small/large/maximum sequence ran first. Then JDK Flight Recorder recorded **60 additional maximum-estate calls**, five server ticks apart, after setup and warm-up. Enabled `jdk.ExecutionSample` at 1 ms with stacks and `jdk.ObjectAllocationSample` at 1,000/s with stacks, plus GC events. The 15-second recording contained 1,193 execution samples and 2,400 allocation samples overall. Three GC events were recorded, without attributing their pauses to individual report calls.
+- Export command: `jfr print --json --stack-depth 128 --events jdk.ExecutionSample,jdk.ObjectAllocationSample report.jfr`. Analysis includes only stacks containing `EstateDeskReport.open`: **1,019 CPU samples** and **2,365 allocation samples**, with about **1.268 GB allocation sample weight** across 60 calls. Allocation weights are statistical estimates, not exact allocated-byte counters; inclusive stack percentages overlap and must not be summed. Profiler-on timings were not used for the before/after comparison.
+
+| Report call path | Inclusive CPU samples | Share of report CPU samples | Share of report allocation weight |
+| --- | --- | --- | --- |
+| Plot analysis | 957 | 93.9% | 99.6% |
+| Irrigation checks | 753 | **73.9%** | **79.3%** |
+| Condition evaluation | 63 | 6.2% | 5.1% |
+| Terroir inspection | 57 | 5.6% | 3.5% |
+| Infrastructure survey | 50 | 4.9% | Not a leading sampled allocation path |
+
+- `BlockPos` accounts for approximately **1.233 GB / 97.2%** of report allocation sample weight. The irrigation path accounts for about **1.005 GB** of weight (roughly 16.8 MB/call estimated). This supports investigating per-probe coordinate allocation, rather than assuming infrastructure or payload collections dominate. Main-loop coordinates are another allocation source; they were not changed.
+- The largest theoretical scan was not used as a CPU proxy. Fluid lookup/navigation through level/chunk data is part of the irrigation stack, and a hot allocating path does not prove that removing its allocation will proportionally reduce elapsed time.
+
+### One local candidate, measured and rejected
+
+- Tried exactly one candidate in `VineyardIrrigation.isIrrigated`: allocate a method-local `MutableBlockPos`, reuse it with `setWithOffset(rootPos, x, y, z)`, and retain the same loops, radius, vertical range, order, fluid predicate and early return. No world mutation, cache, threading, ownership, persistence or save-format change.
+- Local Minecraft source inspection confirmed `Level.getFluidState` and `LevelChunk.getFluidState` consume coordinates synchronously, with the latter immediately reading integer coordinates; no retained mutable position was introduced. Existing wet/dry and radius-boundary tests were identified, but acceptance suites were not run because the candidate failed the performance-retention criterion first.
+- Before/after used separate identical fresh worlds and the same unprofiled 48-call sequence: first, five warm-ups, ten measured calls per scenario, every five ticks. The extra baseline captured complete payload values. Setup, validation, payload logging and network/client work stayed outside the timer, as in Gate E. Each call verified correct loaded plot bounds/counts and vine counts; prepared chunks stayed present and loaded counts stayed **2,854 → 2,854**.
+
+Maximum-estate report durations in milliseconds; changes are candidate minus comparable unprofiled baseline (negative means faster):
+
+| Metric | Baseline | Candidate (rejected) | Absolute change | Percentage change |
+| --- | --- | --- | --- | --- |
+| First | 27.717 | 26.018 | -1.699 | -6.13% |
+| Minimum | 19.972 | 20.822 | +0.850 | +4.26% |
+| Median | 26.341 | 24.942 | -1.399 | -5.31% |
+| Maximum | 29.991 | 27.960 | -2.031 | -6.77% |
+
+| Sanity fixture | Baseline first / min / median / max ms | Candidate first / min / median / max ms |
+| --- | --- | --- |
+| One 8×8 | 33.228 / 2.859 / 4.295 / 5.506 | 28.444 / 2.160 / 3.670 / 5.119 |
+| One 32×32 | 9.910 / 1.875 / 5.915 / 7.543 | 8.003 / 5.162 / 6.434 / 8.619 |
+
+- **Rejected:** maximum median improved only 1.399 ms (5.3%), with heavily overlapping ranges, a higher minimum, and a slightly higher large-plot median. This bounded evidence does not distinguish a robust latency benefit from run-to-run variation. Gate E's independent maximum median was 25.994 ms, also close to the candidate. No further candidate was attempted; no optimisation is retained.
+- **Payload equivalence:** captured each scenario's complete final `EstateDeskPayload` record representation before/after; all three matched exactly, including estate/subtitle, every section/component, structured plot metrics, map list and atlas flag. Every call also passed explicit loaded/bounds/area/vine-count checks. `payloads.json` preserves those full values. This is meaningful-field fixture equivalence, not exhaustive equivalence for every possible vineyard, facility or map inventory.
+
+### Cleanup, validation and decision
+
+- Preserved `rejected-candidate.patch`, `ProfileObserver.java`, `MeasurementObserver.java`, `opt-in-hook.patch`, and the three launcher init scripts outside the repository. To reproduce, restore the relevant observer as `LoadedReportMeasurement.java` under the test package and apply the opt-in hook; direct the corresponding init script to a new disposable run directory with the preserved server properties/EULA, then run `./gradlew runReleaseServer -I <init-script>`. Never reuse an already populated owner/plot world as a fresh fixture.
+- Removed the candidate and all temporary observer/hook code with scoped patches. **All production and test source matches HEAD again.** The three dedicated-server invocations compiled/ran successfully; final `./gradlew compileJava` after cleanup passed (`final-compile.log`). No focused/full acceptance suites, clean build or release audit were run: no production optimisation survived the timing decision. These checks are **not run**, not claimed passed.
+- Final `git diff --check` passed; only this handoff is modified, nothing staged, no Python bytecode or unrelated files, version `1.3.1`, HEAD `4e3a699`, origin comparison `0 5`. Gate F documentation remains uncommitted; no optimisation commit or push was made.
+- **Release concern remains:** supported maximum-size populated estates still cost roughly half a nominal tick budget per synchronous report on this machine and may be rapidly retriggered. This is not evidence of whole-tick failure or an architectural requirement. The profile narrows the work to irrigation; the allocation-only candidate did not establish a sufficient latency improvement. One machine, short runs, fixed fixture order, sampling/JIT/GC effects and dry synthetic vineyards limit the conclusion. Optional seasons, dense planting, facilities, maps and busy multiplayer remain unmeasured.
+- **Smallest justified next action:** roadmap review of a bounded design to share overlapping irrigation fluid reads within a single report. Preserve fresh-report semantics and avoid cross-report caching; do not implement another candidate without that next scope decision.
+
 ## Remaining coverage gaps
 
-- Targeted cost attribution for maximum-estate reporting, following Gate E's bounded timing evidence; no optimisation decision yet.
+- Maximum-estate irrigation cost remains a release concern after Gate F attribution and rejection of the allocation-only candidate.
 - Manual unloaded-plot desk presentation, UI/scrolling QA, and broader release visual/in-game acceptance.
 - Desk-open reputation persistence when newly recognized facilities are discovered.
 
 ## Next integration gate
 
-**Smallest next integration task:** profile one bounded maximum-estate report scenario to attribute CPU/allocation cost before selecting any targeted performance change. Facility/reputation persistence, manual desk presentation/scrolling and multiplayer/in-game acceptance remain separate work.
+**Smallest next integration task:** review a bounded within-report design for sharing overlapping irrigation fluid reads, using Gate F's profile and rejected-candidate evidence. Facility/reputation persistence, manual desk presentation/scrolling and multiplayer/in-game acceptance remain separate work.
