@@ -174,23 +174,26 @@ of stored bottles.
 
 ## Development
 
-Build and verify the mod:
+Vintner requires the separate Zenithgb Commons `0.1.0-dev` mod alongside Fabric
+API. Build Commons first, then supply its external JAR explicitly:
 
 ```bash
-./gradlew clean build
-./gradlew runGameTest
+./gradlew -PcommonsJar=/absolute/path/to/zenithgb-commons-0.1.0-dev.jar clean build
+./gradlew -PcommonsJar=/absolute/path/to/zenithgb-commons-0.1.0-dev.jar runGameTest
 ```
 
 Launch the development client:
 
 ```bash
-./gradlew runClient
+./gradlew -PcommonsJar=/absolute/path/to/zenithgb-commons-0.1.0-dev.jar runClient
 ```
 
 Editable trellis geometry lives in `blockbench/trellis/`. Runtime models live
 in `src/main/resources/assets/vintner/models/block/trellis/`.
 
 The distributable JAR is written to `build/libs/`.
+Commons remains a separate installation; it is not bundled in Vintner.
+See [Commons Integration A](docs/COMMONS_INTEGRATION_A.md) for the integration boundary and validation.
 
 ## License
 

@@ -169,6 +169,21 @@ import java.util.List;
 import java.util.UUID;
 
 public final class VintnerGameTests {
+    @GameTest(maxTicks = 20)
+    public void commonsModuleUsesRuntimeIdentityExactlyOnce(GameTestHelper helper) {
+        var modules = com.zenithgb.library.module.ModuleRegistry.getInstance().modules();
+        var vintnerModules = modules.stream()
+                .filter(module -> module.id().getNamespace().equals("vintner")).toList();
+        helper.assertTrue(vintnerModules.size() == 1, "Common initialization must register exactly one Vintner module");
+        var module = vintnerModules.getFirst();
+        helper.assertTrue(module.id().toString().equals("vintner:vintner"), "Exact module identity");
+        helper.assertTrue(module.displayName().equals("Vintner"), "Exact module display name");
+        String runtimeVersion = net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer("vintner")
+                .orElseThrow().getMetadata().getVersion().getFriendlyString();
+        helper.assertTrue(module.version().equals(runtimeVersion), "Module version must match runtime Fabric metadata");
+        helper.succeed();
+    }
+
     private static final BlockPos FIRST = new BlockPos(2, 1, 2);
     private static final BlockPos EAST = FIRST.east();
     private static final BlockPos UPPER = FIRST.above();

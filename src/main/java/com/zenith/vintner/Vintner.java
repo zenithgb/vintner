@@ -22,6 +22,7 @@ public final class Vintner implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        VintnerCommons.initialize();
         ModNetworking.initialize();
         ModGameRules.initialize();
         ModMobEffects.initialize();

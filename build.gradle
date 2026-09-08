@@ -69,7 +69,14 @@ fabricApi {
 	}
 }
 
+def commonsJarPath = providers.gradleProperty("commonsJar")
+if (!commonsJarPath.isPresent() || !file(commonsJarPath.get()).isFile()) {
+	throw new GradleException("Supply -PcommonsJar=/absolute/path/to/zenithgb-commons-0.1.0-dev.jar")
+}
+
 dependencies {
+	// External required mod: compile and development runtime, never nested in Vintner.
+	implementation files(commonsJarPath.get())
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
