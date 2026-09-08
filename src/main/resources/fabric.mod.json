@@ -23,9 +23,6 @@
     ],
     "fabric-datagen": [
       "com.zenith.vintner.client.VintnerDataGenerator"
-    ],
-    "fabric-gametest": [
-      "com.zenith.vintner.test.VintnerGameTests"
     ]
   },
   "mixins": [

@@ -31,6 +31,7 @@ loom {
 
 		gameTest {
 			server()
+			source "gametest"
 			name = "Vintner Game Tests"
 			runDir = providers.gradleProperty("sereneSeasonsTest").isPresent()
 					? "build/gametest-serene-run"
@@ -56,6 +57,13 @@ loom {
 }
 
 fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "vintner_gametest"
+		// Keep the established runGameTest configuration and separate compatibility directory.
+		enableGameTests = false
+		enableClientGameTests = false
+	}
 	configureDataGeneration {
 		client = true
 	}
@@ -130,6 +138,7 @@ tasks.named("runReleaseServer") {
 
 tasks.named("check") {
 	dependsOn tasks.named("auditReleaseAssets")
+	dependsOn tasks.named("gametestClasses")
 }
 
 java {

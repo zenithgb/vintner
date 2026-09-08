@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "vintner_gametest",
+  "version": "1.0.0",
+  "name": "Vintner GameTests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "com.zenith.vintner.test.VintnerGameTests"
+    ]
+  },
+  "depends": {
+    "vintner": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}
