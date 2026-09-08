@@ -168,6 +168,9 @@ Commons`, records this phase; nothing is pushed. Phase 6 remains incomplete.
 
 ## Deferred work
 
+See [Commons Almanac audit](COMMONS_ALMANAC_AUDIT.md) for Phase 6B's source-based
+surface classifications and proposed first static content set. It implements no migration.
+
 Phase 6B must audit/classify the existing Almanac and knowledge surfaces before
 any migration. No knowledge migration, Vintage Archives migration, Tilth/Reeve
 link, interoperability or release acceptance is implied by this phase.
