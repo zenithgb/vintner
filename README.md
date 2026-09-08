@@ -3,6 +3,11 @@
 Vintner is a Fabric mod for Minecraft 26.2 focused on vineyards, grape
 cultivation, winemaking, ageing, and wine quality.
 
+With Zenithgb Commons installed, its existing Controls keybinding opens Vintner's
+reference articles on viticulture, winemaking, cellaring, quality and vintages.
+The Almanac, Vintage Archives and Estate Management Desk retain their live
+inspection and management roles. See [the knowledge contribution record](docs/COMMONS_INTEGRATION_B.md).
+
 ## Vineyard loop
 
 1. Acquire a red or white grape cutting from a farmer, wandering trader, or

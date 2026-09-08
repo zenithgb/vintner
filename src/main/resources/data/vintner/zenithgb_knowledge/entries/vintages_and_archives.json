@@ -1,0 +1,15 @@
+{
+  "module": "vintner:vintner",
+  "title": "Vintages and Archives",
+  "category": "vintner:cellaring_quality",
+  "body": [
+    "A wine's vintage and provenance connect it to its origin. Its recorded year and harvest conditions are different from its batch identity and the numbering of bottles from that batch. The world's calendar can vary, so use the Almanac for the details recorded on your wine.",
+    "Use a wine bottle on a Vintage Archive to record a snapshot without consuming the bottle. An Archive holds up to sixteen batch records. Recording the same batch again updates its existing snapshot rather than using another slot.",
+    "Use the Almanac on an Archive to review records once your estate is established. The Archive also serves estate founding and naming workflows, so a first use or a deliberately renamed Almanac can perform an estate action instead of browsing. Empty-hand use reports the Archive's capacity; sneak-use empty-handed for your Estate Ledger.",
+    "An Archive keeps the state you chose to record; it is not a rack that continues storing and ageing the original bottle. The placed Archive owns its records and browsing position. These reference pages explain the practice, while your actual bottles, Archive and estate tools keep the history."
+  ],
+  "related": [
+    "vintner:wine_scoring",
+    "vintner:cellars"
+  ]
+}

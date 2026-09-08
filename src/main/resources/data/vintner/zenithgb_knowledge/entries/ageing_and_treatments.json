@@ -1,0 +1,16 @@
+{
+  "module": "vintner:vintner",
+  "title": "Ageing and Treatments",
+  "category": "vintner:cellaring_quality",
+  "body": [
+    "Fill an ageing vessel with compatible wine to begin its work, then collect the finished wine with an empty hand when it is ready. Ordinary barrels take four bottles; a cellar cask treatment provides an eight-bottle vessel.",
+    "The wood family changes an ordinary barrel's appearance, not its functional treatment. To specialize an empty ordinary Aging Barrel, hold a Cooper's Mallet and a treatment kit, then use either on the barrel. Toasting, seasoning and cask conversion provide different ageing choices while keeping its wood appearance.",
+    "Toasted barrels mature wine faster and favour a bolder red-wine profile. Seasoned barrels work more gently and slowly, while cellar casks offer slower bulk maturation. These are trade-offs rather than a ladder in which one choice always produces the best bottle.",
+    "Use the Almanac on the vessel for its live reading. Sneak-use it for the additional treatment guide and crafting hint. The vessel's contribution, the wine it holds and the surrounding cellar all matter; a decorative wood change is not a quality upgrade."
+  ],
+  "related": [
+    "vintner:fermentation",
+    "vintner:cellars",
+    "vintner:wine_scoring"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "module": "vintner:vintner",
+  "title": "Cellars",
+  "category": "vintner:cellaring_quality",
+  "body": [
+    "A cellar is an environment as well as a place to put bottles. Shelter, underground placement, darkness and nearby water can improve its conditions. Heat and disturbance from nearby mechanisms can work against careful storage.",
+    "Use the Almanac on your cellar equipment for a reading of the actual location. Build around those readings rather than assuming that a room called a cellar automatically provides ideal conditions.",
+    "Wine racks hold a small collection, while crates provide denser storage. Labelled Cellar Shelves organize bottles from one batch, and Tasting Cabinets let you compare a mixed collection. Their inventories and selected bottles remain part of the placed furniture.",
+    "Stored wine keeps its identity and develops with its storage history. Racks, crates and cellar collections account for elapsed storage time when their chunks load again. Good storage complements the vineyard and winemaking stages; it does not erase every earlier difference between bottles."
+  ],
+  "related": [
+    "vintner:ageing_and_treatments",
+    "vintner:wine_scoring"
+  ]
+}

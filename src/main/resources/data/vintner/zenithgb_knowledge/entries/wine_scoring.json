@@ -1,0 +1,15 @@
+{
+  "module": "vintner:vintner",
+  "title": "Wine Scoring",
+  "category": "vintner:cellaring_quality",
+  "body": [
+    "Wine quality reflects several stages of its making: the vineyard, pressing, fermentation, ageing and storage. A strong harvest is a useful foundation, but later handling still contributes to the result.",
+    "The Almanac's bottle report shows the actual quality score and its contribution breakdown. Scores are kept within the displayed quality scale; improving one stage does not promise an unlimited total.",
+    "Ageing treatments have different contributions and wine-style trade-offs. Their quality penalties are part of those choices, not a promise that an otherwise identical batch will randomly spoil. Choose a vessel for its role and inspect the result.",
+    "Quality, tasting character, readiness and appraisal answer different questions. Market guidance is an estimate, not a guaranteed offer from every merchant. Use the live wine report and the merchant's actual offer when deciding whether to keep, serve or sell a bottle."
+  ],
+  "related": [
+    "vintner:ageing_and_treatments",
+    "vintner:vintages_and_archives"
+  ]
+}

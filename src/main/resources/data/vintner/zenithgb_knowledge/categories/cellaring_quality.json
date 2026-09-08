@@ -1,0 +1,11 @@
+{
+  "module": "vintner:vintner",
+  "name": "Cellaring & Quality",
+  "order": 40,
+  "entries": [
+    "vintner:ageing_and_treatments",
+    "vintner:cellars",
+    "vintner:wine_scoring",
+    "vintner:vintages_and_archives"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "module": "vintner:vintner",
+  "title": "Vineyard Sites",
+  "category": "vintner:viticulture",
+  "body": [
+    "A vineyard site is more than an empty patch of land. Soil, climate and terrain influence its suitability, and a cultivar that suits one site may be less comfortable at another.",
+    "Use a Soil Probe on suitable land for a soil reading, or use the Almanac on vineyard land for a fuller survey. The Almanac can also report current seasonal conditions, weather and cultivation protection. General advice helps you choose what to investigate; the tool reading describes the place you are actually standing in.",
+    "Compare sites before establishing a large planting, then inspect the vines as conditions change. Preparing suitable soil and choosing appropriate cultivation measures are part of tending the site, not a guarantee of the same harvest every year.",
+    "Vineyard land and a registered estate plot are separate concepts. After founding an estate, sneak-use the Almanac at two opposite vineyard corners to register a plot. The survey bookmark and your plot records remain in Vintner's tools."
+  ],
+  "related": [
+    "vintner:grapevines"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "module": "vintner:vintner",
+  "title": "Pressing and Must",
+  "category": "vintner:winemaking",
+  "body": [
+    "Must is the intermediate product between grapes and wine. Add grapes to a grape press one at a time, then use the press with an empty hand when at least four compatible grapes are ready. Each pressing uses four grapes and produces must.",
+    "Use an empty glass bottle on the press to collect the must. Continue pressing and bottling as capacity allows, then take the bottled must to a fermentation barrel.",
+    "Keep compatible grapes and batches together. Matching colour alone does not mean every grape or must stack can be combined: their recorded batch and quality information also matters. If the press refuses an addition or a pressing, check its feedback and finish collecting the existing output before starting another batch.",
+    "Pressing carries the grapes' identity and quality into the next stage. It is the beginning of winemaking, not the end of the vineyard's influence on the bottle."
+  ],
+  "related": [
+    "vintner:fermentation",
+    "vintner:grapevines"
+  ]
+}

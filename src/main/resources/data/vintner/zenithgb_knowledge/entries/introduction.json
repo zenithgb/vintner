@@ -1,0 +1,14 @@
+{
+  "module": "vintner:vintner",
+  "title": "Vintner",
+  "category": "vintner:getting_started",
+  "body": [
+    "Build a vineyard, press its grapes into must, ferment the must into wine, then choose how to age, store and serve the result. The character of a bottle begins in the vineyard and develops through the work that follows.",
+    "These Commons articles explain the craft. Use the Vintner's Almanac for readings from your own vines, land, equipment and bottles. Hold wine in your other hand and use the Almanac in the air to inspect that bottle.",
+    "Estates and registered vineyard plots help organize your work. The Estate Management Desk reports on your estate, while Vintage Archives preserve records of batches you choose to catalogue. Keep those specialist tools close as your vineyard grows."
+  ],
+  "related": [
+    "vintner:grapevines",
+    "vintner:pressing_and_must"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "module": "vintner:vintner",
+  "name": "Viticulture",
+  "order": 20,
+  "entries": [
+    "vintner:grapevines",
+    "vintner:vineyard_sites"
+  ]
+}

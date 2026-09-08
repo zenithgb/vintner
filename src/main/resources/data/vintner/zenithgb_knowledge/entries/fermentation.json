@@ -1,0 +1,15 @@
+{
+  "module": "vintner:vintner",
+  "title": "Fermentation",
+  "category": "vintner:winemaking",
+  "body": [
+    "Fill a fermentation barrel with four compatible bottles of must. Fermentation starts once the barrel is full; a partly filled barrel waits for the rest of its batch.",
+    "Let the full barrel work until its wine is ready. Use the Almanac on the barrel to inspect its current status and progress. The process is handled by the barrel, so these reference pages do not show your batch's countdown.",
+    "Use the barrel with an empty hand to collect finished wine, one bottle at a time. If it is not ready to yield wine, the interaction reports its status instead.",
+    "Wine may be enjoyed or taken onward for ageing. Preserve compatible batches when filling the next vessel, and choose a treatment and cellar arrangement that suit the result you want."
+  ],
+  "related": [
+    "vintner:pressing_and_must",
+    "vintner:ageing_and_treatments"
+  ]
+}

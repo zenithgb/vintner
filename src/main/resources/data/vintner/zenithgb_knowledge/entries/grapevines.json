@@ -1,0 +1,15 @@
+{
+  "module": "vintner:vintner",
+  "title": "Grapevines",
+  "category": "vintner:viticulture",
+  "body": [
+    "Start with a grape cutting rather than harvested fruit. Build a two-block-high trellis and use the cutting on its lower section to establish a vine. The cutting's cultivar matters: different cultivars suit different sites and offer different harvest and wine characteristics.",
+    "Give the vine time to grow and inspect it with the Almanac before making changes. Ripeness and the vine's longer-term age are different readings. Site conditions, cultivation and vine health all matter to the harvest.",
+    "Use compost while sneaking on a trellis or vine to prepare suitable ground beneath it. Shelter, irrigation and bird netting serve different purposes; use current vineyard readings to decide what the site needs.",
+    "Use the ripe upper canopy with an empty hand to harvest grapes. A fully mature vine can also be pruned with shears for a cutting, setting its growth back so it must regrow. Harvesting fruit and taking cuttings are different ways to use a mature vine."
+  ],
+  "related": [
+    "vintner:vineyard_sites",
+    "vintner:pressing_and_must"
+  ]
+}

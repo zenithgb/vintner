@@ -169,6 +169,12 @@ import java.util.List;
 import java.util.UUID;
 
 public final class VintnerGameTests {
+    @GameTest(maxTicks = 40)
+    public void commonsKnowledgeContributionMatchesApprovedStructure(GameTestHelper helper) {
+        com.zenithgb.library.knowledge.VintnerContributionAssertions.verify(helper);
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 20)
     public void commonsModuleUsesRuntimeIdentityExactlyOnce(GameTestHelper helper) {
         var modules = com.zenithgb.library.module.ModuleRegistry.getInstance().modules();

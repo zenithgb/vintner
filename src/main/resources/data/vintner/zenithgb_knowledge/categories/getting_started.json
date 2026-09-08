@@ -1,0 +1,8 @@
+{
+  "module": "vintner:vintner",
+  "name": "Getting Started",
+  "order": 10,
+  "entries": [
+    "vintner:introduction"
+  ]
+}

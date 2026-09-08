@@ -1,0 +1,9 @@
+{
+  "module": "vintner:vintner",
+  "name": "Winemaking",
+  "order": 30,
+  "entries": [
+    "vintner:pressing_and_must",
+    "vintner:fermentation"
+  ]
+}
