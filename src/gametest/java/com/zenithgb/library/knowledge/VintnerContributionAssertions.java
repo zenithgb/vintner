@@ -17,6 +17,10 @@ public final class VintnerContributionAssertions {
         var loader = new KnowledgeContributionReloadListener(new KnowledgeCatalogue(),
                 new KnowledgeCategoryCatalogue(), ModuleRegistry.getInstance()::modules);
         var candidate = loader.prepare(resources, InactiveProfiler.INSTANCE);
+        var soilHealth = Identifier.parse("zenithgb_farming:soil/soil_health");
+        var tilthModule = Identifier.parse("zenithgb_farming:tilth");
+        boolean tilthPresent = ModuleRegistry.getInstance().modules().stream()
+                .anyMatch(module -> module.id().equals(tilthModule));
         var categoryIds = List.of("getting_started", "viticulture", "winemaking", "cellaring_quality");
         var names = List.of("Getting Started", "Viticulture", "Winemaking", "Cellaring & Quality");
         var membership = List.of(List.of("introduction"), List.of("grapevines", "vineyard_sites"),
@@ -36,8 +40,8 @@ public final class VintnerContributionAssertions {
                 "cellars", List.of("ageing_and_treatments", "wine_scoring"),
                 "wine_scoring", List.of("ageing_and_treatments", "vintages_and_archives"),
                 "vintages_and_archives", List.of("wine_scoring", "cellars"));
-        helper.assertTrue(candidate.categories().keySet().equals(new HashSet<>(ids(categoryIds))), "Exact four category IDs");
-        helper.assertTrue(candidate.entries().keySet().equals(new HashSet<>(ids(List.copyOf(titles.keySet())))), "Exact nine entry IDs");
+        helper.assertTrue(vintnerIds(candidate.categories().keySet()).equals(new HashSet<>(ids(categoryIds))), "Exact four Vintner category IDs");
+        helper.assertTrue(vintnerIds(candidate.entries().keySet()).equals(new HashSet<>(ids(List.copyOf(titles.keySet())))), "Exact nine Vintner entry IDs");
         var assigned = new HashSet<Identifier>();
         for (int i = 0; i < categoryIds.size(); i++) {
             var category = candidate.categories().get(id(categoryIds.get(i)));
@@ -50,20 +54,43 @@ public final class VintnerContributionAssertions {
                 helper.assertTrue(entry.moduleId().equals(id("vintner")) && entry.categoryId().equals(category.id()), "Entry ownership/category: " + entryId);
                 helper.assertTrue(entry.title().equals(titles.get(entryId.getPath())), "Entry title: " + entryId);
                 helper.assertTrue(entry.requiresModuleIds().isEmpty(), "No conditional contribution: " + entryId);
-                helper.assertTrue(entry.relatedEntryIds().equals(ids(related.get(entryId.getPath()))), "Exact internal related links: " + entryId);
-                helper.assertTrue(candidate.entries().keySet().containsAll(entry.relatedEntryIds()), "Related targets resolve: " + entryId);
+                var expectedRelated = new java.util.ArrayList<>(ids(related.get(entryId.getPath())));
+                if (entryId.equals(id("vineyard_sites"))) expectedRelated.add(soilHealth);
+                helper.assertTrue(entry.relatedEntryIds().equals(expectedRelated), "Exact internal and optional related order: " + entryId);
+                helper.assertTrue(new HashSet<>(entry.relatedEntryIds()).size() == entry.relatedEntryIds().size()
+                        && !entry.relatedEntryIds().contains(entryId), "No duplicate or self reference: " + entryId);
+                helper.assertTrue(candidate.entries().keySet().containsAll(vintnerIds(entry.relatedEntryIds())), "Internal targets always resolve: " + entryId);
             }
         }
-        helper.assertTrue(assigned.equals(candidate.entries().keySet()), "No unassigned entries");
+        helper.assertTrue(assigned.equals(vintnerIds(candidate.entries().keySet())), "No unassigned Vintner entries");
         loader.apply(candidate, resources, InactiveProfiler.INSTANCE);
         var presentation = loader.presentation();
-        helper.assertTrue(presentation.modules().size() == 1
+        helper.assertTrue(presentation.modules().size() == (tilthPresent ? 2 : 1)
                 && presentation.modules().getFirst().id().equals(id("vintner"))
                 && presentation.modules().getFirst().displayName().equals("Vintner"), "Assembly uses the real registered Vintner module");
-        helper.assertTrue(presentation.categories().stream().map(KnowledgePresentation.Category::id).toList().equals(ids(categoryIds)), "Actual assembled category order");
+        var vintnerCategories = presentation.categories().stream()
+                .filter(category -> category.id().getNamespace().equals("vintner")).toList();
+        helper.assertTrue(vintnerCategories.stream().map(KnowledgePresentation.Category::id).toList().equals(ids(categoryIds)), "Actual assembled Vintner category order");
         for (int i = 0; i < membership.size(); i++) {
-            helper.assertTrue(presentation.categories().get(i).entries().stream().map(KnowledgeEntry::id).toList().equals(ids(membership.get(i))), "Actual assembled article order");
+            helper.assertTrue(vintnerCategories.get(i).entries().stream().map(KnowledgeEntry::id).toList().equals(ids(membership.get(i))), "Actual assembled article order");
         }
+        var allEntries = presentation.categories().stream().flatMap(category -> category.entries().stream()).toList();
+        helper.assertTrue(presentation.categories().size() == (tilthPresent ? 8 : 4)
+                && allEntries.size() == (tilthPresent ? 15 : 9), "Exact combined or standalone contribution counts");
+        var target = allEntries.stream().filter(entry -> entry.id().equals(soilHealth)).findFirst();
+        helper.assertTrue(target.isPresent() == tilthPresent, "Optional target resolves only with real Tilth contribution");
+        if (tilthPresent) {
+            helper.assertTrue(target.orElseThrow().moduleId().equals(tilthModule)
+                    && target.orElseThrow().title().equals("Soil Health"), "Canonical real Tilth target and ownership");
+        }
+        helper.assertTrue(allEntries.stream().filter(entry -> entry.id().equals(id("vineyard_sites")))
+                .findFirst().orElseThrow().relatedEntryIds().equals(List.of(id("grapevines"), soilHealth)),
+                "Assembly retains structural optional ID even when its target is absent");
+    }
+
+    private static java.util.Set<Identifier> vintnerIds(java.util.Collection<Identifier> values) {
+        return values.stream().filter(value -> value.getNamespace().equals("vintner"))
+                .collect(java.util.stream.Collectors.toSet());
     }
 
     private static Identifier id(String path) { return Identifier.fromNamespaceAndPath("vintner", path); }

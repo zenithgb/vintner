@@ -9,6 +9,7 @@
     "Vineyard land and a registered estate plot are separate concepts. After founding an estate, sneak-use the Almanac at two opposite vineyard corners to register a plot. The survey bookmark and your plot records remain in Vintner's tools."
   ],
   "related": [
-    "vintner:grapevines"
+    "vintner:grapevines",
+    "zenithgb_farming:soil/soil_health"
   ]
 }
