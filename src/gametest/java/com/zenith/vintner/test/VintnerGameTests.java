@@ -177,6 +177,10 @@ public final class VintnerGameTests {
 
     @GameTest(maxTicks = 20)
     public void commonsModuleUsesRuntimeIdentityExactlyOnce(GameTestHelper helper) {
+        var commons = net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer("zenithgb_library")
+                .orElseThrow().getMetadata();
+        helper.assertTrue(commons.getId().equals("zenithgb_library")
+                && commons.getVersion().getFriendlyString().equals("0.1.0"), "Exact loaded Commons release identity/version");
         var modules = com.zenithgb.library.module.ModuleRegistry.getInstance().modules();
         var vintnerModules = modules.stream()
                 .filter(module -> module.id().getNamespace().equals("vintner")).toList();

@@ -71,7 +71,23 @@ fabricApi {
 
 def commonsJarPath = providers.gradleProperty("commonsJar")
 if (!commonsJarPath.isPresent() || !file(commonsJarPath.get()).isFile()) {
-	throw new GradleException("Supply -PcommonsJar=/absolute/path/to/zenithgb-commons-0.1.0-dev.jar")
+	throw new GradleException("Supply -PcommonsJar=/absolute/path/to/zenithgb-commons-0.1.0.jar")
+}
+try {
+	new java.util.zip.ZipFile(file(commonsJarPath.get())).withCloseable { jar ->
+		def entry = jar.getEntry('fabric.mod.json')
+		if (entry == null) throw new GradleException('Supplied Commons JAR has no fabric.mod.json')
+		def metadata = jar.getInputStream(entry).withCloseable { input ->
+			new groovy.json.JsonSlurper().parse(input)
+		}
+		if (metadata.id != 'zenithgb_library' || metadata.version != '0.1.0') {
+			throw new GradleException("Expected zenithgb_library version 0.1.0; supplied ${metadata.id} version ${metadata.version}")
+		}
+	}
+} catch (GradleException failure) {
+	throw failure
+} catch (Exception failure) {
+	throw new GradleException("Cannot read Commons artifact ${commonsJarPath.get()}; supply a valid Commons 0.1.0 JAR", failure)
 }
 
 dependencies {
