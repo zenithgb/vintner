@@ -121,8 +121,10 @@ def rotated_cube(
 
 def cup(center_x: float, center_z: float) -> list[dict[str, object]]:
     """A compact chamfered ceramic tasting cup with an open centre."""
-    y0 = 2.0
-    y1 = 3.1
+    # The tray's inner surface is Y=1.0. The cup foot now rests on that
+    # surface instead of beginning almost a pixel above it.
+    y0 = 1.16
+    y1 = 2.26
     half = 0.78
     straight = 0.43
     thickness = 0.22
@@ -152,8 +154,8 @@ def cup(center_x: float, center_z: float) -> list[dict[str, object]]:
             "ceramic",
         ),
         cube(
-            [center_x - 0.48, 1.84, center_z - 0.48],
-            [center_x + 0.48, 2.06, center_z + 0.48],
+            [center_x - 0.48, 1.0, center_z - 0.48],
+            [center_x + 0.48, 1.22, center_z + 0.48],
             "ceramic",
         ),
     ]
@@ -208,7 +210,7 @@ def bottle_elements(colour: str) -> list[dict[str, object]]:
     """Use the same bottle silhouette as every Vintner storage display."""
     return canonical_bottle_elements(
         11.5,
-        2.0,
+        1.0,
         11.3,
         0.74,
         include_seal=True,
@@ -222,8 +224,8 @@ def fill_elements(texture: str, cup_index: int) -> list[dict[str, object]]:
     # multipart model so a player may empty any serving in any order.
     return [
         top_surface(
-            [center_x - 0.54, 2.86, center_z - 0.54],
-            [center_x + 0.54, 2.98, center_z + 0.54],
+            [center_x - 0.54, 2.02, center_z - 0.54],
+            [center_x + 0.54, 2.14, center_z + 0.54],
             texture,
         )
     ]

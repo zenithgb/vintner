@@ -15,6 +15,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -32,6 +34,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -47,6 +50,12 @@ public final class EstateManagementDeskBlock
             BooleanProperty.create("has_ledger");
     public static final BooleanProperty HAS_MAP =
             BooleanProperty.create("has_map");
+    public static final BooleanProperty LEFT_CONNECTED =
+            BooleanProperty.create("left_connected");
+    public static final BooleanProperty RIGHT_CONNECTED =
+            BooleanProperty.create("right_connected");
+    public static final BooleanProperty STANDALONE =
+            BooleanProperty.create("standalone");
     public static final MapCodec<EstateManagementDeskBlock> CODEC =
             simpleCodec(EstateManagementDeskBlock::new);
     private static final VoxelShape SHAPE = Block.box(
@@ -69,6 +78,9 @@ public final class EstateManagementDeskBlock
                         )
                         .setValue(HAS_LEDGER, false)
                         .setValue(HAS_MAP, false)
+                        .setValue(LEFT_CONNECTED, false)
+                        .setValue(RIGHT_CONNECTED, false)
+                        .setValue(STANDALONE, false)
         );
     }
 
@@ -165,10 +177,88 @@ public final class EstateManagementDeskBlock
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(
-                FACING,
-                context.getHorizontalDirection().getOpposite()
+        BlockState state = defaultBlockState()
+                .setValue(
+                        FACING,
+                        context.getHorizontalDirection().getOpposite()
+                )
+                .setValue(
+                        STANDALONE,
+                        context.getPlayer() != null
+                                && context.getPlayer().isShiftKeyDown()
+                );
+        return updateConnections(
+                state,
+                context.getLevel(),
+                context.getClickedPos()
         );
+    }
+
+    @Override
+    protected BlockState updateShape(
+            BlockState state,
+            LevelReader level,
+            ScheduledTickAccess ticks,
+            BlockPos pos,
+            Direction directionToNeighbour,
+            BlockPos neighbourPos,
+            BlockState neighbourState,
+            RandomSource random
+    ) {
+        if (directionToNeighbour.getAxis().isHorizontal()) {
+            return updateConnections(state, level, pos);
+        }
+
+        return super.updateShape(
+                state,
+                level,
+                ticks,
+                pos,
+                directionToNeighbour,
+                neighbourPos,
+                neighbourState,
+                random
+        );
+    }
+
+    private static BlockState updateConnections(
+            BlockState state,
+            LevelReader level,
+            BlockPos pos
+    ) {
+        if (state.getValue(STANDALONE)) {
+            return state
+                    .setValue(LEFT_CONNECTED, false)
+                    .setValue(RIGHT_CONNECTED, false);
+        }
+
+        Direction facing = state.getValue(FACING);
+        Direction left = facing.getCounterClockWise();
+        Direction right = facing.getClockWise();
+        return state
+                .setValue(
+                        LEFT_CONNECTED,
+                        canConnectTo(
+                                state,
+                                level.getBlockState(pos.relative(left))
+                        )
+                )
+                .setValue(
+                        RIGHT_CONNECTED,
+                        canConnectTo(
+                                state,
+                                level.getBlockState(pos.relative(right))
+                        )
+                );
+    }
+
+    private static boolean canConnectTo(
+            BlockState state,
+            BlockState neighbour
+    ) {
+        return neighbour.getBlock() instanceof EstateManagementDeskBlock
+                && !neighbour.getValue(STANDALONE)
+                && state.getValue(FACING) == neighbour.getValue(FACING);
     }
 
     @Override
@@ -297,6 +387,14 @@ public final class EstateManagementDeskBlock
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING, BLOTTER_COLOR, HAS_LEDGER, HAS_MAP);
+        builder.add(
+                FACING,
+                BLOTTER_COLOR,
+                HAS_LEDGER,
+                HAS_MAP,
+                LEFT_CONNECTED,
+                RIGHT_CONNECTED,
+                STANDALONE
+        );
     }
 }

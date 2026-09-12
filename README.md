@@ -1,5 +1,10 @@
 # Vintner
 
+**1.4.0 release candidate:** automated build, suites and package checks passed;
+required manual release acceptance remains outstanding. See the
+[candidate release notes](docs/releases/1.4.0.md) and
+[acceptance record](docs/releases/1.4.0-acceptance.md). This is not publication approval.
+
 Vintner is a Fabric mod for Minecraft 26.2 focused on vineyards, grape
 cultivation, winemaking, ageing, and wine quality.
 

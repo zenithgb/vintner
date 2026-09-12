@@ -1,5 +1,5 @@
 {
-  "parent": "vintner:block/wine_bottle_palette",
+  "parent": "vintner:block/wine_bottle_palette_red",
   "elements": [
     {
       "from": [

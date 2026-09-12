@@ -1,12 +1,28 @@
 # Vintner 1.4.0 development handoff
 
+## Current release preparation — 2026-09-12
+
+The current candidate version is 1.4.0. Commons integration already exists;
+the later accepted contributions are preserved, not reimplemented or removed.
+Required manual release acceptance remains outstanding. The authoritative
+current preparation results and remaining actions are in
+[the release acceptance record](releases/1.4.0-acceptance.md).
+Earlier gate records below retain their historical versions and evidence.
+
+The consolidated display/decorative polish pass is implemented and its clean
+build, 174-test standard suite, 174-test Serene Seasons suite, release audit,
+dedicated-server smoke and isolated client initialization smoke pass. The prior
+candidate checksum is superseded; the replacement identity is recorded in the
+release acceptance record and release manifest. In-game visual acceptance is
+still deliberately unchecked.
+
 - **Branch:** `feat/1.4.0-vineyard-management`
 - **Gate B base:** `a020bc4` (`Document Vintner 1.4.0 integration state`), the local Gate A housekeeping commit; it remains unpushed.
 - **Gate C base:** `6abf06c` (`Add plot persistence and dimension GameTests`). Gate C was committed separately as `4513969` (`Add unloaded plot reporting GameTest`) before Gate D. These local commits remain unpushed.
 - **Gate D state:** accepted after Gate D-R5 fixture hardening and the complete validation sequence below. This change consolidates the ownership test, hardened Winemaker fixture, concise failure diagnostics and investigation handoff as `Harden estate and Winemaker integration coverage`; nothing is pushed.
 - **Investigation outcome:** the recovered Gate D failure was reproduced in R4 and classified by roadmap as a **GameTest setup/geometry defect**. R5 corrects the unsupported fixture and validates natural approach from outside assignment range. No Vintner production defect was established; Gate B's exact historical cause remains unproven.
 - **Stable public version:** Vintner 1.3.1 — Cellar Crafting Patch.
-- **Development version:** `mod_version=1.3.1`; the 1.4.0 bump remains release-preparation work.
+- **Development version at Gate D-R5:** `mod_version=1.3.1`; the version bump was deferred to release preparation.
 
 ## Integration state
 

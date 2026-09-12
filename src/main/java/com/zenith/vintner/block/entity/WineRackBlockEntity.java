@@ -1,6 +1,7 @@
 package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.block.WineRackBlock;
+import com.zenith.vintner.block.WineDisplayStyle;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.wine.CellarConditions;
@@ -45,6 +46,7 @@ public final class WineRackBlockEntity extends BlockEntity {
             WineRackBlockEntity rack
     ) {
         long currentGameTime = level.getGameTime();
+        rack.syncVisualState();
 
         if (rack.lastAgingGameTime == -1L) {
             rack.lastAgingGameTime = currentGameTime;
@@ -179,6 +181,10 @@ public final class WineRackBlockEntity extends BlockEntity {
         return cellarRating;
     }
 
+    public WineDisplayStyle getDisplayStyle() {
+        return WineDisplayStyle.from(bottles);
+    }
+
     public List<ItemStack> getStoredBottlesCopy() {
         List<ItemStack> copies = new ArrayList<>();
 
@@ -240,10 +246,12 @@ public final class WineRackBlockEntity extends BlockEntity {
             return;
         }
 
-        BlockState updated = state.setValue(
-                WineRackBlock.BOTTLES,
-                getBottleCount()
-        );
+        BlockState updated = state
+                .setValue(WineRackBlock.BOTTLES, getBottleCount())
+                .setValue(
+                        WineRackBlock.DISPLAY_STYLE,
+                        getDisplayStyle()
+                );
 
         if (!updated.equals(state)) {
             level.setBlock(

@@ -1152,6 +1152,7 @@ def storage_bottle_elements(
     *,
     horizontal: bool = False,
     scale: float = STORAGE_BOTTLE_SCALE,
+    profile: str = "red",
 ) -> list[dict[str, object]]:
     """One sealed canonical bottle shared by cellar cabinets and racks."""
     return bottle_elements(
@@ -1161,7 +1162,7 @@ def storage_bottle_elements(
         scale,
         horizontal=horizontal,
         include_seal=True,
-        profile="red",
+        profile=profile,
         finish_scale=STORAGE_BOTTLE_FINISH_SCALE,
     )
 
@@ -1176,6 +1177,8 @@ def generate_canonical_bottle_models() -> None:
             "bottle_highlight": "minecraft:block/lime_terracotta",
             "neck_foil": "minecraft:block/red_terracotta",
             "seal": "minecraft:block/red_terracotta",
+            "label": "minecraft:block/red_terracotta",
+            "label_ink": "minecraft:block/bone_block_side",
         },
         "white": {
             "bottle": "minecraft:block/green_terracotta",
@@ -1183,6 +1186,8 @@ def generate_canonical_bottle_models() -> None:
             "bottle_highlight": "minecraft:block/lime_terracotta",
             "neck_foil": "vintner:block/white_wine",
             "seal": "vintner:block/white_wine",
+            "label": "vintner:block/white_wine",
+            "label_ink": "minecraft:block/brown_concrete",
         },
     }
 
@@ -1195,9 +1200,9 @@ def generate_canonical_bottle_models() -> None:
                 "textures": {
                     **palette,
                     "cork": "minecraft:block/stripped_oak_log_top",
-                    "label": "minecraft:block/sandstone_top",
+                    "label": palette["label"],
                     "label_border": "minecraft:block/brown_terracotta",
-                    "label_ink": "minecraft:block/brown_concrete",
+                    "label_ink": palette["label_ink"],
                     "particle": palette["bottle"],
                 },
             },
@@ -1784,15 +1789,76 @@ def generate_rack_bottle_models() -> None:
         write_json(
             ASSETS / f"models/block/wine_rack_bottle_{slot}.json",
             {
-                "parent": "vintner:block/wine_bottle_palette",
+                "parent": "vintner:block/wine_bottle_palette_red",
                 "elements": storage_bottle_elements(
                     x,
                     y,
                     11.6,
                     horizontal=True,
+                    profile="red",
                 ),
             },
         )
+        # Red keeps the established model ID for resource-pack compatibility;
+        # remove only stale outputs from the earlier split generator.
+        (
+            ASSETS / f"models/block/wine_rack_bottle_red_{slot}.json"
+        ).unlink(missing_ok=True)
+        write_json(
+            ASSETS / f"models/block/wine_rack_bottle_white_{slot}.json",
+            {
+                "parent": "vintner:block/wine_bottle_palette_white",
+                "elements": storage_bottle_elements(
+                    x,
+                    y,
+                    11.6,
+                    horizontal=True,
+                    profile="white",
+                ),
+            },
+        )
+
+
+def generate_rack_blockstate() -> None:
+    rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
+    multipart: list[dict[str, object]] = []
+
+    for facing, rotation in rotations.items():
+        apply: dict[str, object] = {"model": "vintner:block/wine_rack"}
+        if rotation:
+            apply["y"] = rotation
+        multipart.append({"when": {"facing": facing}, "apply": apply})
+
+    for style in ("red", "white", "mixed"):
+        for slot in range(1, 5):
+            visible_at = "|".join(str(value) for value in range(slot, 5))
+            colour = (
+                "white"
+                if style == "white" or (style == "mixed" and slot % 2 == 0)
+                else "red"
+            )
+            for facing, rotation in rotations.items():
+                apply = {
+                    "model": (
+                        "vintner:block/wine_rack_bottle_"
+                        + (f"white_{slot}" if colour == "white" else str(slot))
+                    )
+                }
+                if rotation:
+                    apply["y"] = rotation
+                multipart.append({
+                    "when": {
+                        "facing": facing,
+                        "bottles": visible_at,
+                        "display_style": style,
+                    },
+                    "apply": apply,
+                })
+
+    write_json(
+        ASSETS / "blockstates/wine_rack.json",
+        {"multipart": multipart},
+    )
 
 
 def generate_crate_bottle_models() -> None:
@@ -1806,12 +1872,33 @@ def generate_crate_bottle_models() -> None:
             write_json(
                 ASSETS / f"models/block/wine_crate_bottle_slot_{slot}.json",
                 {
-                    "parent": "vintner:block/wine_bottle_palette",
+                    "parent": "vintner:block/wine_bottle_palette_red",
                     "elements": bottle_elements(
                         x_center,
                         2.0,
                         z_center,
                         0.68,
+                        profile="red",
+                    ),
+                },
+            )
+            # Red keeps the established model ID for resource-pack
+            # compatibility; remove stale outputs from the earlier split.
+            (
+                ASSETS
+                / f"models/block/wine_crate_bottle_red_slot_{slot}.json"
+            ).unlink(missing_ok=True)
+            write_json(
+                ASSETS
+                / f"models/block/wine_crate_bottle_white_slot_{slot}.json",
+                {
+                    "parent": "vintner:block/wine_bottle_palette_white",
+                    "elements": bottle_elements(
+                        x_center,
+                        2.0,
+                        z_center,
+                        0.68,
+                        profile="white",
                     ),
                 },
             )
@@ -1837,24 +1924,38 @@ def generate_crate_blockstate() -> None:
             }
         )
 
-    for slot in range(1, 17):
-        visible_at = "|".join(str(value) for value in range(slot, 17))
-
-        for facing, rotation in rotations.items():
-            apply = {
-                "model": f"vintner:block/wine_crate_bottle_slot_{slot}"
-            }
-            if rotation:
-                apply["y"] = rotation
-            multipart.append(
-                {
-                    "when": {
-                        "facing": facing,
-                        "bottle_count": visible_at,
-                    },
-                    "apply": apply,
-                }
+    for style in ("red", "white", "mixed"):
+        for slot in range(1, 17):
+            visible_at = "|".join(str(value) for value in range(slot, 17))
+            colour = (
+                "white"
+                if style == "white" or (style == "mixed" and slot % 2 == 0)
+                else "red"
             )
+
+            for facing, rotation in rotations.items():
+                apply = {
+                    "model": (
+                        "vintner:block/wine_crate_bottle_"
+                        + (
+                            f"white_slot_{slot}"
+                            if colour == "white"
+                            else f"slot_{slot}"
+                        )
+                    )
+                }
+                if rotation:
+                    apply["y"] = rotation
+                multipart.append(
+                    {
+                        "when": {
+                            "facing": facing,
+                            "bottle_count": visible_at,
+                            "display_style": style,
+                        },
+                        "apply": apply,
+                    }
+                )
 
     write_json(
         ASSETS / "blockstates/wine_crate.json",
@@ -2567,6 +2668,7 @@ def main() -> None:
     generate_special_aging_vessels()
     generate_cooperage_kits()
     generate_rack_bottle_models()
+    generate_rack_blockstate()
     generate_crate_bottle_models()
     generate_crate_blockstate()
     generate_machine_blockstates()

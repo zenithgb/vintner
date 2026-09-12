@@ -7,10 +7,10 @@
     "bottle_highlight": "minecraft:block/lime_terracotta",
     "neck_foil": "vintner:block/white_wine",
     "seal": "vintner:block/white_wine",
-    "cork": "minecraft:block/stripped_oak_log_top",
-    "label": "minecraft:block/sandstone_top",
-    "label_border": "minecraft:block/brown_terracotta",
+    "label": "vintner:block/white_wine",
     "label_ink": "minecraft:block/brown_concrete",
+    "cork": "minecraft:block/stripped_oak_log_top",
+    "label_border": "minecraft:block/brown_terracotta",
     "particle": "minecraft:block/green_terracotta"
   }
 }

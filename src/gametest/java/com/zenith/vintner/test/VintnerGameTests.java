@@ -15,6 +15,7 @@ import com.zenith.vintner.block.TastingServiceBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.WineBottleBlock;
 import com.zenith.vintner.block.WineCrateBlock;
+import com.zenith.vintner.block.WineDisplayStyle;
 import com.zenith.vintner.block.WineRackBlock;
 import com.zenith.vintner.block.WoodVariant;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
@@ -149,8 +150,11 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CrossCollisionBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
@@ -283,6 +287,153 @@ public final class VintnerGameTests {
                 "The estate desk should expose a usable outline"
         );
         helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void estateDesksConnectAcrossWoodVariantsAndDisconnect(
+            GameTestHelper helper
+    ) {
+        BlockState oak = ModBlocks.ESTATE_MANAGEMENT_DESK
+                .defaultBlockState()
+                .setValue(
+                        EstateManagementDeskBlock.FACING,
+                        Direction.NORTH
+                );
+        BlockState spruce = ModBlocks.estateManagementDesk(
+                WoodVariant.SPRUCE
+        ).defaultBlockState().setValue(
+                EstateManagementDeskBlock.FACING,
+                Direction.NORTH
+        );
+
+        helper.setBlock(FIRST, oak);
+        helper.setBlock(EAST, spruce);
+
+        helper.runAfterDelay(1, () -> {
+            helper.assertBlockProperty(
+                    FIRST,
+                    EstateManagementDeskBlock.RIGHT_CONNECTED,
+                    true
+            );
+            helper.assertBlockProperty(
+                    EAST,
+                    EstateManagementDeskBlock.LEFT_CONNECTED,
+                    true
+            );
+            helper.assertFalse(
+                    helper.getBlockState(FIRST).getValue(
+                            EstateManagementDeskBlock.STANDALONE
+                    ),
+                    "Ordinary desk placement should opt into row joining"
+            );
+            helper.destroyBlock(EAST);
+        });
+
+        helper.succeedWhen(() ->
+                helper.assertBlockProperty(
+                        FIRST,
+                        EstateManagementDeskBlock.RIGHT_CONNECTED,
+                        false
+                )
+        );
+    }
+
+    @GameTest(maxTicks = 40)
+    public void sneakingPlacesAPersistentStandaloneEstateDesk(
+            GameTestHelper helper
+    ) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.CREATIVE);
+        Direction facing = player.getDirection().getOpposite();
+        Direction right = facing.getClockWise();
+        BlockPos standalonePos = FIRST.relative(right);
+        BlockPos floorPos = standalonePos.below();
+        Block spruceDesk = ModBlocks.estateManagementDesk(
+                WoodVariant.SPRUCE
+        );
+
+        helper.setBlock(
+                FIRST,
+                ModBlocks.ESTATE_MANAGEMENT_DESK.defaultBlockState()
+                        .setValue(
+                                EstateManagementDeskBlock.FACING,
+                                facing
+                        )
+        );
+        helper.setBlock(floorPos, Blocks.STONE);
+        ItemStack deskStack = new ItemStack(spruceDesk.asItem());
+        player.setItemInHand(InteractionHand.MAIN_HAND, deskStack);
+        player.setShiftKeyDown(true);
+        InteractionResult placement = player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                deskStack,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(helper.absolutePos(floorPos)),
+                        Direction.UP,
+                        helper.absolutePos(floorPos),
+                        false
+                )
+        );
+        player.setShiftKeyDown(false);
+
+        helper.assertTrue(
+                placement.consumesAction(),
+                "Sneak placement should place the estate desk normally"
+        );
+        helper.assertBlockPresent(spruceDesk, standalonePos);
+        helper.assertBlockProperty(
+                standalonePos,
+                EstateManagementDeskBlock.STANDALONE,
+                true
+        );
+
+        helper.runAfterDelay(1, () -> {
+            helper.assertBlockProperty(
+                    standalonePos,
+                    EstateManagementDeskBlock.LEFT_CONNECTED,
+                    false
+            );
+            helper.assertBlockProperty(
+                    standalonePos,
+                    EstateManagementDeskBlock.RIGHT_CONNECTED,
+                    false
+            );
+            helper.assertBlockProperty(
+                    FIRST,
+                    EstateManagementDeskBlock.RIGHT_CONNECTED,
+                    false
+            );
+            helper.destroyBlock(FIRST);
+            helper.setBlock(
+                    FIRST,
+                    ModBlocks.ESTATE_MANAGEMENT_DESK
+                            .defaultBlockState()
+                            .setValue(
+                                    EstateManagementDeskBlock.FACING,
+                                    facing
+                            )
+            );
+        });
+
+        helper.succeedWhen(() -> {
+            helper.assertBlockProperty(
+                    standalonePos,
+                    EstateManagementDeskBlock.STANDALONE,
+                    true
+            );
+            helper.assertBlockProperty(
+                    standalonePos,
+                    EstateManagementDeskBlock.LEFT_CONNECTED,
+                    false
+            );
+            helper.assertBlockProperty(
+                    FIRST,
+                    EstateManagementDeskBlock.RIGHT_CONNECTED,
+                    false
+            );
+        });
     }
 
     @GameTest(maxTicks = 40)
@@ -3292,6 +3443,88 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void wineStorageDisplayStylesFollowContentsWithoutDataLoss(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_RACK);
+        helper.setBlock(EAST, ModBlocks.WINE_CRATE);
+        WineRackBlockEntity rack = helper.getBlockEntity(
+                FIRST,
+                WineRackBlockEntity.class
+        );
+        WineCrateBlockEntity crate = helper.getBlockEntity(
+                EAST,
+                WineCrateBlockEntity.class
+        );
+        ItemStack white = new ItemStack(ModItems.AGED_WHITE_WINE);
+        ItemStack red = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.ensureBatchIdentity(white, 44101L);
+        WineMetadata.ensureBatchIdentity(red, 44102L);
+
+        helper.assertTrue(
+                rack.insertOne(white),
+                "The rack should accept the white display bottle"
+        );
+        helper.assertTrue(
+                crate.insertOne(white),
+                "The crate should accept the white display bottle"
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                WineRackBlock.DISPLAY_STYLE,
+                WineDisplayStyle.WHITE
+        );
+        helper.assertBlockProperty(
+                EAST,
+                WineCrateBlock.DISPLAY_STYLE,
+                WineDisplayStyle.WHITE
+        );
+
+        helper.assertTrue(
+                rack.insertOne(red),
+                "The rack should accept the red display bottle"
+        );
+        helper.assertTrue(
+                crate.insertOne(red),
+                "The crate should accept the red display bottle"
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                WineRackBlock.DISPLAY_STYLE,
+                WineDisplayStyle.MIXED
+        );
+        helper.assertBlockProperty(
+                EAST,
+                WineCrateBlock.DISPLAY_STYLE,
+                WineDisplayStyle.MIXED
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchId(rack.getBottleCopy(0)),
+                44101L,
+                "Rack styling must not replace the canonical white bottle"
+        );
+        helper.assertValueEqual(
+                WineMetadata.batchId(crate.getBottleCopy(1)),
+                44102L,
+                "Crate styling must not replace the canonical red bottle"
+        );
+
+        rack.takeLastBottle();
+        crate.takeLastBottle();
+        helper.assertBlockProperty(
+                FIRST,
+                WineRackBlock.DISPLAY_STYLE,
+                WineDisplayStyle.WHITE
+        );
+        helper.assertBlockProperty(
+                EAST,
+                WineCrateBlock.DISPLAY_STYLE,
+                WineDisplayStyle.WHITE
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void wineRackStoresAgesAndReturnsBottle(
             GameTestHelper helper
     ) {
@@ -5650,6 +5883,10 @@ public final class VintnerGameTests {
                 WineBottleBlock.WHITE_WINE,
                 true
         );
+        helper.assertTrue(
+                original.getUpdatePacket() != null,
+                "Placed wine identity should be available to nearby clients"
+        );
 
         BlockEntity restored = reload(helper, original);
 
@@ -5663,6 +5900,13 @@ public final class VintnerGameTests {
                         ((WineBottleBlockEntity) restored).getBottleCopy()
                 ),
                 "Bottle metadata must survive save and reload"
+        );
+        helper.assertValueEqual(
+                ((WineBottleBlockEntity) restored)
+                        .getBottleCopy()
+                        .getHoverName(),
+                wine.getHoverName(),
+                "The nearby label should derive from the canonical wine name"
         );
         helper.assertBlockProperty(
                 FIRST,
@@ -7409,6 +7653,67 @@ public final class VintnerGameTests {
                 "Removing a treatment should return its kit"
         );
         helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cellarFurnitureDoesNotAttractDecorativeConnectors(
+            GameTestHelper helper
+    ) {
+        Block[] furniture = {
+                ModBlocks.AGING_BARREL,
+                ModBlocks.FERMENTATION_BARREL,
+                ModBlocks.GRAPE_PRESS,
+                ModBlocks.WINE_RACK,
+                ModBlocks.WINE_CRATE,
+                ModBlocks.BARREL_STAND,
+                ModBlocks.LABELLED_CELLAR_SHELF,
+                ModBlocks.TASTING_CABINET,
+                ModBlocks.VINTAGE_ARCHIVE,
+                ModBlocks.TASTING_SERVICE,
+                ModBlocks.ESTATE_MANAGEMENT_DESK,
+                ModBlocks.SURVEYORS_MAP_TABLE
+        };
+
+        for (Block block : furniture) {
+            BlockState state = block.defaultBlockState();
+            helper.assertFalse(
+                    state.isFaceSturdy(
+                            helper.getLevel(),
+                            helper.absolutePos(FIRST),
+                            Direction.EAST
+                    ),
+                    BuiltInRegistries.BLOCK.getKey(block)
+                            + " should not expose a full furniture side"
+            );
+        }
+
+        BlockPos fence = new BlockPos(1, 1, 1);
+        BlockPos wall = new BlockPos(1, 1, 3);
+        BlockPos pane = new BlockPos(1, 1, 5);
+        helper.setBlock(fence.east(), ModBlocks.AGING_BARREL);
+        helper.setBlock(fence, Blocks.OAK_FENCE);
+        helper.setBlock(wall.east(), ModBlocks.FERMENTATION_BARREL);
+        helper.setBlock(wall, Blocks.COBBLESTONE_WALL);
+        helper.setBlock(pane.east(), ModBlocks.GRAPE_PRESS);
+        helper.setBlock(pane, Blocks.IRON_BARS);
+
+        helper.succeedWhen(() -> {
+            helper.assertBlockProperty(
+                    fence,
+                    CrossCollisionBlock.EAST,
+                    false
+            );
+            helper.assertBlockProperty(
+                    wall,
+                    WallBlock.EAST,
+                    WallSide.NONE
+            );
+            helper.assertBlockProperty(
+                    pane,
+                    CrossCollisionBlock.EAST,
+                    false
+            );
+        });
     }
 
     @GameTest(maxTicks = 40)

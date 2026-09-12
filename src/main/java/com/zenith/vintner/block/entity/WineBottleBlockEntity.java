@@ -2,9 +2,14 @@ package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.block.WineBottleBlock;
 import com.zenith.vintner.registry.ModBlockEntities;
-import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.wine.WineMetadata;
+import com.zenith.vintner.wine.WineStyle;
+import com.zenith.vintner.item.WineItem;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -24,6 +29,7 @@ public final class WineBottleBlockEntity extends BlockEntity {
         bottle = stack.copyWithCount(1);
         setChanged();
         syncVisualState();
+        syncToClient();
     }
 
     public ItemStack getBottleCopy() {
@@ -65,9 +71,8 @@ public final class WineBottleBlockEntity extends BlockEntity {
         BlockState state = getBlockState();
         boolean whiteWine = state.getValue(WineBottleBlock.WHITE_WINE);
 
-        if (isWineBottle()) {
-            whiteWine = bottle.is(ModItems.WHITE_WINE)
-                    || bottle.is(ModItems.AGED_WHITE_WINE);
+        if (bottle.getItem() instanceof WineItem) {
+            whiteWine = WineMetadata.wineStyle(bottle) == WineStyle.WHITE;
         }
 
         BlockState updated = state
@@ -85,11 +90,16 @@ public final class WineBottleBlockEntity extends BlockEntity {
         );
     }
 
-    private boolean isWineBottle() {
-        return bottle.is(ModItems.RED_WINE)
-                || bottle.is(ModItems.WHITE_WINE)
-                || bottle.is(ModItems.AGED_RED_WINE)
-                || bottle.is(ModItems.AGED_WHITE_WINE);
+    private void syncToClient() {
+        if (level != null && !level.isClientSide()) {
+            BlockState state = getBlockState();
+            level.sendBlockUpdated(
+                    worldPosition,
+                    state,
+                    state,
+                    Block.UPDATE_CLIENTS
+            );
+        }
     }
 
     @Override
@@ -105,5 +115,17 @@ public final class WineBottleBlockEntity extends BlockEntity {
         if (!bottle.isEmpty()) {
             output.store("Bottle", ItemStack.CODEC, bottle);
         }
+    }
+
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag getUpdateTag(
+            HolderLookup.Provider provider
+    ) {
+        return saveWithoutMetadata(provider);
     }
 }

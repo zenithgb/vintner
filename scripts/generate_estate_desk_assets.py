@@ -221,6 +221,32 @@ def map_frame_model() -> dict[str, object]:
     }
 
 
+def connection_model(left: bool) -> dict[str, object]:
+    """Fill only the small side gaps so adjacent desks read continuously."""
+    if left:
+        desktop = ([0, 10.25, 1], [0.5, 11.5, 15])
+        moulding = ([0, 9.75, 0.75], [0.25, 10.5, 2.25])
+        crown = ([0, 14.25, 13], [0.75, 14.75, 15])
+    else:
+        desktop = ([15.5, 10.25, 1], [16, 11.5, 15])
+        moulding = ([15.75, 9.75, 0.75], [16, 10.5, 2.25])
+        crown = ([15.25, 14.25, 13], [16, 14.75, 15])
+
+    return {
+        "parent": "minecraft:block/block",
+        "textures": {
+            "frame": "minecraft:block/oak_planks",
+            "writing": "minecraft:block/oak_planks",
+            "particle": "minecraft:block/oak_planks",
+        },
+        "elements": [
+            cube(*desktop, "#frame", "#writing"),
+            cube(*moulding, "#frame"),
+            cube(*crown, "#frame", "#writing"),
+        ],
+    }
+
+
 def desk_id(wood: str) -> str:
     return (
         "estate_management_desk"
@@ -243,6 +269,22 @@ def blockstate(base_model: str) -> dict[str, object]:
     for prop, model in (
         ("has_ledger", "estate_management_desk_ledger"),
         ("has_map", "estate_management_desk_map_frame"),
+    ):
+        for facing, rotation in ROTATIONS.items():
+            apply = {
+                "model": f"vintner:block/{model}",
+                "uvlock": True,
+            }
+            if rotation:
+                apply["y"] = rotation
+            multipart.append({
+                "when": {"facing": facing, prop: "true"},
+                "apply": apply,
+            })
+
+    for prop, model in (
+        ("left_connected", "estate_management_desk_connection_left"),
+        ("right_connected", "estate_management_desk_connection_right"),
     ):
         for facing, rotation in ROTATIONS.items():
             apply = {
@@ -291,6 +333,14 @@ def main() -> None:
     write_json(
         MODEL_DIR / "estate_management_desk_map_frame.json",
         map_frame_model(),
+    )
+    write_json(
+        MODEL_DIR / "estate_management_desk_connection_left.json",
+        connection_model(True),
+    )
+    write_json(
+        MODEL_DIR / "estate_management_desk_connection_right.json",
+        connection_model(False),
     )
     # Filled maps are rendered from their actual MapItemSavedData by the desk
     # block-entity renderer, so no painted placeholder model is generated.
