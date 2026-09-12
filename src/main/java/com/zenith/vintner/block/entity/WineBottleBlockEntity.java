@@ -1,6 +1,7 @@
 package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.block.WineBottleBlock;
+import com.zenith.vintner.block.WineDisplayAge;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.wine.WineMetadata;
 import com.zenith.vintner.wine.WineStyle;
@@ -63,6 +64,9 @@ public final class WineBottleBlockEntity extends BlockEntity {
         )
                 || !getBlockState().hasProperty(
                 WineBottleBlock.WHITE_WINE
+        )
+                || !getBlockState().hasProperty(
+                WineBottleBlock.AGED_WINE
         )) {
             return;
         }
@@ -77,7 +81,11 @@ public final class WineBottleBlockEntity extends BlockEntity {
 
         BlockState updated = state
                 .setValue(WineBottleBlock.SERVINGS, servings)
-                .setValue(WineBottleBlock.WHITE_WINE, whiteWine);
+                .setValue(WineBottleBlock.WHITE_WINE, whiteWine)
+                .setValue(
+                        WineBottleBlock.AGED_WINE,
+                        WineDisplayAge.isAged(bottle)
+                );
 
         if (updated == state) {
             return;

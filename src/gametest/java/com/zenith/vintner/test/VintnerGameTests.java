@@ -16,6 +16,7 @@ import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.block.WineBottleBlock;
 import com.zenith.vintner.block.WineCrateBlock;
+import com.zenith.vintner.block.WineDisplayAge;
 import com.zenith.vintner.block.WineDisplayStyle;
 import com.zenith.vintner.block.WineRackBlock;
 import com.zenith.vintner.block.WoodVariant;
@@ -1595,6 +1596,109 @@ public final class VintnerGameTests {
                         TrellisBlock.RowConnection.NONE
                 )
         );
+    }
+
+    @GameTest(maxTicks = 60)
+    public void trellisesConnectAcrossHillsInEveryDirection(
+            GameTestHelper helper
+    ) {
+        BlockPos eastBase = new BlockPos(1, 1, 1);
+        BlockPos westBase = new BlockPos(6, 1, 1);
+        BlockPos northBase = new BlockPos(1, 1, 6);
+        BlockPos southBase = new BlockPos(6, 1, 5);
+
+        helper.setBlock(eastBase, ModBlocks.OAK_TRELLIS);
+        helper.setBlock(
+                eastBase.east().above(),
+                ModBlocks.trellis(WoodVariant.SPRUCE)
+        );
+        helper.setBlock(westBase, ModBlocks.OAK_TRELLIS);
+        helper.setBlock(
+                westBase.west().above(),
+                ModBlocks.trellis(WoodVariant.BAMBOO)
+        );
+        helper.setBlock(northBase, ModBlocks.OAK_TRELLIS);
+        helper.setBlock(
+                northBase.north().above(),
+                ModBlocks.trellis(WoodVariant.CHERRY)
+        );
+        helper.setBlock(southBase, ModBlocks.OAK_TRELLIS);
+        helper.setBlock(
+                southBase.south().above(),
+                ModBlocks.trellis(WoodVariant.WARPED)
+        );
+
+        helper.succeedWhen(() -> {
+            helper.assertBlockProperty(
+                    eastBase,
+                    TrellisBlock.EAST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+            helper.assertBlockProperty(
+                    eastBase,
+                    TrellisBlock.FACING,
+                    Direction.EAST
+            );
+            helper.assertBlockProperty(
+                    eastBase,
+                    TrellisBlock.SLOPED,
+                    true
+            );
+            helper.assertBlockProperty(
+                    westBase,
+                    TrellisBlock.WEST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+            helper.assertBlockProperty(
+                    westBase,
+                    TrellisBlock.FACING,
+                    Direction.WEST
+            );
+            helper.assertBlockProperty(
+                    northBase,
+                    TrellisBlock.NORTH,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+            helper.assertBlockProperty(
+                    northBase,
+                    TrellisBlock.FACING,
+                    Direction.NORTH
+            );
+            helper.assertBlockProperty(
+                    southBase,
+                    TrellisBlock.SOUTH,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+            helper.assertBlockProperty(
+                    southBase,
+                    TrellisBlock.FACING,
+                    Direction.SOUTH
+            );
+        });
+    }
+
+    @GameTest(maxTicks = 60)
+    public void slopedTrellisRefreshesAfterEndpointRemoval(
+            GameTestHelper helper
+    ) {
+        BlockPos uphill = EAST.above();
+        helper.setBlock(FIRST, ModBlocks.OAK_TRELLIS);
+        helper.setBlock(uphill, ModBlocks.OAK_TRELLIS);
+
+        helper.runAfterDelay(2, () -> {
+            helper.assertBlockProperty(
+                    FIRST,
+                    TrellisBlock.EAST,
+                    TrellisBlock.RowConnection.LEVEL
+            );
+            helper.destroyBlock(uphill);
+        });
+
+        helper.succeedWhen(() -> helper.assertBlockProperty(
+                FIRST,
+                TrellisBlock.EAST,
+                TrellisBlock.RowConnection.NONE
+        ));
     }
 
     @GameTest(maxTicks = 40)
@@ -3542,9 +3646,19 @@ public final class VintnerGameTests {
                 WineDisplayStyle.WHITE
         );
         helper.assertBlockProperty(
+                FIRST,
+                WineRackBlock.DISPLAY_AGE,
+                WineDisplayAge.AGED
+        );
+        helper.assertBlockProperty(
                 EAST,
                 WineCrateBlock.DISPLAY_STYLE,
                 WineDisplayStyle.WHITE
+        );
+        helper.assertBlockProperty(
+                EAST,
+                WineCrateBlock.DISPLAY_AGE,
+                WineDisplayAge.AGED
         );
 
         helper.assertTrue(
@@ -3564,6 +3678,16 @@ public final class VintnerGameTests {
                 EAST,
                 WineCrateBlock.DISPLAY_STYLE,
                 WineDisplayStyle.MIXED
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                WineRackBlock.DISPLAY_AGE,
+                WineDisplayAge.MIXED
+        );
+        helper.assertBlockProperty(
+                EAST,
+                WineCrateBlock.DISPLAY_AGE,
+                WineDisplayAge.MIXED
         );
         helper.assertValueEqual(
                 WineMetadata.batchId(rack.getBottleCopy(0)),
@@ -3587,6 +3711,16 @@ public final class VintnerGameTests {
                 EAST,
                 WineCrateBlock.DISPLAY_STYLE,
                 WineDisplayStyle.WHITE
+        );
+        helper.assertBlockProperty(
+                FIRST,
+                WineRackBlock.DISPLAY_AGE,
+                WineDisplayAge.AGED
+        );
+        helper.assertBlockProperty(
+                EAST,
+                WineCrateBlock.DISPLAY_AGE,
+                WineDisplayAge.AGED
         );
         helper.succeed();
     }
@@ -5886,6 +6020,11 @@ public final class VintnerGameTests {
                 WineBottleBlock.WHITE_WINE,
                 false
         );
+        helper.assertBlockProperty(
+                UPPER,
+                WineBottleBlock.AGED_WINE,
+                true
+        );
         helper.assertValueEqual(
                 player.getItemInHand(InteractionHand.MAIN_HAND).getCount(),
                 0,
@@ -6682,6 +6821,12 @@ public final class VintnerGameTests {
                         com.zenith.vintner.block.TastingServiceBlock.WHITE_WINE
                 ),
                 "White wine should select the white visual state"
+        );
+        helper.assertTrue(
+                helper.getBlockState(FIRST).getValue(
+                        com.zenith.vintner.block.TastingServiceBlock.AGED_WINE
+                ),
+                "Aged wine should select the gold-finished bottle state"
         );
         helper.succeed();
     }
@@ -7872,6 +8017,16 @@ public final class VintnerGameTests {
                 cabinetPos,
                 CellarCollectionBlock.BOTTLE_COUNT,
                 2
+        );
+        helper.assertBlockProperty(
+                shelfPos,
+                CellarCollectionBlock.DISPLAY_AGE,
+                WineDisplayAge.AGED
+        );
+        helper.assertBlockProperty(
+                cabinetPos,
+                CellarCollectionBlock.DISPLAY_AGE,
+                WineDisplayAge.AGED
         );
 
         CellarCollectionBlockEntity restored =

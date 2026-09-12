@@ -7,8 +7,9 @@
     },
     {
       "when": {
+        "has_above": "false",
         "east": "level",
-        "has_above": "false"
+        "sloped": "false"
       },
       "apply": {
         "model": "vintner:block/trellis/wire_level"
@@ -16,8 +17,42 @@
     },
     {
       "when": {
+        "has_above": "false",
+        "east": "level",
+        "facing": "north|south",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level"
+      }
+    },
+    {
+      "when": {
+        "has_above": "false",
+        "east": "level",
+        "facing": "east",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_up"
+      }
+    },
+    {
+      "when": {
+        "has_above": "false",
+        "east": "level",
+        "facing": "west",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_down"
+      }
+    },
+    {
+      "when": {
+        "has_above": "false",
         "south": "level",
-        "has_above": "false"
+        "sloped": "false"
       },
       "apply": {
         "model": "vintner:block/trellis/wire_level",
@@ -26,8 +61,45 @@
     },
     {
       "when": {
+        "has_above": "false",
+        "south": "level",
+        "facing": "east|west",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "has_above": "false",
+        "south": "level",
+        "facing": "south",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_up",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "has_above": "false",
+        "south": "level",
+        "facing": "north",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_down",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "has_above": "false",
         "west": "level",
-        "has_above": "false"
+        "sloped": "false"
       },
       "apply": {
         "model": "vintner:block/trellis/wire_level",
@@ -36,11 +108,84 @@
     },
     {
       "when": {
-        "north": "level",
-        "has_above": "false"
+        "has_above": "false",
+        "west": "level",
+        "facing": "north|south",
+        "sloped": "true"
       },
       "apply": {
         "model": "vintner:block/trellis/wire_level",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "has_above": "false",
+        "west": "level",
+        "facing": "west",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_up",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "has_above": "false",
+        "west": "level",
+        "facing": "east",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_down",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "has_above": "false",
+        "north": "level",
+        "sloped": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "has_above": "false",
+        "north": "level",
+        "facing": "east|west",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "has_above": "false",
+        "north": "level",
+        "facing": "north",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_up",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "has_above": "false",
+        "north": "level",
+        "facing": "south",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_down",
         "y": 270
       }
     },

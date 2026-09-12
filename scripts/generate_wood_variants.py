@@ -515,6 +515,37 @@ def replace_model(value: object, old: str, new: str) -> object:
 
 
 def generate_trellis_models() -> None:
+    wire_faces = {
+        face: {"texture": "#wood"}
+        for face in ("north", "east", "south", "west", "up", "down")
+    }
+    for slope, angle in (("up", 45), ("down", -45)):
+        elements = []
+        for height in (4.0, 7.0, 10.0, 13.0):
+            elements.append({
+                "from": [8.0, height, 7.5],
+                "to": [19.3137, height + 1.0, 8.5],
+                "rotation": {
+                    "origin": [8.0, height + 0.5, 8.0],
+                    "axis": "z",
+                    "angle": angle,
+                    "rescale": False,
+                },
+                "faces": copy.deepcopy(wire_faces),
+            })
+        write_json(
+            ASSETS / f"models/block/trellis/wire_{slope}.json",
+            {
+                "parent": "minecraft:block/block",
+                "ambientocclusion": False,
+                "textures": {
+                    "particle": "minecraft:block/oak_planks",
+                    "wood": "minecraft:block/anvil",
+                },
+                "elements": elements,
+            },
+        )
+
     for wood in WOODS:
         if wood == "oak":
             continue
@@ -540,9 +571,120 @@ def generate_trellis_models() -> None:
         )
 
 
+def with_trellis_slope_parts(state: dict[str, object]) -> dict[str, object]:
+    multipart = state["multipart"]
+    is_grapevine = any(
+        isinstance(part, dict)
+        and isinstance(part.get("when"), dict)
+        and "upper" in part["when"]
+        for part in multipart
+    )
+    multipart[:] = [
+        part
+        for part in multipart
+        if not isinstance(part.get("apply"), dict)
+        or part["apply"].get("model")
+        not in {
+            "vintner:block/trellis/wire_level",
+            "vintner:block/trellis/wire_up",
+            "vintner:block/trellis/wire_down",
+        }
+    ]
+
+    directions = ("east", "south", "west", "north")
+    rotations = {"east": 0, "south": 90, "west": 180, "north": 270}
+    opposite = {
+        "east": "west",
+        "south": "north",
+        "west": "east",
+        "north": "south",
+    }
+    perpendicular = {
+        "east": "north|south",
+        "south": "east|west",
+        "west": "north|south",
+        "north": "east|west",
+    }
+    wires = []
+    contexts = (
+        (
+            {"upper": "true"},
+            {
+                "age": "0|1",
+                "has_above": "false",
+                "upper": "false",
+            },
+        )
+        if is_grapevine
+        else ({"has_above": "false"},)
+    )
+    for context in contexts:
+        for direction in directions:
+            rotation = rotations[direction]
+
+            def wire_part(
+                    model: str,
+                    when: dict[str, str],
+            ) -> dict[str, object]:
+                apply: dict[str, object] = {
+                    "model": f"vintner:block/trellis/{model}"
+                }
+                if rotation:
+                    apply["y"] = rotation
+                return {"when": {**context, **when}, "apply": apply}
+
+            wires.append(wire_part(
+                "wire_level",
+                {
+                    direction: "level",
+                    "sloped": "false",
+                },
+            ))
+            wires.append(wire_part(
+                "wire_level",
+                {
+                    direction: "level",
+                    "facing": perpendicular[direction],
+                    "sloped": "true",
+                },
+            ))
+            wires.append(wire_part(
+                "wire_up",
+                {
+                    direction: "level",
+                    "facing": direction,
+                    "sloped": "true",
+                },
+            ))
+            wires.append(wire_part(
+                "wire_down",
+                {
+                    direction: "level",
+                    "facing": opposite[direction],
+                    "sloped": "true",
+                },
+            ))
+    multipart[1:1] = wires
+
+    for part in multipart:
+        if not isinstance(part.get("apply"), dict):
+            continue
+        if not part["apply"].get("model", "").endswith(
+                "end_brace"
+        ):
+            continue
+        for direction in ("north", "east", "south", "west"):
+            if part.get("when", {}).get(direction) in {
+                    "level", "level|up|down"
+            }:
+                part["when"][direction] = "level"
+
+    return state
+
+
 def generate_trellis_blockstates() -> None:
-    template = read_json(
-        ASSETS / "blockstates/oak_trellis.json"
+    template = with_trellis_slope_parts(
+        read_json(ASSETS / "blockstates/oak_trellis.json")
     )
 
     for wood in WOODS:
@@ -732,8 +874,8 @@ def generate_cultivar_assets() -> None:
 
 def generate_grapevine_blockstates() -> None:
     for color in ("red", "white"):
-        template = read_json(
-            ASSETS / f"blockstates/{color}_grapevine.json"
+        template = with_trellis_slope_parts(
+            read_json(ASSETS / f"blockstates/{color}_grapevine.json")
         )
 
         for wood in WOODS:
@@ -1332,6 +1474,48 @@ def generate_canonical_bottle_models() -> None:
                 },
             )
 
+        aged_palette = {
+            **palette,
+            "neck_foil": "minecraft:block/gold_block",
+            "seal": "minecraft:block/gold_block",
+        }
+        write_json(
+            ASSETS / f"models/block/wine_bottle_palette_aged_{colour}.json",
+            {
+                "parent": "minecraft:block/block",
+                "ambientocclusion": False,
+                "textures": {
+                    **aged_palette,
+                    "cork": "minecraft:block/stripped_oak_log_top",
+                    "label": aged_palette["label"],
+                    "label_border": "minecraft:block/gold_block",
+                    "label_ink": aged_palette["label_ink"],
+                    "particle": aged_palette["bottle"],
+                },
+            },
+        )
+
+        for servings in range(5):
+            write_json(
+                ASSETS
+                / f"models/block/wine_bottle_aged_{colour}_fill_{servings}.json",
+                {
+                    "parent": (
+                        "vintner:block/"
+                        f"wine_bottle_palette_aged_{colour}"
+                    ),
+                    "ambientocclusion": False,
+                    "elements": bottle_elements(
+                        8.0,
+                        0.0,
+                        8.0,
+                        1.0,
+                        include_seal=servings > 0,
+                        profile=colour,
+                    ),
+                },
+            )
+
     # Preserve the original palette/model names for storage fixtures and
     # external resource packs that use the established canonical bottle.
     write_json(
@@ -1361,18 +1545,21 @@ def generate_canonical_bottle_models() -> None:
     rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
     for facing, rotation in rotations.items():
         for colour, white_wine in (("red", "false"), ("white", "true")):
-            for servings in range(5):
-                entry = {
-                    "model": (
-                        f"vintner:block/wine_bottle_{colour}_fill_{servings}"
-                    ),
-                }
-                if rotation:
-                    entry["y"] = rotation
-                variants[
-                    f"facing={facing},servings={servings},"
-                    f"white_wine={white_wine}"
-                ] = entry
+            for aged_wine in ("false", "true"):
+                age_prefix = "aged_" if aged_wine == "true" else ""
+                for servings in range(5):
+                    entry = {
+                        "model": (
+                            "vintner:block/wine_bottle_"
+                            f"{age_prefix}{colour}_fill_{servings}"
+                        ),
+                    }
+                    if rotation:
+                        entry["y"] = rotation
+                    variants[
+                        f"aged_wine={aged_wine},facing={facing},"
+                        f"servings={servings},white_wine={white_wine}"
+                    ] = entry
 
     write_json(
         ASSETS / "blockstates/wine_bottle.json",
@@ -1524,6 +1711,21 @@ def generate_cellar_fixture_base_models() -> None:
                         ),
                     },
                 )
+                write_json(
+                    ASSETS
+                    / f"models/block/{model_prefix}_aged_{slot}.json",
+                    {
+                        "parent": (
+                            "vintner:block/wine_bottle_palette_aged_red"
+                        ),
+                        "elements": storage_bottle_elements(
+                            x,
+                            centre_y,
+                            11.25,
+                            horizontal=True,
+                        ),
+                    },
+                )
 
     glass_faces = {
         "north": {"texture": "#glass"},
@@ -1596,23 +1798,37 @@ def generate_cellar_fixture_blockstates() -> None:
                 if rotation:
                     apply["y"] = rotation
                 multipart.append({"when": {"facing": facing}, "apply": apply})
-            for slot in range(1, 9):
-                visible = "|".join(str(value) for value in range(slot, 9))
-                for facing, rotation in rotations.items():
-                    bottle_prefix = (
-                        "tasting_cabinet_bottle_slot"
-                        if block_id == cabinet_id(wood)
-                        else "cellar_fixture_bottle_slot"
+            for display_age in ("table", "aged", "mixed"):
+                for slot in range(1, 9):
+                    visible = "|".join(
+                        str(value) for value in range(slot, 9)
                     )
-                    apply = {
-                        "model": f"vintner:block/{bottle_prefix}_{slot}"
-                    }
-                    if rotation:
-                        apply["y"] = rotation
-                    multipart.append({
-                        "when": {"facing": facing, "bottle_count": visible},
-                        "apply": apply,
-                    })
+                    aged = display_age == "aged" or (
+                        display_age == "mixed" and slot % 2 == 0
+                    )
+                    for facing, rotation in rotations.items():
+                        bottle_prefix = (
+                            "tasting_cabinet_bottle_slot"
+                            if block_id == cabinet_id(wood)
+                            else "cellar_fixture_bottle_slot"
+                        )
+                        age_suffix = "_aged" if aged else ""
+                        apply = {
+                            "model": (
+                                "vintner:block/"
+                                f"{bottle_prefix}{age_suffix}_{slot}"
+                            )
+                        }
+                        if rotation:
+                            apply["y"] = rotation
+                        multipart.append({
+                            "when": {
+                                "facing": facing,
+                                "bottle_count": visible,
+                                "display_age": display_age,
+                            },
+                            "apply": apply,
+                        })
             for color in GLASS_COLORS:
                 for facing, rotation in rotations.items():
                     glass_prefix = (
@@ -1905,6 +2121,33 @@ def generate_rack_bottle_models() -> None:
                 ),
             },
         )
+        write_json(
+            ASSETS / f"models/block/wine_rack_bottle_aged_{slot}.json",
+            {
+                "parent": "vintner:block/wine_bottle_palette_aged_red",
+                "elements": storage_bottle_elements(
+                    x,
+                    y,
+                    11.6,
+                    horizontal=True,
+                    profile="red",
+                ),
+            },
+        )
+        write_json(
+            ASSETS
+            / f"models/block/wine_rack_bottle_aged_white_{slot}.json",
+            {
+                "parent": "vintner:block/wine_bottle_palette_aged_white",
+                "elements": storage_bottle_elements(
+                    x,
+                    y,
+                    11.6,
+                    horizontal=True,
+                    profile="white",
+                ),
+            },
+        )
         # Red keeps the established model ID for resource-pack compatibility;
         # remove only stale outputs from the earlier split generator.
         (
@@ -1936,30 +2179,51 @@ def generate_rack_blockstate() -> None:
         multipart.append({"when": {"facing": facing}, "apply": apply})
 
     for style in ("red", "white", "mixed"):
-        for slot in range(1, 5):
-            visible_at = "|".join(str(value) for value in range(slot, 5))
-            colour = (
-                "white"
-                if style == "white" or (style == "mixed" and slot % 2 == 0)
-                else "red"
-            )
-            for facing, rotation in rotations.items():
-                apply = {
-                    "model": (
-                        "vintner:block/wine_rack_bottle_"
-                        + (f"white_{slot}" if colour == "white" else str(slot))
-                    )
-                }
-                if rotation:
-                    apply["y"] = rotation
-                multipart.append({
-                    "when": {
-                        "facing": facing,
-                        "bottles": visible_at,
-                        "display_style": style,
-                    },
-                    "apply": apply,
-                })
+        for display_age in ("table", "aged", "mixed"):
+            for slot in range(1, 5):
+                visible_at = "|".join(
+                    str(value) for value in range(slot, 5)
+                )
+                colour = (
+                    "white"
+                    if style == "white"
+                    or (style == "mixed" and slot % 2 == 0)
+                    else "red"
+                )
+                aged = display_age == "aged" or (
+                    display_age == "mixed" and slot % 2 == 0
+                )
+                for facing, rotation in rotations.items():
+                    if aged:
+                        model = (
+                            "vintner:block/wine_rack_bottle_aged_"
+                            + (
+                                f"white_{slot}"
+                                if colour == "white"
+                                else str(slot)
+                            )
+                        )
+                    else:
+                        model = (
+                            "vintner:block/wine_rack_bottle_"
+                            + (
+                                f"white_{slot}"
+                                if colour == "white"
+                                else str(slot)
+                            )
+                        )
+                    apply = {"model": model}
+                    if rotation:
+                        apply["y"] = rotation
+                    multipart.append({
+                        "when": {
+                            "facing": facing,
+                            "bottles": visible_at,
+                            "display_style": style,
+                            "display_age": display_age,
+                        },
+                        "apply": apply,
+                    })
 
     write_json(
         ASSETS / "blockstates/wine_rack.json",
@@ -1985,6 +2249,34 @@ def generate_crate_bottle_models() -> None:
                         z_center,
                         0.68,
                         profile="red",
+                    ),
+                },
+            )
+            write_json(
+                ASSETS
+                / f"models/block/wine_crate_bottle_aged_slot_{slot}.json",
+                {
+                    "parent": "vintner:block/wine_bottle_palette_aged_red",
+                    "elements": bottle_elements(
+                        x_center,
+                        2.0,
+                        z_center,
+                        0.68,
+                        profile="red",
+                    ),
+                },
+            )
+            write_json(
+                ASSETS
+                / f"models/block/wine_crate_bottle_aged_white_slot_{slot}.json",
+                {
+                    "parent": "vintner:block/wine_bottle_palette_aged_white",
+                    "elements": bottle_elements(
+                        x_center,
+                        2.0,
+                        z_center,
+                        0.68,
+                        profile="white",
                     ),
                 },
             )
@@ -2031,37 +2323,46 @@ def generate_crate_blockstate() -> None:
         )
 
     for style in ("red", "white", "mixed"):
-        for slot in range(1, 17):
-            visible_at = "|".join(str(value) for value in range(slot, 17))
-            colour = (
-                "white"
-                if style == "white" or (style == "mixed" and slot % 2 == 0)
-                else "red"
-            )
-
-            for facing, rotation in rotations.items():
-                apply = {
-                    "model": (
-                        "vintner:block/wine_crate_bottle_"
-                        + (
-                            f"white_slot_{slot}"
-                            if colour == "white"
-                            else f"slot_{slot}"
-                        )
-                    )
-                }
-                if rotation:
-                    apply["y"] = rotation
-                multipart.append(
-                    {
-                        "when": {
-                            "facing": facing,
-                            "bottle_count": visible_at,
-                            "display_style": style,
-                        },
-                        "apply": apply,
-                    }
+        for display_age in ("table", "aged", "mixed"):
+            for slot in range(1, 17):
+                visible_at = "|".join(
+                    str(value) for value in range(slot, 17)
                 )
+                colour = (
+                    "white"
+                    if style == "white"
+                    or (style == "mixed" and slot % 2 == 0)
+                    else "red"
+                )
+                aged = display_age == "aged" or (
+                    display_age == "mixed" and slot % 2 == 0
+                )
+
+                for facing, rotation in rotations.items():
+                    age_prefix = "aged_" if aged else ""
+                    apply = {
+                        "model": (
+                            "vintner:block/wine_crate_bottle_"
+                            + (
+                                f"{age_prefix}white_slot_{slot}"
+                                if colour == "white"
+                                else f"{age_prefix}slot_{slot}"
+                            )
+                        )
+                    }
+                    if rotation:
+                        apply["y"] = rotation
+                    multipart.append(
+                        {
+                            "when": {
+                                "facing": facing,
+                                "bottle_count": visible_at,
+                                "display_style": style,
+                                "display_age": display_age,
+                            },
+                            "apply": apply,
+                        }
+                    )
 
     write_json(
         ASSETS / "blockstates/wine_crate.json",

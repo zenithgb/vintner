@@ -2,6 +2,7 @@ package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.block.CellarCollectionBlock;
 import com.zenith.vintner.block.CellarFixtureKind;
+import com.zenith.vintner.block.WineDisplayAge;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.wine.CellarConditions;
@@ -44,6 +45,7 @@ public final class CellarCollectionBlockEntity extends BlockEntity {
             CellarCollectionBlockEntity collection
     ) {
         long currentTime = level.getGameTime();
+        collection.syncVisualState();
         if (collection.lastAgingGameTime < 0L) {
             collection.lastAgingGameTime = currentTime;
             collection.setChanged();
@@ -196,6 +198,10 @@ public final class CellarCollectionBlockEntity extends BlockEntity {
         return result;
     }
 
+    public WineDisplayAge getDisplayAge() {
+        return WineDisplayAge.from(bottles);
+    }
+
     public List<ItemStack> removeAllBottles() {
         List<ItemStack> result = getStoredBottlesCopy();
         bottles.clear();
@@ -225,19 +231,28 @@ public final class CellarCollectionBlockEntity extends BlockEntity {
 
     private void markChangedAndSync() {
         setChanged();
+        syncVisualState();
+        updateComparatorSignal();
+    }
+
+    private void syncVisualState() {
         if (level != null) {
             BlockState state = getBlockState();
             if (state.getBlock() instanceof CellarCollectionBlock) {
-                BlockState updated = state.setValue(
-                        CellarCollectionBlock.BOTTLE_COUNT,
-                        getBottleCount()
-                );
+                BlockState updated = state
+                        .setValue(
+                                CellarCollectionBlock.BOTTLE_COUNT,
+                                getBottleCount()
+                        )
+                        .setValue(
+                                CellarCollectionBlock.DISPLAY_AGE,
+                                getDisplayAge()
+                        );
                 if (!updated.equals(state)) {
                     level.setBlock(worldPosition, updated, Block.UPDATE_CLIENTS);
                 }
             }
         }
-        updateComparatorSignal();
     }
 
     private void updateComparatorSignal() {

@@ -54,6 +54,9 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
     public static final BooleanProperty HAS_BELOW =
             BooleanProperty.create("has_below");
 
+    public static final BooleanProperty SLOPED =
+            BooleanProperty.create("sloped");
+
     private static final VoxelShape POST_SHAPE =
             Block.box(7.0, 0.0, 7.0, 9.0, 16.0, 9.0);
 
@@ -66,6 +69,12 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
             10.0,
             13.0
     };
+
+    private static final VoxelShape[] CONNECTION_SHAPES =
+            createConnectionShapes(false);
+
+    private static final VoxelShape[] INTERACTION_CONNECTION_SHAPES =
+            createConnectionShapes(true);
 
     private final WoodVariant woodVariant;
 
@@ -90,6 +99,7 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
                         .setValue(ISOLATED, false)
                         .setValue(HAS_ABOVE, false)
                         .setValue(HAS_BELOW, false)
+                        .setValue(SLOPED, false)
         );
     }
 
@@ -109,7 +119,24 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
 
         if (!level.isClientSide()) {
             level.scheduleTick(pos, this, 1);
+            schedulePotentialRowNeighbours(level, pos);
         }
+    }
+
+    @Override
+    protected void affectNeighborsAfterRemoval(
+            BlockState state,
+            ServerLevel level,
+            BlockPos pos,
+            boolean movedByPiston
+    ) {
+        super.affectNeighborsAfterRemoval(
+                state,
+                level,
+                pos,
+                movedByPiston
+        );
+        schedulePotentialRowNeighbours(level, pos);
     }
 
     @Override
@@ -139,6 +166,7 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
 
         if (refreshed != state) {
             level.setBlock(pos, refreshed, Block.UPDATE_ALL);
+            schedulePotentialRowNeighbours(level, pos);
         }
     }
 
@@ -250,10 +278,11 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
                     .setValue(NORTH, RowConnection.NONE)
                     .setValue(EAST, RowConnection.NONE)
                     .setValue(SOUTH, RowConnection.NONE)
-                    .setValue(WEST, RowConnection.NONE);
+                    .setValue(WEST, RowConnection.NONE)
+                    .setValue(SLOPED, false);
         }
 
-        return state
+        BlockState connected = state
                 .setValue(
                         NORTH,
                         connectionToNeighbour(
@@ -290,6 +319,19 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
                                 Direction.WEST
                         )
                 );
+
+        Direction uphill = uphillDirection(
+                connected,
+                level,
+                pos
+        );
+        if (uphill == null) {
+            return connected.setValue(SLOPED, false);
+        }
+
+        return connected
+                .setValue(FACING, uphill)
+                .setValue(SLOPED, true);
     }
 
     private static RowConnection connectionToNeighbour(
@@ -300,16 +342,51 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
     ) {
         BlockPos neighbourPos = pos.relative(direction);
 
-        if (canConnectTo(
-                state,
-                level.getBlockState(neighbourPos)
-        )) {
-            return RowConnection.LEVEL;
+        return connectionHeight(state, level, neighbourPos) == null
+                ? RowConnection.NONE
+                : RowConnection.LEVEL;
+    }
+
+    private static Direction uphillDirection(
+            BlockState state,
+            LevelReader level,
+            BlockPos pos
+    ) {
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            Integer height = connectionHeight(
+                    state,
+                    level,
+                    pos.relative(direction)
+            );
+            if (height == null || height == 0) {
+                continue;
+            }
+            return height > 0 ? direction : direction.getOpposite();
         }
+        return null;
+    }
 
-
-
-        return RowConnection.NONE;
+    private static Integer connectionHeight(
+            BlockState state,
+            LevelReader level,
+            BlockPos neighbourPos
+    ) {
+        if (canConnectTo(state, level.getBlockState(neighbourPos))) {
+            return 0;
+        }
+        if (canConnectAcrossSlope(
+                state,
+                level.getBlockState(neighbourPos.above())
+        )) {
+            return 1;
+        }
+        if (canConnectAcrossSlope(
+                state,
+                level.getBlockState(neighbourPos.below())
+        )) {
+            return -1;
+        }
+        return null;
     }
 
     private static boolean canConnectTo(
@@ -321,6 +398,44 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
                 && !neighbourState.getValue(ISOLATED)
                 && state.getValue(HAS_ABOVE)
                 == neighbourState.getValue(HAS_ABOVE);
+    }
+
+    private static boolean canConnectAcrossSlope(
+            BlockState state,
+            BlockState neighbourState
+    ) {
+        return !state.getValue(ISOLATED)
+                && isTrellisState(neighbourState)
+                && !neighbourState.getValue(ISOLATED)
+                && state.getValue(HAS_ABOVE)
+                == neighbourState.getValue(HAS_ABOVE)
+                && state.getValue(HAS_BELOW)
+                == neighbourState.getValue(HAS_BELOW);
+    }
+
+    private static void schedulePotentialRowNeighbours(
+            Level level,
+            BlockPos pos
+    ) {
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            BlockPos neighbourPos = pos.relative(direction);
+
+            for (int verticalOffset = -1;
+                 verticalOffset <= 1;
+                 verticalOffset++) {
+                BlockPos candidatePos = neighbourPos.offset(
+                        0,
+                        verticalOffset,
+                        0
+                );
+                Block candidate = level.getBlockState(candidatePos)
+                        .getBlock();
+
+                if (candidate instanceof TrellisBlock) {
+                    level.scheduleTick(candidatePos, candidate, 1);
+                }
+            }
+        }
     }
 
     private static BlockState findVerticalTrellis(
@@ -409,59 +524,75 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
     }
 
     private static VoxelShape createTrellisShape(BlockState state) {
-        VoxelShape shape = POST_SHAPE;
-
         if (state.getValue(HAS_ABOVE)
                 || (state.getBlock() instanceof GrapevineBlock
                 && !state.getValue(GrapevineBlock.UPPER))) {
-            return shape;
+            return POST_SHAPE;
         }
-
-        if (state.getValue(NORTH) != RowConnection.NONE) {
-            shape = addWireShapes(shape, Direction.NORTH);
-        }
-
-        if (state.getValue(EAST) != RowConnection.NONE) {
-            shape = addWireShapes(shape, Direction.EAST);
-        }
-
-        if (state.getValue(SOUTH) != RowConnection.NONE) {
-            shape = addWireShapes(shape, Direction.SOUTH);
-        }
-
-        if (state.getValue(WEST) != RowConnection.NONE) {
-            shape = addWireShapes(shape, Direction.WEST);
-        }
-
-        return shape;
+        return connectionShape(state, false);
     }
 
     private static VoxelShape createTrellisInteractionShape(
             BlockState state
     ) {
-        VoxelShape shape = INTERACTION_POST_SHAPE;
-
         if (state.getValue(HAS_ABOVE)) {
-            return shape;
+            return INTERACTION_POST_SHAPE;
         }
+        return connectionShape(state, true);
+    }
 
-        if (state.getValue(NORTH) != RowConnection.NONE) {
-            shape = addInteractionArm(shape, Direction.NORTH);
+    private static VoxelShape connectionShape(
+            BlockState state,
+            boolean interaction
+    ) {
+        int mask = 0;
+        int bit = 1;
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            if (state.getValue(propertyFor(direction))
+                    != RowConnection.NONE) {
+                mask |= bit;
+            }
+            bit <<= 1;
         }
+        return interaction
+                ? INTERACTION_CONNECTION_SHAPES[mask]
+                : CONNECTION_SHAPES[mask];
+    }
 
-        if (state.getValue(EAST) != RowConnection.NONE) {
-            shape = addInteractionArm(shape, Direction.EAST);
+    private static VoxelShape[] createConnectionShapes(
+            boolean interaction
+    ) {
+        VoxelShape[] shapes = new VoxelShape[16];
+        for (int mask = 0; mask < shapes.length; mask++) {
+            VoxelShape shape = interaction
+                    ? INTERACTION_POST_SHAPE
+                    : POST_SHAPE;
+            int bit = 1;
+            for (Direction direction : Direction.Plane.HORIZONTAL) {
+                if ((mask & bit) != 0) {
+                    shape = interaction
+                            ? addInteractionArm(shape, direction)
+                            : addWireShapes(shape, direction);
+                }
+                bit <<= 1;
+            }
+            shapes[mask] = shape;
         }
+        return shapes;
+    }
 
-        if (state.getValue(SOUTH) != RowConnection.NONE) {
-            shape = addInteractionArm(shape, Direction.SOUTH);
-        }
-
-        if (state.getValue(WEST) != RowConnection.NONE) {
-            shape = addInteractionArm(shape, Direction.WEST);
-        }
-
-        return shape;
+    private static EnumProperty<RowConnection> propertyFor(
+            Direction direction
+    ) {
+        return switch (direction) {
+            case NORTH -> NORTH;
+            case EAST -> EAST;
+            case SOUTH -> SOUTH;
+            case WEST -> WEST;
+            default -> throw new IllegalStateException(
+                    "Trellis connection must be horizontal: " + direction
+            );
+        };
     }
 
     private static VoxelShape addInteractionArm(
@@ -548,7 +679,8 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
                 WEST,
                 ISOLATED,
                 HAS_ABOVE,
-                HAS_BELOW
+                HAS_BELOW,
+                SLOPED
         );
     }
 

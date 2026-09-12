@@ -269,6 +269,18 @@ generated: dict[Path, dict[str, object]] = {
         seal_texture=TEXTURES["white_seal"],
         neck_foil_texture=TEXTURES["white_seal"],
     ),
+    BLOCK_MODELS / "tasting_service_bottle_aged_red.json": model(
+        bottle_elements("red"),
+        seal_texture="minecraft:block/gold_block",
+        neck_foil_texture="minecraft:block/gold_block",
+        texture_overrides={"label_border": "minecraft:block/gold_block"},
+    ),
+    BLOCK_MODELS / "tasting_service_bottle_aged_white.json": model(
+        bottle_elements("white"),
+        seal_texture="minecraft:block/gold_block",
+        neck_foil_texture="minecraft:block/gold_block",
+        texture_overrides={"label_border": "minecraft:block/gold_block"},
+    ),
 }
 
 for colour, texture in (("red", "red_wine"), ("white", "white_wine")):
@@ -391,22 +403,28 @@ for wood, properties in WOODS.items():
             )
 
         for colour, white_value in (("red", "false"), ("white", "true")):
-            bottle_apply: dict[str, object] = {
-                "model": f"vintner:block/tasting_service_bottle_{colour}",
-                "uvlock": True,
-            }
-            if y_rotation:
-                bottle_apply["y"] = y_rotation
-            multipart.append(
-                {
-                    "when": {
-                        "facing": facing,
-                        "has_bottle": "true",
-                        "white_wine": white_value,
-                    },
-                    "apply": bottle_apply,
+            for aged_wine in ("false", "true"):
+                age_prefix = "aged_" if aged_wine == "true" else ""
+                bottle_apply: dict[str, object] = {
+                    "model": (
+                        "vintner:block/tasting_service_bottle_"
+                        f"{age_prefix}{colour}"
+                    ),
+                    "uvlock": True,
                 }
-            )
+                if y_rotation:
+                    bottle_apply["y"] = y_rotation
+                multipart.append(
+                    {
+                        "when": {
+                            "facing": facing,
+                            "has_bottle": "true",
+                            "white_wine": white_value,
+                            "aged_wine": aged_wine,
+                        },
+                        "apply": bottle_apply,
+                    }
+                )
 
             for cup_index in range(4):
                 fill_apply: dict[str, object] = {

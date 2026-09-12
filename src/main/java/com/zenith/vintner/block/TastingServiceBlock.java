@@ -64,6 +64,8 @@ public final class TastingServiceBlock extends BaseEntityBlock {
             BooleanProperty.create("has_bottle");
     public static final BooleanProperty WHITE_WINE =
             BooleanProperty.create("white_wine");
+    public static final BooleanProperty AGED_WINE =
+            BooleanProperty.create("aged_wine");
     public static final IntegerProperty SERVINGS =
             IntegerProperty.create("servings", 0, 4);
     public static final BooleanProperty CUP_1 =
@@ -134,6 +136,7 @@ public final class TastingServiceBlock extends BaseEntityBlock {
                         .setValue(FACING, Direction.NORTH)
                         .setValue(HAS_BOTTLE, false)
                         .setValue(WHITE_WINE, false)
+                        .setValue(AGED_WINE, false)
                         .setValue(SERVINGS, 0)
                         .setValue(CUP_1, false)
                         .setValue(CUP_2, false)
@@ -528,6 +531,7 @@ public final class TastingServiceBlock extends BaseEntityBlock {
                 FACING,
                 HAS_BOTTLE,
                 WHITE_WINE,
+                AGED_WINE,
                 SERVINGS,
                 CUP_1,
                 CUP_2,

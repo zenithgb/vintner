@@ -39,7 +39,8 @@
       "when": {
         "facing": "north",
         "bottles": "1|2|3|4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_1"
@@ -49,7 +50,8 @@
       "when": {
         "facing": "east",
         "bottles": "1|2|3|4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_1",
@@ -60,7 +62,8 @@
       "when": {
         "facing": "south",
         "bottles": "1|2|3|4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_1",
@@ -71,7 +74,8 @@
       "when": {
         "facing": "west",
         "bottles": "1|2|3|4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_1",
@@ -82,7 +86,8 @@
       "when": {
         "facing": "north",
         "bottles": "2|3|4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_2"
@@ -92,7 +97,8 @@
       "when": {
         "facing": "east",
         "bottles": "2|3|4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_2",
@@ -103,7 +109,8 @@
       "when": {
         "facing": "south",
         "bottles": "2|3|4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_2",
@@ -114,7 +121,8 @@
       "when": {
         "facing": "west",
         "bottles": "2|3|4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_2",
@@ -125,7 +133,8 @@
       "when": {
         "facing": "north",
         "bottles": "3|4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_3"
@@ -135,7 +144,8 @@
       "when": {
         "facing": "east",
         "bottles": "3|4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_3",
@@ -146,7 +156,8 @@
       "when": {
         "facing": "south",
         "bottles": "3|4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_3",
@@ -157,7 +168,8 @@
       "when": {
         "facing": "west",
         "bottles": "3|4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_3",
@@ -168,7 +180,8 @@
       "when": {
         "facing": "north",
         "bottles": "4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_4"
@@ -178,7 +191,8 @@
       "when": {
         "facing": "east",
         "bottles": "4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_4",
@@ -189,7 +203,8 @@
       "when": {
         "facing": "south",
         "bottles": "4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_4",
@@ -200,7 +215,8 @@
       "when": {
         "facing": "west",
         "bottles": "4",
-        "display_style": "red"
+        "display_style": "red",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_4",
@@ -211,20 +227,22 @@
       "when": {
         "facing": "north",
         "bottles": "1|2|3|4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_1"
+        "model": "vintner:block/wine_rack_bottle_aged_1"
       }
     },
     {
       "when": {
         "facing": "east",
         "bottles": "1|2|3|4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_1",
+        "model": "vintner:block/wine_rack_bottle_aged_1",
         "y": 90
       }
     },
@@ -232,10 +250,11 @@
       "when": {
         "facing": "south",
         "bottles": "1|2|3|4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_1",
+        "model": "vintner:block/wine_rack_bottle_aged_1",
         "y": 180
       }
     },
@@ -243,10 +262,11 @@
       "when": {
         "facing": "west",
         "bottles": "1|2|3|4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_1",
+        "model": "vintner:block/wine_rack_bottle_aged_1",
         "y": 270
       }
     },
@@ -254,20 +274,22 @@
       "when": {
         "facing": "north",
         "bottles": "2|3|4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_2"
+        "model": "vintner:block/wine_rack_bottle_aged_2"
       }
     },
     {
       "when": {
         "facing": "east",
         "bottles": "2|3|4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_2",
+        "model": "vintner:block/wine_rack_bottle_aged_2",
         "y": 90
       }
     },
@@ -275,10 +297,11 @@
       "when": {
         "facing": "south",
         "bottles": "2|3|4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_2",
+        "model": "vintner:block/wine_rack_bottle_aged_2",
         "y": 180
       }
     },
@@ -286,10 +309,11 @@
       "when": {
         "facing": "west",
         "bottles": "2|3|4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_2",
+        "model": "vintner:block/wine_rack_bottle_aged_2",
         "y": 270
       }
     },
@@ -297,20 +321,22 @@
       "when": {
         "facing": "north",
         "bottles": "3|4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_3"
+        "model": "vintner:block/wine_rack_bottle_aged_3"
       }
     },
     {
       "when": {
         "facing": "east",
         "bottles": "3|4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_3",
+        "model": "vintner:block/wine_rack_bottle_aged_3",
         "y": 90
       }
     },
@@ -318,10 +344,11 @@
       "when": {
         "facing": "south",
         "bottles": "3|4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_3",
+        "model": "vintner:block/wine_rack_bottle_aged_3",
         "y": 180
       }
     },
@@ -329,10 +356,11 @@
       "when": {
         "facing": "west",
         "bottles": "3|4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_3",
+        "model": "vintner:block/wine_rack_bottle_aged_3",
         "y": 270
       }
     },
@@ -340,20 +368,22 @@
       "when": {
         "facing": "north",
         "bottles": "4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_4"
+        "model": "vintner:block/wine_rack_bottle_aged_4"
       }
     },
     {
       "when": {
         "facing": "east",
         "bottles": "4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_4",
+        "model": "vintner:block/wine_rack_bottle_aged_4",
         "y": 90
       }
     },
@@ -361,10 +391,11 @@
       "when": {
         "facing": "south",
         "bottles": "4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_4",
+        "model": "vintner:block/wine_rack_bottle_aged_4",
         "y": 180
       }
     },
@@ -372,10 +403,11 @@
       "when": {
         "facing": "west",
         "bottles": "4",
-        "display_style": "white"
+        "display_style": "red",
+        "display_age": "aged"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_4",
+        "model": "vintner:block/wine_rack_bottle_aged_4",
         "y": 270
       }
     },
@@ -383,7 +415,8 @@
       "when": {
         "facing": "north",
         "bottles": "1|2|3|4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_1"
@@ -393,7 +426,8 @@
       "when": {
         "facing": "east",
         "bottles": "1|2|3|4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_1",
@@ -404,7 +438,8 @@
       "when": {
         "facing": "south",
         "bottles": "1|2|3|4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_1",
@@ -415,7 +450,8 @@
       "when": {
         "facing": "west",
         "bottles": "1|2|3|4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_1",
@@ -426,20 +462,22 @@
       "when": {
         "facing": "north",
         "bottles": "2|3|4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_2"
+        "model": "vintner:block/wine_rack_bottle_aged_2"
       }
     },
     {
       "when": {
         "facing": "east",
         "bottles": "2|3|4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_2",
+        "model": "vintner:block/wine_rack_bottle_aged_2",
         "y": 90
       }
     },
@@ -447,10 +485,11 @@
       "when": {
         "facing": "south",
         "bottles": "2|3|4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_2",
+        "model": "vintner:block/wine_rack_bottle_aged_2",
         "y": 180
       }
     },
@@ -458,10 +497,11 @@
       "when": {
         "facing": "west",
         "bottles": "2|3|4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
       },
       "apply": {
-        "model": "vintner:block/wine_rack_bottle_white_2",
+        "model": "vintner:block/wine_rack_bottle_aged_2",
         "y": 270
       }
     },
@@ -469,7 +509,8 @@
       "when": {
         "facing": "north",
         "bottles": "3|4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_3"
@@ -479,7 +520,8 @@
       "when": {
         "facing": "east",
         "bottles": "3|4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_3",
@@ -490,7 +532,8 @@
       "when": {
         "facing": "south",
         "bottles": "3|4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_3",
@@ -501,7 +544,8 @@
       "when": {
         "facing": "west",
         "bottles": "3|4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_3",
@@ -512,7 +556,196 @@
       "when": {
         "facing": "north",
         "bottles": "4",
-        "display_style": "mixed"
+        "display_style": "red",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_4"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "4",
+        "display_style": "red",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "4",
+        "display_style": "red",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "4",
+        "display_style": "red",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_4",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "1|2|3|4",
+        "display_style": "white",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "1|2|3|4",
+        "display_style": "white",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "1|2|3|4",
+        "display_style": "white",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "1|2|3|4",
+        "display_style": "white",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "2|3|4",
+        "display_style": "white",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "2|3|4",
+        "display_style": "white",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "2|3|4",
+        "display_style": "white",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "2|3|4",
+        "display_style": "white",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "3|4",
+        "display_style": "white",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_3"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "3|4",
+        "display_style": "white",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "3|4",
+        "display_style": "white",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "3|4",
+        "display_style": "white",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "4",
+        "display_style": "white",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_white_4"
@@ -522,7 +755,8 @@
       "when": {
         "facing": "east",
         "bottles": "4",
-        "display_style": "mixed"
+        "display_style": "white",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_white_4",
@@ -533,7 +767,8 @@
       "when": {
         "facing": "south",
         "bottles": "4",
-        "display_style": "mixed"
+        "display_style": "white",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_white_4",
@@ -544,10 +779,951 @@
       "when": {
         "facing": "west",
         "bottles": "4",
-        "display_style": "mixed"
+        "display_style": "white",
+        "display_age": "table"
       },
       "apply": {
         "model": "vintner:block/wine_rack_bottle_white_4",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "1|2|3|4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "1|2|3|4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "1|2|3|4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "1|2|3|4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "2|3|4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "2|3|4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "2|3|4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "2|3|4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "3|4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_3"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "3|4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "3|4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "3|4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "4",
+        "display_style": "white",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "1|2|3|4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "1|2|3|4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "1|2|3|4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "1|2|3|4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "2|3|4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "2|3|4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "2|3|4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "2|3|4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "3|4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_3"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "3|4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "3|4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "3|4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "4",
+        "display_style": "white",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "1|2|3|4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "1|2|3|4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "1|2|3|4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "1|2|3|4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "2|3|4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "2|3|4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "2|3|4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "2|3|4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "3|4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_3"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "3|4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "3|4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "3|4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_4"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "4",
+        "display_style": "mixed",
+        "display_age": "table"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_white_4",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "1|2|3|4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "1|2|3|4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "1|2|3|4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "1|2|3|4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "2|3|4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "2|3|4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "2|3|4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "2|3|4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "3|4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_3"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "3|4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "3|4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "3|4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "4",
+        "display_style": "mixed",
+        "display_age": "aged"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "1|2|3|4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "1|2|3|4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "1|2|3|4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "1|2|3|4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "2|3|4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "2|3|4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "2|3|4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "2|3|4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "3|4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_3"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "3|4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "3|4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "3|4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottles": "4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottles": "4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottles": "4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottles": "4",
+        "display_style": "mixed",
+        "display_age": "mixed"
+      },
+      "apply": {
+        "model": "vintner:block/wine_rack_bottle_aged_white_4",
         "y": 270
       }
     }

@@ -1,0 +1,178 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "minecraft:block/oak_planks",
+    "wood": "minecraft:block/anvil"
+  },
+  "elements": [
+    {
+      "from": [
+        8.0,
+        4.0,
+        7.5
+      ],
+      "to": [
+        19.3137,
+        5.0,
+        8.5
+      ],
+      "rotation": {
+        "origin": [
+          8.0,
+          4.5,
+          8.0
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "from": [
+        8.0,
+        7.0,
+        7.5
+      ],
+      "to": [
+        19.3137,
+        8.0,
+        8.5
+      ],
+      "rotation": {
+        "origin": [
+          8.0,
+          7.5,
+          8.0
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "from": [
+        8.0,
+        10.0,
+        7.5
+      ],
+      "to": [
+        19.3137,
+        11.0,
+        8.5
+      ],
+      "rotation": {
+        "origin": [
+          8.0,
+          10.5,
+          8.0
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "from": [
+        8.0,
+        13.0,
+        7.5
+      ],
+      "to": [
+        19.3137,
+        14.0,
+        8.5
+      ],
+      "rotation": {
+        "origin": [
+          8.0,
+          13.5,
+          8.0
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      }
+    }
+  ]
+}

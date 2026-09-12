@@ -1,6 +1,7 @@
 package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.block.TastingServiceBlock;
+import com.zenith.vintner.block.WineDisplayAge;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.wine.WineMetadata;
@@ -21,6 +22,7 @@ import java.util.UUID;
 public final class TastingServiceBlockEntity extends BlockEntity {
     private ItemStack bottle = ItemStack.EMPTY;
     private boolean whiteWine;
+    private boolean agedWine;
     private int cupMask;
     private final Set<UUID> drinkers = new LinkedHashSet<>();
 
@@ -42,6 +44,7 @@ public final class TastingServiceBlockEntity extends BlockEntity {
                 wine.effectProfile().id()
         );
         whiteWine = wine.effectProfile().id().contains("white");
+        agedWine = WineDisplayAge.isAged(bottle);
         cupMask = maskForServings(WineMetadata.servings(bottle));
         drinkers.clear();
         changedAndSync();
@@ -114,6 +117,7 @@ public final class TastingServiceBlockEntity extends BlockEntity {
         ItemStack result = bottle;
         bottle = ItemStack.EMPTY;
         whiteWine = false;
+        agedWine = false;
         cupMask = 0;
         drinkers.clear();
         changedAndSync();
@@ -152,6 +156,10 @@ public final class TastingServiceBlockEntity extends BlockEntity {
                 .setValue(
                         TastingServiceBlock.WHITE_WINE,
                         whiteWine
+                )
+                .setValue(
+                        TastingServiceBlock.AGED_WINE,
+                        agedWine
                 )
                 .setValue(
                         TastingServiceBlock.SERVINGS,
@@ -199,6 +207,7 @@ public final class TastingServiceBlockEntity extends BlockEntity {
         bottle = input.read("Bottle", ItemStack.CODEC)
                 .orElse(ItemStack.EMPTY);
         whiteWine = input.getBooleanOr("WhiteWine", false);
+        agedWine = WineDisplayAge.isAged(bottle);
         cupMask = input.getIntOr(
                 "CupMask",
                 maskForServings(servings())

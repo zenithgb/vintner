@@ -104,6 +104,10 @@ public final class GrapeCuttingItem extends Item {
                             trellisState.getValue(TrellisBlock.WEST)
                     )
                     .setValue(
+                            TrellisBlock.SLOPED,
+                            trellisState.getValue(TrellisBlock.SLOPED)
+                    )
+                    .setValue(
                             TrellisBlock.ISOLATED,
                             trellisState.getValue(TrellisBlock.ISOLATED)
                     )

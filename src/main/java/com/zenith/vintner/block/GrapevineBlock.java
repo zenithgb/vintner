@@ -92,6 +92,7 @@ public abstract class GrapevineBlock
                         .setValue(ISOLATED, false)
                         .setValue(HAS_ABOVE, false)
                         .setValue(HAS_BELOW, false)
+                        .setValue(SLOPED, false)
                         .setValue(UPPER, false)
                         .setValue(CULTIVAR, 0)
                         .setValue(AGE, 0)
@@ -467,7 +468,8 @@ public abstract class GrapevineBlock
                 .setValue(WEST, source.getValue(WEST))
                 .setValue(ISOLATED, source.getValue(ISOLATED))
                 .setValue(HAS_ABOVE, source.getValue(HAS_ABOVE))
-                .setValue(HAS_BELOW, source.getValue(HAS_BELOW));
+                .setValue(HAS_BELOW, source.getValue(HAS_BELOW))
+                .setValue(SLOPED, source.getValue(SLOPED));
     }
 
     private static void restoreBareTrellis(
@@ -1015,6 +1017,7 @@ public abstract class GrapevineBlock
                 ISOLATED,
                 HAS_ABOVE,
                 HAS_BELOW,
+                SLOPED,
                 UPPER,
                 CULTIVAR,
                 AGE

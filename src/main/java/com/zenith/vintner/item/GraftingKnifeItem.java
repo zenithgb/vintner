@@ -285,6 +285,7 @@ public final class GraftingKnifeItem extends Item {
                 .setValue(TrellisBlock.ISOLATED, source.getValue(TrellisBlock.ISOLATED))
                 .setValue(TrellisBlock.HAS_ABOVE, source.getValue(TrellisBlock.HAS_ABOVE))
                 .setValue(TrellisBlock.HAS_BELOW, source.getValue(TrellisBlock.HAS_BELOW))
+                .setValue(TrellisBlock.SLOPED, source.getValue(TrellisBlock.SLOPED))
                 .setValue(GrapevineBlock.UPPER, upper)
                 .setValue(
                         GrapevineBlock.CULTIVAR,

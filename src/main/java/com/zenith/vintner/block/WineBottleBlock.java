@@ -53,6 +53,8 @@ public final class WineBottleBlock extends BaseEntityBlock {
             );
     public static final BooleanProperty WHITE_WINE =
             BooleanProperty.create("white_wine");
+    public static final BooleanProperty AGED_WINE =
+            BooleanProperty.create("aged_wine");
     private static final VoxelShape SHAPE = Block.box(
             6.25,
             0,
@@ -68,6 +70,7 @@ public final class WineBottleBlock extends BaseEntityBlock {
                 stateDefinition.any()
                         .setValue(FACING, Direction.NORTH)
                         .setValue(WHITE_WINE, false)
+                        .setValue(AGED_WINE, false)
                         .setValue(
                                 SERVINGS,
                                 WineMetadata.SERVINGS_PER_BOTTLE
@@ -237,5 +240,6 @@ public final class WineBottleBlock extends BaseEntityBlock {
         builder.add(FACING);
         builder.add(SERVINGS);
         builder.add(WHITE_WINE);
+        builder.add(AGED_WINE);
     }
 }

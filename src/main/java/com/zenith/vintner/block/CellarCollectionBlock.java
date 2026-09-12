@@ -56,6 +56,8 @@ public class CellarCollectionBlock extends BaseEntityBlock {
             IntegerProperty.create("bottle_count", 0, 8);
     public static final EnumProperty<CellarGlassColor> GLASS_COLOR =
             EnumProperty.create("glass_color", CellarGlassColor.class);
+    public static final EnumProperty<WineDisplayAge> DISPLAY_AGE =
+            EnumProperty.create("display_age", WineDisplayAge.class);
     private static final VoxelShape SHAPE =
             Block.box(0.5, 0, 0.5, 15.5, 16, 15.5);
 
@@ -76,6 +78,7 @@ public class CellarCollectionBlock extends BaseEntityBlock {
                         .setValue(FACING, Direction.NORTH)
                         .setValue(BOTTLE_COUNT, 0)
                         .setValue(GLASS_COLOR, CellarGlassColor.CLEAR)
+                        .setValue(DISPLAY_AGE, WineDisplayAge.TABLE)
         );
     }
 
@@ -356,6 +359,6 @@ public class CellarCollectionBlock extends BaseEntityBlock {
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING, BOTTLE_COUNT, GLASS_COLOR);
+        builder.add(FACING, BOTTLE_COUNT, GLASS_COLOR, DISPLAY_AGE);
     }
 }

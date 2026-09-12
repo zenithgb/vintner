@@ -2,6 +2,7 @@ package com.zenith.vintner.block.entity;
 
 import com.zenith.vintner.block.WineRackBlock;
 import com.zenith.vintner.block.WineDisplayStyle;
+import com.zenith.vintner.block.WineDisplayAge;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.wine.CellarConditions;
@@ -185,6 +186,10 @@ public final class WineRackBlockEntity extends BlockEntity {
         return WineDisplayStyle.from(bottles);
     }
 
+    public WineDisplayAge getDisplayAge() {
+        return WineDisplayAge.from(bottles);
+    }
+
     public List<ItemStack> getStoredBottlesCopy() {
         List<ItemStack> copies = new ArrayList<>();
 
@@ -251,6 +256,10 @@ public final class WineRackBlockEntity extends BlockEntity {
                 .setValue(
                         WineRackBlock.DISPLAY_STYLE,
                         getDisplayStyle()
+                )
+                .setValue(
+                        WineRackBlock.DISPLAY_AGE,
+                        getDisplayAge()
                 );
 
         if (!updated.equals(state)) {
