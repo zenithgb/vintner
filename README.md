@@ -119,6 +119,11 @@ consuming it. Rescanning the same batch updates its entry rather than using
 another slot. Use the Almanac on the Archive to cycle through its sixteen
 records, or use an empty hand for a collection summary.
 
+Vintage Archives, Estate Management Desks, and Surveyor's Map Tables connect
+into one continuous estate workstation when placed side by side facing the
+same direction. The joining trim retains each block's selected wood family.
+Shift-place any of the three to keep that module visually standalone.
+
 ## Serving wine
 
 Wine bottles can be placed directly in the world without losing their vintage,

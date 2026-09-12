@@ -29,8 +29,9 @@ the world; the management layer reports, organizes, and explains that work.
   tasting-room, and improved-irrigation facilities.
 - Read-only appraisal, buyer-fit, and regional-market guidance. No wine is sold
   and no currency or reward is created by this release.
-- Estate Management Desks and Surveyor's Map Tables in all supported wood
-  families.
+- Vintage Archives, Estate Management Desks, and Surveyor's Map Tables in all
+  supported wood families, with facing-aligned mixed workstation rows and a
+  shift-placement standalone option.
 - Six management tabs: Overview, Vineyards, Cellar, Markets, Ledger, and Map.
 - An interactive Estate Atlas using up to nine compatible explored maps, with
   vineyard overlays, selection, panning, and zoom.

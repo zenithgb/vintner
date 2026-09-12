@@ -131,7 +131,7 @@
         "left_connected": "true"
       },
       "apply": {
-        "model": "vintner:block/estate_management_desk_connection_left",
+        "model": "vintner:block/dark_oak_estate_management_desk_connection_left",
         "uvlock": true
       }
     },
@@ -141,7 +141,7 @@
         "left_connected": "true"
       },
       "apply": {
-        "model": "vintner:block/estate_management_desk_connection_left",
+        "model": "vintner:block/dark_oak_estate_management_desk_connection_left",
         "uvlock": true,
         "y": 90
       }
@@ -152,7 +152,7 @@
         "left_connected": "true"
       },
       "apply": {
-        "model": "vintner:block/estate_management_desk_connection_left",
+        "model": "vintner:block/dark_oak_estate_management_desk_connection_left",
         "uvlock": true,
         "y": 180
       }
@@ -163,7 +163,7 @@
         "left_connected": "true"
       },
       "apply": {
-        "model": "vintner:block/estate_management_desk_connection_left",
+        "model": "vintner:block/dark_oak_estate_management_desk_connection_left",
         "uvlock": true,
         "y": 270
       }
@@ -174,7 +174,7 @@
         "right_connected": "true"
       },
       "apply": {
-        "model": "vintner:block/estate_management_desk_connection_right",
+        "model": "vintner:block/dark_oak_estate_management_desk_connection_right",
         "uvlock": true
       }
     },
@@ -184,7 +184,7 @@
         "right_connected": "true"
       },
       "apply": {
-        "model": "vintner:block/estate_management_desk_connection_right",
+        "model": "vintner:block/dark_oak_estate_management_desk_connection_right",
         "uvlock": true,
         "y": 90
       }
@@ -195,7 +195,7 @@
         "right_connected": "true"
       },
       "apply": {
-        "model": "vintner:block/estate_management_desk_connection_right",
+        "model": "vintner:block/dark_oak_estate_management_desk_connection_right",
         "uvlock": true,
         "y": 180
       }
@@ -206,7 +206,7 @@
         "right_connected": "true"
       },
       "apply": {
-        "model": "vintner:block/estate_management_desk_connection_right",
+        "model": "vintner:block/dark_oak_estate_management_desk_connection_right",
         "uvlock": true,
         "y": 270
       }

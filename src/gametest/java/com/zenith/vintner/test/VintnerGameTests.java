@@ -13,6 +13,7 @@ import com.zenith.vintner.block.NurseryBedBlock;
 import com.zenith.vintner.block.SurveyorsMapTableBlock;
 import com.zenith.vintner.block.TastingServiceBlock;
 import com.zenith.vintner.block.TrellisBlock;
+import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.block.WineBottleBlock;
 import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.block.WineDisplayStyle;
@@ -336,6 +337,72 @@ public final class VintnerGameTests {
                         false
                 )
         );
+    }
+
+    @GameTest(maxTicks = 40)
+    public void estateWorkstationsConnectAsOneMixedRowAndDisconnect(
+            GameTestHelper helper
+    ) {
+        BlockPos surveyorPos = EAST.east();
+        BlockState archive = ModBlocks.vintageArchive(
+                WoodVariant.SPRUCE
+        ).defaultBlockState().setValue(
+                VintageArchiveBlock.FACING,
+                Direction.NORTH
+        );
+        BlockState desk = ModBlocks.ESTATE_MANAGEMENT_DESK
+                .defaultBlockState()
+                .setValue(
+                        EstateManagementDeskBlock.FACING,
+                        Direction.NORTH
+                );
+        BlockState surveyor = ModBlocks.surveyorsMapTable(
+                WoodVariant.BIRCH
+        ).defaultBlockState().setValue(
+                SurveyorsMapTableBlock.FACING,
+                Direction.NORTH
+        );
+
+        helper.setBlock(FIRST, archive);
+        helper.setBlock(EAST, desk);
+        helper.setBlock(surveyorPos, surveyor);
+
+        helper.runAfterDelay(1, () -> {
+            helper.assertBlockProperty(
+                    FIRST,
+                    VintageArchiveBlock.RIGHT_CONNECTED,
+                    true
+            );
+            helper.assertBlockProperty(
+                    EAST,
+                    EstateManagementDeskBlock.LEFT_CONNECTED,
+                    true
+            );
+            helper.assertBlockProperty(
+                    EAST,
+                    EstateManagementDeskBlock.RIGHT_CONNECTED,
+                    true
+            );
+            helper.assertBlockProperty(
+                    surveyorPos,
+                    SurveyorsMapTableBlock.LEFT_CONNECTED,
+                    true
+            );
+            helper.destroyBlock(EAST);
+        });
+
+        helper.succeedWhen(() -> {
+            helper.assertBlockProperty(
+                    FIRST,
+                    VintageArchiveBlock.RIGHT_CONNECTED,
+                    false
+            );
+            helper.assertBlockProperty(
+                    surveyorPos,
+                    SurveyorsMapTableBlock.LEFT_CONNECTED,
+                    false
+            );
+        });
     }
 
     @GameTest(maxTicks = 40)

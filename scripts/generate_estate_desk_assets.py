@@ -255,6 +255,11 @@ def desk_id(wood: str) -> str:
     )
 
 
+def connection_id(block_id: str, left: bool) -> str:
+    side = "left" if left else "right"
+    return f"{block_id}_connection_{side}"
+
+
 def blockstate(base_model: str) -> dict[str, object]:
     multipart: list[dict[str, object]] = []
     for facing, rotation in ROTATIONS.items():
@@ -283,8 +288,8 @@ def blockstate(base_model: str) -> dict[str, object]:
             })
 
     for prop, model in (
-        ("left_connected", "estate_management_desk_connection_left"),
-        ("right_connected", "estate_management_desk_connection_right"),
+        ("left_connected", connection_id(base_model, True)),
+        ("right_connected", connection_id(base_model, False)),
     ):
         for facing, rotation in ROTATIONS.items():
             apply = {
@@ -373,6 +378,24 @@ def main() -> None:
                     },
                 },
             )
+            for left in (True, False):
+                write_json(
+                    MODEL_DIR / f"{connection_id(block_id, left)}.json",
+                    {
+                        "parent": (
+                            "vintner:block/"
+                            + connection_id(
+                                "estate_management_desk",
+                                left,
+                            )
+                        ),
+                        "textures": {
+                            "frame": f"minecraft:block/{wood}_planks",
+                            "writing": f"minecraft:block/{wood}_planks",
+                            "particle": f"minecraft:block/{wood}_planks",
+                        },
+                    },
+                )
         write_json(
             ASSETS / f"blockstates/{block_id}.json",
             blockstate(block_id),

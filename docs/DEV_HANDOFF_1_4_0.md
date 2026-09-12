@@ -9,12 +9,14 @@ current preparation results and remaining actions are in
 [the release acceptance record](releases/1.4.0-acceptance.md).
 Earlier gate records below retain their historical versions and evidence.
 
-The consolidated display/decorative polish pass is implemented and its clean
-build, 174-test standard suite, 174-test Serene Seasons suite, release audit,
-dedicated-server smoke and isolated client initialization smoke pass. The prior
-candidate checksum is superseded; the replacement identity is recorded in the
-release acceptance record and release manifest. In-game visual acceptance is
-still deliberately unchecked.
+The consolidated display/decorative polish pass is implemented. A follow-up
+mixed-workstation pass now lets Vintage Archives, Estate Management Desks and
+Surveyor's Map Tables form same-facing rows across all wood families. Its
+focused test, clean build, 175-test standard suite, 175-test Serene Seasons
+suite, 1,672-file release audit and dedicated-server connection smoke pass.
+The prior candidate checksum is superseded; the replacement identity is
+recorded in the release acceptance record and release manifest. In-game visual
+acceptance is still deliberately unchecked.
 
 - **Branch:** `feat/1.4.0-vineyard-management`
 - **Gate B base:** `a020bc4` (`Document Vintner 1.4.0 integration state`), the local Gate A housekeeping commit; it remains unpushed.

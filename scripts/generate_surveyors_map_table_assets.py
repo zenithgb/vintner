@@ -107,6 +107,36 @@ def map_overlay_model() -> dict:
     }
 
 
+def connection_model(left: bool) -> dict:
+    """Extend the table's surface and trim to a connected side."""
+    if left:
+        desktop = ([0, 11.5, 0.5], [0.5, 13, 15.5])
+        moulding = ([0, 11.25, 0.25], [0.25, 12, 1.25])
+        rail = ([0, 13, 13.5], [1, 14, 14.5])
+    else:
+        desktop = ([15.5, 11.5, 0.5], [16, 13, 15.5])
+        moulding = ([15.75, 11.25, 0.25], [16, 12, 1.25])
+        rail = ([15, 13, 13.5], [16, 14, 14.5])
+
+    return {
+        "parent": "minecraft:block/block",
+        "textures": {
+            "wood": "minecraft:block/oak_planks",
+            "particle": "minecraft:block/oak_planks",
+        },
+        "elements": [
+            cube(*desktop, "#wood"),
+            cube(*moulding, "#wood"),
+            cube(*rail, "#wood"),
+        ],
+    }
+
+
+def connection_id(identifier: str, left: bool) -> str:
+    side = "left" if left else "right"
+    return f"{identifier}_connection_{side}"
+
+
 def blockstate(model: str) -> dict:
     multipart = []
     for facing, rotation in ROTATIONS.items():
@@ -123,6 +153,21 @@ def blockstate(model: str) -> dict:
             "when": {"facing": facing, "has_maps": "true"},
             "apply": map_apply,
         })
+    for prop, left in (
+        ("left_connected", True),
+        ("right_connected", False),
+    ):
+        for facing, rotation in ROTATIONS.items():
+            apply = {
+                "model": f"vintner:block/{connection_id(model, left)}",
+                "uvlock": True,
+            }
+            if rotation:
+                apply["y"] = rotation
+            multipart.append({
+                "when": {"facing": facing, prop: "true"},
+                "apply": apply,
+            })
     return {"multipart": multipart}
 
 
@@ -164,6 +209,12 @@ def main() -> None:
         ASSETS / "models/block/surveyors_map_table_maps.json",
         map_overlay_model(),
     )
+    for left in (True, False):
+        write_json(
+            ASSETS
+            / f"models/block/{connection_id('surveyors_map_table', left)}.json",
+            connection_model(left),
+        )
     lang_path = ASSETS / "lang/en_us.json"
     lang = json.loads(lang_path.read_text())
     axe_path = ROOT / "src/main/resources/data/minecraft/tags/block/mineable/axe.json"
@@ -183,6 +234,21 @@ def main() -> None:
                     },
                 },
             )
+            for left in (True, False):
+                write_json(
+                    ASSETS
+                    / f"models/block/{connection_id(identifier, left)}.json",
+                    {
+                        "parent": (
+                            "vintner:block/"
+                            + connection_id("surveyors_map_table", left)
+                        ),
+                        "textures": {
+                            "wood": f"minecraft:block/{wood}_planks",
+                            "particle": f"minecraft:block/{wood}_planks",
+                        },
+                    },
+                )
         write_json(ASSETS / f"blockstates/{identifier}.json", blockstate(identifier))
         write_json(
             ASSETS / f"models/item/{identifier}.json",

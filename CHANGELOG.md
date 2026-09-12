@@ -22,6 +22,9 @@ All notable changes to Vintner are documented in this file.
 
 ### Changed
 
+- Vintage Archives, Estate Management Desks, and Surveyor's Map Tables now
+  form facing-aligned mixed workstation rows, including across wood families;
+  shift-placement keeps an individual module visually standalone.
 - The Vintner's Almanac now provides contextual vineyard, estate, appraisal,
   and market reports while the Estate Management Desk supplies the broader
   fixed-location overview.

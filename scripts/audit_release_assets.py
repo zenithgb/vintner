@@ -941,11 +941,40 @@ def audit_estate_management_desk() -> None:
         }
         if coverage != facings:
             fail(f"{variant_id}: desk base model is missing a facing")
+        audit_estate_workstation_connections(
+            variant_id,
+            variant_state.get("multipart", []),
+            facings,
+        )
         if any(
             f"vintner:block/{block_id}_map" in strings(part)
             for part in variant_state.get("multipart", [])
         ):
             fail(f"{variant_id}: still references the painted map model")
+
+
+def audit_estate_workstation_connections(
+    block_id: str,
+    multipart: list[Any],
+    facings: set[str],
+) -> None:
+    for side in ("left", "right"):
+        model = f"vintner:block/{block_id}_connection_{side}"
+        require_file(ASSETS / f"models/block/{block_id}_connection_{side}.json")
+        coverage = {
+            part.get("when", {}).get("facing")
+            for part in multipart
+            if isinstance(part, dict)
+            and isinstance(part.get("when"), dict)
+            and isinstance(part.get("apply"), dict)
+            and part["apply"].get("model") == model
+            and part["when"].get(f"{side}_connected") == "true"
+        }
+        if coverage != facings:
+            fail(
+                f"{block_id}: {side} workstation connection is missing "
+                "a facing"
+            )
 
 
 def audit_surveyors_map_table() -> None:
@@ -988,6 +1017,41 @@ def audit_surveyors_map_table() -> None:
             fail(f"{block_id}: table base model is missing a facing")
         if overlay_coverage != facings:
             fail(f"{block_id}: stored-map overlay is missing a facing")
+        audit_estate_workstation_connections(
+            block_id,
+            multipart,
+            facings,
+        )
+
+
+def audit_vintage_archive_connections() -> None:
+    facings = {"north", "east", "south", "west"}
+    for wood in WOODS:
+        block_id = archive_id(wood)
+        blockstate = load_json(ASSETS / f"blockstates/{block_id}.json")
+        if not isinstance(blockstate, dict):
+            continue
+        multipart = blockstate.get("multipart")
+        if not isinstance(multipart, list):
+            fail(f"{block_id}: blockstate must use multipart models")
+            continue
+        base_model = f"vintner:block/{block_id}"
+        base_coverage = {
+            part.get("when", {}).get("facing")
+            for part in multipart
+            if isinstance(part, dict)
+            and isinstance(part.get("when"), dict)
+            and isinstance(part.get("apply"), dict)
+            and part["apply"].get("model") == base_model
+            and len(part["when"]) == 1
+        }
+        if base_coverage != facings:
+            fail(f"{block_id}: archive base model is missing a facing")
+        audit_estate_workstation_connections(
+            block_id,
+            multipart,
+            facings,
+        )
 
 
 def audit_notification_delivery() -> None:
@@ -1025,6 +1089,7 @@ def main() -> int:
     audit_barrel_status_indicators()
     audit_estate_management_desk()
     audit_surveyors_map_table()
+    audit_vintage_archive_connections()
     audit_notification_delivery()
 
     if errors:

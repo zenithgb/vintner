@@ -81,6 +81,92 @@
         "uvlock": true,
         "y": 270
       }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "left_connected": "true"
+      },
+      "apply": {
+        "model": "vintner:block/mangrove_surveyors_map_table_connection_left",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "left_connected": "true"
+      },
+      "apply": {
+        "model": "vintner:block/mangrove_surveyors_map_table_connection_left",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "left_connected": "true"
+      },
+      "apply": {
+        "model": "vintner:block/mangrove_surveyors_map_table_connection_left",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "left_connected": "true"
+      },
+      "apply": {
+        "model": "vintner:block/mangrove_surveyors_map_table_connection_left",
+        "uvlock": true,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "right_connected": "true"
+      },
+      "apply": {
+        "model": "vintner:block/mangrove_surveyors_map_table_connection_right",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "right_connected": "true"
+      },
+      "apply": {
+        "model": "vintner:block/mangrove_surveyors_map_table_connection_right",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "right_connected": "true"
+      },
+      "apply": {
+        "model": "vintner:block/mangrove_surveyors_map_table_connection_right",
+        "uvlock": true,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "right_connected": "true"
+      },
+      "apply": {
+        "model": "vintner:block/mangrove_surveyors_map_table_connection_right",
+        "uvlock": true,
+        "y": 270
+      }
     }
   ]
 }

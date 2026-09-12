@@ -466,6 +466,11 @@ def surveyors_map_table_id(wood: str) -> str:
     )
 
 
+def workstation_connection_id(block_id: str, left: bool) -> str:
+    side = "left" if left else "right"
+    return f"{block_id}_connection_{side}"
+
+
 def tasting_service_id(wood: str) -> str:
     return (
         "tasting_service"
@@ -759,7 +764,89 @@ def machine_textures(wood: str) -> dict[str, str]:
     }
 
 
+def vintage_archive_connection_model(left: bool) -> dict[str, object]:
+    """Extend the Archive's writing surface and gallery to a joined side."""
+    if left:
+        surface = ([0, 10.5, 1.5], [0.5, 12, 15.5])
+        gallery_side = ([0, 11.5, 8], [1, 15.5, 15])
+        crown = ([0, 15.5, 7.5], [0.5, 16, 15.5])
+    else:
+        surface = ([15.5, 10.5, 1.5], [16, 12, 15.5])
+        gallery_side = ([15, 11.5, 8], [16, 15.5, 15])
+        crown = ([15.5, 15.5, 7.5], [16, 16, 15.5])
+
+    def cuboid(
+        start: list[float],
+        end: list[float],
+    ) -> dict[str, object]:
+        return {
+            "from": start,
+            "to": end,
+            "faces": cube_faces("#wood"),
+        }
+
+    return {
+        "parent": "minecraft:block/block",
+        "textures": {
+            "wood": "minecraft:block/oak_planks",
+            "particle": "minecraft:block/oak_planks",
+        },
+        "elements": [
+            cuboid(*surface),
+            cuboid(*gallery_side),
+            cuboid(*crown),
+        ],
+    }
+
+
+def estate_workstation_blockstate(block_id: str) -> dict[str, object]:
+    multipart: list[dict[str, object]] = []
+    rotations = {
+        "north": 0,
+        "east": 90,
+        "south": 180,
+        "west": 270,
+    }
+    for facing, rotation in rotations.items():
+        apply: dict[str, object] = {
+            "model": f"vintner:block/{block_id}",
+            "uvlock": True,
+        }
+        if rotation:
+            apply["y"] = rotation
+        multipart.append({"when": {"facing": facing}, "apply": apply})
+
+    for prop, left in (
+        ("left_connected", True),
+        ("right_connected", False),
+    ):
+        for facing, rotation in rotations.items():
+            apply = {
+                "model": (
+                    "vintner:block/"
+                    + workstation_connection_id(block_id, left)
+                ),
+                "uvlock": True,
+            }
+            if rotation:
+                apply["y"] = rotation
+            multipart.append({
+                "when": {"facing": facing, prop: "true"},
+                "apply": apply,
+            })
+
+    return {"multipart": multipart}
+
+
 def generate_machine_models() -> None:
+    for left in (True, False):
+        write_json(
+            ASSETS
+            / "models/block"
+            / f"{workstation_connection_id('vintage_archive', left)}.json",
+            vintage_archive_connection_model(left),
+        )
+
     for wood in WOODS:
         textures = machine_textures(wood)
 
@@ -842,6 +929,25 @@ def generate_machine_models() -> None:
                     },
                 },
             )
+            for left in (True, False):
+                write_json(
+                    ASSETS
+                    / "models/block"
+                    / f"{workstation_connection_id(archive, left)}.json",
+                    {
+                        "parent": (
+                            "vintner:block/"
+                            + workstation_connection_id(
+                                "vintage_archive",
+                                left,
+                            )
+                        ),
+                        "textures": {
+                            "wood": textures["wood"],
+                            "particle": textures["particle"],
+                        },
+                    },
+                )
 
         desk = estate_desk_id(wood)
         if desk != "estate_management_desk":
@@ -1992,6 +2098,15 @@ def generate_machine_blockstates() -> None:
     )
 
     for base_id, id_factory in families:
+        if base_id == "vintage_archive":
+            for wood in WOODS:
+                block_id = id_factory(wood)
+                write_json(
+                    ASSETS / f"blockstates/{block_id}.json",
+                    estate_workstation_blockstate(block_id),
+                )
+            continue
+
         if base_id == "fermentation_barrel":
             for wood in WOODS:
                 block_id = id_factory(wood)

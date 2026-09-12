@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -29,6 +30,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -36,7 +39,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -48,11 +51,18 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public final class VintageArchiveBlock extends BaseEntityBlock {
+public final class VintageArchiveBlock extends BaseEntityBlock
+        implements EstateWorkstationBlock {
     public static final MapCodec<VintageArchiveBlock> CODEC =
             simpleCodec(VintageArchiveBlock::new);
     public static final EnumProperty<Direction> FACING =
-            BlockStateProperties.HORIZONTAL_FACING;
+            EstateWorkstationConnections.FACING;
+    public static final BooleanProperty LEFT_CONNECTED =
+            EstateWorkstationConnections.LEFT_CONNECTED;
+    public static final BooleanProperty RIGHT_CONNECTED =
+            EstateWorkstationConnections.RIGHT_CONNECTED;
+    public static final BooleanProperty STANDALONE =
+            EstateWorkstationConnections.STANDALONE;
     private static final VoxelShape NORTH_SOUTH_SHAPE =
             Block.box(1, 0, 2, 15, 16, 14);
     private static final VoxelShape EAST_WEST_SHAPE =
@@ -65,6 +75,9 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
         registerDefaultState(
                 stateDefinition.any()
                         .setValue(FACING, Direction.NORTH)
+                        .setValue(LEFT_CONNECTED, false)
+                        .setValue(RIGHT_CONNECTED, false)
+                        .setValue(STANDALONE, false)
         );
     }
 
@@ -96,9 +109,40 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
     public BlockState getStateForPlacement(
             BlockPlaceContext context
     ) {
-        return defaultBlockState().setValue(
-                FACING,
-                context.getHorizontalDirection().getOpposite()
+        return EstateWorkstationConnections.stateForPlacement(
+                defaultBlockState(),
+                context
+        );
+    }
+
+    @Override
+    protected BlockState updateShape(
+            BlockState state,
+            LevelReader level,
+            ScheduledTickAccess ticks,
+            BlockPos pos,
+            Direction directionToNeighbour,
+            BlockPos neighbourPos,
+            BlockState neighbourState,
+            RandomSource random
+    ) {
+        if (directionToNeighbour.getAxis().isHorizontal()) {
+            return EstateWorkstationConnections.updateConnections(
+                    state,
+                    level,
+                    pos
+            );
+        }
+
+        return super.updateShape(
+                state,
+                level,
+                ticks,
+                pos,
+                directionToNeighbour,
+                neighbourPos,
+                neighbourState,
+                random
         );
     }
 
@@ -467,6 +511,11 @@ public final class VintageArchiveBlock extends BaseEntityBlock {
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING);
+        builder.add(
+                FACING,
+                LEFT_CONNECTED,
+                RIGHT_CONNECTED,
+                STANDALONE
+        );
     }
 }
