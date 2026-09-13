@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+from math import cos, radians, sin
 from pathlib import Path
 
 from generate_wood_variants import WOODS, write_rgba_texture
@@ -98,41 +99,68 @@ def bowl_elements(servings: int) -> list[dict[str, object]]:
         cube([4.0, 2.65, 11.5], [4.5, 3.35, 12.0], "#rim"),
         cube([11.5, 2.65, 11.5], [12.0, 3.35, 12.0], "#rim"),
     ]
-    # Match the item icon's diagonal: a narrow front-left tip widening toward
-    # a back-right shoulder and stem. The lowest berries touch the bowl floor.
-    grape_positions = (
-        # The first serving retains the tapered spine and narrow tail.
-        (4.79, 9.34, 1.10),
-        (5.36, 8.43, 1.25), (5.98, 9.40, 1.15),
-        (5.98, 7.61, 1.20), (6.64, 8.55, 1.40),
-        (7.18, 9.57, 1.15), (7.39, 7.95, 1.35),
-        # Additional servings broaden the bunch toward its stem end.
-        (6.72, 6.89, 1.15), (8.04, 8.96, 1.20),
-        (7.70, 6.67, 1.20), (8.31, 7.65, 1.35),
-        (8.80, 8.69, 1.15),
-        (8.30, 5.92, 1.10), (8.98, 6.80, 1.30),
-        (9.47, 7.84, 1.20), (9.32, 5.79, 1.10),
-        (9.99, 6.74, 1.15), (10.45, 7.74, 1.10),
-        # A raised layer gives the full bunch the clustered grape silhouette.
-        (5.98, 8.70, 2.25), (6.71, 7.76, 2.40),
-        (7.39, 8.64, 2.35), (7.86, 7.16, 2.45),
-        (8.56, 8.08, 2.35), (9.13, 7.06, 2.30),
+    # A serving is a whole small bunch, so the visible order is coherent:
+    # full has three bunches, then three trimmed bunches, then two, then one.
+    # Each berry is an orthogonal three-cube voxel sphere instead of a single
+    # box, which keeps the cluster readable as grapes at normal play distance.
+    bunches = (
+        (9.55, 5.55, 22.5),
+        (9.65, 8.15, -22.5),
+        (7.55, 9.65, 22.5),
     )
-    grape_counts = (0, 7, 12, 18, 24)
-    for x, z, y in grape_positions[:grape_counts[servings]]:
-        elements.append(cube(
-            [x, y, z], [x + 1.15, y + 1.15, z + 1.15], "#grapes",
-        ))
-    if servings > 0:
-        # The stem and leaf continue the icon's back-right diagonal.
+    berry_pattern = (
+        (0.00, 0.00),
+        (-0.72, -0.43), (-0.72, 0.43),
+        (-1.42, -0.72), (-1.42, 0.00), (-1.42, 0.72),
+        (-2.10, -0.38), (-2.10, 0.38),
+    )
+    active_bunches = (0, 1, 2, 3, 3)[servings]
+    berries_per_bunch = 8 if servings == 4 else 6
+    for anchor_x, anchor_z, angle in bunches[:active_bunches]:
+        angle_radians = radians(angle)
+        for local_x, local_z in berry_pattern[:berries_per_bunch]:
+            x = round(
+                anchor_x + local_x * cos(angle_radians)
+                - local_z * sin(angle_radians),
+                2,
+            )
+            z = round(
+                anchor_z + local_x * sin(angle_radians)
+                + local_z * cos(angle_radians),
+                2,
+            )
+            elements.extend((
+                cube(
+                    [round(x - 0.55, 2), 1.33, round(z - 0.32, 2)],
+                    [round(x + 0.55, 2), 1.97, round(z + 0.32, 2)],
+                    "#grapes",
+                ),
+                cube(
+                    [round(x - 0.32, 2), 1.10, round(z - 0.32, 2)],
+                    [round(x + 0.32, 2), 2.20, round(z + 0.32, 2)],
+                    "#grapes",
+                ),
+                cube(
+                    [round(x - 0.32, 2), 1.33, round(z - 0.55, 2)],
+                    [round(x + 0.32, 2), 1.97, round(z + 0.55, 2)],
+                    "#grapes",
+                ),
+            ))
+
+        # Each bunch owns its foliage. When that serving is eaten, the stem
+        # and leaf disappear with its berries instead of floating behind.
         elements.extend((
             rotated_cube(
-                [9.40, 3.20, 6.55], [11.70, 3.60, 6.95], "#stem",
-                origin=[9.60, 3.40, 6.75], axis="y", angle=-22.5,
+                [anchor_x - 0.10, 2.05, anchor_z - 0.15],
+                [anchor_x + 1.25, 2.35, anchor_z + 0.15],
+                "#stem", origin=[anchor_x, 2.20, anchor_z],
+                axis="y", angle=angle,
             ),
             rotated_cube(
-                [9.45, 3.10, 6.85], [11.35, 3.35, 8.80], "#leaf",
-                origin=[9.65, 3.20, 7.05], axis="y", angle=-22.5,
+                [anchor_x + 0.35, 2.10, anchor_z - 0.45],
+                [anchor_x + 1.55, 2.30, anchor_z + 0.45],
+                "#leaf", origin=[anchor_x + 0.35, 2.20, anchor_z],
+                axis="y", angle=angle,
             ),
         ))
     return elements

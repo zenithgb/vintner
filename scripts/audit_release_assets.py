@@ -718,11 +718,11 @@ def audit_serving_decor() -> None:
                     if isinstance(element, dict)
                     and "#grapes" in strings(element.get("faces", {}))
                 ]
-                expected_grapes = (0, 7, 12, 18, 24)[servings]
+                expected_grapes = (0, 18, 36, 54, 72)[servings]
                 if len(grape_elements) != expected_grapes:
                     fail(
                         f"{bowl_model_path.name} must show exactly "
-                        f"{expected_grapes} grapes in its tapered bunch"
+                        f"{expected_grapes} rounded berry parts"
                     )
                 for grape in grape_elements:
                     start = grape.get("from")
@@ -737,37 +737,19 @@ def audit_serving_decor() -> None:
                         or not isinstance(end, list)
                         or len(start) != 3
                         or len(end) != 3
-                        or any(
-                            float(end[index]) - float(start[index]) > 1.16
-                            for index in range(3)
-                        )
+                        or any(abs(
+                            actual - expected
+                        ) > 0.011 for actual, expected in zip(
+                            sorted(
+                                float(end[index]) - float(start[index])
+                                for index in range(3)
+                            ),
+                            (0.64, 0.64, 1.10),
+                        ))
                     ):
                         fail(
-                            f"{bowl_model_path.name} grapes must remain "
-                            "compact berries within the bunch"
-                        )
-                if servings == 4:
-                    starts = [element["from"] for element in grape_elements]
-                    ends = [element["to"] for element in grape_elements]
-                    x_span = max(end[0] for end in ends) - min(
-                        start[0] for start in starts
-                    )
-                    z_span = max(end[2] for end in ends) - min(
-                        start[2] for start in starts
-                    )
-                    shoulder = starts[12:18]
-                    shoulder_x = sum(start[0] for start in shoulder) / len(shoulder)
-                    shoulder_z = sum(start[2] for start in shoulder) / len(shoulder)
-                    tip = starts[0]
-                    if (
-                        x_span <= z_span
-                        or x_span < 6.5
-                        or shoulder_x - tip[0] < 4.0
-                        or tip[2] - shoulder_z < 2.0
-                    ):
-                        fail(
-                            f"{bowl_model_path.name} grapes must form a "
-                            "diagonal bunch matching the item icon"
+                            f"{bowl_model_path.name} grapes must use rounded "
+                            "three-part voxel berries"
                         )
                 if min(float(start[1]) for start in (
                     element["from"] for element in grape_elements
@@ -776,17 +758,25 @@ def audit_serving_decor() -> None:
                         f"{bowl_model_path.name} grapes must rest on the "
                         "bowl floor"
                     )
-                texture_values = (
-                    bowl_model.get("textures", {}).values()
-                    if isinstance(bowl_model.get("textures"), dict)
-                    else []
-                )
-                if not any("stripped_oak_log" in str(value)
-                           for value in texture_values):
-                    fail(f"{bowl_model_path.name} must include a visible bunch stem")
-                if not any("moss_block" in str(value)
-                           for value in texture_values):
-                    fail(f"{bowl_model_path.name} must include a visible bunch leaf")
+                stem_elements = [
+                    element for element in bowl_elements
+                    if isinstance(element, dict)
+                    and "#stem" in strings(element.get("faces", {}))
+                ]
+                leaf_elements = [
+                    element for element in bowl_elements
+                    if isinstance(element, dict)
+                    and "#leaf" in strings(element.get("faces", {}))
+                ]
+                expected_bunches = (0, 1, 2, 3, 3)[servings]
+                if (
+                    len(stem_elements) != expected_bunches
+                    or len(leaf_elements) != expected_bunches
+                ):
+                    fail(
+                        f"{bowl_model_path.name} must show {expected_bunches} "
+                        "complete bunches with their own stem and leaf"
+                    )
 
     expected_basket_states = {
         f"facing={facing},has_bottle={occupied}"
