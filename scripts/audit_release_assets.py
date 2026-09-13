@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from collections.abc import Iterable
 from pathlib import Path
@@ -697,6 +698,18 @@ def audit_serving_decor() -> None:
         for second in empty_elements[index + 1:]
     ):
         fail("grape bowl body parts must not intersect each other")
+    if isinstance(empty_elements, list):
+        # Inspect every planar cell formed by the authored edges. Sampling
+        # only the floor centre missed the open green seams along its sides.
+        x_edges = sorted({4.0, 12.0, *(float(e[k][0]) for e in empty_elements for k in ("from", "to") if 4 <= e[k][0] <= 12)})
+        z_edges = sorted({4.0, 12.0, *(float(e[k][2]) for e in empty_elements for k in ("from", "to") if 4 <= e[k][2] <= 12)})
+        for x0, x1 in zip(x_edges, x_edges[1:]):
+            for z0, z1 in zip(z_edges, z_edges[1:]):
+                x, z = (x0 + x1) / 2, (z0 + z1) / 2
+                if not any(e["from"][0] <= x <= e["to"][0]
+                           and e["from"][2] <= z <= e["to"][2]
+                           and e["from"][1] <= 0.8 <= e["to"][1] for e in empty_elements):
+                    fail("grape bowl floor and side joins must have no through-gaps")
     require_file(ASSETS / "items/grape_bowl.json")
     for palette in sorted(palettes):
         require_file(
@@ -728,7 +741,7 @@ def audit_serving_decor() -> None:
                     if isinstance(element, dict)
                     and "#grapes" in strings(element.get("faces", {}))
                 ]
-                expected_grapes = (0, 180, 360, 450, 540)[servings]
+                expected_grapes = (0, 63, 126, 189, 243)[servings]
                 if len(grape_elements) != expected_grapes:
                     fail(
                         f"{bowl_model_path.name} must show exactly "
@@ -757,12 +770,12 @@ def audit_serving_decor() -> None:
                 for grape in grape_elements:
                     berries.setdefault(grape.get("name", ""), []).append(grape)
                 for berry_name, parts in berries.items():
-                    if not berry_name.startswith("bunch_") or len(parts) != 15:
+                    if not berry_name.startswith("bunch_") or len(parts) != 9:
                         fail(f"{bowl_model_path.name} must keep identifiable complete berries")
                     for axis in range(3):
                         low = min(part["from"][axis] for part in parts)
                         high = max(part["to"][axis] for part in parts)
-                        if abs(high - low - 1.0) > 0.001:
+                        if abs(high - low - 1.7) > 0.001:
                             fail(f"{bowl_model_path.name} berry must have a round, equal-axis envelope")
                     if any(
                         all(max(first["from"][axis], second["from"][axis])
@@ -771,6 +784,22 @@ def audit_serving_decor() -> None:
                         for index, first in enumerate(parts) for second in parts[index + 1:]
                     ):
                         fail(f"{bowl_model_path.name} berry slices must not self-intersect")
+                centres = {
+                    name: tuple((min(p["from"][axis] for p in parts) + max(p["to"][axis] for p in parts)) / 2
+                                for axis in range(3))
+                    for name, parts in berries.items()
+                }
+                # A nonempty serving is one connected pile, including its
+                # lowest state. Separate miniature bunches must not reappear.
+                unseen = set(centres)
+                connected = [unseen.pop()] if unseen else []
+                while connected:
+                    current = connected.pop()
+                    neighbours = {name for name in unseen if math.dist(centres[current], centres[name]) <= 1.70}
+                    unseen -= neighbours
+                    connected.extend(neighbours)
+                if unseen:
+                    fail(f"{bowl_model_path.name} grapes must form a connected bushel without detached tails")
                 if any(
                     part["from"][0] < 4.5 or part["to"][0] > 11.5
                     or part["from"][2] < 4.5 or part["to"][2] > 11.5
