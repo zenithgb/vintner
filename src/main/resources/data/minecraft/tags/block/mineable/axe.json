@@ -159,6 +159,8 @@
     "vintner:warped_tasting_service",
     "vintner:chestnut_aging_barrel",
     "vintner:neutral_aging_barrel",
-    "vintner:large_cask"
+    "vintner:large_cask",
+    "vintner:grape_bowl",
+    "vintner:wine_basket"
   ]
 }

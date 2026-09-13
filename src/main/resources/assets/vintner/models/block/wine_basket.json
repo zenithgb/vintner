@@ -1,0 +1,345 @@
+{
+  "textures": {
+    "weave": "minecraft:block/oak_planks",
+    "rim": "minecraft:block/stripped_oak_log",
+    "binding": "minecraft:block/hay_block_side",
+    "particle": "minecraft:block/oak_planks"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        1
+      ],
+      "to": [
+        12,
+        1.25,
+        15
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#weave"
+        },
+        "up": {
+          "texture": "#weave"
+        },
+        "north": {
+          "texture": "#weave"
+        },
+        "south": {
+          "texture": "#weave"
+        },
+        "west": {
+          "texture": "#weave"
+        },
+        "east": {
+          "texture": "#weave"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        1.25,
+        1
+      ],
+      "to": [
+        5,
+        3.8,
+        15
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#weave"
+        },
+        "up": {
+          "texture": "#weave"
+        },
+        "north": {
+          "texture": "#weave"
+        },
+        "south": {
+          "texture": "#weave"
+        },
+        "west": {
+          "texture": "#weave"
+        },
+        "east": {
+          "texture": "#weave"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        1.25,
+        1
+      ],
+      "to": [
+        12,
+        3.8,
+        15
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#weave"
+        },
+        "up": {
+          "texture": "#weave"
+        },
+        "north": {
+          "texture": "#weave"
+        },
+        "south": {
+          "texture": "#weave"
+        },
+        "west": {
+          "texture": "#weave"
+        },
+        "east": {
+          "texture": "#weave"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        1.25,
+        1
+      ],
+      "to": [
+        11,
+        4.8,
+        2
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#rim"
+        },
+        "up": {
+          "texture": "#rim"
+        },
+        "north": {
+          "texture": "#rim"
+        },
+        "south": {
+          "texture": "#rim"
+        },
+        "west": {
+          "texture": "#rim"
+        },
+        "east": {
+          "texture": "#rim"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        1.25,
+        14
+      ],
+      "to": [
+        11,
+        4.8,
+        15
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#rim"
+        },
+        "up": {
+          "texture": "#rim"
+        },
+        "north": {
+          "texture": "#rim"
+        },
+        "south": {
+          "texture": "#rim"
+        },
+        "west": {
+          "texture": "#rim"
+        },
+        "east": {
+          "texture": "#rim"
+        }
+      }
+    },
+    {
+      "from": [
+        3.75,
+        3.6,
+        1
+      ],
+      "to": [
+        5.25,
+        4.8,
+        15
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#rim"
+        },
+        "up": {
+          "texture": "#rim"
+        },
+        "north": {
+          "texture": "#rim"
+        },
+        "south": {
+          "texture": "#rim"
+        },
+        "west": {
+          "texture": "#rim"
+        },
+        "east": {
+          "texture": "#rim"
+        }
+      }
+    },
+    {
+      "from": [
+        10.75,
+        3.6,
+        1
+      ],
+      "to": [
+        12.25,
+        4.8,
+        15
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#rim"
+        },
+        "up": {
+          "texture": "#rim"
+        },
+        "north": {
+          "texture": "#rim"
+        },
+        "south": {
+          "texture": "#rim"
+        },
+        "west": {
+          "texture": "#rim"
+        },
+        "east": {
+          "texture": "#rim"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        1.1,
+        4.2
+      ],
+      "to": [
+        12,
+        1.65,
+        5.1
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#binding"
+        },
+        "up": {
+          "texture": "#binding"
+        },
+        "north": {
+          "texture": "#binding"
+        },
+        "south": {
+          "texture": "#binding"
+        },
+        "west": {
+          "texture": "#binding"
+        },
+        "east": {
+          "texture": "#binding"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        1.1,
+        10.9
+      ],
+      "to": [
+        12,
+        1.65,
+        11.8
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#binding"
+        },
+        "up": {
+          "texture": "#binding"
+        },
+        "north": {
+          "texture": "#binding"
+        },
+        "south": {
+          "texture": "#binding"
+        },
+        "west": {
+          "texture": "#binding"
+        },
+        "east": {
+          "texture": "#binding"
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "fixed": {
+      "scale": [
+        0.72,
+        0.72,
+        0.72
+      ]
+    }
+  }
+}

@@ -512,7 +512,10 @@ def audit_recipes() -> int:
                     ingredient_signature(grid),
                     ingredient_signature(mirrored_grid),
                 )
-        elif recipe_type == "minecraft:crafting_shapeless":
+        elif recipe_type in (
+            "minecraft:crafting_shapeless",
+            "vintner:grape_bowl",
+        ):
             ingredients = recipe.get("ingredients")
             if (
                 not isinstance(ingredients, list)
@@ -633,6 +636,105 @@ def audit_translations() -> None:
                     f"missing language key {value!r} referenced by "
                     f"{relative(path)}"
                 )
+
+
+def audit_serving_decor() -> None:
+    cultivar_visuals = {
+        "ember_noir": "crimson",
+        "vale_pinot": "shaded",
+        "suncrest": "sunlit",
+        "ironwood_red": "crimson",
+        "nightberry": "shaded",
+        "river_garnet": "riverside",
+        "golden_vale": "golden",
+        "frostling": "frosted",
+        "greenwake": "golden",
+        "silverleaf": "frosted",
+        "honeycrest": "honeyed",
+        "stoneflower": "stony",
+    }
+    palettes = set(cultivar_visuals.values())
+    bowl_state = load_json(ASSETS / "blockstates/grape_bowl.json")
+    variants = (
+        bowl_state.get("variants")
+        if isinstance(bowl_state, dict)
+        else None
+    )
+    expected_states = {
+        f"cultivar={cultivar},servings={servings}"
+        for cultivar in cultivar_visuals
+        for servings in range(5)
+    }
+    if not isinstance(variants, dict) or set(variants) != expected_states:
+        fail("grape bowl blockstate must cover all 60 cultivar/serving states")
+
+    require_file(ASSETS / "models/block/grape_bowl_empty.json")
+    require_file(ASSETS / "items/grape_bowl.json")
+    for palette in sorted(palettes):
+        require_file(
+            ASSETS / f"textures/block/grape_bowl_{palette}_grapes.png"
+        )
+        for servings in range(5):
+            require_file(
+                ASSETS / f"items/grape_bowl_{palette}_{servings}.json"
+            )
+            if servings > 0:
+                require_file(
+                    ASSETS / f"models/block/grape_bowl_{palette}_{servings}.json"
+                )
+
+    basket_state = load_json(ASSETS / "blockstates/wine_basket.json")
+    basket_variants = (
+        basket_state.get("variants")
+        if isinstance(basket_state, dict)
+        else None
+    )
+    expected_basket_states = {
+        f"facing={facing},has_bottle={occupied}"
+        for facing in ("north", "east", "south", "west")
+        for occupied in ("false", "true")
+    }
+    if (
+        not isinstance(basket_variants, dict)
+        or set(basket_variants) != expected_basket_states
+    ):
+        fail("wine basket blockstate must cover facing and occupancy states")
+
+    for path in (
+        ASSETS / "models/block/wine_basket.json",
+        ASSETS / "items/wine_basket.json",
+        DATA / "recipe/grape_bowl.json",
+        DATA / "recipe/wine_basket.json",
+        DATA / "advancement/recipes/vintner/grape_bowl.json",
+        DATA / "advancement/recipes/vintner/wine_basket.json",
+        DATA / "loot_table/blocks/grape_bowl.json",
+        DATA / "loot_table/blocks/wine_basket.json",
+        DATA / "tags/item/grapes.json",
+        ROOT / "src/client/java/com/zenith/vintner/client/render/WineBasketRenderer.java",
+    ):
+        require_file(path)
+
+    axe_tag = load_json(AXE_TAG_PATH)
+    axe_values = (
+        set(axe_tag.get("values", []))
+        if isinstance(axe_tag, dict)
+        else set()
+    )
+    for block_id in ("grape_bowl", "wine_basket"):
+        if f"vintner:{block_id}" not in axe_values:
+            fail(f"axe tag is missing vintner:{block_id}")
+
+    lang = load_json(LANG_PATH)
+    if isinstance(lang, dict):
+        for key in (
+            "block.vintner.grape_bowl",
+            "block.vintner.wine_basket",
+            "item.vintner.grape_bowl_named",
+            "tooltip.vintner.grape_bowl.servings",
+            "tag.item.vintner.grapes",
+        ):
+            if key not in lang:
+                fail(f"serving decor is missing language key {key}")
 
 
 def audit_young_grapevine_wires(
@@ -1084,6 +1186,7 @@ def main() -> int:
     recipe_count = audit_recipes()
     audit_axe_tag(public_blocks)
     audit_translations()
+    audit_serving_decor()
     audit_young_grapevine_wires(grapevines)
     audit_fermentation_airlock_bounds()
     audit_barrel_status_indicators()

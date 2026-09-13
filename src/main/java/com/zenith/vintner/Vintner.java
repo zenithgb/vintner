@@ -8,6 +8,7 @@ import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.registry.ModGameRules;
 import com.zenith.vintner.registry.ModLootTables;
 import com.zenith.vintner.registry.ModMobEffects;
+import com.zenith.vintner.registry.ModRecipes;
 import com.zenith.vintner.registry.ModTrades;
 import com.zenith.vintner.registry.ModVillageStructures;
 import com.zenith.vintner.registry.ModVillagers;
@@ -27,6 +28,7 @@ public final class Vintner implements ModInitializer {
         ModGameRules.initialize();
         ModMobEffects.initialize();
         ModAttachments.initialize();
+        ModRecipes.initialize();
         ModItems.initialize();
         ModBlocks.initialize();
         ModVillagers.initialize();

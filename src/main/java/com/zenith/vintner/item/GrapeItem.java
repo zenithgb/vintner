@@ -5,6 +5,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.vineyard.GrapeVariety;
+import com.zenith.vintner.vineyard.GrapeCultivar;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -13,6 +15,17 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import java.util.function.Consumer;
 
 public final class GrapeItem extends Item {
+    // Loose grapes remain ingredients. A placed bowl serving represents two
+    // grapes, with the food definition owned here for future cultivar balance.
+    public static final FoodProperties TWO_GRAPE_SERVING = new FoodProperties.Builder()
+            .nutrition(2)
+            .saturationModifier(0.1F)
+            .build();
+
+    public static FoodProperties servingFood(GrapeCultivar cultivar) {
+        return TWO_GRAPE_SERVING;
+    }
+
     public GrapeItem(Properties properties) {
         super(properties);
     }

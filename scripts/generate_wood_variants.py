@@ -2872,6 +2872,8 @@ def generate_survival_data() -> None:
             "chestnut_aging_barrel",
             "neutral_aging_barrel",
             "large_cask",
+            "grape_bowl",
+            "wine_basket",
         )
     )
 
@@ -2905,6 +2907,12 @@ def generate_craft_trellis_advancement() -> None:
 def generate_language() -> None:
     path = ASSETS / "lang/en_us.json"
     language = read_json(path)
+
+    language["block.vintner.grape_bowl"] = "Grape Bowl"
+    language["block.vintner.wine_basket"] = "Wine Basket"
+    language["item.vintner.grape_bowl_named"] = "%s Grape Bowl"
+    language["tooltip.vintner.grape_bowl.servings"] = "%s/%s servings"
+    language["tag.item.vintner.grapes"] = "Vintner Grapes"
 
     for wood, properties in WOODS.items():
         title = properties["title"]

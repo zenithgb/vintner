@@ -8,6 +8,7 @@ import com.zenith.vintner.block.CellarCollectionBlock;
 import com.zenith.vintner.block.DeskBlotterColor;
 import com.zenith.vintner.block.EstateManagementDeskBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
+import com.zenith.vintner.block.GrapeBowlBlock;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.NurseryBedBlock;
 import com.zenith.vintner.block.SurveyorsMapTableBlock;
@@ -15,6 +16,7 @@ import com.zenith.vintner.block.TastingServiceBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.block.WineBottleBlock;
+import com.zenith.vintner.block.WineBasketBlock;
 import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.block.WineDisplayAge;
 import com.zenith.vintner.block.WineDisplayStyle;
@@ -30,6 +32,7 @@ import com.zenith.vintner.block.entity.TastingServiceBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineBottleBlockEntity;
+import com.zenith.vintner.block.entity.WineBasketBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import com.zenith.vintner.estate.EstateDeskReport;
 import com.zenith.vintner.estate.EstateProfile;
@@ -46,9 +49,11 @@ import com.zenith.vintner.estate.VineyardPlotReport;
 import com.zenith.vintner.estate.VineyardPlotSavedData;
 import com.zenith.vintner.item.AlmanacReport;
 import com.zenith.vintner.item.GraftingKnifeItem;
+import com.zenith.vintner.item.GrapeBowlItem;
 import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.network.EstateDeskPayload;
+import com.zenith.vintner.recipe.GrapeBowlRecipe;
 import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
@@ -115,6 +120,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -148,6 +155,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -7883,7 +7891,9 @@ public final class VintnerGameTests {
                 ModBlocks.VINTAGE_ARCHIVE,
                 ModBlocks.TASTING_SERVICE,
                 ModBlocks.ESTATE_MANAGEMENT_DESK,
-                ModBlocks.SURVEYORS_MAP_TABLE
+                ModBlocks.SURVEYORS_MAP_TABLE,
+                ModBlocks.GRAPE_BOWL,
+                ModBlocks.WINE_BASKET
         };
 
         for (Block block : furniture) {
@@ -10421,5 +10431,430 @@ public final class VintnerGameTests {
                 "Cellar-worthy cultivars should develop more slowly"
         );
         helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void grapeBowlRecipeRequiresEightMatchingCultivarGrapes(
+            GameTestHelper helper
+    ) {
+        GrapeBowlRecipe recipe = new GrapeBowlRecipe();
+        List<ItemStack> ingredients = new ArrayList<>();
+        ingredients.add(new ItemStack(Items.BOWL));
+        for (int grape = 0; grape < 8; grape++) {
+            ingredients.add(cultivarGrapes(GrapeCultivar.VALE_PINOT));
+        }
+        CraftingInput matching = CraftingInput.of(3, 3, ingredients);
+
+        helper.assertTrue(
+                recipe.matches(matching, helper.getLevel()),
+                "Eight grapes of one cultivar should craft a bowl"
+        );
+        ItemStack result = recipe.assemble(matching);
+        helper.assertTrue(result.is(ModBlocks.GRAPE_BOWL.asItem()),
+                "The recipe should output a grape bowl");
+        helper.assertValueEqual(
+                GrapeBowlItem.cultivar(result),
+                GrapeCultivar.VALE_PINOT,
+                "The crafted bowl must preserve the selected cultivar"
+        );
+        helper.assertValueEqual(
+                GrapeBowlItem.servings(result),
+                GrapeBowlBlock.MAX_SERVINGS,
+                "The crafted bowl should begin with four servings"
+        );
+
+        List<ItemStack> mixed = new ArrayList<>(ingredients);
+        mixed.set(8, cultivarGrapes(GrapeCultivar.EMBER_NOIR));
+        helper.assertFalse(
+                recipe.matches(CraftingInput.of(3, 3, mixed), helper.getLevel()),
+                "A mixed-cultivar bowl must not craft"
+        );
+        List<ItemStack> tooFew = new ArrayList<>(ingredients);
+        tooFew.set(8, ItemStack.EMPTY);
+        helper.assertFalse(
+                recipe.matches(CraftingInput.of(3, 3, tooFew), helper.getLevel()),
+                "Seven grapes and a bowl must not craft"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void grapeBowlConsumesFourServingsAndLeavesRecoverableBowl(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(
+                FIRST,
+                ModBlocks.GRAPE_BOWL.defaultBlockState()
+                        .setValue(GrapeBowlBlock.CULTIVAR, GrapeCultivar.HONEYCREST)
+                        .setValue(GrapeBowlBlock.SERVINGS, 4)
+        );
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        player.getFoodData().setFoodLevel(10);
+        player.getFoodData().setSaturation(0.0F);
+        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+
+        for (int expected = 3; expected >= 0; expected--) {
+            helper.useBlock(FIRST, player);
+            helper.assertBlockProperty(
+                    FIRST,
+                    GrapeBowlBlock.SERVINGS,
+                    expected
+            );
+        }
+        helper.assertValueEqual(
+                player.getFoodData().getFoodLevel(),
+                18,
+                "Four servings should provide the nutrition of eight grapes"
+        );
+        helper.assertBlockPresent(ModBlocks.GRAPE_BOWL, FIRST);
+
+        helper.useBlock(FIRST, player);
+        helper.assertBlockNotPresent(ModBlocks.GRAPE_BOWL, FIRST);
+        helper.assertTrue(
+                player.getInventory().contains(stack -> stack.is(Items.BOWL)),
+                "Using the empty bowl should return one vanilla bowl"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void grapeBowlPartialDropReplacesWithExactState(
+            GameTestHelper helper
+    ) {
+        BlockState partial = ModBlocks.GRAPE_BOWL.defaultBlockState()
+                .setValue(GrapeBowlBlock.CULTIVAR, GrapeCultivar.STONEFLOWER)
+                .setValue(GrapeBowlBlock.SERVINGS, 2);
+        helper.setBlock(UPPER, partial);
+        List<ItemStack> drops = Block.getDrops(
+                partial,
+                helper.getLevel(),
+                helper.absolutePos(UPPER),
+                null
+        );
+        helper.assertValueEqual(drops.size(), 1,
+                "A partial bowl should have one preserving drop");
+        ItemStack drop = drops.getFirst();
+        helper.assertValueEqual(
+                GrapeBowlItem.cultivar(drop),
+                GrapeCultivar.STONEFLOWER,
+                "The partial drop should preserve cultivar"
+        );
+        helper.assertValueEqual(
+                GrapeBowlItem.servings(drop),
+                2,
+                "The partial drop should preserve servings"
+        );
+
+        helper.setBlock(UPPER, Blocks.AIR);
+        helper.setBlock(FIRST, Blocks.STONE);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, drop);
+        BlockPos base = helper.absolutePos(FIRST);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                drop,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(base),
+                        Direction.UP,
+                        base,
+                        false
+                )
+        );
+        helper.assertBlockPresent(ModBlocks.GRAPE_BOWL, UPPER);
+        helper.assertBlockProperty(
+                UPPER,
+                GrapeBowlBlock.CULTIVAR,
+                GrapeCultivar.STONEFLOWER
+        );
+        helper.assertBlockProperty(UPPER, GrapeBowlBlock.SERVINGS, 2);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void grapeBowlStateSerializesAndFullPlayerCannotConsume(
+            GameTestHelper helper
+    ) {
+        BlockState state = ModBlocks.GRAPE_BOWL.defaultBlockState()
+                .setValue(GrapeBowlBlock.CULTIVAR, GrapeCultivar.RIVER_GARNET)
+                .setValue(GrapeBowlBlock.SERVINGS, 3);
+        Tag encoded = BlockState.CODEC.encodeStart(NbtOps.INSTANCE, state)
+                .getOrThrow();
+        BlockState restored = BlockState.CODEC.parse(NbtOps.INSTANCE, encoded)
+                .getOrThrow();
+        helper.assertValueEqual(restored, state,
+                "Cultivar and servings must survive block-state serialization");
+
+        helper.setBlock(FIRST, state);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        player.getFoodData().setFoodLevel(20);
+        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        helper.useBlock(FIRST, player);
+        helper.assertBlockProperty(FIRST, GrapeBowlBlock.SERVINGS, 3);
+
+        BlockState empty = state.setValue(GrapeBowlBlock.SERVINGS, 0);
+        List<ItemStack> emptyDrops = Block.getDrops(
+                empty,
+                helper.getLevel(),
+                helper.absolutePos(FIRST),
+                null
+        );
+        helper.assertTrue(
+                emptyDrops.size() == 1 && emptyDrops.getFirst().is(Items.BOWL),
+                "Breaking an empty grape bowl should return one vanilla bowl"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void grapeBowlFinalServingAndPickupCannotDuplicate(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(
+                FIRST,
+                ModBlocks.GRAPE_BOWL.defaultBlockState()
+                        .setValue(GrapeBowlBlock.SERVINGS, 1)
+        );
+        ServerPlayer eater = helper.makeMockServerPlayerInLevel();
+        ServerPlayer collector = helper.makeMockServerPlayerInLevel();
+        eater.setGameMode(GameType.SURVIVAL);
+        collector.setGameMode(GameType.SURVIVAL);
+        eater.getFoodData().setFoodLevel(10);
+        collector.getFoodData().setFoodLevel(10);
+        eater.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        collector.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+
+        helper.useBlock(FIRST, eater);
+        helper.useBlock(FIRST, collector);
+
+        helper.assertValueEqual(eater.getFoodData().getFoodLevel(), 12,
+                "Only the first player should consume the final serving");
+        helper.assertValueEqual(collector.getFoodData().getFoodLevel(), 10,
+                "The second player must not duplicate the final serving");
+        long bowls = eater.getInventory().countItem(Items.BOWL)
+                + collector.getInventory().countItem(Items.BOWL);
+        helper.assertValueEqual(bowls, 1L,
+                "The shared empty bowl should be collectible exactly once");
+        helper.assertBlockNotPresent(ModBlocks.GRAPE_BOWL, FIRST);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineBasketInsertAndRetrievePreservesExactBottle(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(
+                FIRST,
+                ModBlocks.WINE_BASKET.defaultBlockState()
+                        .setValue(WineBasketBlock.FACING, Direction.EAST)
+        );
+        ItemStack wine = new ItemStack(ModItems.AGED_WHITE_WINE);
+        WineMetadata.apply(wine, 12, WineQuality.EXCEPTIONAL);
+        WineMetadata.ensureBatchIdentity(wine, 140001L);
+        WineMetadata.assignBottleNumber(wine, 3, 6);
+        WineMetadata.setServings(wine, 2);
+        WineMetadata.setEffectProfile(wine, WineEffectProfile.AGED_WHITE.id());
+        WineMetadata.applyProvenance(
+                wine,
+                new WineProvenance(
+                        "stoneflower", 6500L, "minecraft:overworld",
+                        11, 72, -8, "North Cellar", "Vintner"
+                )
+        );
+        ItemStack expected = wine.copy();
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, wine);
+        BlockPos absolute = helper.absolutePos(FIRST);
+
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                wine,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absolute),
+                        Direction.UP,
+                        absolute,
+                        false
+                )
+        );
+        WineBasketBlockEntity basket = helper.getBlockEntity(
+                FIRST,
+                WineBasketBlockEntity.class
+        );
+        helper.assertTrue(
+                ItemStack.isSameItemSameComponents(expected, basket.getBottleCopy()),
+                "Insertion must retain every component on the original bottle"
+        );
+        helper.assertBlockProperty(FIRST, WineBasketBlock.HAS_BOTTLE, true);
+        helper.assertBlockProperty(FIRST, WineBasketBlock.FACING, Direction.EAST);
+        helper.assertValueEqual(wine.getCount(), 0,
+                "Survival insertion should consume one bottle");
+
+        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        helper.useBlock(FIRST, player);
+        helper.assertBlockProperty(FIRST, WineBasketBlock.HAS_BOTTLE, false);
+        helper.assertTrue(
+                player.getInventory().contains(stack ->
+                        ItemStack.isSameItemSameComponents(expected, stack)),
+                "Retrieval must return the exact inserted bottle"
+        );
+        helper.assertBlockPresent(ModBlocks.WINE_BASKET, FIRST);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineBasketSerializationAndSyncPreserveBottle(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_BASKET);
+        WineBasketBlockEntity basket = helper.getBlockEntity(
+                FIRST,
+                WineBasketBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.apply(wine, 8, WineQuality.FINE);
+        WineMetadata.ensureBatchIdentity(wine, 140002L);
+        WineMetadata.assignBottleNumber(wine, 1, 4);
+        WineMetadata.setServings(wine, 3);
+        helper.assertTrue(basket.insertBottle(wine),
+                "The basket should accept one real wine bottle");
+        helper.assertTrue(basket.getUpdatePacket() != null,
+                "The exact stored stack should synchronize to clients");
+
+        BlockEntity restored = reload(helper, basket);
+        helper.assertTrue(restored instanceof WineBasketBlockEntity,
+                "The saved basket must deserialize as its block entity");
+        ItemStack restoredBottle = ((WineBasketBlockEntity) restored)
+                .getBottleCopy();
+        helper.assertTrue(
+                ItemStack.isSameItemSameComponents(wine, restoredBottle),
+                "Save/reload must preserve every bottle component"
+        );
+        helper.assertValueEqual(WineMetadata.servings(restoredBottle), 3,
+                "A partially consumed bottle must remain partial");
+        helper.assertValueEqual(
+                restoredBottle.getHoverName(),
+                wine.getHoverName(),
+                "Nearby identification should retain the canonical wine name"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void wineBasketBottleCanBeRemovedOnlyOnce(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_BASKET);
+        WineBasketBlockEntity basket = helper.getBlockEntity(
+                FIRST,
+                WineBasketBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.RED_WINE);
+        WineMetadata.ensureBatchIdentity(wine, 140003L);
+        helper.assertTrue(basket.insertBottle(wine),
+                "The basket should accept the first bottle");
+        ItemStack first = basket.removeBottle();
+        ItemStack second = basket.removeBottle();
+
+        helper.assertValueEqual(WineMetadata.batchId(first), 140003L,
+                "The first retrieval should return the stored bottle");
+        helper.assertTrue(second.isEmpty(),
+                "A concurrent follow-up retrieval must find no bottle");
+        helper.assertBlockProperty(FIRST, WineBasketBlock.HAS_BOTTLE, false);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void occupiedWineBasketSurvivalBreakDropsBothItemsOnce(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_BASKET);
+        WineBasketBlockEntity basket = helper.getBlockEntity(
+                FIRST,
+                WineBasketBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.WHITE_WINE);
+        WineMetadata.ensureBatchIdentity(wine, 140004L);
+        WineMetadata.assignBottleNumber(wine, 2, 5);
+        basket.insertBottle(wine);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+
+        player.gameMode.destroyBlock(helper.absolutePos(FIRST));
+
+        List<ItemEntity> drops = helper.getLevel().getEntitiesOfClass(
+                ItemEntity.class,
+                new AABB(helper.absolutePos(FIRST)).inflate(2.0)
+        );
+        long baskets = drops.stream()
+                .map(ItemEntity::getItem)
+                .filter(stack -> stack.is(ModBlocks.WINE_BASKET.asItem()))
+                .mapToLong(ItemStack::getCount)
+                .sum();
+        long bottles = drops.stream()
+                .map(ItemEntity::getItem)
+                .filter(stack -> WineMetadata.batchId(stack) == 140004L)
+                .mapToLong(ItemStack::getCount)
+                .sum();
+        helper.assertValueEqual(baskets, 1L,
+                "Survival breaking should drop one basket");
+        helper.assertValueEqual(bottles, 1L,
+                "Survival breaking should drop the exact bottle once");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void occupiedWineBasketCreativeBreakDropsBottleOnlyOnce(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.WINE_BASKET);
+        WineBasketBlockEntity basket = helper.getBlockEntity(
+                FIRST,
+                WineBasketBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.ensureBatchIdentity(wine, 140005L);
+        WineMetadata.assignBottleNumber(wine, 4, 4);
+        basket.insertBottle(wine);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.CREATIVE);
+
+        player.gameMode.destroyBlock(helper.absolutePos(FIRST));
+
+        List<ItemEntity> drops = helper.getLevel().getEntitiesOfClass(
+                ItemEntity.class,
+                new AABB(helper.absolutePos(FIRST)).inflate(2.0)
+        );
+        long baskets = drops.stream()
+                .map(ItemEntity::getItem)
+                .filter(stack -> stack.is(ModBlocks.WINE_BASKET.asItem()))
+                .mapToLong(ItemStack::getCount)
+                .sum();
+        long bottles = drops.stream()
+                .map(ItemEntity::getItem)
+                .filter(stack -> WineMetadata.batchId(stack) == 140005L)
+                .mapToLong(ItemStack::getCount)
+                .sum();
+        helper.assertValueEqual(baskets, 0L,
+                "Creative breaking should not duplicate the basket item");
+        helper.assertValueEqual(bottles, 1L,
+                "Creative breaking should preserve the stored bottle once");
+        helper.succeed();
+    }
+
+    private static ItemStack cultivarGrapes(GrapeCultivar cultivar) {
+        ItemStack grapes = new ItemStack(
+                cultivar.variety() == GrapeVariety.RED
+                        ? ModItems.RED_GRAPES
+                        : ModItems.WHITE_GRAPES
+        );
+        WineMetadata.applyCultivar(grapes, cultivar);
+        return grapes;
     }
 }

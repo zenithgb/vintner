@@ -3,6 +3,7 @@ package com.zenith.vintner.client;
 import com.zenith.vintner.Vintner;
 import com.zenith.vintner.client.screen.EstateManagementDeskScreen;
 import com.zenith.vintner.client.render.EstateManagementDeskRenderer;
+import com.zenith.vintner.client.render.WineBasketRenderer;
 import com.zenith.vintner.network.AlmanacReportPayload;
 import com.zenith.vintner.network.EstateDeskPayload;
 import com.zenith.vintner.registry.ModBlockEntities;
@@ -20,6 +21,10 @@ public class VintnerClient implements ClientModInitializer {
 		BlockEntityRendererRegistry.register(
 				ModBlockEntities.ESTATE_MANAGEMENT_DESK,
 				EstateManagementDeskRenderer::new
+		);
+		BlockEntityRendererRegistry.register(
+				ModBlockEntities.WINE_BASKET,
+				WineBasketRenderer::new
 		);
 		HudElementRegistry.attachElementAfter(
 				VanillaHudElements.CROSSHAIR,

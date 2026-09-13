@@ -1,6 +1,7 @@
 package com.zenith.vintner.vineyard;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.StringRepresentable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.Locale;
  * A named grape selection. Cultivars share the existing red/white vine
  * blocks, but make site choice, yield, resilience, and wine identity differ.
  */
-public enum GrapeCultivar {
+public enum GrapeCultivar implements StringRepresentable {
     EMBER_NOIR(GrapeVariety.RED, 1.05F, 42, 42, 82, 48, 52, 78,
             0, -1, 2, 2, "late", "structured", "long_cellaring"),
     VALE_PINOT(GrapeVariety.RED, 0.62F, 66, 62, 72, 58, 70, 62,
@@ -182,6 +183,11 @@ public enum GrapeCultivar {
 
     public String serializedName() {
         return name().toLowerCase(Locale.ROOT);
+    }
+
+    @Override
+    public String getSerializedName() {
+        return serializedName();
     }
 
     /**

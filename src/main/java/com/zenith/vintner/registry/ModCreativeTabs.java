@@ -2,6 +2,7 @@ package com.zenith.vintner.registry;
 
 import com.zenith.vintner.Vintner;
 import com.zenith.vintner.block.WoodVariant;
+import com.zenith.vintner.item.GrapeBowlItem;
 import com.zenith.vintner.vineyard.GrapeCultivar;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.minecraft.core.Registry;
@@ -63,6 +64,9 @@ public final class ModCreativeTabs {
                                     output.accept(
                                             ModItems.cultivarGrapes(cultivar)
                                     );
+                                    output.accept(
+                                            GrapeBowlItem.create(cultivar, 4)
+                                    );
                                 }
                                 ModBlocks.GRAPE_PRESSES.values()
                                         .forEach(output::accept);
@@ -110,6 +114,7 @@ public final class ModCreativeTabs {
                                         .forEach(output::accept);
                                 ModBlocks.TASTING_SERVICES.values()
                                         .forEach(output::accept);
+                                output.accept(ModBlocks.WINE_BASKET);
                             })
                             .build()
             );

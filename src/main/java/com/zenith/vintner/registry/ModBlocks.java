@@ -10,6 +10,7 @@ import com.zenith.vintner.block.CellarFixtureKind;
 import com.zenith.vintner.block.EstateManagementDeskBlock;
 import com.zenith.vintner.block.FermentationBarrelBlock;
 import com.zenith.vintner.block.GrapePressBlock;
+import com.zenith.vintner.block.GrapeBowlBlock;
 import com.zenith.vintner.block.NurseryBedBlock;
 import com.zenith.vintner.block.RedGrapevineBlock;
 import com.zenith.vintner.block.SurveyorsMapTableBlock;
@@ -20,7 +21,9 @@ import com.zenith.vintner.block.WhiteGrapevineBlock;
 import com.zenith.vintner.block.WineCrateBlock;
 import com.zenith.vintner.block.WineBottleBlock;
 import com.zenith.vintner.block.WineRackBlock;
+import com.zenith.vintner.block.WineBasketBlock;
 import com.zenith.vintner.block.WoodVariant;
+import com.zenith.vintner.item.GrapeBowlItem;
 import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.wine.AgingVessel;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
@@ -40,6 +43,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public final class ModBlocks {
     public static final Block OAK_TRELLIS = registerWithItem(
@@ -158,6 +162,19 @@ public final class ModBlocks {
                     .strength(0.3F)
                     .sound(SoundType.GLASS)
                     .noOcclusion()
+    );
+
+    public static final Block WINE_BASKET = registerWithItem(
+            "wine_basket",
+            WineBasketBlock::new,
+            tabletopProperties()
+    );
+
+    public static final Block GRAPE_BOWL = registerWithCustomItem(
+            "grape_bowl",
+            GrapeBowlBlock::new,
+            tabletopProperties(),
+            GrapeBowlItem::new
     );
 
     public static final Block TASTING_SERVICE = registerWithItem(
@@ -607,6 +624,13 @@ public final class ModBlocks {
                 .noOcclusion();
     }
 
+    private static BlockBehaviour.Properties tabletopProperties() {
+        return BlockBehaviour.Properties.of()
+                .strength(0.6F)
+                .sound(SoundType.WOOD)
+                .noOcclusion();
+    }
+
     private static BlockBehaviour.Properties grapevineProperties() {
         return BlockBehaviour.Properties.of()
                 .strength(1.0F)
@@ -622,6 +646,17 @@ public final class ModBlocks {
     ) {
         Block block = registerWithoutItem(name, factory, properties);
         registerBlockItem(name, block);
+        return block;
+    }
+
+    private static Block registerWithCustomItem(
+            String name,
+            Function<BlockBehaviour.Properties, Block> blockFactory,
+            BlockBehaviour.Properties properties,
+            BiFunction<Block, Item.Properties, Item> itemFactory
+    ) {
+        Block block = registerWithoutItem(name, blockFactory, properties);
+        registerBlockItem(name, block, itemFactory);
         return block;
     }
 
@@ -653,6 +688,14 @@ public final class ModBlocks {
             String name,
             Block block
     ) {
+        registerBlockItem(name, block, BlockItem::new);
+    }
+
+    private static void registerBlockItem(
+            String name,
+            Block block,
+            BiFunction<Block, Item.Properties, Item> factory
+    ) {
         Identifier id = Identifier.fromNamespaceAndPath(
                 Vintner.MOD_ID,
                 name
@@ -663,7 +706,7 @@ public final class ModBlocks {
                 id
         );
 
-        Item item = new BlockItem(
+        Item item = factory.apply(
                 block,
                 new Item.Properties()
                         .setId(key)
@@ -709,6 +752,8 @@ public final class ModBlocks {
                     TASTING_CABINETS.values()
                             .forEach(output::accept);
                     TASTING_SERVICES.values().forEach(output::accept);
+                    output.accept(WINE_BASKET);
+                    output.accept(GRAPE_BOWL);
                 });
     }
 }

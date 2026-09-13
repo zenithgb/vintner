@@ -1,0 +1,19 @@
+{
+  "type": "vintner:grape_bowl",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:bowl",
+    "#vintner:grapes",
+    "#vintner:grapes",
+    "#vintner:grapes",
+    "#vintner:grapes",
+    "#vintner:grapes",
+    "#vintner:grapes",
+    "#vintner:grapes",
+    "#vintner:grapes"
+  ],
+  "result": {
+    "id": "vintner:grape_bowl",
+    "count": 1
+  }
+}

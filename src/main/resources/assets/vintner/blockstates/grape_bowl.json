@@ -1,0 +1,184 @@
+{
+  "variants": {
+    "cultivar=ember_noir,servings=0": {
+      "model": "vintner:block/grape_bowl_empty"
+    },
+    "cultivar=ember_noir,servings=1": {
+      "model": "vintner:block/grape_bowl_crimson_1"
+    },
+    "cultivar=ember_noir,servings=2": {
+      "model": "vintner:block/grape_bowl_crimson_2"
+    },
+    "cultivar=ember_noir,servings=3": {
+      "model": "vintner:block/grape_bowl_crimson_3"
+    },
+    "cultivar=ember_noir,servings=4": {
+      "model": "vintner:block/grape_bowl_crimson_4"
+    },
+    "cultivar=vale_pinot,servings=0": {
+      "model": "vintner:block/grape_bowl_empty"
+    },
+    "cultivar=vale_pinot,servings=1": {
+      "model": "vintner:block/grape_bowl_shaded_1"
+    },
+    "cultivar=vale_pinot,servings=2": {
+      "model": "vintner:block/grape_bowl_shaded_2"
+    },
+    "cultivar=vale_pinot,servings=3": {
+      "model": "vintner:block/grape_bowl_shaded_3"
+    },
+    "cultivar=vale_pinot,servings=4": {
+      "model": "vintner:block/grape_bowl_shaded_4"
+    },
+    "cultivar=suncrest,servings=0": {
+      "model": "vintner:block/grape_bowl_empty"
+    },
+    "cultivar=suncrest,servings=1": {
+      "model": "vintner:block/grape_bowl_sunlit_1"
+    },
+    "cultivar=suncrest,servings=2": {
+      "model": "vintner:block/grape_bowl_sunlit_2"
+    },
+    "cultivar=suncrest,servings=3": {
+      "model": "vintner:block/grape_bowl_sunlit_3"
+    },
+    "cultivar=suncrest,servings=4": {
+      "model": "vintner:block/grape_bowl_sunlit_4"
+    },
+    "cultivar=ironwood_red,servings=0": {
+      "model": "vintner:block/grape_bowl_empty"
+    },
+    "cultivar=ironwood_red,servings=1": {
+      "model": "vintner:block/grape_bowl_crimson_1"
+    },
+    "cultivar=ironwood_red,servings=2": {
+      "model": "vintner:block/grape_bowl_crimson_2"
+    },
+    "cultivar=ironwood_red,servings=3": {
+      "model": "vintner:block/grape_bowl_crimson_3"
+    },
+    "cultivar=ironwood_red,servings=4": {
+      "model": "vintner:block/grape_bowl_crimson_4"
+    },
+    "cultivar=nightberry,servings=0": {
+      "model": "vintner:block/grape_bowl_empty"
+    },
+    "cultivar=nightberry,servings=1": {
+      "model": "vintner:block/grape_bowl_shaded_1"
+    },
+    "cultivar=nightberry,servings=2": {
+      "model": "vintner:block/grape_bowl_shaded_2"
+    },
+    "cultivar=nightberry,servings=3": {
+      "model": "vintner:block/grape_bowl_shaded_3"
+    },
+    "cultivar=nightberry,servings=4": {
+      "model": "vintner:block/grape_bowl_shaded_4"
+    },
+    "cultivar=river_garnet,servings=0": {
+      "model": "vintner:block/grape_bowl_empty"
+    },
+    "cultivar=river_garnet,servings=1": {
+      "model": "vintner:block/grape_bowl_riverside_1"
+    },
+    "cultivar=river_garnet,servings=2": {
+      "model": "vintner:block/grape_bowl_riverside_2"
+    },
+    "cultivar=river_garnet,servings=3": {
+      "model": "vintner:block/grape_bowl_riverside_3"
+    },
+    "cultivar=river_garnet,servings=4": {
+      "model": "vintner:block/grape_bowl_riverside_4"
+    },
+    "cultivar=golden_vale,servings=0": {
+      "model": "vintner:block/grape_bowl_empty"
+    },
+    "cultivar=golden_vale,servings=1": {
+      "model": "vintner:block/grape_bowl_golden_1"
+    },
+    "cultivar=golden_vale,servings=2": {
+      "model": "vintner:block/grape_bowl_golden_2"
+    },
+    "cultivar=golden_vale,servings=3": {
+      "model": "vintner:block/grape_bowl_golden_3"
+    },
+    "cultivar=golden_vale,servings=4": {
+      "model": "vintner:block/grape_bowl_golden_4"
+    },
+    "cultivar=frostling,servings=0": {
+      "model": "vintner:block/grape_bowl_empty"
+    },
+    "cultivar=frostling,servings=1": {
+      "model": "vintner:block/grape_bowl_frosted_1"
+    },
+    "cultivar=frostling,servings=2": {
+      "model": "vintner:block/grape_bowl_frosted_2"
+    },
+    "cultivar=frostling,servings=3": {
+      "model": "vintner:block/grape_bowl_frosted_3"
+    },
+    "cultivar=frostling,servings=4": {
+      "model": "vintner:block/grape_bowl_frosted_4"
+    },
+    "cultivar=greenwake,servings=0": {
+      "model": "vintner:block/grape_bowl_empty"
+    },
+    "cultivar=greenwake,servings=1": {
+      "model": "vintner:block/grape_bowl_golden_1"
+    },
+    "cultivar=greenwake,servings=2": {
+      "model": "vintner:block/grape_bowl_golden_2"
+    },
+    "cultivar=greenwake,servings=3": {
+      "model": "vintner:block/grape_bowl_golden_3"
+    },
+    "cultivar=greenwake,servings=4": {
+      "model": "vintner:block/grape_bowl_golden_4"
+    },
+    "cultivar=silverleaf,servings=0": {
+      "model": "vintner:block/grape_bowl_empty"
+    },
+    "cultivar=silverleaf,servings=1": {
+      "model": "vintner:block/grape_bowl_frosted_1"
+    },
+    "cultivar=silverleaf,servings=2": {
+      "model": "vintner:block/grape_bowl_frosted_2"
+    },
+    "cultivar=silverleaf,servings=3": {
+      "model": "vintner:block/grape_bowl_frosted_3"
+    },
+    "cultivar=silverleaf,servings=4": {
+      "model": "vintner:block/grape_bowl_frosted_4"
+    },
+    "cultivar=honeycrest,servings=0": {
+      "model": "vintner:block/grape_bowl_empty"
+    },
+    "cultivar=honeycrest,servings=1": {
+      "model": "vintner:block/grape_bowl_honeyed_1"
+    },
+    "cultivar=honeycrest,servings=2": {
+      "model": "vintner:block/grape_bowl_honeyed_2"
+    },
+    "cultivar=honeycrest,servings=3": {
+      "model": "vintner:block/grape_bowl_honeyed_3"
+    },
+    "cultivar=honeycrest,servings=4": {
+      "model": "vintner:block/grape_bowl_honeyed_4"
+    },
+    "cultivar=stoneflower,servings=0": {
+      "model": "vintner:block/grape_bowl_empty"
+    },
+    "cultivar=stoneflower,servings=1": {
+      "model": "vintner:block/grape_bowl_stony_1"
+    },
+    "cultivar=stoneflower,servings=2": {
+      "model": "vintner:block/grape_bowl_stony_2"
+    },
+    "cultivar=stoneflower,servings=3": {
+      "model": "vintner:block/grape_bowl_stony_3"
+    },
+    "cultivar=stoneflower,servings=4": {
+      "model": "vintner:block/grape_bowl_stony_4"
+    }
+  }
+}

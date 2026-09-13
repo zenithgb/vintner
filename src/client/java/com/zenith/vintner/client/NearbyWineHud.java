@@ -1,6 +1,7 @@
 package com.zenith.vintner.client;
 
 import com.zenith.vintner.block.entity.WineBottleBlockEntity;
+import com.zenith.vintner.block.entity.WineBasketBlockEntity;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -43,12 +44,19 @@ public final class NearbyWineHud implements HudElement {
                 || !(client.hitResult instanceof BlockHitResult hit)
                 || hit.getType() != HitResult.Type.BLOCK
                 || hit.distanceTo(client.player) > MAX_DISTANCE_SQUARED
-                || !(client.level.getBlockEntity(hit.getBlockPos())
-                instanceof WineBottleBlockEntity bottleEntity)) {
+        ) {
             return null;
         }
 
-        ItemStack bottle = bottleEntity.getBottleCopy();
+        var blockEntity = client.level.getBlockEntity(hit.getBlockPos());
+        ItemStack bottle;
+        if (blockEntity instanceof WineBottleBlockEntity bottleEntity) {
+            bottle = bottleEntity.getBottleCopy();
+        } else if (blockEntity instanceof WineBasketBlockEntity basketEntity) {
+            bottle = basketEntity.getBottleCopy();
+        } else {
+            return null;
+        }
         return bottle.isEmpty() ? null : bottle.getHoverName();
     }
 }

@@ -11,6 +11,7 @@ import com.zenith.vintner.block.entity.TastingServiceBlockEntity;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineBottleBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
+import com.zenith.vintner.block.entity.WineBasketBlockEntity;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
@@ -96,6 +97,19 @@ public final class ModBlockEntities {
                     FabricBlockEntityTypeBuilder.create(
                             WineBottleBlockEntity::new,
                             ModBlocks.WINE_BOTTLE
+                    ).build()
+            );
+
+    public static final BlockEntityType<WineBasketBlockEntity>
+            WINE_BASKET = Registry.register(
+                    BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                    Identifier.fromNamespaceAndPath(
+                            Vintner.MOD_ID,
+                            "wine_basket"
+                    ),
+                    FabricBlockEntityTypeBuilder.create(
+                            WineBasketBlockEntity::new,
+                            ModBlocks.WINE_BASKET
                     ).build()
             );
 

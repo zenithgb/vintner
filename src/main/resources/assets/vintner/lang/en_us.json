@@ -765,5 +765,10 @@
   "block.vintner.pale_oak_tasting_service": "Pale Oak Tasting Service",
   "block.vintner.bamboo_tasting_service": "Bamboo Tasting Service",
   "block.vintner.crimson_tasting_service": "Crimson Tasting Service",
-  "block.vintner.warped_tasting_service": "Warped Tasting Service"
+  "block.vintner.warped_tasting_service": "Warped Tasting Service",
+  "block.vintner.grape_bowl": "Grape Bowl",
+  "block.vintner.wine_basket": "Wine Basket",
+  "item.vintner.grape_bowl_named": "%s Grape Bowl",
+  "tooltip.vintner.grape_bowl.servings": "%s/%s servings",
+  "tag.item.vintner.grapes": "Vintner Grapes"
 }

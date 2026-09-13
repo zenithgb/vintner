@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "S S",
+    "SWS",
+    "WWW"
+  ],
+  "key": {
+    "S": "minecraft:stick",
+    "W": "minecraft:wheat"
+  },
+  "result": {
+    "id": "vintner:wine_basket",
+    "count": 1
+  }
+}
