@@ -9,6 +9,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
+from audit_serving_decor_contact import check_contact
+
 from generate_wood_variants import (
     WOODS,
     aging_id,
@@ -640,6 +642,10 @@ def audit_translations() -> None:
 
 
 def audit_serving_decor() -> None:
+    try:
+        check_contact()
+    except (AssertionError, AttributeError, TypeError, OSError, KeyError, ValueError) as error:
+        fail(f"serving decor bottle contact: {error}")
     cultivar_visuals = {
         "ember_noir": "crimson",
         "vale_pinot": "shaded",
@@ -707,9 +713,13 @@ def audit_serving_decor() -> None:
                 )
                 require_file(bowl_model_path)
                 bowl_model = load_json(bowl_model_path)
+                geometry_parent = f"vintner:block/grape_bowl_geometry_{servings}"
+                if bowl_model.get("parent") != geometry_parent:
+                    fail(f"{bowl_model_path.name} must use shared serving geometry")
+                geometry = load_json(ASSETS / f"models/block/grape_bowl_geometry_{servings}.json")
                 bowl_elements = (
-                    bowl_model.get("elements", [])
-                    if isinstance(bowl_model, dict)
+                    geometry.get("elements", [])
+                    if isinstance(geometry, dict)
                     else []
                 )
                 grape_elements = [
@@ -718,7 +728,7 @@ def audit_serving_decor() -> None:
                     if isinstance(element, dict)
                     and "#grapes" in strings(element.get("faces", {}))
                 ]
-                expected_grapes = (0, 18, 36, 54, 72)[servings]
+                expected_grapes = (0, 180, 360, 450, 540)[servings]
                 if len(grape_elements) != expected_grapes:
                     fail(
                         f"{bowl_model_path.name} must show exactly "
@@ -737,20 +747,43 @@ def audit_serving_decor() -> None:
                         or not isinstance(end, list)
                         or len(start) != 3
                         or len(end) != 3
-                        or any(abs(
-                            actual - expected
-                        ) > 0.011 for actual, expected in zip(
-                            sorted(
-                                float(end[index]) - float(start[index])
-                                for index in range(3)
-                            ),
-                            (0.64, 0.64, 1.10),
-                        ))
+                        or any(float(end[index]) <= float(start[index]) for index in range(3))
                     ):
                         fail(
                             f"{bowl_model_path.name} grapes must use rounded "
-                            "three-part voxel berries"
+                            "positive-volume berry slices"
                         )
+                berries = {}
+                for grape in grape_elements:
+                    berries.setdefault(grape.get("name", ""), []).append(grape)
+                for berry_name, parts in berries.items():
+                    if not berry_name.startswith("bunch_") or len(parts) != 15:
+                        fail(f"{bowl_model_path.name} must keep identifiable complete berries")
+                    for axis in range(3):
+                        low = min(part["from"][axis] for part in parts)
+                        high = max(part["to"][axis] for part in parts)
+                        if abs(high - low - 1.0) > 0.001:
+                            fail(f"{bowl_model_path.name} berry must have a round, equal-axis envelope")
+                    if any(
+                        all(max(first["from"][axis], second["from"][axis])
+                            < min(first["to"][axis], second["to"][axis]) - 0.00001
+                            for axis in range(3))
+                        for index, first in enumerate(parts) for second in parts[index + 1:]
+                    ):
+                        fail(f"{bowl_model_path.name} berry slices must not self-intersect")
+                if any(
+                    part["from"][0] < 4.5 or part["to"][0] > 11.5
+                    or part["from"][2] < 4.5 or part["to"][2] > 11.5
+                    for part in grape_elements
+                ):
+                    fail(f"{bowl_model_path.name} grapes must fit inside the bowl floor")
+                if servings > 1:
+                    previous = load_json(ASSETS / f"models/block/grape_bowl_geometry_{servings - 1}.json")
+                    current_by_name = {name: parts for name, parts in berries.items()}
+                    for element in previous.get("elements", []):
+                        if "#grapes" in strings(element.get("faces", {})):
+                            if element not in current_by_name.get(element.get("name"), []):
+                                fail(f"{bowl_model_path.name} eating must not move or replace remaining grapes")
                 if min(float(start[1]) for start in (
                     element["from"] for element in grape_elements
                 )) > 1.11:

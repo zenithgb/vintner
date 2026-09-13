@@ -84,15 +84,20 @@ public final class WineBasketRenderer implements
             return;
         }
         poseStack.pushPose();
-        poseStack.translate(0.5F, 3.73F / 16.0F, 0.5F);
+        poseStack.translate(0.5F, 3.31243F / 16.0F, 0.5F);
         // Vanilla blockstate rotations run opposite PoseStack's Y axis.
         poseStack.mulPose(Axis.YP.rotationDegrees(
                 180.0F - state.facing.toYRot()
         ));
-        // Turn the horizontal model corner-to-corner, then prop its neck high
-        // against the basket while the heavy bottle base rests on the slats.
-        poseStack.mulPose(Axis.YP.rotationDegrees(45.0F));
-        poseStack.mulPose(Axis.XP.rotationDegrees(45.0F));
+        // User-approved Blockbench pose. Free-format cubes use ZYX Euler
+        // order; the last Y rotation maps the authored bottle's long Z axis
+        // to the preview's X axis. Keep this whole pose local to the basket
+        // so rotating a wood variant preserves the approved placement.
+        poseStack.translate(-0.03865F / 16.0F, 0.0F, 2.0F / 16.0F);
+        poseStack.mulPose(Axis.ZP.rotationDegrees(-82.66555F));
+        poseStack.mulPose(Axis.YP.rotationDegrees(59.62449F));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-80.07501F));
+        poseStack.mulPose(Axis.YP.rotationDegrees(90.0F));
         poseStack.scale(0.62F, 0.62F, 0.62F);
         state.bottle.submit(
                 poseStack,

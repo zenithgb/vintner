@@ -75,6 +75,37 @@ def rotated_cube(
     return element
 
 
+def berry_elements(x: float, y: float, z: float, name: str) -> list[dict[str, object]]:
+    """A round berry built from disjoint octagonal slices, with no inner caps.
+
+    Intersecting cross-shaped rods expose coplanar faces. These slices instead
+    meet face-to-face, and their small corner steps read as a round fruit.
+    """
+    parts = []
+    for bottom, top, width in (
+        (-0.50, -0.34, 0.52), (-0.34, -0.12, 0.86),
+        (-0.12, 0.12, 1.00), (0.12, 0.34, 0.86),
+        (0.34, 0.50, 0.52),
+    ):
+        half = width / 2
+        inset = width * 0.18
+        for left, right, depth in (
+            (-half, -half + inset, half - inset),
+            (-half + inset, half - inset, half),
+            (half - inset, half, half - inset),
+        ):
+            part = cube(
+                [round(x + left, 4), round(y + bottom, 4), round(z - depth, 4)],
+                [round(x + right, 4), round(y + top, 4), round(z + depth, 4)],
+                "#grapes",
+            )
+            part["name"] = name
+            for face in part["faces"].values():
+                face["uv"] = [0, 0, 16, 16]
+            parts.append(part)
+    return parts
+
+
 def bowl_elements(servings: int) -> list[dict[str, object]]:
     elements = [
         # The inset base and floor meet at y=0.65; the surrounding stepped
@@ -99,26 +130,27 @@ def bowl_elements(servings: int) -> list[dict[str, object]]:
         cube([4.0, 2.65, 11.5], [4.5, 3.35, 12.0], "#rim"),
         cube([11.5, 2.65, 11.5], [12.0, 3.35, 12.0], "#rim"),
     ]
-    # A serving is a whole small bunch, so the visible order is coherent:
-    # full has three bunches, then three trimmed bunches, then two, then one.
-    # Each berry is an orthogonal three-cube voxel sphere instead of a single
-    # box, which keeps the cluster readable as grapes at normal play distance.
+    # Three separately stemmed, tapered bunches lie upper-right to lower-left,
+    # following the grape item icon. The back two bunches remain unchanged
+    # while the front bunch is eaten from its tip towards its stem.
     bunches = (
-        (9.55, 5.55, 22.5),
-        (9.65, 8.15, -22.5),
-        (7.55, 9.65, 22.5),
+        (7.55, 5.18, 135.0),
+        (10.45, 5.95, 135.0),
+        (9.75, 8.85, 135.0),
     )
     berry_pattern = (
-        (0.00, 0.00),
-        (-0.72, -0.43), (-0.72, 0.43),
-        (-1.42, -0.72), (-1.42, 0.00), (-1.42, 0.72),
-        (-2.10, -0.38), (-2.10, 0.38),
+        # The broad shoulder stays attached to its stem in a partial bunch.
+        (0.35, -0.55, 1.60), (0.35, 0.55, 1.60),
+        (1.25, -0.53, 1.60), (1.25, 0.53, 1.60),
+        (0.36, 0.00, 2.38), (1.25, 0.00, 2.38),
+        (2.14, 0.00, 1.60), (2.85, 0.00, 1.60),
+        (1.95, 0.00, 2.38), (0.80, -0.54, 2.28),
+        (0.80, 0.54, 2.28), (1.65, 0.00, 3.02),
     )
-    active_bunches = (0, 1, 2, 3, 3)[servings]
-    berries_per_bunch = 8 if servings == 4 else 6
-    for anchor_x, anchor_z, angle in bunches[:active_bunches]:
+    counts = ((), (12,), (12, 12), (12, 12, 6), (12, 12, 12))[servings]
+    for bunch_index, ((anchor_x, anchor_z, angle), count) in enumerate(zip(bunches, counts)):
         angle_radians = radians(angle)
-        for local_x, local_z in berry_pattern[:berries_per_bunch]:
+        for berry_index, (local_x, local_z, y) in enumerate(berry_pattern[:count]):
             x = round(
                 anchor_x + local_x * cos(angle_radians)
                 - local_z * sin(angle_radians),
@@ -129,38 +161,22 @@ def bowl_elements(servings: int) -> list[dict[str, object]]:
                 + local_z * cos(angle_radians),
                 2,
             )
-            elements.extend((
-                cube(
-                    [round(x - 0.55, 2), 1.33, round(z - 0.32, 2)],
-                    [round(x + 0.55, 2), 1.97, round(z + 0.32, 2)],
-                    "#grapes",
-                ),
-                cube(
-                    [round(x - 0.32, 2), 1.10, round(z - 0.32, 2)],
-                    [round(x + 0.32, 2), 2.20, round(z + 0.32, 2)],
-                    "#grapes",
-                ),
-                cube(
-                    [round(x - 0.32, 2), 1.33, round(z - 0.55, 2)],
-                    [round(x + 0.32, 2), 1.97, round(z + 0.55, 2)],
-                    "#grapes",
-                ),
-            ))
+            elements.extend(berry_elements(x, y, z, f"bunch_{bunch_index}_berry_{berry_index}"))
 
         # Each bunch owns its foliage. When that serving is eaten, the stem
         # and leaf disappear with its berries instead of floating behind.
         elements.extend((
             rotated_cube(
-                [anchor_x - 0.10, 2.05, anchor_z - 0.15],
-                [anchor_x + 1.25, 2.35, anchor_z + 0.15],
-                "#stem", origin=[anchor_x, 2.20, anchor_z],
-                axis="y", angle=angle,
+                [anchor_x - 0.65, 2.18, anchor_z - 0.12],
+                [anchor_x + 0.65, 2.40, anchor_z + 0.12],
+                "#stem", origin=[anchor_x, 2.29, anchor_z],
+                axis="y", angle=45.0,
             ),
             rotated_cube(
-                [anchor_x + 0.35, 2.10, anchor_z - 0.45],
-                [anchor_x + 1.55, 2.30, anchor_z + 0.45],
-                "#leaf", origin=[anchor_x + 0.35, 2.20, anchor_z],
-                axis="y", angle=angle,
+                [anchor_x - 0.05, 2.35, anchor_z - 0.60],
+                [anchor_x + 0.75, 2.48, anchor_z + 0.10],
+                "#leaf", origin=[anchor_x + 0.20, 2.40, anchor_z],
+                axis="y", angle=45.0,
             ),
         ))
     return elements
@@ -231,6 +247,22 @@ def generate_grape_bowl() -> None:
             "display": display_transforms(),
         },
     )
+    # Geometry is shared by all eight cultivar palettes. Keep one authored
+    # shape per serving state instead of duplicating the detailed fruit mesh.
+    for servings in range(1, 5):
+        write_json(
+            ASSETS / f"models/block/grape_bowl_geometry_{servings}.json",
+            {
+                "textures": {
+                    **base_textures,
+                    "grapes": "vintner:block/grape_bowl_crimson_grapes",
+                    "stem": "minecraft:block/stripped_oak_log",
+                    "leaf": "minecraft:block/moss_block",
+                },
+                "elements": bowl_elements(servings),
+                "display": display_transforms(),
+            },
+        )
     for palette in PALETTES:
         write_grape_texture(palette)
         for servings in range(1, 5):
@@ -238,14 +270,10 @@ def generate_grape_bowl() -> None:
             write_json(
                 ASSETS / f"models/block/{model_id}.json",
                 {
+                    "parent": f"vintner:block/grape_bowl_geometry_{servings}",
                     "textures": {
-                        **base_textures,
                         "grapes": f"vintner:block/grape_bowl_{palette}_grapes",
-                        "stem": "minecraft:block/stripped_oak_log",
-                        "leaf": "minecraft:block/moss_block",
                     },
-                    "elements": bowl_elements(servings),
-                    "display": display_transforms(),
                 },
             )
             write_json(
@@ -347,20 +375,20 @@ def basket_elements() -> list[dict[str, object]]:
 def basket_bottle_elements() -> list[dict[str, object]]:
     """Compact horizontal bottle authored for the open basket cradle."""
     return [
-        # Cross-shaped sections give a softly stepped round silhouette without
-        # rotating the upright placed-bottle model and exposing internal caps.
-        cube([6.2, 6.65, 4.25], [9.8, 9.35, 13.05], "#bottle"),
+        # Disjoint sections meet at their boundaries. The previous crossed
+        # body rods and overlapping end cap left competing surface faces.
+        cube([6.2, 6.65, 4.25], [6.65, 9.35, 13.05], "#bottle"),
         cube([6.65, 6.2, 4.25], [9.35, 9.8, 13.05], "#bottle"),
-        cube([6.4, 6.45, 12.85], [9.6, 9.55, 13.7], "#bottle_dark"),
-        cube([6.55, 6.75, 3.55], [9.45, 9.25, 4.65], "#bottle"),
-        cube([7.1, 7.25, 1.65], [8.9, 8.75, 3.9], "#bottle"),
-        cube([7.35, 7.0, 1.65], [8.65, 9.0, 3.9], "#bottle"),
-        cube([7.0, 7.15, 1.15], [9.0, 8.85, 2.05], "#neck_foil"),
-        cube([7.25, 7.35, 0.75], [8.75, 8.65, 1.35], "#cork"),
+        cube([9.35, 6.65, 4.25], [9.8, 9.35, 13.05], "#bottle"),
+        cube([6.4, 6.45, 13.05], [9.6, 9.55, 13.7], "#bottle_dark"),
+        cube([6.55, 6.75, 3.55], [9.45, 9.25, 4.25], "#bottle"),
+        cube([7.1, 7.25, 1.65], [8.9, 8.75, 3.55], "#bottle"),
+        cube([7.0, 7.15, 1.15], [9.0, 8.85, 1.65], "#neck_foil"),
+        cube([7.25, 7.35, 0.75], [8.75, 8.65, 1.15], "#cork"),
         # A small bordered label sits on the visible upper side.
-        cube([6.15, 9.72, 7.2], [9.85, 9.84, 10.25], "#label_border"),
-        cube([6.4, 9.82, 7.48], [9.6, 9.91, 9.98], "#label"),
-        cube([7.72, 9.90, 7.9], [8.28, 9.96, 9.55], "#label_ink"),
+        cube([6.70, 9.80, 7.2], [9.30, 9.84, 10.25], "#label_border"),
+        cube([6.90, 9.84, 7.48], [9.10, 9.88, 9.98], "#label"),
+        cube([7.72, 9.88, 7.9], [8.28, 9.92, 9.55], "#label_ink"),
     ]
 
 
