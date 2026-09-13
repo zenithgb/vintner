@@ -1,0 +1,25 @@
+{
+  "parent": "vintner:vintner/plant_grapevine",
+  "criteria": {
+    "harvested": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.harvest_grapes.description"
+    },
+    "icon": {
+      "id": "vintner:red_grapes"
+    },
+    "title": {
+      "translate": "advancement.vintner.harvest_grapes.title"
+    }
+  },
+  "requirements": [
+    [
+      "harvested"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

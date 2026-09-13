@@ -1,0 +1,25 @@
+{
+  "parent": "vintner:vintner/propagate_cutting",
+  "criteria": {
+    "grafted": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.graft_vine.description"
+    },
+    "icon": {
+      "id": "vintner:grafting_knife"
+    },
+    "title": {
+      "translate": "advancement.vintner.graft_vine.title"
+    }
+  },
+  "requirements": [
+    [
+      "grafted"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

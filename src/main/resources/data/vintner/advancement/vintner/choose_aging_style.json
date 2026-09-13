@@ -1,23 +1,17 @@
 {
   "parent": "vintner:vintner/age_wine",
   "criteria": {
+    "applied": {
+      "trigger": "minecraft:impossible"
+    },
     "toasted": {
-      "conditions": {
-        "recipe_id": "vintner:toasting_kit"
-      },
-      "trigger": "minecraft:recipe_crafted"
+      "trigger": "minecraft:impossible"
     },
     "seasoned": {
-      "conditions": {
-        "recipe_id": "vintner:seasoning_kit"
-      },
-      "trigger": "minecraft:recipe_crafted"
+      "trigger": "minecraft:impossible"
     },
     "cellar_cask": {
-      "conditions": {
-        "recipe_id": "vintner:cask_conversion_kit"
-      },
-      "trigger": "minecraft:recipe_crafted"
+      "trigger": "minecraft:impossible"
     }
   },
   "display": {
@@ -33,6 +27,7 @@
   },
   "requirements": [
     [
+      "applied",
       "toasted",
       "seasoned",
       "cellar_cask"

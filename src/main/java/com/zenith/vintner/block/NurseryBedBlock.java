@@ -1,5 +1,6 @@
 package com.zenith.vintner.block;
 
+import com.zenith.vintner.advancement.ModAdvancements;
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.vineyard.NurseryPlant;
 import com.zenith.vintner.vineyard.GraftedCuttingData;
@@ -170,6 +171,10 @@ public final class NurseryBedBlock extends Block {
                         .get(serverLevel)
                         .cultivar(pos, variety);
                 GraftedCuttingData.applyCultivar(harvest, cultivar);
+                if (player instanceof net.minecraft.server.level.ServerPlayer
+                        serverPlayer) {
+                    ModAdvancements.grantPropagation(serverPlayer);
+                }
             }
             popResource(
                     level,

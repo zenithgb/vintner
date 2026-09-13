@@ -1,7 +1,7 @@
 package com.zenith.vintner.item;
 
-import com.zenith.vintner.util.VintnerNotifications;
 import com.zenith.vintner.advancement.ModAdvancements;
+import com.zenith.vintner.util.VintnerNotifications;
 import com.zenith.vintner.block.VintageArchiveBlock;
 import com.zenith.vintner.estate.EstateProfile;
 import com.zenith.vintner.estate.EstateLedgerSavedData;
@@ -589,6 +589,7 @@ public final class VintnerAlmanacItem extends Item {
                 0L,
                 0
         );
+        ModAdvancements.grantPlotRegistration(player);
         VintnerNotifications.send(player, Component.translatable(
                 registration.status()
                         == VineyardPlotSavedData.Status.UPDATED

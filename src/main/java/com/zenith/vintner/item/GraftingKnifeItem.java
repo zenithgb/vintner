@@ -1,5 +1,6 @@
 package com.zenith.vintner.item;
 
+import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.util.VintnerNotifications;
 import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.NurseryBedBlock;
@@ -116,6 +117,10 @@ public final class GraftingKnifeItem extends Item {
                         clickedPos.above(),
                         graftedCutting
                 );
+            }
+            if (player instanceof net.minecraft.server.level.ServerPlayer
+                    serverPlayer) {
+                ModAdvancements.grantGrafting(serverPlayer);
             }
             VintnerNotifications.send(player,
                     net.minecraft.network.chat.Component.translatable(

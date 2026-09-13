@@ -319,6 +319,10 @@ public class AgingBarrelBlock extends BaseEntityBlock {
                 "message.vintner.aging.upgrade_applied",
                 requestedVessel.displayName()
         ).withStyle(ChatFormatting.GREEN));
+        if (player instanceof net.minecraft.server.level.ServerPlayer
+                serverPlayer) {
+            ModAdvancements.grantAgingStyle(serverPlayer);
+        }
 
         return InteractionResult.SUCCESS;
     }

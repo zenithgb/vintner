@@ -636,7 +636,7 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void surveyorsMapTableBuildsACompatibleAtlas(
+    public void tutorialSurveyorsMapTableBuildsACompatibleAtlas(
             GameTestHelper helper
     ) {
         helper.setBlock(FIRST, ModBlocks.SURVEYORS_MAP_TABLE);
@@ -700,6 +700,51 @@ public final class VintnerGameTests {
                         helper.absolutePos(EAST)
                 ).orElse(null) == table,
                 "An adjacent estate desk should discover the populated map table"
+        );
+
+        List<EstateDeskPayload> captured = new ArrayList<>();
+        ServerPlayer owner = makeDeskPayloadCapturePlayer(
+                helper.getLevel(),
+                "atlas-owner",
+                captured
+        );
+        EstateSavedData.get(helper.getLevel()).register(
+                owner,
+                helper.getLevel(),
+                helper.absolutePos(EAST),
+                "Atlas Estate",
+                DyeColor.GREEN
+        );
+        EstateDeskReport.open(
+                helper.getLevel(),
+                helper.absolutePos(EAST),
+                owner
+        );
+        assertAdvancementDone(
+                helper,
+                owner,
+                "manage_estate",
+                "A registered owner opening the desk should grant management progress"
+        );
+        assertAdvancementDone(
+                helper,
+                owner,
+                "map_estate",
+                "A populated connected map table should grant Estate Atlas progress"
+        );
+        helper.assertValueEqual(
+                captured.size(),
+                1,
+                "Opening the mapped estate should send one desk payload"
+        );
+        helper.assertTrue(
+                captured.getFirst().atlasConnected(),
+                "The successful map grant should correspond to a connected atlas payload"
+        );
+        helper.assertValueEqual(
+                captured.getFirst().maps().size(),
+                2,
+                "The successful map grant should correspond to real atlas maps"
         );
 
         var firstId = firstMap.get(DataComponents.MAP_ID);
@@ -4595,7 +4640,7 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void unnamedAlmanacFoundsDefaultEstateWithoutSneaking(
+    public void tutorialUnnamedAlmanacFoundsDefaultEstateWithoutSneaking(
             GameTestHelper helper
     ) {
         ServerPlayer owner = helper.makeMockServerPlayerInLevel();
@@ -4630,11 +4675,17 @@ public final class VintnerGameTests {
                 owner.getGameProfile().name() + "'s Estate",
                 "An unnamed Almanac should use a clear default estate name"
         );
+        assertAdvancementDone(
+                helper,
+                owner,
+                "found_estate",
+                "A successful initial archive registration should grant estate founding progress"
+        );
         helper.succeed();
     }
 
     @GameTest(maxTicks = 40)
-    public void unnamedAlmanacRegistersDefaultPlotInTwoSteps(
+    public void tutorialUnnamedAlmanacRegistersDefaultPlotInTwoSteps(
             GameTestHelper helper
     ) {
         ServerPlayer owner = helper.makeMockServerPlayerInLevel();
@@ -4677,6 +4728,12 @@ public final class VintnerGameTests {
                         .isEmpty(),
                 "The first corner alone should not create a plot"
         );
+        assertAdvancementNotDone(
+                helper,
+                owner,
+                "register_plot",
+                "Recording only the first corner must not grant plot registration progress"
+        );
 
         BlockPos absoluteSecond = helper.absolutePos(secondGround);
         owner.gameMode.useItemOn(
@@ -4708,6 +4765,77 @@ public final class VintnerGameTests {
         helper.assertTrue(
                 VineyardSurveyRecord.read(almanac).isEmpty(),
                 "Completing the plot should clear its pending corner"
+        );
+        assertAdvancementDone(
+                helper,
+                owner,
+                "register_plot",
+                "A successful second-corner registration should grant plot progress"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void tutorialRejectedEstateAndPlotActionsGrantNoProgress(
+            GameTestHelper helper
+    ) {
+        ServerPlayer existingOwner = helper.makeMockServerPlayerInLevel();
+        EstateSavedData.get(helper.getLevel()).register(
+                existingOwner,
+                helper.getLevel(),
+                helper.absolutePos(FIRST),
+                "Existing Estate",
+                DyeColor.PURPLE
+        );
+        helper.setBlock(FIRST, ModBlocks.VINTAGE_ARCHIVE);
+        ItemStack almanac = new ItemStack(ModItems.VINTNER_ALMANAC);
+        VintageArchiveBlock.registerEstate(
+                helper.getLevel(),
+                helper.absolutePos(FIRST),
+                existingOwner,
+                InteractionHand.MAIN_HAND,
+                almanac
+        );
+        assertAdvancementNotDone(
+                helper,
+                existingOwner,
+                "found_estate",
+                "An already-registered estate must not earn founding progress again"
+        );
+
+        ServerPlayer unregistered = helper.makeMockServerPlayerInLevel();
+        unregistered.setGameMode(GameType.SURVIVAL);
+        BlockPos ground = new BlockPos(3, 0, 3);
+        helper.setBlock(ground, Blocks.CALCITE);
+        ItemStack plotAlmanac = new ItemStack(ModItems.VINTNER_ALMANAC);
+        unregistered.setItemInHand(
+                InteractionHand.MAIN_HAND,
+                plotAlmanac
+        );
+        unregistered.setShiftKeyDown(true);
+        BlockPos absoluteGround = helper.absolutePos(ground);
+        unregistered.gameMode.useItemOn(
+                unregistered,
+                helper.getLevel(),
+                plotAlmanac,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteGround),
+                        Direction.UP,
+                        absoluteGround,
+                        false
+                )
+        );
+        unregistered.setShiftKeyDown(false);
+        helper.assertTrue(
+                VineyardSurveyRecord.read(plotAlmanac).isEmpty(),
+                "A player without an estate must not begin plot registration"
+        );
+        assertAdvancementNotDone(
+                helper,
+                unregistered,
+                "register_plot",
+                "Rejected plot registration must not grant advancement progress"
         );
         helper.succeed();
     }
@@ -7099,7 +7227,7 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void vintageArchiveCataloguesUniqueBatches(
+    public void tutorialVintageArchiveCataloguesUniqueBatches(
             GameTestHelper helper
     ) {
         helper.setBlock(FIRST, ModBlocks.VINTAGE_ARCHIVE);
@@ -7172,6 +7300,32 @@ public final class VintnerGameTests {
                 ).producerName(),
                 "Archivist",
                 "Archive serialization should preserve provenance"
+        );
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack third = new ItemStack(ModItems.AGED_RED_WINE);
+        WineMetadata.apply(third, 8, WineQuality.EXCEPTIONAL);
+        WineMetadata.ensureBatchIdentity(third, 1003L);
+        player.setItemInHand(InteractionHand.MAIN_HAND, third);
+        BlockPos absoluteArchive = helper.absolutePos(FIRST);
+        player.gameMode.useItemOn(
+                player,
+                helper.getLevel(),
+                third,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(
+                        Vec3.atCenterOf(absoluteArchive),
+                        Direction.UP,
+                        absoluteArchive,
+                        false
+                )
+        );
+        assertAdvancementDone(
+                helper,
+                player,
+                "catalogue_vintage",
+                "Recording a real wine batch should grant catalogue progress"
         );
 
         ItemStack archiveDrop = Block.getDrops(
@@ -7417,26 +7571,33 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void grapeCuttingsPlantButHarvestedFruitDoesNot(
+    public void tutorialGrapeCuttingsPlantButHarvestedFruitDoesNot(
             GameTestHelper helper
     ) {
         BlockPos fruitTrellis = new BlockPos(2, 1, 2);
         BlockPos cuttingTrellis = new BlockPos(4, 1, 2);
-        var player = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        ServerPlayer redPlanter = helper.makeMockServerPlayerInLevel();
+        redPlanter.setGameMode(GameType.SURVIVAL);
 
         helper.setBlock(fruitTrellis, ModBlocks.OAK_TRELLIS);
         helper.setBlock(cuttingTrellis, ModBlocks.OAK_TRELLIS);
 
         helper.placeAt(
-                player,
+                redPlanter,
                 new ItemStack(ModItems.RED_GRAPES),
                 fruitTrellis.above(),
                 net.minecraft.core.Direction.DOWN
         );
         helper.assertBlockPresent(ModBlocks.OAK_TRELLIS, fruitTrellis);
+        assertAdvancementNotDone(
+                helper,
+                redPlanter,
+                "plant_grapevine",
+                "Harvested fruit must not count as planting a grapevine"
+        );
 
         helper.placeAt(
-                player,
+                redPlanter,
                 new ItemStack(ModItems.RED_GRAPE_CUTTING),
                 cuttingTrellis.above(),
                 net.minecraft.core.Direction.DOWN
@@ -7444,6 +7605,32 @@ public final class VintnerGameTests {
         helper.assertBlockPresent(
                 ModBlocks.RED_GRAPEVINE,
                 cuttingTrellis
+        );
+        assertAdvancementDone(
+                helper,
+                redPlanter,
+                "plant_grapevine",
+                "Planting a red cutting should grant planting progress"
+        );
+
+        helper.setBlock(cuttingTrellis, ModBlocks.OAK_TRELLIS);
+        ServerPlayer whitePlanter = helper.makeMockServerPlayerInLevel();
+        whitePlanter.setGameMode(GameType.SURVIVAL);
+        helper.placeAt(
+                whitePlanter,
+                new ItemStack(ModItems.WHITE_GRAPE_CUTTING),
+                cuttingTrellis.above(),
+                net.minecraft.core.Direction.DOWN
+        );
+        helper.assertBlockPresent(
+                ModBlocks.WHITE_GRAPEVINE,
+                cuttingTrellis
+        );
+        assertAdvancementDone(
+                helper,
+                whitePlanter,
+                "plant_grapevine",
+                "Planting a white cutting should grant planting progress"
         );
         helper.succeed();
     }
@@ -7479,10 +7666,19 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void matureUpperVinesHarvestAndReturnToRegrowth(
+    public void tutorialMatureUpperVinesHarvestAndReturnToRegrowth(
             GameTestHelper helper
     ) {
-        var player = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+
+        triggerInventoryChange(player, ModItems.RED_GRAPES);
+        assertAdvancementNotDone(
+                helper,
+                player,
+                "harvest_grapes",
+                "Acquiring grapes outside vine harvesting must not grant First Harvest"
+        );
 
         helper.setBlock(FIRST, matureLowerVine());
         helper.setBlock(UPPER, matureUpperVine());
@@ -7494,6 +7690,12 @@ public final class VintnerGameTests {
                 ModItems.RED_GRAPES,
                 UPPER,
                 2.0
+        );
+        assertAdvancementDone(
+                helper,
+                player,
+                "harvest_grapes",
+                "Harvesting a mature upper canopy should grant First Harvest"
         );
         helper.succeed();
     }
@@ -7887,7 +8089,7 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void cooperageKitsPreserveWoodAndConfigureEmptyBarrels(
+    public void tutorialCooperageKitsPreserveWoodAndConfigureEmptyBarrels(
             GameTestHelper helper
     ) {
         AgingVessel[] profiles = {
@@ -7907,6 +8109,35 @@ public final class VintnerGameTests {
         player.setGameMode(GameType.SURVIVAL);
         ItemStack mallet = new ItemStack(ModItems.COOPERS_MALLET);
         player.setItemInHand(InteractionHand.MAIN_HAND, mallet);
+
+        CriteriaTriggers.RECIPE_CRAFTED.trigger(
+                player,
+                ResourceKey.create(
+                        Registries.RECIPE,
+                        Identifier.fromNamespaceAndPath(
+                                "vintner",
+                                "toasting_kit"
+                        )
+                ),
+                List.of(new ItemStack(ModItems.TOASTING_KIT))
+        );
+        assertAdvancementNotDone(
+                helper,
+                player,
+                "choose_aging_style",
+                "Crafting a treatment kit must not grant an applied aging style"
+        );
+        ServerPlayer legacyPlayer = helper.makeMockServerPlayerInLevel();
+        legacyPlayer.getAdvancements().award(
+                advancement(helper, "choose_aging_style"),
+                "toasted"
+        );
+        assertAdvancementDone(
+                helper,
+                legacyPlayer,
+                "choose_aging_style",
+                "A retained legacy criterion should preserve existing completion"
+        );
 
         for (int index = 0; index < profiles.length; index++) {
             BlockPos pos = new BlockPos(1 + index * 2, 1, 1);
@@ -7970,6 +8201,12 @@ public final class VintnerGameTests {
             helper.assertTrue(
                     drops.stream().anyMatch(stack -> stack.is(kitItem)),
                     "Breaking an upgraded barrel should return its kit"
+            );
+            assertAdvancementDone(
+                    helper,
+                    player,
+                    "choose_aging_style",
+                    "Applying a treatment to an empty barrel should grant aging-style progress"
             );
         }
 
@@ -8771,6 +9008,52 @@ public final class VintnerGameTests {
                 player,
                 player.getInventory(),
                 stack
+        );
+    }
+
+    private static AdvancementHolder advancement(
+            GameTestHelper helper,
+            String path
+    ) {
+        AdvancementHolder advancement = helper.getLevel()
+                .getServer()
+                .getAdvancements()
+                .get(Identifier.fromNamespaceAndPath(
+                        "vintner",
+                        "vintner/" + path
+                ));
+        helper.assertTrue(
+                advancement != null,
+                "Advancement vintner/" + path + " should load"
+        );
+        return advancement;
+    }
+
+    private static void assertAdvancementDone(
+            GameTestHelper helper,
+            ServerPlayer player,
+            String path,
+            String message
+    ) {
+        helper.assertTrue(
+                player.getAdvancements()
+                        .getOrStartProgress(advancement(helper, path))
+                        .isDone(),
+                message
+        );
+    }
+
+    private static void assertAdvancementNotDone(
+            GameTestHelper helper,
+            ServerPlayer player,
+            String path,
+            String message
+    ) {
+        helper.assertFalse(
+                player.getAdvancements()
+                        .getOrStartProgress(advancement(helper, path))
+                        .isDone(),
+                message
         );
     }
 
@@ -10243,7 +10526,7 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void nurseryBedPropagatesEitherCutting(
+    public void tutorialNurseryBedPropagatesEitherCutting(
             GameTestHelper helper
     ) {
         BlockState empty = ModBlocks.NURSERY_BED.defaultBlockState();
@@ -10289,11 +10572,27 @@ public final class VintnerGameTests {
                         .getValue(NurseryBedBlock.OCCUPIED),
                 "Harvesting should leave the nursery bed reusable"
         );
+
+        helper.setBlock(FIRST, mature);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        helper.useBlock(FIRST, player);
+        helper.assertItemEntityPresent(
+                ModItems.WHITE_GRAPE_CUTTING,
+                FIRST,
+                2.0
+        );
+        assertAdvancementDone(
+                helper,
+                player,
+                "propagate_cutting",
+                "Collecting propagated grape cuttings should grant nursery progress"
+        );
         helper.succeed();
     }
 
     @GameTest(maxTicks = 40)
-    public void matureRootstockCanBeGraftedToACutting(
+    public void tutorialMatureRootstockCanBeGraftedToACutting(
             GameTestHelper helper
     ) {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
@@ -10343,6 +10642,12 @@ public final class VintnerGameTests {
                                 == VineRootstock.RESISTANT
                 ),
                 "The resulting cutting should carry its resistant roots"
+        );
+        assertAdvancementDone(
+                helper,
+                player,
+                "graft_vine",
+                "Creating a rootstock-bearing cutting should grant grafting progress"
         );
         helper.succeed();
     }

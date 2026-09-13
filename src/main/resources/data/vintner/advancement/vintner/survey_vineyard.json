@@ -1,5 +1,5 @@
 {
-  "parent": "vintner:vintner/craft_trellis",
+  "parent": "vintner:vintner/root",
   "criteria": {
     "surveyed": {
       "trigger": "minecraft:impossible"

@@ -1,5 +1,5 @@
 {
-  "parent": "vintner:vintner/plant_grapevine",
+  "parent": "vintner:vintner/harvest_grapes",
   "criteria": {
     "red_must": {
       "trigger": "minecraft:impossible"

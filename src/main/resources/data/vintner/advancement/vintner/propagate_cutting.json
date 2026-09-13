@@ -1,0 +1,25 @@
+{
+  "parent": "vintner:vintner/survey_vineyard",
+  "criteria": {
+    "propagated": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.propagate_cutting.description"
+    },
+    "icon": {
+      "id": "vintner:nursery_bed"
+    },
+    "title": {
+      "translate": "advancement.vintner.propagate_cutting.title"
+    }
+  },
+  "requirements": [
+    [
+      "propagated"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

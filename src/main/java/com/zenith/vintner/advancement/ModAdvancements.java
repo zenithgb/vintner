@@ -28,6 +28,14 @@ public final class ModAdvancements {
         );
     }
 
+    public static void grantHarvest(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/harvest_grapes",
+                "harvested"
+        );
+    }
+
     public static void grantPressing(
             ServerPlayer player,
             ItemStack must
@@ -80,6 +88,70 @@ public final class ModAdvancements {
                 player,
                 "vintner/survey_vineyard",
                 "surveyed"
+        );
+    }
+
+    public static void grantPropagation(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/propagate_cutting",
+                "propagated"
+        );
+    }
+
+    public static void grantGrafting(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/graft_vine",
+                "grafted"
+        );
+    }
+
+    public static void grantAgingStyle(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/choose_aging_style",
+                "applied"
+        );
+    }
+
+    public static void grantCatalogue(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/catalogue_vintage",
+                "catalogued"
+        );
+    }
+
+    public static void grantEstateFounding(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/found_estate",
+                "founded"
+        );
+    }
+
+    public static void grantPlotRegistration(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/register_plot",
+                "registered"
+        );
+    }
+
+    public static void grantEstateManagement(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/manage_estate",
+                "opened"
+        );
+    }
+
+    public static void grantEstateMap(ServerPlayer player) {
+        grant(
+                player,
+                "vintner/map_estate",
+                "mapped"
         );
     }
 

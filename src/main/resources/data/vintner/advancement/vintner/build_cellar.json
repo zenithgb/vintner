@@ -1,5 +1,5 @@
 {
-  "parent": "vintner:vintner/age_wine",
+  "parent": "vintner:vintner/ferment_wine",
   "criteria": {
     "crafted_oak": {
       "conditions": {

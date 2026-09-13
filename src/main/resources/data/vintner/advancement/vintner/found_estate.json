@@ -1,0 +1,26 @@
+{
+  "parent": "vintner:vintner/catalogue_vintage",
+  "criteria": {
+    "founded": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.found_estate.description"
+    },
+    "icon": {
+      "id": "vintner:vintner_almanac"
+    },
+    "title": {
+      "translate": "advancement.vintner.found_estate.title"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "founded"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

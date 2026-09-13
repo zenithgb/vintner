@@ -1,5 +1,6 @@
 package com.zenith.vintner.estate;
 
+import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.EstateManagementDeskBlockEntity;
 import com.zenith.vintner.block.entity.SurveyorsMapTableBlockEntity;
 import com.zenith.vintner.network.EstateDeskPayload;
@@ -84,6 +85,11 @@ public final class EstateDeskReport {
                 atlas.maps(),
                 player
         );
+
+        ModAdvancements.grantEstateManagement(player);
+        if (atlas.connected() && !maps.isEmpty()) {
+            ModAdvancements.grantEstateMap(player);
+        }
 
         ServerPlayNetworking.send(
                 player,

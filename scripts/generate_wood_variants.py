@@ -2063,21 +2063,14 @@ def generate_cooperage_kits() -> None:
             },
         )
 
+    # Retain the historical criterion names as impossible criteria so vanilla
+    # can preserve already-earned progress when this definition is reloaded.
+    # New completion is awarded only by the real barrel-treatment interaction.
     criteria = {
-        "toasted": {
-            "conditions": {"recipe_id": "vintner:toasting_kit"},
-            "trigger": "minecraft:recipe_crafted",
-        },
-        "seasoned": {
-            "conditions": {"recipe_id": "vintner:seasoning_kit"},
-            "trigger": "minecraft:recipe_crafted",
-        },
-        "cellar_cask": {
-            "conditions": {
-                "recipe_id": "vintner:cask_conversion_kit",
-            },
-            "trigger": "minecraft:recipe_crafted",
-        },
+        "applied": {"trigger": "minecraft:impossible"},
+        "toasted": {"trigger": "minecraft:impossible"},
+        "seasoned": {"trigger": "minecraft:impossible"},
+        "cellar_cask": {"trigger": "minecraft:impossible"},
     }
     choose_path = DATA / "advancement/vintner/choose_aging_style.json"
     choose = read_json(choose_path)
@@ -2093,7 +2086,20 @@ def generate_cooperage_kits() -> None:
             "conditions": {"recipe_id": "vintner:coopers_mallet"},
             "trigger": "minecraft:recipe_crafted",
         },
-        **copy.deepcopy(criteria),
+        "toasted": {
+            "conditions": {"recipe_id": "vintner:toasting_kit"},
+            "trigger": "minecraft:recipe_crafted",
+        },
+        "seasoned": {
+            "conditions": {"recipe_id": "vintner:seasoning_kit"},
+            "trigger": "minecraft:recipe_crafted",
+        },
+        "cellar_cask": {
+            "conditions": {
+                "recipe_id": "vintner:cask_conversion_kit",
+            },
+            "trigger": "minecraft:recipe_crafted",
+        },
     }
     master["criteria"] = master_criteria
     master["requirements"] = [
@@ -2911,6 +2917,97 @@ def generate_craft_trellis_advancement() -> None:
     write_json(path, advancement)
 
 
+def generate_tutorial_advancements() -> None:
+    existing_updates = {
+        "survey_vineyard": {"parent": "vintner:vintner/root"},
+        "press_must": {
+            "parent": "vintner:vintner/harvest_grapes",
+        },
+        "build_cellar": {
+            "parent": "vintner:vintner/ferment_wine",
+        },
+        "inspect_wine": {
+            "parent": "vintner:vintner/ferment_wine",
+        },
+    }
+    for identifier, updates in existing_updates.items():
+        path = DATA / f"advancement/vintner/{identifier}.json"
+        advancement = read_json(path)
+        advancement.update(updates)
+        write_json(path, advancement)
+
+    additions = {
+        "harvest_grapes": {
+            "parent": "vintner:vintner/plant_grapevine",
+            "icon": "vintner:red_grapes",
+            "criterion": "harvested",
+        },
+        "propagate_cutting": {
+            "parent": "vintner:vintner/survey_vineyard",
+            "icon": "vintner:nursery_bed",
+            "criterion": "propagated",
+        },
+        "graft_vine": {
+            "parent": "vintner:vintner/propagate_cutting",
+            "icon": "vintner:grafting_knife",
+            "criterion": "grafted",
+        },
+        "catalogue_vintage": {
+            "parent": "vintner:vintner/age_wine",
+            "icon": "vintner:vintage_archive",
+            "criterion": "catalogued",
+        },
+        "found_estate": {
+            "parent": "vintner:vintner/catalogue_vintage",
+            "icon": "vintner:vintner_almanac",
+            "criterion": "founded",
+            "frame": "goal",
+        },
+        "register_plot": {
+            "parent": "vintner:vintner/found_estate",
+            "icon": "vintner:soil_probe",
+            "criterion": "registered",
+        },
+        "manage_estate": {
+            "parent": "vintner:vintner/register_plot",
+            "icon": "vintner:estate_management_desk",
+            "criterion": "opened",
+        },
+        "map_estate": {
+            "parent": "vintner:vintner/manage_estate",
+            "icon": "vintner:surveyors_map_table",
+            "criterion": "mapped",
+        },
+    }
+    for identifier, definition in additions.items():
+        display = {
+            "description": {
+                "translate": (
+                    f"advancement.vintner.{identifier}.description"
+                ),
+            },
+            "icon": {"id": definition["icon"]},
+            "title": {
+                "translate": f"advancement.vintner.{identifier}.title",
+            },
+        }
+        if "frame" in definition:
+            display["frame"] = definition["frame"]
+        criterion = definition["criterion"]
+        write_json(
+            DATA / f"advancement/vintner/{identifier}.json",
+            {
+                "parent": definition["parent"],
+                "criteria": {
+                    criterion: {"trigger": "minecraft:impossible"},
+                },
+                "display": display,
+                "requirements": [[criterion]],
+                "sends_telemetry_event": False,
+            },
+        )
+
+
 def generate_language() -> None:
     path = ASSETS / "lang/en_us.json"
     language = read_json(path)
@@ -2972,9 +3069,60 @@ def generate_language() -> None:
             f"block.vintner.{grapevine_id(wood, 'white')}"
         ] = f"{title} White Grapevine"
 
-    language["advancement.vintner.craft_trellis.description"] = (
-        "Craft a trellis for your first vine"
-    )
+    tutorial_text = {
+        "craft_trellis.description": (
+            "Craft trellises and stack two to support your first vine"
+        ),
+        "plant_grapevine.description": (
+            "Use a grape cutting on the lower block of a two-high trellis"
+        ),
+        "survey_vineyard.description": (
+            "Use a Soil Probe to inspect a potential vineyard site"
+        ),
+        "harvest_grapes.title": "First Harvest",
+        "harvest_grapes.description": (
+            "Harvest ripe grapes from the upper canopy with an empty hand"
+        ),
+        "press_must.description": (
+            "Load four compatible grapes into a Grape Press and press them into must"
+        ),
+        "ferment_wine.description": (
+            "Fill a Fermentation Barrel with four compatible must bottles and collect the finished wine"
+        ),
+        "age_wine.description": (
+            "Fill an Aging Barrel with compatible wine and collect it when ageing is complete"
+        ),
+        "propagate_cutting.title": "Grow the Nursery",
+        "propagate_cutting.description": (
+            "Use a Nursery Bed to propagate a grape cutting"
+        ),
+        "graft_vine.title": "Strong Foundations",
+        "graft_vine.description": (
+            "Use a Grafting Knife to prepare a cutting with rootstock"
+        ),
+        "catalogue_vintage.title": "Preserve a Vintage",
+        "catalogue_vintage.description": (
+            "Record a wine batch in a Vintage Archive"
+        ),
+        "found_estate.title": "Found an Estate",
+        "found_estate.description": (
+            "Use the Vintner's Almanac on a Vintage Archive to establish your estate"
+        ),
+        "register_plot.title": "Mark the Rows",
+        "register_plot.description": (
+            "Sneak-use the Almanac at two opposite corners to register a vineyard plot"
+        ),
+        "manage_estate.title": "Run the Estate",
+        "manage_estate.description": (
+            "Open an Estate Management Desk to review your registered estate"
+        ),
+        "map_estate.title": "Map the Estate",
+        "map_estate.description": (
+            "Use a connected Surveyor's Map Table to review your vineyard plots in the Estate Atlas"
+        ),
+    }
+    for suffix, value in tutorial_text.items():
+        language[f"advancement.vintner.{suffix}"] = value
     # Registry IDs stay unchanged so existing worlds remain compatible.
     language["block.vintner.chestnut_aging_barrel"] = (
         "Toasted Aging Barrel"
@@ -3110,6 +3258,7 @@ def main() -> None:
     generate_survival_data()
     generate_vineyard_recipe_advancements()
     generate_craft_trellis_advancement()
+    generate_tutorial_advancements()
     generate_language()
     print(
         "Generated 12 wood families for trellises, grape presses, "

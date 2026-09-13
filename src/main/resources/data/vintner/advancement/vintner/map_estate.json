@@ -1,0 +1,25 @@
+{
+  "parent": "vintner:vintner/manage_estate",
+  "criteria": {
+    "mapped": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.map_estate.description"
+    },
+    "icon": {
+      "id": "vintner:surveyors_map_table"
+    },
+    "title": {
+      "translate": "advancement.vintner.map_estate.title"
+    }
+  },
+  "requirements": [
+    [
+      "mapped"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

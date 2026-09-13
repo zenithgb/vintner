@@ -1,0 +1,25 @@
+{
+  "parent": "vintner:vintner/register_plot",
+  "criteria": {
+    "opened": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.manage_estate.description"
+    },
+    "icon": {
+      "id": "vintner:estate_management_desk"
+    },
+    "title": {
+      "translate": "advancement.vintner.manage_estate.title"
+    }
+  },
+  "requirements": [
+    [
+      "opened"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

@@ -1,0 +1,25 @@
+{
+  "parent": "vintner:vintner/found_estate",
+  "criteria": {
+    "registered": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.register_plot.description"
+    },
+    "icon": {
+      "id": "vintner:soil_probe"
+    },
+    "title": {
+      "translate": "advancement.vintner.register_plot.title"
+    }
+  },
+  "requirements": [
+    [
+      "registered"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

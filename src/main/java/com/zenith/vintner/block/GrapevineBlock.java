@@ -1,5 +1,6 @@
 package com.zenith.vintner.block;
 
+import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.util.VintnerNotifications;
 import com.zenith.vintner.estate.EstateLedgerSavedData;
 import com.zenith.vintner.estate.LedgerEventType;
@@ -856,6 +857,7 @@ public abstract class GrapevineBlock
             );
             WineMetadata.applyCultivar(grapes, cultivar);
             if (player instanceof ServerPlayer harvester) {
+                ModAdvancements.grantHarvest(harvester);
                 String plotName = VineyardPlotSavedData.get(serverLevel)
                         .findContaining(
                                 harvester.getUUID(),

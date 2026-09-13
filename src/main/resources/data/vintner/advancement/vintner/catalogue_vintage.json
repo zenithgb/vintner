@@ -1,0 +1,25 @@
+{
+  "parent": "vintner:vintner/age_wine",
+  "criteria": {
+    "catalogued": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.vintner.catalogue_vintage.description"
+    },
+    "icon": {
+      "id": "vintner:vintage_archive"
+    },
+    "title": {
+      "translate": "advancement.vintner.catalogue_vintage.title"
+    }
+  },
+  "requirements": [
+    [
+      "catalogued"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

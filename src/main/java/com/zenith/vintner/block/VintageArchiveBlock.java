@@ -1,5 +1,6 @@
 package com.zenith.vintner.block;
 
+import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.util.VintnerNotifications;
 import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
@@ -215,6 +216,11 @@ public final class VintageArchiveBlock extends BaseEntityBlock
                     1
             );
         }
+        if (result != VintageArchiveBlockEntity.RecordResult.FULL
+                && player instanceof net.minecraft.server.level.ServerPlayer
+                        owner) {
+            ModAdvancements.grantCatalogue(owner);
+        }
 
         VintnerNotifications.send(player,
                 Component.translatable(
@@ -340,6 +346,9 @@ public final class VintageArchiveBlock extends BaseEntityBlock
             VintnerNotifications.send(owner, Component.translatable(
                     "message.vintner.estate.custom_name_hint"
             ).withStyle(net.minecraft.ChatFormatting.GRAY), true);
+        }
+        if (!updating) {
+            ModAdvancements.grantEstateFounding(owner);
         }
         level.playSound(
                 null,
