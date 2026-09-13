@@ -697,10 +697,11 @@ def audit_serving_decor() -> None:
                     if isinstance(element, dict)
                     and "#grapes" in strings(element.get("faces", {}))
                 ]
-                if len(grape_elements) != servings * 2:
+                expected_grapes = (0, 7, 12, 18, 24)[servings]
+                if len(grape_elements) != expected_grapes:
                     fail(
                         f"{bowl_model_path.name} must show exactly "
-                        f"{servings * 2} grapes"
+                        f"{expected_grapes} grapes in its tapered bunch"
                     )
                 for grape in grape_elements:
                     start = grape.get("from")
@@ -716,14 +717,39 @@ def audit_serving_decor() -> None:
                         or len(start) != 3
                         or len(end) != 3
                         or any(
-                            float(end[index]) - float(start[index]) > 1.31
+                            float(end[index]) - float(start[index]) > 1.16
                             for index in range(3)
                         )
                     ):
                         fail(
                             f"{bowl_model_path.name} grapes must remain "
-                            "compact individual pieces"
+                            "compact berries within the bunch"
                         )
+                if servings == 4:
+                    starts = [element["from"] for element in grape_elements]
+                    ends = [element["to"] for element in grape_elements]
+                    x_span = max(end[0] for end in ends) - min(
+                        start[0] for start in starts
+                    )
+                    z_span = max(end[2] for end in ends) - min(
+                        start[2] for start in starts
+                    )
+                    if x_span <= z_span or x_span < 6.5:
+                        fail(
+                            f"{bowl_model_path.name} grapes must form a "
+                            "sideways tapered bunch"
+                        )
+                texture_values = (
+                    bowl_model.get("textures", {}).values()
+                    if isinstance(bowl_model.get("textures"), dict)
+                    else []
+                )
+                if not any("stripped_oak_log" in str(value)
+                           for value in texture_values):
+                    fail(f"{bowl_model_path.name} must include a visible bunch stem")
+                if not any("moss_block" in str(value)
+                           for value in texture_values):
+                    fail(f"{bowl_model_path.name} must include a visible bunch leaf")
 
     expected_basket_states = {
         f"facing={facing},has_bottle={occupied}"
@@ -749,10 +775,29 @@ def audit_serving_decor() -> None:
         require_file(model_path)
         model = load_json(model_path)
         elements = model.get("elements") if isinstance(model, dict) else None
-        if not isinstance(elements, list) or len(elements) < 28:
+        if not isinstance(elements, list) or len(elements) != 30:
             fail(f"{block_id} must retain the shallow woven cradle and handle")
-        elif not any("rotation" in element for element in elements):
-            fail(f"{block_id} must retain its segmented raised handle")
+        elif any(
+            isinstance(element, dict) and "rotation" in element
+            for element in elements
+        ):
+            fail(f"{block_id} must not contain overlapping rotated basket parts")
+        elif any(
+            all(
+                max(first["from"][axis], second["from"][axis])
+                < min(first["to"][axis], second["to"][axis])
+                for axis in range(3)
+            )
+            for index, first in enumerate(elements)
+            for second in elements[index + 1:]
+            if isinstance(first, dict)
+            and isinstance(second, dict)
+            and isinstance(first.get("from"), list)
+            and isinstance(first.get("to"), list)
+            and isinstance(second.get("from"), list)
+            and isinstance(second.get("to"), list)
+        ):
+            fail(f"{block_id} basket parts must not intersect each other")
         for path in (
             ASSETS / f"items/{block_id}.json",
             DATA / f"recipe/{block_id}.json",

@@ -93,16 +93,44 @@ def bowl_elements(servings: int) -> list[dict[str, object]]:
         cube([3.3, 1.5, 11.2], [4.8, 2.9, 12.7], "#bowl"),
         cube([11.2, 1.5, 11.2], [12.7, 2.9, 12.7], "#bowl"),
     ]
-    # Add grapes in balanced pairs so every serving state stays centred.
+    # Build one sideways, tapered grape bunch instead of a round mound or
+    # scattered cubes. The narrow left end and broad right shoulder mirror a
+    # harvested cluster laid across the bowl. Nested counts preserve that
+    # silhouette as servings are removed.
     grape_positions = (
-        (6.25, 6.25, 1.55), (8.35, 8.25, 1.60),
-        (8.55, 5.80, 1.50), (5.95, 8.45, 1.65),
-        (5.15, 5.15, 1.48), (9.55, 9.20, 1.55),
-        (9.70, 4.85, 1.62), (4.80, 9.65, 1.52),
+        # The first serving retains the tapered spine and narrow tail.
+        (4.55, 7.55, 3.00),
+        (5.50, 7.05, 3.15), (5.55, 8.20, 3.05),
+        (6.45, 6.65, 3.10), (6.55, 7.80, 3.30),
+        (6.50, 8.95, 3.05), (7.50, 7.65, 3.25),
+        # Additional servings broaden the bunch toward its stem end.
+        (7.45, 6.40, 3.05), (7.55, 8.85, 3.10),
+        (8.40, 6.70, 3.10), (8.45, 7.85, 3.25),
+        (8.35, 9.00, 3.05),
+        (9.30, 6.35, 3.00), (9.45, 7.45, 3.20),
+        (9.35, 8.60, 3.10), (10.25, 6.75, 3.00),
+        (10.35, 7.90, 3.05), (10.25, 9.00, 3.00),
+        # A raised layer gives the full bunch the clustered grape silhouette.
+        (5.90, 7.60, 4.20), (7.00, 7.15, 4.35),
+        (7.15, 8.25, 4.30), (8.30, 7.20, 4.40),
+        (8.45, 8.35, 4.30), (9.45, 7.75, 4.25),
     )
-    for x, z, y in grape_positions[: servings * 2]:
+    grape_counts = (0, 7, 12, 18, 24)
+    for x, z, y in grape_positions[:grape_counts[servings]]:
         elements.append(cube(
-            [x, y, z], [x + 1.3, y + 1.3, z + 1.3], "#grapes",
+            [x, y, z], [x + 1.15, y + 1.15, z + 1.15], "#grapes",
+        ))
+    if servings > 0:
+        # The stem and leaf emerge from the broad end and lie with the bunch.
+        elements.extend((
+            rotated_cube(
+                [9.55, 4.85, 6.95], [11.85, 5.25, 7.35], "#stem",
+                origin=[9.75, 5.05, 7.15], axis="y", angle=-22.5,
+            ),
+            rotated_cube(
+                [9.55, 4.95, 7.25], [11.45, 5.20, 9.20], "#leaf",
+                origin=[9.75, 5.05, 7.45], axis="y", angle=-22.5,
+            ),
         ))
     return elements
 
@@ -182,6 +210,8 @@ def generate_grape_bowl() -> None:
                     "textures": {
                         **base_textures,
                         "grapes": f"vintner:block/grape_bowl_{palette}_grapes",
+                        "stem": "minecraft:block/stripped_oak_log",
+                        "leaf": "minecraft:block/moss_block",
                     },
                     "elements": bowl_elements(servings),
                     "display": display_transforms(),
@@ -249,65 +279,36 @@ def basket_elements() -> list[dict[str, object]]:
         # Five open slats keep the base visibly woven instead of bed-like.
         *(
             cube([x, 0.45, 4.25], [x + 1.15, 1.0, 11.75], "#weave")
-            for x in (3.2, 5.3, 7.42, 9.55, 11.65)
+            for x in (4.25, 5.82, 7.42, 9.02, 10.60)
         ),
-        # Low octagonal basket wall.
-        cube([4.0, 0.8, 3.45], [12.0, 2.75, 4.25], "#weave"),
-        cube([4.0, 0.8, 11.75], [12.0, 2.75, 12.55], "#weave"),
-        cube([2.55, 0.8, 5.0], [3.35, 2.75, 11.0], "#weave"),
-        cube([12.65, 0.8, 5.0], [13.45, 2.75, 11.0], "#weave"),
-        rotated_cube(
-            [2.55, 0.8, 4.0], [5.0, 2.75, 4.8], "#weave",
-            origin=[3.75, 1.75, 4.4], axis="y", angle=45,
-        ),
-        rotated_cube(
-            [11.0, 0.8, 4.0], [13.45, 2.75, 4.8], "#weave",
-            origin=[12.25, 1.75, 4.4], axis="y", angle=-45,
-        ),
-        rotated_cube(
-            [2.55, 0.8, 11.2], [5.0, 2.75, 12.0], "#weave",
-            origin=[3.75, 1.75, 11.6], axis="y", angle=-45,
-        ),
-        rotated_cube(
-            [11.0, 0.8, 11.2], [13.45, 2.75, 12.0], "#weave",
-            origin=[12.25, 1.75, 11.6], axis="y", angle=45,
-        ),
-        # A slim top rim follows the same oval footprint.
-        cube([4.0, 2.55, 3.15], [12.0, 3.3, 4.25], "#rim"),
-        cube([4.0, 2.55, 11.75], [12.0, 3.3, 12.85], "#rim"),
-        cube([2.25, 2.55, 5.0], [3.35, 3.3, 11.0], "#rim"),
-        cube([12.65, 2.55, 5.0], [13.75, 3.3, 11.0], "#rim"),
-        rotated_cube(
-            [2.35, 2.55, 3.7], [5.05, 3.3, 4.8], "#rim",
-            origin=[3.7, 2.9, 4.25], axis="y", angle=45,
-        ),
-        rotated_cube(
-            [10.95, 2.55, 3.7], [13.65, 3.3, 4.8], "#rim",
-            origin=[12.3, 2.9, 4.25], axis="y", angle=-45,
-        ),
-        rotated_cube(
-            [2.35, 2.55, 11.2], [5.05, 3.3, 12.3], "#rim",
-            origin=[3.7, 2.9, 11.75], axis="y", angle=-45,
-        ),
-        rotated_cube(
-            [10.95, 2.55, 11.2], [13.65, 3.3, 12.3], "#rim",
-            origin=[12.3, 2.9, 11.75], axis="y", angle=45,
-        ),
-        # One restrained weave line on each long face.
-        cube([3.0, 1.45, 4.15], [13.0, 1.78, 4.42], "#binding"),
-        cube([3.0, 1.45, 11.58], [13.0, 1.78, 11.85], "#binding"),
-        # Correctly joined arch: left rises inward, right descends outward.
-        cube([2.7, 3.0, 7.4], [3.55, 7.15, 8.6], "#rim"),
-        cube([12.45, 3.0, 7.4], [13.3, 7.15, 8.6], "#rim"),
-        rotated_cube(
-            [3.15, 6.55, 7.4], [7.35, 7.4, 8.6], "#rim",
-            origin=[3.4, 6.95, 8.0], axis="z", angle=22.5,
-        ),
-        rotated_cube(
-            [8.65, 6.55, 7.4], [12.85, 7.4, 8.6], "#rim",
-            origin=[12.6, 6.95, 8.0], axis="z", angle=-22.5,
-        ),
-        cube([6.55, 8.0, 7.4], [9.45, 8.85, 8.6], "#rim"),
+        # Non-overlapping stepped walls form a clean octagonal basket.
+        cube([4.25, 0.8, 3.50], [11.75, 2.75, 4.25], "#weave"),
+        cube([4.25, 0.8, 11.75], [11.75, 2.75, 12.50], "#weave"),
+        cube([2.75, 0.8, 5.00], [3.50, 2.75, 11.00], "#weave"),
+        cube([12.50, 0.8, 5.00], [13.25, 2.75, 11.00], "#weave"),
+        cube([3.50, 0.8, 4.25], [4.25, 2.75, 5.00], "#weave"),
+        cube([11.75, 0.8, 4.25], [12.50, 2.75, 5.00], "#weave"),
+        cube([3.50, 0.8, 11.00], [4.25, 2.75, 11.75], "#weave"),
+        cube([11.75, 0.8, 11.00], [12.50, 2.75, 11.75], "#weave"),
+        # The rim follows the same footprint with face-touching joins only.
+        cube([4.25, 2.75, 3.15], [11.75, 3.40, 4.25], "#rim"),
+        cube([4.25, 2.75, 11.75], [11.75, 3.40, 12.85], "#rim"),
+        cube([2.25, 2.75, 5.25], [3.25, 3.40, 10.75], "#rim"),
+        cube([12.75, 2.75, 5.25], [13.75, 3.40, 10.75], "#rim"),
+        cube([3.25, 2.75, 4.25], [4.25, 3.40, 5.25], "#rim"),
+        cube([11.75, 2.75, 4.25], [12.75, 3.40, 5.25], "#rim"),
+        cube([3.25, 2.75, 10.75], [4.25, 3.40, 11.75], "#rim"),
+        cube([11.75, 2.75, 10.75], [12.75, 3.40, 11.75], "#rim"),
+        # A stepped arch avoids the self-intersections of rotated handle parts.
+        cube([3.25, 3.40, 7.55], [4.00, 6.40, 8.45], "#rim"),
+        cube([4.00, 6.40, 7.55], [4.85, 7.15, 8.45], "#rim"),
+        cube([4.85, 7.15, 7.55], [5.85, 7.90, 8.45], "#rim"),
+        cube([5.85, 7.90, 7.55], [7.00, 8.55, 8.45], "#rim"),
+        cube([7.00, 8.55, 7.55], [9.00, 9.15, 8.45], "#rim"),
+        cube([9.00, 7.90, 7.55], [10.15, 8.55, 8.45], "#rim"),
+        cube([10.15, 7.15, 7.55], [11.15, 7.90, 8.45], "#rim"),
+        cube([11.15, 6.40, 7.55], [12.00, 7.15, 8.45], "#rim"),
+        cube([12.00, 3.40, 7.55], [12.75, 6.40, 8.45], "#rim"),
     ]
     return elements
 
