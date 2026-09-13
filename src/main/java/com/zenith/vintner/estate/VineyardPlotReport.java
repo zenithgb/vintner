@@ -30,7 +30,7 @@ public record VineyardPlotReport(
         int projectedQuality,
         int healthPercent
 ) {
-    private static final int MAX_CONDITION_SAMPLES = 32;
+    public static final int CONDITION_SAMPLE_LIMIT = 32;
     private static final int ANALYSIS_MARGIN = 12;
     public static final int IMPROVED_IRRIGATION_MINIMUM_VINES = 4;
     public static final int IMPROVED_IRRIGATION_PERCENT = 75;
@@ -95,7 +95,7 @@ public record VineyardPlotReport(
                         projectedYield += variety.maximumHarvest();
                     }
 
-                    if (conditionSamples < MAX_CONDITION_SAMPLES) {
+                    if (conditionSamples < CONDITION_SAMPLE_LIMIT) {
                         VineyardConditionReport condition =
                                 GrapeQualityEvaluator.inspectWithTerroir(
                                         level,

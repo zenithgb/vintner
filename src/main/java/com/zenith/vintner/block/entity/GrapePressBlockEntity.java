@@ -67,6 +67,7 @@ public final class GrapePressBlockEntity extends BlockEntity {
 
         return input.is(offered.getItem())
                 && input.getCount() < CAPACITY
+                && sameCultivar(input, offered)
                 && WineMetadata.matchesBatch(
                         input,
                         offered
@@ -132,6 +133,7 @@ public final class GrapePressBlockEntity extends BlockEntity {
 
         return output.is(mustItem)
                 && output.getCount() < CAPACITY
+                && outputMatchesCultivar(output, input)
                 && WineMetadata.matchesBatchIdentity(
                         output,
                         input
@@ -140,6 +142,42 @@ public final class GrapePressBlockEntity extends BlockEntity {
                         WineMetadata.qualityProfile(input)
                                 .withProcessing(5)
                 );
+    }
+
+    private static boolean sameCultivar(
+            ItemStack first,
+            ItemStack second
+    ) {
+        GrapeVariety variety = first.is(ModItems.RED_GRAPES)
+                ? GrapeVariety.RED
+                : GrapeVariety.WHITE;
+        return WineMetadata.cultivar(first, variety)
+                == WineMetadata.cultivar(second, variety);
+    }
+
+    private static boolean outputMatchesCultivar(
+            ItemStack output,
+            ItemStack input
+    ) {
+        WineProvenance outputProvenance = WineMetadata.provenance(output);
+        if (!outputProvenance.known()
+                || !GrapeCultivar.isCultivarName(
+                outputProvenance.variety()
+        )) {
+            /*
+             * Legacy/unknown must can still be bottled, but must not absorb a
+             * named 1.4 cultivar and silently keep its old ageing identity.
+             */
+            return false;
+        }
+
+        GrapeVariety variety = input.is(ModItems.RED_GRAPES)
+                ? GrapeVariety.RED
+                : GrapeVariety.WHITE;
+        return GrapeCultivar.fromName(
+                outputProvenance.variety(),
+                variety
+        ) == WineMetadata.cultivar(input, variety);
     }
 
     public boolean press() {
@@ -157,9 +195,7 @@ public final class GrapePressBlockEntity extends BlockEntity {
         WineProvenance provenance =
                 WineMetadata.provenance(input);
 
-        if (!provenance.known()
-                && producer != null
-                && level != null) {
+        if (!provenance.known()) {
             GrapeVariety baseVariety = input.is(ModItems.RED_GRAPES)
                     ? GrapeVariety.RED
                     : GrapeVariety.WHITE;
@@ -167,14 +203,28 @@ public final class GrapePressBlockEntity extends BlockEntity {
                     input,
                     baseVariety
             );
-            provenance = WineProvenance.batched(
-                    cultivar,
-                    level.getGameTime(),
-                    level.dimension().identifier().toString(),
-                    worldPosition,
-                    producer.getUUID(),
-                    producer.getGameProfile().name()
-            ).withVintageConditions(
+            provenance = producer != null && level != null
+                    ? WineProvenance.batched(
+                            cultivar,
+                            level.getGameTime(),
+                            level.dimension().identifier().toString(),
+                            worldPosition,
+                            producer.getUUID(),
+                            producer.getGameProfile().name()
+                    )
+                    : new WineProvenance(
+                            cultivar.serializedName(),
+                            level == null ? 0L : level.getGameTime(),
+                            level == null
+                                    ? WineProvenance.UNKNOWN
+                                    : level.dimension().identifier().toString(),
+                            worldPosition.getX(),
+                            worldPosition.getY(),
+                            worldPosition.getZ(),
+                            "",
+                            ""
+                    );
+            provenance = provenance.withVintageConditions(
                     WineMetadata.vintageConditions(input)
             );
         }

@@ -250,7 +250,7 @@ public record EstateDeskPayload(
             vineCount = Math.max(0, vineCount);
             health = Math.clamp(health, 0, 100);
             projectedYield = Math.max(0, projectedYield);
-            projectedQuality = Math.clamp(projectedQuality, 0, 100);
+            projectedQuality = Math.clamp(projectedQuality, 0, 60);
             irrigation = Math.clamp(irrigation, 0, 100);
         }
 

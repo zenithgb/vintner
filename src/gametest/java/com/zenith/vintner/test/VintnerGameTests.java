@@ -2806,6 +2806,248 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void pressCultivarInputCompatibilityPreservesIdentity(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.GRAPE_PRESS);
+        GrapePressBlockEntity press = helper.getBlockEntity(
+                FIRST,
+                GrapePressBlockEntity.class
+        );
+        WineQualityProfile profile = WineQualityProfile.vineyard(50);
+        ItemStack first = new ItemStack(ModItems.RED_GRAPES, 2);
+        ItemStack matching = new ItemStack(ModItems.RED_GRAPES, 2);
+        ItemStack different = new ItemStack(ModItems.RED_GRAPES, 2);
+        for (ItemStack grapes : List.of(first, matching, different)) {
+            WineMetadata.applyProfile(grapes, 3, profile);
+        }
+        WineMetadata.applyCultivar(first, GrapeCultivar.EMBER_NOIR);
+        WineMetadata.applyCultivar(matching, GrapeCultivar.EMBER_NOIR);
+        WineMetadata.applyCultivar(different, GrapeCultivar.VALE_PINOT);
+        WineVintageConditions firstConditions =
+                WineVintageConditions.harvested(
+                        SeasonalContext.atDay(10L, 8),
+                        VineyardWeatherEvent.CALM,
+                        false
+                );
+        WineVintageConditions laterConditions =
+                WineVintageConditions.harvested(
+                        SeasonalContext.atDay(12L, 8),
+                        VineyardWeatherEvent.HEATWAVE,
+                        false
+                );
+        WineMetadata.applyVintageConditions(first, firstConditions);
+        WineMetadata.applyVintageConditions(matching, laterConditions);
+        WineMetadata.applyVintageConditions(different, firstConditions);
+
+        helper.assertValueEqual(
+                press.insert(first, first.getCount()),
+                2,
+                "The first cultivar lot should establish press input"
+        );
+        helper.assertValueEqual(
+                press.insert(matching, matching.getCount()),
+                2,
+                "A compatible lot of the same cultivar should merge"
+        );
+        helper.assertValueEqual(
+                WineMetadata.cultivar(
+                        press.getInput(),
+                        GrapeVariety.RED
+                ),
+                GrapeCultivar.EMBER_NOIR,
+                "A valid merge must retain exact cultivar identity"
+        );
+        helper.assertValueEqual(
+                WineMetadata.vintageConditions(press.getInput()),
+                firstConditions,
+                "Informational weather annotation should remain first-lot data"
+        );
+
+        ItemStack storedBeforeRejection = press.getInput().copy();
+        ItemStack offeredBeforeRejection = different.copy();
+        helper.assertFalse(
+                press.canInsert(different),
+                "A different same-colour cultivar must not merge"
+        );
+        helper.assertValueEqual(
+                press.insert(different, different.getCount()),
+                0,
+                "Rejected cultivar grapes must not enter the press"
+        );
+        helper.assertTrue(
+                ItemStack.isSameItemSameComponents(
+                        press.getInput(),
+                        storedBeforeRejection
+                ) && press.getInput().getCount()
+                        == storedBeforeRejection.getCount(),
+                "Rejected insertion must preserve existing press contents"
+        );
+        helper.assertTrue(
+                ItemStack.isSameItemSameComponents(
+                        different,
+                        offeredBeforeRejection
+                ) && different.getCount() == offeredBeforeRejection.getCount(),
+                "Rejected insertion must preserve the attempted grape stack"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void pressCultivarOutputCompatibilityPreventsMustRewrite(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(FIRST, ModBlocks.GRAPE_PRESS);
+        GrapePressBlockEntity press = helper.getBlockEntity(
+                FIRST,
+                GrapePressBlockEntity.class
+        );
+        ServerPlayer producer = helper.makeMockServerPlayerInLevel();
+        WineQualityProfile profile = WineQualityProfile.vineyard(50);
+        ItemStack ember = new ItemStack(
+                ModItems.RED_GRAPES,
+                GrapePressBlockEntity.GRAPES_PER_PRESS
+        );
+        ItemStack vale = new ItemStack(
+                ModItems.RED_GRAPES,
+                GrapePressBlockEntity.GRAPES_PER_PRESS
+        );
+        WineMetadata.applyProfile(ember, 3, profile);
+        WineMetadata.applyProfile(vale, 3, profile);
+        WineMetadata.applyCultivar(ember, GrapeCultivar.EMBER_NOIR);
+        WineMetadata.applyCultivar(vale, GrapeCultivar.VALE_PINOT);
+
+        press.insert(ember, ember.getCount());
+        helper.assertTrue(
+                press.press(producer),
+                "The first cultivar should create must"
+        );
+        helper.assertValueEqual(
+                WineMetadata.provenance(press.getOutput()).variety(),
+                GrapeCultivar.EMBER_NOIR.serializedName(),
+                "Must should retain the first cultivar"
+        );
+        press.insert(vale, vale.getCount());
+        helper.assertFalse(
+                press.canPress(),
+                "A later cultivar lot must not append to existing must"
+        );
+        helper.assertFalse(
+                press.press(producer),
+                "Rejected pressing must leave both slots unchanged"
+        );
+        helper.assertValueEqual(
+                press.getInput().getCount(),
+                GrapePressBlockEntity.GRAPES_PER_PRESS,
+                "Rejected pressing must preserve waiting grapes"
+        );
+        helper.assertValueEqual(
+                WineMetadata.cultivar(
+                        press.getInput(),
+                        GrapeVariety.RED
+                ),
+                GrapeCultivar.VALE_PINOT,
+                "Rejected pressing must preserve the waiting cultivar"
+        );
+        helper.assertValueEqual(
+                press.getOutput().getCount(),
+                1,
+                "Rejected pressing must preserve existing must"
+        );
+        helper.assertValueEqual(
+                WineMetadata.provenance(press.getOutput()).variety(),
+                GrapeCultivar.EMBER_NOIR.serializedName(),
+                "Rejected pressing must not rewrite existing must"
+        );
+
+        press.bottleOneMust();
+        helper.assertTrue(
+                press.press(producer),
+                "The waiting cultivar should press once old must is removed"
+        );
+        helper.assertValueEqual(
+                WineMetadata.provenance(press.getOutput()).variety(),
+                GrapeCultivar.VALE_PINOT.serializedName(),
+                "New must should retain the waiting cultivar"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 300)
+    public void pressCultivarIdentityControlsDownstreamAgeing(
+            GameTestHelper helper
+    ) {
+        BlockPos pressPos = new BlockPos(1, 1, 1);
+        BlockPos fermentationPos = new BlockPos(3, 1, 1);
+        helper.setBlock(pressPos, ModBlocks.GRAPE_PRESS);
+        helper.setBlock(
+                fermentationPos,
+                ModBlocks.FERMENTATION_BARREL
+        );
+        GrapePressBlockEntity press = helper.getBlockEntity(
+                pressPos,
+                GrapePressBlockEntity.class
+        );
+        ItemStack grapes = new ItemStack(
+                ModItems.RED_GRAPES,
+                GrapePressBlockEntity.GRAPES_PER_PRESS
+        );
+        WineMetadata.applyProfile(
+                grapes,
+                4,
+                WineQualityProfile.vineyard(20)
+        );
+        WineMetadata.applyCultivar(grapes, GrapeCultivar.SUNCREST);
+        press.insert(grapes, grapes.getCount());
+        helper.assertTrue(
+                press.press(helper.makeMockServerPlayerInLevel()),
+                "Named cultivar grapes should press through production logic"
+        );
+        ItemStack must = press.bottleOneMust();
+
+        FermentationBarrelBlockEntity fermentation =
+                helper.getBlockEntity(
+                        fermentationPos,
+                        FermentationBarrelBlockEntity.class
+                );
+        for (int bottle = 0;
+             bottle < FermentationBarrelBlockEntity.CAPACITY;
+             bottle++) {
+            helper.assertTrue(
+                    fermentation.insertOne(must),
+                    "Cultivar must should remain fermentation-compatible"
+            );
+        }
+        for (int tick = 0;
+             tick < FermentationBarrelBlockEntity.FERMENTATION_TIME;
+             tick++) {
+            FermentationBarrelBlockEntity.serverTick(
+                    helper.getLevel(),
+                    helper.absolutePos(fermentationPos),
+                    helper.getBlockState(fermentationPos),
+                    fermentation
+            );
+        }
+        ItemStack wine = fermentation.takeOneWine();
+        helper.assertValueEqual(
+                WineMetadata.provenance(wine).variety(),
+                GrapeCultivar.SUNCREST.serializedName(),
+                "Fermented wine must retain the pressed cultivar"
+        );
+        WineMetadata.ageBottle(
+                wine,
+                40L * 24000L,
+                CellarRating.GOOD
+        );
+        helper.assertValueEqual(
+                WineMetadata.ageStage(wine),
+                WineAgeStage.PEAK,
+                "Downstream ageing must use Suncrest's faster timeline"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void fermentationCompletesAndProducesWine(
             GameTestHelper helper
     ) {

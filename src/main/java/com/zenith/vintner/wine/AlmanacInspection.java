@@ -15,6 +15,7 @@ import com.zenith.vintner.vineyard.TerroirReport;
 import com.zenith.vintner.vineyard.VineyardIrrigation;
 import com.zenith.vintner.vineyard.VineyardManagementAdvice;
 import com.zenith.vintner.vineyard.VineyardProtection;
+import com.zenith.vintner.vineyard.VineyardSeason;
 import com.zenith.vintner.vineyard.VineyardThreat;
 import com.zenith.vintner.vineyard.VineyardWeatherEvent;
 import net.minecraft.ChatFormatting;
@@ -117,7 +118,9 @@ public final class AlmanacInspection {
                 context
         ).mitigatedBy(protectedCultivation, irrigated);
         almanacReport.page(
-                Component.translatable("message.vintner.almanac.season"),
+                Component.translatable(
+                        "message.vintner.almanac.season_title"
+                ),
                 entries.get(3),
                 entries.get(4),
                 season(context),
@@ -193,7 +196,9 @@ public final class AlmanacInspection {
                 ).withStyle(ChatFormatting.DARK_GREEN)
         );
         almanac.page(
-                Component.translatable("message.vintner.almanac.vine_health"),
+                Component.translatable(
+                        "message.vintner.almanac.vine_health_title"
+                ),
                 Component.translatable(
                         "message.vintner.almanac.yield_mode",
                         report.yieldMode().displayName(),
@@ -219,15 +224,57 @@ public final class AlmanacInspection {
                         report.qualityScore(),
                         report.terroir().siteScore()
                 ).withStyle(ChatFormatting.DARK_GREEN),
-                VineyardManagementAdvice.recommend(
-                        report.preparedSoil(),
-                        report.weatherEvent(),
-                        report.protectedCultivation(),
-                        report.irrigated(),
-                        report.ripeHarvest()
-                ).message().copy().withStyle(ChatFormatting.AQUA)
+                Component.translatable(
+                        report.netted()
+                                ? "message.vintner.almanac.netting.installed"
+                                : "message.vintner.almanac.netting.absent"
+                ).withStyle(report.netted()
+                        ? ChatFormatting.DARK_GREEN
+                        : ChatFormatting.GRAY),
+                vineyardAdvice(report).copy()
+                        .withStyle(ChatFormatting.AQUA),
+                winterGuidance(report).copy()
+                        .withStyle(ChatFormatting.GRAY),
+                Component.translatable(
+                        "message.vintner.almanac.shears_controls"
+                ).withStyle(ChatFormatting.DARK_GRAY)
         );
         grantSurvey(player);
+    }
+
+    private static Component vineyardAdvice(
+            VineyardConditionReport report
+    ) {
+        if (report.weatherEvent() == VineyardWeatherEvent.HAIL
+                && !report.protectedCultivation()) {
+            return Component.translatable(
+                    "message.vintner.almanac.threat_advice.hail"
+            );
+        }
+        if (report.threat() != VineyardThreat.HEALTHY) {
+            return report.threat().advice();
+        }
+        return VineyardManagementAdvice.recommend(
+                report.preparedSoil(),
+                report.weatherEvent(),
+                report.protectedCultivation(),
+                report.irrigated(),
+                report.ripeHarvest()
+        ).message();
+    }
+
+    private static Component winterGuidance(
+            VineyardConditionReport report
+    ) {
+        if (report.seasonalContext().season()
+                != VineyardSeason.WINTER) {
+            return Component.empty();
+        }
+        return Component.translatable(
+                report.protectedCultivation()
+                        ? "message.vintner.almanac.winter.protected"
+                        : "message.vintner.almanac.winter.dormant"
+        );
     }
 
     private static void inspectFermentation(

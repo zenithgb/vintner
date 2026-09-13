@@ -695,6 +695,10 @@ public final class VintnerAlmanacItem extends Item {
                         report.projectedQuality()
                 ).withStyle(ChatFormatting.DARK_GRAY),
                 Component.translatable(
+                        "message.vintner.plot.sample",
+                        VineyardPlotReport.CONDITION_SAMPLE_LIMIT
+                ).withStyle(ChatFormatting.DARK_GRAY),
+                Component.translatable(
                         "message.vintner.plot.irrigation",
                         report.irrigatedVines(),
                         report.vineCount(),

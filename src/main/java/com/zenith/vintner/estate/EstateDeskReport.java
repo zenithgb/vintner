@@ -200,6 +200,14 @@ public final class EstateDeskReport {
                             .withStyle(ChatFormatting.DARK_GRAY));
                 }
             }
+            if (snapshots.stream()
+                    .limit(MAX_PLOT_REPORTS)
+                    .anyMatch(snapshot -> snapshot.report().isPresent())) {
+                lines.add(line(
+                        "vineyards.sample",
+                        VineyardPlotReport.CONDITION_SAMPLE_LIMIT
+                ).withStyle(ChatFormatting.DARK_GRAY));
+            }
             if (snapshots.size() > MAX_PLOT_REPORTS) {
                 lines.add(line(
                         "vineyards.more",

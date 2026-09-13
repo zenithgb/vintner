@@ -1,5 +1,6 @@
 package com.zenith.vintner.client.screen;
 
+import com.zenith.vintner.estate.VineyardPlotReport;
 import com.zenith.vintner.network.EstateDeskPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -696,6 +697,10 @@ public final class EstateManagementDeskScreen extends Screen {
                                 "screen.vintner.estate_desk.map.output",
                                 plot.projectedYield(),
                                 plot.irrigation()
+                        ),
+                        Component.translatable(
+                                "screen.vintner.estate_desk.map.sample",
+                                VineyardPlotReport.CONDITION_SAMPLE_LIMIT
                         )
                 )
                 : List.of(
