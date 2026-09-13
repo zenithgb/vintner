@@ -75,19 +75,31 @@ def rotated_cube(
     return element
 
 
-def berry_elements(x: float, y: float, z: float, name: str) -> list[dict[str, object]]:
-    """A large bevelled berry with one continuous UV domain across its parts."""
+def berry_elements(x: float, y: float, z: float, name: str, identity: int) -> list[dict[str, object]]:
+    """A subtly irregular berry, stable across palettes and serving states."""
+    size = 1.52 + ((identity * 7 + 3) % 17) * 0.02
+    x_radius = size * (0.96 + (identity * 3 % 5) * 0.02) / 2
+    y_radius = size * (0.95 + ((identity * 5 + 1) % 7) * 0.02) / 2
+    z_radius = size * (0.96 + ((identity * 2 + 2) % 5) * 0.02) / 2
+    cap = 0.67 + ((identity * 5 + 2) % 6) * 0.025
+    band = 0.40 + ((identity * 2 + 1) % 5) * 0.04
+    corner = 0.14 + (identity * 3 % 5) * 0.016
+    # Lower fruit sits on the existing bowl floor despite differing sizes.
+    if y == 0:
+        y = 1.10 + y_radius
     parts = []
-    for bottom, top, width in (
-        (-0.85, -0.43, 1.20), (-0.43, 0.43, 1.70),
-        (0.43, 0.85, 1.20),
+    for bottom, top, breadth in (
+        (-y_radius, -y_radius * band, cap),
+        (-y_radius * band, y_radius * band, 1.0),
+        (y_radius * band, y_radius, cap),
     ):
-        half = width / 2
-        inset = width * 0.18
+        half = x_radius * breadth
+        depth_radius = z_radius * breadth
+        inset = half * 2 * corner
         for left, right, depth in (
-            (-half, -half + inset, half - inset),
-            (-half + inset, half - inset, half),
-            (half - inset, half, half - inset),
+            (-half, -half + inset, depth_radius * (1 - 2 * corner)),
+            (-half + inset, half - inset, depth_radius),
+            (half - inset, half, depth_radius * (1 - 2 * corner)),
         ):
             part = cube(
                 [round(x + left, 4), round(y + bottom, 4), round(z - depth, 4)],
@@ -95,18 +107,27 @@ def berry_elements(x: float, y: float, z: float, name: str) -> list[dict[str, ob
                 "#grapes",
             )
             part["name"] = name
-            # Repeating the entire noisy texture on every tiny face created
-            # the striped/ringed appearance. All parts now sample their
-            # matching place on one berry, with a restrained skin highlight.
-            u0, u1 = (left + 0.85) / 1.70 * 16, (right + 0.85) / 1.70 * 16
-            v0, v1 = (0.85 - top) / 1.70 * 16, (0.85 - bottom) / 1.70 * 16
-            d0, d1 = (0.85 - depth) / 1.70 * 16, (0.85 + depth) / 1.70 * 16
+            u0, u1 = (left + x_radius) / (2 * x_radius), (right + x_radius) / (2 * x_radius)
+            v0, v1 = (y_radius - top) / (2 * y_radius), (y_radius - bottom) / (2 * y_radius)
+            d0, d1 = (z_radius - depth) / (2 * z_radius), (z_radius + depth) / (2 * z_radius)
+            # Four atlas cells offer restrained tone/highlight differences.
+            # Crop and mirror the complete berry UV domain, never each slice.
+            tile = (identity * 3 + identity // 4) % 4
+            crop = 0.88 + (identity % 4) * 0.03
+            shift_u = ((identity * 3) % 5) / 4 * (1 - crop)
+            shift_v = ((identity * 2) % 5) / 4 * (1 - crop)
             for face_name, face in part["faces"].items():
-                face["uv"] = [round(v, 4) for v in (
+                uv = (
                     (u0, d0, u1, d1) if face_name in ("up", "down")
                     else (d0, v0, d1, v1) if face_name in ("east", "west")
                     else (u0, v0, u1, v1)
-                )]
+                )
+                if identity % 3 == 1:
+                    uv = (1 - uv[0], uv[1], 1 - uv[2], uv[3])
+                face["uv"] = [round((tile % 2) * 8 + (shift_u + uv[0] * crop) * 8, 4),
+                              round((tile // 2) * 8 + (shift_v + uv[1] * crop) * 8, 4),
+                              round((tile % 2) * 8 + (shift_u + uv[2] * crop) * 8, 4),
+                              round((tile // 2) * 8 + (shift_v + uv[3] * crop) * 8, 4)]
             parts.append(part)
     return parts
 
@@ -139,21 +160,30 @@ def bowl_elements(servings: int) -> list[dict[str, object]]:
     # state keeps complete seven-berry bunches; the first serving removes
     # only the extra crown fruit, followed by a whole bunch at a time.
     bunches = (
-        (9.45, 6.40, 135.0),
-        (10.25, 8.15, 135.0),
-        (7.45, 5.85, 135.0),
+        (9.35, 6.48, 135.0),
+        (9.98, 8.20, 121.0),
+        (7.80, 6.15, 149.0),
     )
-    berry_pattern = (
-        (0.60, -0.70, 1.95), (0.60, 0.70, 1.95),
-        (1.75, -0.70, 1.95), (1.75, 0.70, 1.95),
-        (2.85, 0.00, 1.95),
-        (0.90, 0.00, 3.05), (2.00, 0.00, 3.02),
-        (0.35, 0.00, 3.80), (1.20, 0.00, 4.00),
+    # Individually composed shoulders, tails and crowns break cloned rows
+    # and towers while retaining one nested diagonal bushel.
+    berry_patterns = (
+        ((0.50, -0.64, 0), (0.74, 0.61, 0),
+         (1.66, -0.68, 0), (1.83, 0.49, 0), (2.67, -0.06, 0),
+         (0.96, -0.12, 2.95), (2.07, 0.13, 2.83),
+         (0.48, -0.20, 3.75), (1.51, 0.30, 3.62)),
+        ((0.55, -0.60, 0), (0.68, 0.64, 0),
+         (1.57, -0.76, 0), (1.78, 0.50, 0), (2.65, 0.05, 0),
+         (0.71, 0.06, 2.89), (1.91, -0.08, 3.10),
+         (0.10, -0.12, 3.55), (1.29, -0.23, 4.08)),
+        ((0.65, -0.55, 0), (0.60, 0.61, 0),
+         (1.60, -0.62, 0), (1.68, 0.60, 0), (2.55, -0.13, 0),
+         (1.10, 0.10, 3.12), (2.01, -0.19, 2.91),
+         (0.34, 0.22, 3.81), (1.23, -0.24, 3.53)),
     )
     counts = ((), (7,), (7, 7), (7, 7, 7), (9, 9, 9))[servings]
     for bunch_index, ((anchor_x, anchor_z, angle), count) in enumerate(zip(bunches, counts)):
         angle_radians = radians(angle)
-        for berry_index, (local_x, local_z, y) in enumerate(berry_pattern[:count]):
+        for berry_index, (local_x, local_z, y) in enumerate(berry_patterns[bunch_index][:count]):
             x = round(
                 anchor_x + local_x * cos(angle_radians)
                 - local_z * sin(angle_radians),
@@ -164,7 +194,7 @@ def bowl_elements(servings: int) -> list[dict[str, object]]:
                 + local_z * cos(angle_radians),
                 2,
             )
-            elements.extend(berry_elements(x, y, z, f"bunch_{bunch_index}_berry_{berry_index}"))
+            elements.extend(berry_elements(x, y, z, f"bunch_{bunch_index}_berry_{berry_index}", bunch_index * 9 + berry_index))
 
         # Each bunch owns its foliage. When that serving is eaten, the stem
         # and leaf disappear with its berries instead of floating behind.
@@ -173,13 +203,14 @@ def bowl_elements(servings: int) -> list[dict[str, object]]:
                 [anchor_x - 0.65, 2.70, anchor_z - 0.12],
                 [anchor_x + 0.65, 2.92, anchor_z + 0.12],
                 "#stem", origin=[anchor_x, 2.81, anchor_z],
-                axis="y", angle=45.0,
+                axis="y", angle=(45.0, 22.5, 45.0)[bunch_index],
             ),
             rotated_cube(
                 [anchor_x - 0.05, 2.87, anchor_z - 0.60],
-                [anchor_x + 0.75, 3.00, anchor_z + 0.10],
+                [anchor_x + (0.75, 0.62, 0.85)[bunch_index], 3.00,
+                 anchor_z + (0.10, 0.23, 0.04)[bunch_index]],
                 "#leaf", origin=[anchor_x + 0.20, 2.92, anchor_z],
-                axis="y", angle=45.0,
+                axis="y", angle=(22.5, 45.0, 0.0)[bunch_index],
             ),
         ))
     return elements
@@ -188,15 +219,20 @@ def bowl_elements(servings: int) -> list[dict[str, object]]:
 def write_grape_texture(palette: str) -> None:
     base, highlight, shadow = GRAPE_COLORS[palette]
     rows = []
-    for y in range(16):
+    tones = (1.0, 0.94, 1.06, 0.98)
+    highlights = ((3, 3, 4, 3), (5, 2, 3, 4), (2, 5, 3, 2), (4, 4, 2, 3))
+    for y in range(32):
         row = []
-        for x in range(16):
+        for x in range(32):
+            tile = x // 16 + (y // 16) * 2
+            local_x, local_y = x % 16, y % 16
+            left, top, width, height = highlights[tile]
             value = base
-            if 3 <= x <= 6 and 3 <= y <= 5:
+            if left <= local_x < left + width and top <= local_y < top + height:
                 value = highlight
-            elif x >= 12 and y >= 11:
+            elif local_x >= 12 and local_y >= 11:
                 value = shadow
-            row.append(value)
+            row.append(tuple(min(255, round(channel * tones[tile])) for channel in value[:3]) + (255,))
         rows.append(row)
     write_rgba_texture(
         ASSETS / f"textures/block/grape_bowl_{palette}_grapes.png",

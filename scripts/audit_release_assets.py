@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-import math
 import sys
 from collections.abc import Iterable
 from pathlib import Path
@@ -766,17 +765,24 @@ def audit_serving_decor() -> None:
                             f"{bowl_model_path.name} grapes must use rounded "
                             "positive-volume berry slices"
                         )
+                    if start[1] < 1.0999 or end[1] > 5.10:
+                        fail(f"{bowl_model_path.name} fruit must stay above the floor and within a natural mound height")
+                    if any(not 0 <= value <= 16 for face in grape.get("faces", {}).values()
+                           for value in face.get("uv", [])):
+                        fail(f"{bowl_model_path.name} varied berry UVs must stay inside the skin atlas")
                 berries = {}
                 for grape in grape_elements:
                     berries.setdefault(grape.get("name", ""), []).append(grape)
                 for berry_name, parts in berries.items():
                     if not berry_name.startswith("bunch_") or len(parts) != 9:
                         fail(f"{bowl_model_path.name} must keep identifiable complete berries")
+                    dimensions = []
                     for axis in range(3):
                         low = min(part["from"][axis] for part in parts)
                         high = max(part["to"][axis] for part in parts)
-                        if abs(high - low - 1.7) > 0.001:
-                            fail(f"{bowl_model_path.name} berry must have a round, equal-axis envelope")
+                        dimensions.append(high - low)
+                    if min(dimensions) < 1.40 or max(dimensions) > 2.00 or max(dimensions) / min(dimensions) > 1.18:
+                        fail(f"{bowl_model_path.name} berry variation must remain bounded and grape-like")
                     if any(
                         all(max(first["from"][axis], second["from"][axis])
                             < min(first["to"][axis], second["to"][axis]) - 0.00001
@@ -789,13 +795,28 @@ def audit_serving_decor() -> None:
                                 for axis in range(3))
                     for name, parts in berries.items()
                 }
+                profiles = {
+                    tuple(round(max(p["to"][axis] for p in parts) - min(p["from"][axis] for p in parts), 3) for axis in range(3))
+                    for parts in berries.values()
+                }
+                if len(profiles) < min(6, len(berries)):
+                    fail(f"{bowl_model_path.name} must retain varied berry proportions")
+                uv_profiles = {tuple(parts[0]["faces"]["up"]["uv"]) for parts in berries.values()}
+                if len(uv_profiles) < min(5, len(berries)):
+                    fail(f"{bowl_model_path.name} must retain varied berry highlight placement")
                 # A nonempty serving is one connected pile, including its
                 # lowest state. Separate miniature bunches must not reappear.
                 unseen = set(centres)
                 connected = [unseen.pop()] if unseen else []
                 while connected:
                     current = connected.pop()
-                    neighbours = {name for name in unseen if math.dist(centres[current], centres[name]) <= 1.70}
+                    neighbours = {
+                        name for name in unseen
+                        if any(all(max(first["from"][axis], second["from"][axis])
+                                   <= min(first["to"][axis], second["to"][axis])
+                                   for axis in range(3))
+                               for first in berries[current] for second in berries[name])
+                    }
                     unseen -= neighbours
                     connected.extend(neighbours)
                 if unseen:
