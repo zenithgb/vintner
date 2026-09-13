@@ -3908,6 +3908,10 @@ public final class VintnerGameTests {
         WineMetadata.apply(wine, 3, WineQuality.EXCEPTIONAL);
         WineMetadata.ensureBatchIdentity(wine, 246810L);
         rack.insertOne(wine);
+        helper.assertTrue(
+                rack.getUpdatePacket() != null,
+                "Rack contents should synchronize to the nearby-wine HUD"
+        );
 
         WineRackBlockEntity restored =
                 (WineRackBlockEntity) reload(helper, rack);
@@ -8030,6 +8034,17 @@ public final class VintnerGameTests {
         helper.assertTrue(
                 cabinet.insertOne(first) && cabinet.insertOne(other),
                 "A tasting cabinet should accept mixed vintages"
+        );
+        helper.assertTrue(
+                cabinet.getUpdatePacket() != null,
+                "Cabinet contents should synchronize to the nearby-wine HUD"
+        );
+        helper.assertValueEqual(
+                cabinet.getStoredBottlesCopy().stream()
+                        .map(ItemStack::getHoverName)
+                        .toList(),
+                List.of(first.getHoverName(), other.getHoverName()),
+                "The cabinet should expose every canonical wine name in order"
         );
         helper.assertBlockProperty(
                 shelfPos,

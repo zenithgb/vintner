@@ -9,7 +9,12 @@ import com.zenith.vintner.wine.CellarConditions;
 import com.zenith.vintner.wine.CellarRating;
 import com.zenith.vintner.wine.WineMetadata;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -233,6 +238,17 @@ public final class CellarCollectionBlockEntity extends BlockEntity {
         setChanged();
         syncVisualState();
         updateComparatorSignal();
+        syncToClient();
+    }
+
+    private void syncToClient() {
+        if (level == null || level.isClientSide()) {
+            return;
+        }
+        BlockState state = getBlockState();
+        level.sendBlockUpdated(
+                worldPosition, state, state, Block.UPDATE_CLIENTS
+        );
     }
 
     private void syncVisualState() {
@@ -290,5 +306,15 @@ public final class CellarCollectionBlockEntity extends BlockEntity {
         output.putInt("SelectionCursor", selectionCursor);
         output.putInt("CellarRating", cellarRating.id());
         output.putLong("LastAgingGameTime", lastAgingGameTime);
+    }
+
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+        return saveWithoutMetadata(provider);
     }
 }

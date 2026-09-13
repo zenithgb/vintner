@@ -1,7 +1,10 @@
 package com.zenith.vintner.client;
 
+import com.zenith.vintner.block.CellarFixtureKind;
+import com.zenith.vintner.block.entity.CellarCollectionBlockEntity;
 import com.zenith.vintner.block.entity.WineBottleBlockEntity;
 import com.zenith.vintner.block.entity.WineBasketBlockEntity;
+import com.zenith.vintner.block.entity.WineRackBlockEntity;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -11,7 +14,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
-/** Draws the canonical wine name while the player closely targets a bottle. */
+import java.util.List;
+
+/** Draws stored wine names while the player closely targets a display. */
 public final class NearbyWineHud implements HudElement {
     private static final double MAX_DISTANCE_SQUARED = 2.25 * 2.25;
     private static final int TEXT_COLOR = 0xE6FFFFFF;
@@ -22,22 +27,29 @@ public final class NearbyWineHud implements HudElement {
             DeltaTracker deltaTracker
     ) {
         Minecraft client = Minecraft.getInstance();
-        Component label = targetedWineName(client);
+        List<Component> labels = targetedWineNames(client);
 
-        if (label == null) {
+        if (labels.isEmpty()) {
             return;
         }
 
-        graphics.centeredText(
-                client.font,
-                label,
-                graphics.guiWidth() / 2,
+        int lineHeight = client.font.lineHeight + 1;
+        int firstLine = Math.min(
                 graphics.guiHeight() / 2 + 18,
-                TEXT_COLOR
+                graphics.guiHeight() - labels.size() * lineHeight - 4
         );
+        for (int line = 0; line < labels.size(); line++) {
+            graphics.centeredText(
+                    client.font,
+                    labels.get(line),
+                    graphics.guiWidth() / 2,
+                    firstLine + line * lineHeight,
+                    TEXT_COLOR
+            );
+        }
     }
 
-    static Component targetedWineName(Minecraft client) {
+    static List<Component> targetedWineNames(Minecraft client) {
         if (client.player == null
                 || client.level == null
                 || client.gui.screen() != null
@@ -45,18 +57,31 @@ public final class NearbyWineHud implements HudElement {
                 || hit.getType() != HitResult.Type.BLOCK
                 || hit.distanceTo(client.player) > MAX_DISTANCE_SQUARED
         ) {
-            return null;
+            return List.of();
         }
 
         var blockEntity = client.level.getBlockEntity(hit.getBlockPos());
-        ItemStack bottle;
         if (blockEntity instanceof WineBottleBlockEntity bottleEntity) {
-            bottle = bottleEntity.getBottleCopy();
-        } else if (blockEntity instanceof WineBasketBlockEntity basketEntity) {
-            bottle = basketEntity.getBottleCopy();
-        } else {
-            return null;
+            return wineNames(List.of(bottleEntity.getBottleCopy()));
         }
-        return bottle.isEmpty() ? null : bottle.getHoverName();
+        if (blockEntity instanceof WineBasketBlockEntity basketEntity) {
+            return wineNames(List.of(basketEntity.getBottleCopy()));
+        }
+        if (blockEntity instanceof WineRackBlockEntity rackEntity) {
+            return wineNames(rackEntity.getStoredBottlesCopy());
+        }
+        if (blockEntity instanceof CellarCollectionBlockEntity collectionEntity
+                && collectionEntity.getKind()
+                == CellarFixtureKind.TASTING_CABINET) {
+            return wineNames(collectionEntity.getStoredBottlesCopy());
+        }
+        return List.of();
+    }
+
+    private static List<Component> wineNames(List<ItemStack> bottles) {
+        return bottles.stream()
+                .filter(bottle -> !bottle.isEmpty())
+                .map(ItemStack::getHoverName)
+                .toList();
     }
 }
