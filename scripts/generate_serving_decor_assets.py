@@ -76,44 +76,47 @@ def rotated_cube(
 
 def bowl_elements(servings: int) -> list[dict[str, object]]:
     elements = [
-        # A stepped octagonal footprint reads as a real bowl instead of a box.
-        cube([5, 0, 3.5], [11, 0.8, 12.5], "#base"),
-        cube([3.5, 0, 5], [12.5, 0.8, 11], "#base"),
-        cube([4, 0.8, 4], [12, 1.45, 12], "#inside"),
-        cube([4.1, 1.25, 3], [11.9, 2.8, 4.1], "#bowl"),
-        cube([4.1, 1.25, 11.9], [11.9, 2.8, 13], "#bowl"),
-        cube([3, 1.25, 4.1], [4.1, 2.8, 11.9], "#bowl"),
-        cube([11.9, 1.25, 4.1], [13, 2.8, 11.9], "#bowl"),
-        cube([4.0, 2.65, 2.7], [12.0, 3.35, 4.0], "#rim"),
-        cube([4.0, 2.65, 12.0], [12.0, 3.35, 13.3], "#rim"),
-        cube([2.7, 2.65, 4.0], [4.0, 3.35, 12.0], "#rim"),
-        cube([12.0, 2.65, 4.0], [13.3, 3.35, 12.0], "#rim"),
-        cube([3.3, 1.5, 3.3], [4.8, 2.9, 4.8], "#bowl"),
-        cube([11.2, 1.5, 3.3], [12.7, 2.9, 4.8], "#bowl"),
-        cube([3.3, 1.5, 11.2], [4.8, 2.9, 12.7], "#bowl"),
-        cube([11.2, 1.5, 11.2], [12.7, 2.9, 12.7], "#bowl"),
+        # The inset base and floor meet at y=0.65; the surrounding stepped
+        # walls reach y=0 so the whole bowl visibly rests on its block.
+        cube([4.5, 0.0, 4.5], [11.5, 0.65, 11.5], "#base"),
+        cube([4.5, 0.65, 4.5], [11.5, 1.10, 11.5], "#inside"),
+        cube([4.5, 0.0, 3.0], [11.5, 2.65, 4.0], "#bowl"),
+        cube([4.5, 0.0, 12.0], [11.5, 2.65, 13.0], "#bowl"),
+        cube([3.0, 0.0, 4.5], [4.0, 2.65, 11.5], "#bowl"),
+        cube([12.0, 0.0, 4.5], [13.0, 2.65, 11.5], "#bowl"),
+        cube([4.0, 0.0, 4.0], [4.5, 2.65, 4.5], "#bowl"),
+        cube([11.5, 0.0, 4.0], [12.0, 2.65, 4.5], "#bowl"),
+        cube([4.0, 0.0, 11.5], [4.5, 2.65, 12.0], "#bowl"),
+        cube([11.5, 0.0, 11.5], [12.0, 2.65, 12.0], "#bowl"),
+        # A matching eight-piece rim keeps every join face-touching.
+        cube([4.5, 2.65, 2.7], [11.5, 3.35, 4.0], "#rim"),
+        cube([4.5, 2.65, 12.0], [11.5, 3.35, 13.3], "#rim"),
+        cube([2.7, 2.65, 4.5], [4.0, 3.35, 11.5], "#rim"),
+        cube([12.0, 2.65, 4.5], [13.3, 3.35, 11.5], "#rim"),
+        cube([4.0, 2.65, 4.0], [4.5, 3.35, 4.5], "#rim"),
+        cube([11.5, 2.65, 4.0], [12.0, 3.35, 4.5], "#rim"),
+        cube([4.0, 2.65, 11.5], [4.5, 3.35, 12.0], "#rim"),
+        cube([11.5, 2.65, 11.5], [12.0, 3.35, 12.0], "#rim"),
     ]
-    # Build one sideways, tapered grape bunch instead of a round mound or
-    # scattered cubes. The narrow left end and broad right shoulder mirror a
-    # harvested cluster laid across the bowl. Nested counts preserve that
-    # silhouette as servings are removed.
+    # Match the item icon's diagonal: a narrow front-left tip widening toward
+    # a back-right shoulder and stem. The lowest berries touch the bowl floor.
     grape_positions = (
         # The first serving retains the tapered spine and narrow tail.
-        (4.55, 7.55, 3.00),
-        (5.50, 7.05, 3.15), (5.55, 8.20, 3.05),
-        (6.45, 6.65, 3.10), (6.55, 7.80, 3.30),
-        (6.50, 8.95, 3.05), (7.50, 7.65, 3.25),
+        (4.79, 9.34, 1.10),
+        (5.36, 8.43, 1.25), (5.98, 9.40, 1.15),
+        (5.98, 7.61, 1.20), (6.64, 8.55, 1.40),
+        (7.18, 9.57, 1.15), (7.39, 7.95, 1.35),
         # Additional servings broaden the bunch toward its stem end.
-        (7.45, 6.40, 3.05), (7.55, 8.85, 3.10),
-        (8.40, 6.70, 3.10), (8.45, 7.85, 3.25),
-        (8.35, 9.00, 3.05),
-        (9.30, 6.35, 3.00), (9.45, 7.45, 3.20),
-        (9.35, 8.60, 3.10), (10.25, 6.75, 3.00),
-        (10.35, 7.90, 3.05), (10.25, 9.00, 3.00),
+        (6.72, 6.89, 1.15), (8.04, 8.96, 1.20),
+        (7.70, 6.67, 1.20), (8.31, 7.65, 1.35),
+        (8.80, 8.69, 1.15),
+        (8.30, 5.92, 1.10), (8.98, 6.80, 1.30),
+        (9.47, 7.84, 1.20), (9.32, 5.79, 1.10),
+        (9.99, 6.74, 1.15), (10.45, 7.74, 1.10),
         # A raised layer gives the full bunch the clustered grape silhouette.
-        (5.90, 7.60, 4.20), (7.00, 7.15, 4.35),
-        (7.15, 8.25, 4.30), (8.30, 7.20, 4.40),
-        (8.45, 8.35, 4.30), (9.45, 7.75, 4.25),
+        (5.98, 8.70, 2.25), (6.71, 7.76, 2.40),
+        (7.39, 8.64, 2.35), (7.86, 7.16, 2.45),
+        (8.56, 8.08, 2.35), (9.13, 7.06, 2.30),
     )
     grape_counts = (0, 7, 12, 18, 24)
     for x, z, y in grape_positions[:grape_counts[servings]]:
@@ -121,15 +124,15 @@ def bowl_elements(servings: int) -> list[dict[str, object]]:
             [x, y, z], [x + 1.15, y + 1.15, z + 1.15], "#grapes",
         ))
     if servings > 0:
-        # The stem and leaf emerge from the broad end and lie with the bunch.
+        # The stem and leaf continue the icon's back-right diagonal.
         elements.extend((
             rotated_cube(
-                [9.55, 4.85, 6.95], [11.85, 5.25, 7.35], "#stem",
-                origin=[9.75, 5.05, 7.15], axis="y", angle=-22.5,
+                [9.40, 3.20, 6.55], [11.70, 3.60, 6.95], "#stem",
+                origin=[9.60, 3.40, 6.75], axis="y", angle=-22.5,
             ),
             rotated_cube(
-                [9.55, 4.95, 7.25], [11.45, 5.20, 9.20], "#leaf",
-                origin=[9.75, 5.05, 7.45], axis="y", angle=-22.5,
+                [9.45, 3.10, 6.85], [11.35, 3.35, 8.80], "#leaf",
+                origin=[9.65, 3.20, 7.05], axis="y", angle=-22.5,
             ),
         ))
     return elements
@@ -278,18 +281,18 @@ def basket_elements() -> list[dict[str, object]]:
     elements = [
         # Five open slats keep the base visibly woven instead of bed-like.
         *(
-            cube([x, 0.45, 4.25], [x + 1.15, 1.0, 11.75], "#weave")
+            cube([x, 0.0, 4.25], [x + 1.15, 0.55, 11.75], "#weave")
             for x in (4.25, 5.82, 7.42, 9.02, 10.60)
         ),
         # Non-overlapping stepped walls form a clean octagonal basket.
-        cube([4.25, 0.8, 3.50], [11.75, 2.75, 4.25], "#weave"),
-        cube([4.25, 0.8, 11.75], [11.75, 2.75, 12.50], "#weave"),
-        cube([2.75, 0.8, 5.00], [3.50, 2.75, 11.00], "#weave"),
-        cube([12.50, 0.8, 5.00], [13.25, 2.75, 11.00], "#weave"),
-        cube([3.50, 0.8, 4.25], [4.25, 2.75, 5.00], "#weave"),
-        cube([11.75, 0.8, 4.25], [12.50, 2.75, 5.00], "#weave"),
-        cube([3.50, 0.8, 11.00], [4.25, 2.75, 11.75], "#weave"),
-        cube([11.75, 0.8, 11.00], [12.50, 2.75, 11.75], "#weave"),
+        cube([4.25, 0.0, 3.50], [11.75, 2.75, 4.25], "#weave"),
+        cube([4.25, 0.0, 11.75], [11.75, 2.75, 12.50], "#weave"),
+        cube([2.75, 0.0, 5.00], [3.50, 2.75, 11.00], "#weave"),
+        cube([12.50, 0.0, 5.00], [13.25, 2.75, 11.00], "#weave"),
+        cube([3.50, 0.0, 4.25], [4.25, 2.75, 5.00], "#weave"),
+        cube([11.75, 0.0, 4.25], [12.50, 2.75, 5.00], "#weave"),
+        cube([3.50, 0.0, 11.00], [4.25, 2.75, 11.75], "#weave"),
+        cube([11.75, 0.0, 11.00], [12.50, 2.75, 11.75], "#weave"),
         # The rim follows the same footprint with face-touching joins only.
         cube([4.25, 2.75, 3.15], [11.75, 3.40, 4.25], "#rim"),
         cube([4.25, 2.75, 11.75], [11.75, 3.40, 12.85], "#rim"),

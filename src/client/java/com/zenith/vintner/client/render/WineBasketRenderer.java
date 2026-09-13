@@ -84,14 +84,15 @@ public final class WineBasketRenderer implements
             return;
         }
         poseStack.pushPose();
-        poseStack.translate(0.5F, 4.9F / 16.0F, 0.5F);
+        poseStack.translate(0.5F, 2.8F / 16.0F, 0.5F);
         // Vanilla blockstate rotations run opposite PoseStack's Y axis.
         poseStack.mulPose(Axis.YP.rotationDegrees(
                 180.0F - state.facing.toYRot()
         ));
-        // The model is authored horizontally. A true diagonal and compact
-        // scale keep it corner-to-corner, above the rim and below the handle.
+        // Turn the horizontal model corner-to-corner, then lift its neck into
+        // a vertical diagonal while the heavy bottle base rests on the slats.
         poseStack.mulPose(Axis.YP.rotationDegrees(45.0F));
+        poseStack.mulPose(Axis.XP.rotationDegrees(22.5F));
         poseStack.scale(0.62F, 0.62F, 0.62F);
         state.bottle.submit(
                 poseStack,

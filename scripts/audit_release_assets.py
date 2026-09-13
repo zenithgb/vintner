@@ -669,7 +669,28 @@ def audit_serving_decor() -> None:
     if not isinstance(variants, dict) or set(variants) != expected_states:
         fail("grape bowl blockstate must cover all 60 cultivar/serving states")
 
-    require_file(ASSETS / "models/block/grape_bowl_empty.json")
+    empty_bowl_path = ASSETS / "models/block/grape_bowl_empty.json"
+    require_file(empty_bowl_path)
+    empty_bowl = load_json(empty_bowl_path)
+    empty_elements = (
+        empty_bowl.get("elements")
+        if isinstance(empty_bowl, dict)
+        else None
+    )
+    if not isinstance(empty_elements, list) or len(empty_elements) != 18:
+        fail("grape bowl must retain its grounded stepped body and rim")
+    elif min(float(element["from"][1]) for element in empty_elements) != 0.0:
+        fail("grape bowl body must rest on the block surface")
+    elif any(
+        all(
+            max(first["from"][axis], second["from"][axis])
+            < min(first["to"][axis], second["to"][axis])
+            for axis in range(3)
+        )
+        for index, first in enumerate(empty_elements)
+        for second in empty_elements[index + 1:]
+    ):
+        fail("grape bowl body parts must not intersect each other")
     require_file(ASSETS / "items/grape_bowl.json")
     for palette in sorted(palettes):
         require_file(
@@ -734,11 +755,27 @@ def audit_serving_decor() -> None:
                     z_span = max(end[2] for end in ends) - min(
                         start[2] for start in starts
                     )
-                    if x_span <= z_span or x_span < 6.5:
+                    shoulder = starts[12:18]
+                    shoulder_x = sum(start[0] for start in shoulder) / len(shoulder)
+                    shoulder_z = sum(start[2] for start in shoulder) / len(shoulder)
+                    tip = starts[0]
+                    if (
+                        x_span <= z_span
+                        or x_span < 6.5
+                        or shoulder_x - tip[0] < 4.0
+                        or tip[2] - shoulder_z < 2.0
+                    ):
                         fail(
                             f"{bowl_model_path.name} grapes must form a "
-                            "sideways tapered bunch"
+                            "diagonal bunch matching the item icon"
                         )
+                if min(float(start[1]) for start in (
+                    element["from"] for element in grape_elements
+                )) > 1.11:
+                    fail(
+                        f"{bowl_model_path.name} grapes must rest on the "
+                        "bowl floor"
+                    )
                 texture_values = (
                     bowl_model.get("textures", {}).values()
                     if isinstance(bowl_model.get("textures"), dict)
@@ -777,6 +814,8 @@ def audit_serving_decor() -> None:
         elements = model.get("elements") if isinstance(model, dict) else None
         if not isinstance(elements, list) or len(elements) != 30:
             fail(f"{block_id} must retain the shallow woven cradle and handle")
+        elif min(float(element["from"][1]) for element in elements) != 0.0:
+            fail(f"{block_id} basket body must rest on the block surface")
         elif any(
             isinstance(element, dict) and "rotation" in element
             for element in elements
