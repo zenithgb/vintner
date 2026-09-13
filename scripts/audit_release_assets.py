@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import sys
 from collections.abc import Iterable
+from math import cos, radians, sin
 from pathlib import Path
 from typing import Any
 
@@ -641,6 +642,34 @@ def audit_translations() -> None:
                 )
 
 
+def grape_parts_touch(first: dict, second: dict) -> bool:
+    """Exact box contact for the bowl's axis-aligned fruit and Y-rotated foliage."""
+    if max(first["from"][1], second["from"][1]) > min(first["to"][1], second["to"][1]) + 0.00001:
+        return False
+
+    def polygon(element):
+        rotation = element.get("rotation", {})
+        angle = radians(rotation.get("angle", 0))
+        scale = 1 / cos(angle) if rotation.get("rescale") else 1
+        ox, _, oz = rotation.get("origin", (0, 0, 0))
+        return [((x - ox) * scale * cos(angle) + (z - oz) * scale * sin(angle) + ox,
+                 -(x - ox) * scale * sin(angle) + (z - oz) * scale * cos(angle) + oz)
+                for x, z in ((element["from"][0], element["from"][2]),
+                             (element["to"][0], element["from"][2]),
+                             (element["to"][0], element["to"][2]),
+                             (element["from"][0], element["to"][2]))]
+
+    a, b = polygon(first), polygon(second)
+    for points in (a, b):
+        for start, end in zip(points, points[1:] + points[:1]):
+            axis = (end[1] - start[1], start[0] - end[0])
+            pa = [x * axis[0] + z * axis[1] for x, z in a]
+            pb = [x * axis[0] + z * axis[1] for x, z in b]
+            if max(min(pa), min(pb)) > min(max(pa), max(pb)) + 0.00001:
+                return False
+    return True
+
+
 def audit_serving_decor() -> None:
     try:
         check_contact()
@@ -774,7 +803,7 @@ def audit_serving_decor() -> None:
                 for grape in grape_elements:
                     berries.setdefault(grape.get("name", ""), []).append(grape)
                 for berry_name, parts in berries.items():
-                    if not berry_name.startswith("bunch_") or len(parts) != 9:
+                    if not berry_name.startswith("bunch_0_berry_") or len(parts) != 9:
                         fail(f"{bowl_model_path.name} must keep identifiable complete berries")
                     dimensions = []
                     for axis in range(3):
@@ -834,6 +863,9 @@ def audit_serving_decor() -> None:
                         if "#grapes" in strings(element.get("faces", {})):
                             if element not in current_by_name.get(element.get("name"), []):
                                 fail(f"{bowl_model_path.name} eating must not move or replace remaining grapes")
+                    previous_grapes = [e for e in previous.get("elements", []) if "#grapes" in strings(e.get("faces", {}))]
+                    if max(e["to"][2] - e["from"][0] for e in previous_grapes) >= max(e["to"][2] - e["from"][0] for e in grape_elements):
+                        fail(f"{bowl_model_path.name} eating must shorten the bunch from its lower-left tip")
                 if min(float(start[1]) for start in (
                     element["from"] for element in grape_elements
                 )) > 1.11:
@@ -851,15 +883,25 @@ def audit_serving_decor() -> None:
                     if isinstance(element, dict)
                     and "#leaf" in strings(element.get("faces", {}))
                 ]
-                expected_bunches = (0, 1, 2, 3, 3)[servings]
+                expected_bunches = 1
                 if (
                     len(stem_elements) != expected_bunches
                     or len(leaf_elements) != expected_bunches
                 ):
                     fail(
                         f"{bowl_model_path.name} must show {expected_bunches} "
-                        "complete bunches with their own stem and leaf"
+                        "bunch with one persistent stem and leaf"
                     )
+                if len(stem_elements) == len(leaf_elements) == 1:
+                    if not any(grape_parts_touch(stem_elements[0], grape) for grape in grape_elements):
+                        fail(f"{bowl_model_path.name} stem must stay attached to the remaining grapes")
+                    if not grape_parts_touch(stem_elements[0], leaf_elements[0]):
+                        fail(f"{bowl_model_path.name} leaf must stay attached to its stem")
+                    if servings > 1:
+                        prior_foliage = [e for e in previous.get("elements", [])
+                                         if "#stem" in strings(e.get("faces", {})) or "#leaf" in strings(e.get("faces", {}))]
+                        if prior_foliage != stem_elements + leaf_elements:
+                            fail(f"{bowl_model_path.name} one stem/leaf identity must persist as grapes are eaten")
 
     expected_basket_states = {
         f"facing={facing},has_bottle={occupied}"

@@ -156,61 +156,49 @@ def bowl_elements(servings: int) -> list[dict[str, object]]:
         cube([4.0, 2.65, 11.5], [4.5, 3.35, 12.0], "#rim"),
         cube([11.5, 2.65, 11.5], [12.0, 3.35, 12.0], "#rim"),
     ]
-    # Three diagonal bunches nest together into one bushel. Every nonempty
-    # state keeps complete seven-berry bunches; the first serving removes
-    # only the extra crown fruit, followed by a whole bunch at a time.
-    bunches = (
-        (9.35, 6.48, 135.0),
-        (9.98, 8.20, 121.0),
-        (7.80, 6.15, 149.0),
+    # One large bunch runs from its broad stemmed shoulder at the upper-right
+    # into a narrow lower-left tip. Prefixes remove its tip, middle and outer
+    # shoulder in order; each surviving berry keeps its accepted shape/skin.
+    anchor_x, anchor_z = 10.0, 5.8
+    berry_pattern = (
+        # Final serving: the connected shoulder around the persistent stem.
+        (0.65, -0.65, 0), (0.55, 0.62, 0),
+        (1.55, -0.90, 0), (1.50, 0.80, 0), (2.37, -0.12, 0),
+        (0.95, -0.06, 3.10), (1.87, 0.14, 2.96),
+        # Outer shoulder and upper fruit, eaten after the lower sections.
+        (1.33, -1.66, 0), (1.30, 1.55, 0),
+        (2.62, -1.06, 0), (2.71, 0.88, 0),
+        (2.82, -0.08, 3.04), (1.55, -0.78, 3.78), (1.86, 0.66, 3.68),
+        # Narrower middle section.
+        (3.57, -0.82, 0), (3.55, 0.73, 0), (4.33, -0.08, 0),
+        (3.82, -0.15, 2.91), (2.35, -1.17, 2.88),
+        (2.40, 0.96, 2.99), (3.20, 0.38, 3.90),
+        # Tapered end is consumed first.
+        (4.44, -0.76, 0), (4.52, 0.69, 0),
+        (5.23, -0.11, 0), (6.15, 0.10, 0),
+        (4.56, 0.00, 2.94), (5.31, 0.10, 2.75),
     )
-    # Individually composed shoulders, tails and crowns break cloned rows
-    # and towers while retaining one nested diagonal bushel.
-    berry_patterns = (
-        ((0.50, -0.64, 0), (0.74, 0.61, 0),
-         (1.66, -0.68, 0), (1.83, 0.49, 0), (2.67, -0.06, 0),
-         (0.96, -0.12, 2.95), (2.07, 0.13, 2.83),
-         (0.48, -0.20, 3.75), (1.51, 0.30, 3.62)),
-        ((0.55, -0.60, 0), (0.68, 0.64, 0),
-         (1.57, -0.76, 0), (1.78, 0.50, 0), (2.65, 0.05, 0),
-         (0.71, 0.06, 2.89), (1.91, -0.08, 3.10),
-         (0.10, -0.12, 3.55), (1.29, -0.23, 4.08)),
-        ((0.65, -0.55, 0), (0.60, 0.61, 0),
-         (1.60, -0.62, 0), (1.68, 0.60, 0), (2.55, -0.13, 0),
-         (1.10, 0.10, 3.12), (2.01, -0.19, 2.91),
-         (0.34, 0.22, 3.81), (1.23, -0.24, 3.53)),
-    )
-    counts = ((), (7,), (7, 7), (7, 7, 7), (9, 9, 9))[servings]
-    for bunch_index, ((anchor_x, anchor_z, angle), count) in enumerate(zip(bunches, counts)):
-        angle_radians = radians(angle)
-        for berry_index, (local_x, local_z, y) in enumerate(berry_patterns[bunch_index][:count]):
-            x = round(
-                anchor_x + local_x * cos(angle_radians)
-                - local_z * sin(angle_radians),
-                2,
-            )
-            z = round(
-                anchor_z + local_x * sin(angle_radians)
-                + local_z * cos(angle_radians),
-                2,
-            )
-            elements.extend(berry_elements(x, y, z, f"bunch_{bunch_index}_berry_{berry_index}", bunch_index * 9 + berry_index))
-
-        # Each bunch owns its foliage. When that serving is eaten, the stem
-        # and leaf disappear with its berries instead of floating behind.
+    count = (0, 7, 14, 21, 27)[servings]
+    angle = radians(135.0)
+    for berry_index, (local_x, local_z, y) in enumerate(berry_pattern[:count]):
+        x = round(anchor_x + local_x * cos(angle) - local_z * sin(angle), 2)
+        z = round(anchor_z + local_x * sin(angle) + local_z * cos(angle), 2)
+        elements.extend(berry_elements(x, y, z, f"bunch_0_berry_{berry_index}", berry_index))
+    if count:
+        # The one stem/leaf identity remains attached to the last shoulder
+        # serving and disappears only when the bowl is completely empty.
         elements.extend((
             rotated_cube(
-                [anchor_x - 0.65, 2.70, anchor_z - 0.12],
-                [anchor_x + 0.65, 2.92, anchor_z + 0.12],
-                "#stem", origin=[anchor_x, 2.81, anchor_z],
-                axis="y", angle=(45.0, 22.5, 45.0)[bunch_index],
+                [anchor_x - 0.80, 2.78, anchor_z - 0.12],
+                [anchor_x + 0.80, 3.08, anchor_z + 0.12],
+                "#stem", origin=[anchor_x, 2.93, anchor_z],
+                axis="y", angle=45.0,
             ),
             rotated_cube(
-                [anchor_x - 0.05, 2.87, anchor_z - 0.60],
-                [anchor_x + (0.75, 0.62, 0.85)[bunch_index], 3.00,
-                 anchor_z + (0.10, 0.23, 0.04)[bunch_index]],
-                "#leaf", origin=[anchor_x + 0.20, 2.92, anchor_z],
-                axis="y", angle=(22.5, 45.0, 0.0)[bunch_index],
+                [anchor_x - 0.05, 3.00, anchor_z - 0.75],
+                [anchor_x + 0.95, 3.13, anchor_z + 0.10],
+                "#leaf", origin=[anchor_x + 0.20, 3.05, anchor_z],
+                axis="y", angle=22.5,
             ),
         ))
     return elements
