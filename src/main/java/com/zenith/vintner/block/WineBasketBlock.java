@@ -41,16 +41,16 @@ public final class WineBasketBlock extends BaseEntityBlock {
     public static final BooleanProperty HAS_BOTTLE =
             BooleanProperty.create("has_bottle");
     private static final VoxelShape NORTH_SOUTH_SHAPE = Shapes.or(
-            Block.box(3, 0, 1, 13, 4, 15),
-            Block.box(3, 3, 7, 4, 9, 9),
-            Block.box(12, 3, 7, 13, 9, 9),
-            Block.box(4, 8, 7, 12, 11, 9)
+            Block.box(2.25, 0, 3.15, 13.75, 3.3, 12.85),
+            Block.box(2.7, 3, 7.4, 3.55, 7.2, 8.6),
+            Block.box(12.45, 3, 7.4, 13.3, 7.2, 8.6),
+            Block.box(3.2, 6.2, 7.4, 12.8, 9, 8.6)
     );
     private static final VoxelShape EAST_WEST_SHAPE = Shapes.or(
-            Block.box(1, 0, 3, 15, 4, 13),
-            Block.box(7, 3, 3, 9, 9, 4),
-            Block.box(7, 3, 12, 9, 9, 13),
-            Block.box(7, 8, 4, 9, 11, 12)
+            Block.box(3.15, 0, 2.25, 12.85, 3.3, 13.75),
+            Block.box(7.4, 3, 2.7, 8.6, 7.2, 3.55),
+            Block.box(7.4, 3, 12.45, 8.6, 7.2, 13.3),
+            Block.box(7.4, 6.2, 3.2, 8.6, 9, 12.8)
     );
 
     public WineBasketBlock(BlockBehaviour.Properties properties) {

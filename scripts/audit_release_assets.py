@@ -680,9 +680,50 @@ def audit_serving_decor() -> None:
                 ASSETS / f"items/grape_bowl_{palette}_{servings}.json"
             )
             if servings > 0:
-                require_file(
-                    ASSETS / f"models/block/grape_bowl_{palette}_{servings}.json"
+                bowl_model_path = (
+                    ASSETS
+                    / f"models/block/grape_bowl_{palette}_{servings}.json"
                 )
+                require_file(bowl_model_path)
+                bowl_model = load_json(bowl_model_path)
+                bowl_elements = (
+                    bowl_model.get("elements", [])
+                    if isinstance(bowl_model, dict)
+                    else []
+                )
+                grape_elements = [
+                    element
+                    for element in bowl_elements
+                    if isinstance(element, dict)
+                    and "#grapes" in strings(element.get("faces", {}))
+                ]
+                if len(grape_elements) != servings * 2:
+                    fail(
+                        f"{bowl_model_path.name} must show exactly "
+                        f"{servings * 2} grapes"
+                    )
+                for grape in grape_elements:
+                    start = grape.get("from")
+                    end = grape.get("to")
+                    if "rotation" in grape:
+                        fail(
+                            f"{bowl_model_path.name} grapes must not use "
+                            "shard-like element rotations"
+                        )
+                    if (
+                        not isinstance(start, list)
+                        or not isinstance(end, list)
+                        or len(start) != 3
+                        or len(end) != 3
+                        or any(
+                            float(end[index]) - float(start[index]) > 1.31
+                            for index in range(3)
+                        )
+                    ):
+                        fail(
+                            f"{bowl_model_path.name} grapes must remain "
+                            "compact individual pieces"
+                        )
 
     expected_basket_states = {
         f"facing={facing},has_bottle={occupied}"
@@ -708,7 +749,7 @@ def audit_serving_decor() -> None:
         require_file(model_path)
         model = load_json(model_path)
         elements = model.get("elements") if isinstance(model, dict) else None
-        if not isinstance(elements, list) or len(elements) < 19:
+        if not isinstance(elements, list) or len(elements) < 28:
             fail(f"{block_id} must retain the shallow woven cradle and handle")
         elif not any("rotation" in element for element in elements):
             fail(f"{block_id} must retain its segmented raised handle")
@@ -719,6 +760,21 @@ def audit_serving_decor() -> None:
             DATA / f"loot_table/blocks/{block_id}.json",
         ):
             require_file(path)
+
+    for style in ("red", "white", "aged_red", "aged_white"):
+        model_id = f"wine_basket_bottle_{style}"
+        definition_path = ASSETS / f"items/{model_id}.json"
+        model_path = ASSETS / f"models/item/{model_id}.json"
+        require_file(definition_path)
+        require_file(model_path)
+        bottle_model = load_json(model_path)
+        bottle_elements = (
+            bottle_model.get("elements")
+            if isinstance(bottle_model, dict)
+            else None
+        )
+        if not isinstance(bottle_elements, list) or len(bottle_elements) != 11:
+            fail(f"{model_id} must retain the compact 3D bottle silhouette")
 
     for path in (
         DATA / "recipe/grape_bowl.json",

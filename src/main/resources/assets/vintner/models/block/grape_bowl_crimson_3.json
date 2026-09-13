@@ -505,14 +505,14 @@
     },
     {
       "from": [
-        6.0,
-        1.45,
-        6.0
+        6.25,
+        1.55,
+        6.25
       ],
       "to": [
-        7.75,
-        3.2,
-        7.75
+        7.55,
+        2.85,
+        7.55
       ],
       "shade": true,
       "faces": {
@@ -534,27 +534,83 @@
         "east": {
           "texture": "#grapes"
         }
-      },
-      "rotation": {
-        "origin": [
-          6.875,
-          1.45,
-          6.875
-        ],
-        "axis": "y",
-        "angle": 0.0,
-        "rescale": true
       }
     },
     {
       "from": [
-        8.2,
-        1.45,
-        8.0
+        8.35,
+        1.6,
+        8.25
       ],
       "to": [
-        9.95,
-        3.2,
+        9.65,
+        2.9000000000000004,
+        9.55
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#grapes"
+        },
+        "up": {
+          "texture": "#grapes"
+        },
+        "north": {
+          "texture": "#grapes"
+        },
+        "south": {
+          "texture": "#grapes"
+        },
+        "west": {
+          "texture": "#grapes"
+        },
+        "east": {
+          "texture": "#grapes"
+        }
+      }
+    },
+    {
+      "from": [
+        8.55,
+        1.5,
+        5.8
+      ],
+      "to": [
+        9.850000000000001,
+        2.8,
+        7.1
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#grapes"
+        },
+        "up": {
+          "texture": "#grapes"
+        },
+        "north": {
+          "texture": "#grapes"
+        },
+        "south": {
+          "texture": "#grapes"
+        },
+        "west": {
+          "texture": "#grapes"
+        },
+        "east": {
+          "texture": "#grapes"
+        }
+      }
+    },
+    {
+      "from": [
+        5.95,
+        1.65,
+        8.45
+      ],
+      "to": [
+        7.25,
+        2.95,
         9.75
       ],
       "shade": true,
@@ -577,28 +633,18 @@
         "east": {
           "texture": "#grapes"
         }
-      },
-      "rotation": {
-        "origin": [
-          9.075,
-          1.45,
-          8.875
-        ],
-        "axis": "y",
-        "angle": 22.5,
-        "rescale": true
       }
     },
     {
       "from": [
-        8.5,
-        1.45,
-        5.7
+        5.15,
+        1.48,
+        5.15
       ],
       "to": [
-        10.25,
-        3.2,
-        7.45
+        6.45,
+        2.7800000000000002,
+        6.45
       ],
       "shade": true,
       "faces": {
@@ -620,28 +666,18 @@
         "east": {
           "texture": "#grapes"
         }
-      },
-      "rotation": {
-        "origin": [
-          9.375,
-          1.45,
-          6.575
-        ],
-        "axis": "y",
-        "angle": -22.5,
-        "rescale": true
       }
     },
     {
       "from": [
-        5.8,
-        1.45,
-        8.3
+        9.55,
+        1.55,
+        9.2
       ],
       "to": [
-        7.55,
-        3.2,
-        10.05
+        10.850000000000001,
+        2.85,
+        10.5
       ],
       "shade": true,
       "faces": {
@@ -663,102 +699,6 @@
         "east": {
           "texture": "#grapes"
         }
-      },
-      "rotation": {
-        "origin": [
-          6.675,
-          1.45,
-          9.175
-        ],
-        "axis": "y",
-        "angle": 22.5,
-        "rescale": true
-      }
-    },
-    {
-      "from": [
-        5.0,
-        1.45,
-        5.2
-      ],
-      "to": [
-        6.75,
-        3.2,
-        6.95
-      ],
-      "shade": true,
-      "faces": {
-        "down": {
-          "texture": "#grapes"
-        },
-        "up": {
-          "texture": "#grapes"
-        },
-        "north": {
-          "texture": "#grapes"
-        },
-        "south": {
-          "texture": "#grapes"
-        },
-        "west": {
-          "texture": "#grapes"
-        },
-        "east": {
-          "texture": "#grapes"
-        }
-      },
-      "rotation": {
-        "origin": [
-          5.875,
-          1.45,
-          6.075
-        ],
-        "axis": "y",
-        "angle": -22.5,
-        "rescale": true
-      }
-    },
-    {
-      "from": [
-        9.3,
-        1.45,
-        8.9
-      ],
-      "to": [
-        11.05,
-        3.2,
-        10.65
-      ],
-      "shade": true,
-      "faces": {
-        "down": {
-          "texture": "#grapes"
-        },
-        "up": {
-          "texture": "#grapes"
-        },
-        "north": {
-          "texture": "#grapes"
-        },
-        "south": {
-          "texture": "#grapes"
-        },
-        "west": {
-          "texture": "#grapes"
-        },
-        "east": {
-          "texture": "#grapes"
-        }
-      },
-      "rotation": {
-        "origin": [
-          10.175,
-          1.45,
-          9.775
-        ],
-        "axis": "y",
-        "angle": 0.0,
-        "rescale": true
       }
     }
   ],

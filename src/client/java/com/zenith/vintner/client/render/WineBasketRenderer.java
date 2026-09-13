@@ -2,8 +2,12 @@ package com.zenith.vintner.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import com.zenith.vintner.Vintner;
 import com.zenith.vintner.block.WineBasketBlock;
+import com.zenith.vintner.block.WineDisplayAge;
 import com.zenith.vintner.block.entity.WineBasketBlockEntity;
+import com.zenith.vintner.wine.WineMetadata;
+import com.zenith.vintner.wine.WineStyle;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -11,6 +15,8 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -45,12 +51,23 @@ public final class WineBasketRenderer implements
             return;
         }
 
-        // The actual ItemStack remains authoritative. Rendering it as one
-        // silhouette avoids exposing the internal caps of the upright block
-        // mesh when that segmented model is laid nearly horizontal.
+        // Keep the exact stored stack authoritative, but select a dedicated
+        // compact 3D bottle model instead of enlarging its flat inventory icon.
+        ItemStack displayBottle = bottle.copy();
+        boolean white = WineMetadata.wineStyle(bottle) == WineStyle.WHITE;
+        boolean aged = WineDisplayAge.isAged(bottle);
+        String style = aged ? (white ? "aged_white" : "aged_red")
+                : (white ? "white" : "red");
+        displayBottle.set(
+                DataComponents.ITEM_MODEL,
+                Identifier.fromNamespaceAndPath(
+                        Vintner.MOD_ID,
+                        "wine_basket_bottle_" + style
+                )
+        );
         itemModelResolver.updateForTopItem(
                 state.bottle,
-                bottle,
+                displayBottle,
                 ItemDisplayContext.NONE,
                 basket.getLevel(),
                 null,
@@ -67,15 +84,16 @@ public final class WineBasketRenderer implements
             return;
         }
         poseStack.pushPose();
-        poseStack.translate(0.5F, 4.4F / 16.0F, 0.5F);
+        poseStack.translate(0.5F, 3.6F / 16.0F, 0.5F);
         // Vanilla blockstate rotations run opposite PoseStack's Y axis.
         poseStack.mulPose(Axis.YP.rotationDegrees(
                 180.0F - state.facing.toYRot()
         ));
-        // The bottle lies along the long cradle with its neck slightly raised.
-        poseStack.mulPose(Axis.XP.rotationDegrees(-72.0F));
-        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
-        poseStack.scale(0.9F, 0.9F, 0.9F);
+        // The model is authored horizontally; a restrained yaw gives the
+        // reference-image diagonal without flattening or fragmenting it.
+        poseStack.mulPose(Axis.YP.rotationDegrees(16.0F));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-5.0F));
+        poseStack.scale(0.88F, 0.88F, 0.88F);
         state.bottle.submit(
                 poseStack,
                 collector,

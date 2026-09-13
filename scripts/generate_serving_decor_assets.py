@@ -29,14 +29,14 @@ CULTIVARS = {
 }
 PALETTES = tuple(dict.fromkeys(CULTIVARS.values()))
 GRAPE_COLORS = {
-    "crimson": ((100, 18, 28, 255), (185, 33, 52, 255), (56, 10, 16, 255)),
-    "shaded": ((100, 34, 70, 255), (185, 63, 129, 255), (56, 19, 39, 255)),
-    "sunlit": ((100, 31, 16, 255), (185, 58, 30, 255), (56, 17, 9, 255)),
-    "riverside": ((100, 30, 51, 255), (185, 56, 94, 255), (56, 17, 29, 255)),
-    "golden": ((135, 122, 51, 255), (232, 209, 88, 255), (94, 84, 36, 255)),
-    "frosted": ((130, 135, 108, 255), (223, 232, 190, 255), (82, 88, 68, 255)),
-    "honeyed": ((151, 112, 45, 255), (236, 187, 83, 255), (91, 62, 26, 255)),
-    "stony": ((121, 135, 97, 255), (207, 232, 167, 255), (75, 88, 61, 255)),
+    "crimson": ((112, 25, 38, 255), (145, 37, 51, 255), (75, 16, 27, 255)),
+    "shaded": ((103, 42, 73, 255), (139, 58, 99, 255), (68, 26, 48, 255)),
+    "sunlit": ((117, 42, 25, 255), (153, 60, 36, 255), (78, 26, 16, 255)),
+    "riverside": ((106, 38, 59, 255), (142, 52, 81, 255), (70, 24, 39, 255)),
+    "golden": ((148, 129, 55, 255), (190, 168, 77, 255), (104, 89, 37, 255)),
+    "frosted": ((139, 143, 119, 255), (176, 182, 153, 255), (94, 99, 80, 255)),
+    "honeyed": ((158, 119, 51, 255), (199, 154, 72, 255), (109, 79, 33, 255)),
+    "stony": ((128, 141, 105, 255), (164, 181, 138, 255), (86, 96, 69, 255)),
 }
 
 
@@ -95,17 +95,14 @@ def bowl_elements(servings: int) -> list[dict[str, object]]:
     ]
     # Add grapes in balanced pairs so every serving state stays centred.
     grape_positions = (
-        (6.0, 6.0, 0.0), (8.2, 8.0, 22.5),
-        (8.5, 5.7, -22.5), (5.8, 8.3, 22.5),
-        (5.0, 5.2, -22.5), (9.3, 8.9, 0.0),
-        (9.5, 4.8, 22.5), (4.8, 9.4, -22.5),
+        (6.25, 6.25, 1.55), (8.35, 8.25, 1.60),
+        (8.55, 5.80, 1.50), (5.95, 8.45, 1.65),
+        (5.15, 5.15, 1.48), (9.55, 9.20, 1.55),
+        (9.70, 4.85, 1.62), (4.80, 9.65, 1.52),
     )
-    for x, z, angle in grape_positions[: servings * 2]:
-        elements.append(rotated_cube(
-            [x, 1.45, z], [x + 1.75, 3.2, z + 1.75], "#grapes",
-            origin=[x + 0.875, 1.45, z + 0.875],
-            axis="y",
-            angle=angle,
+    for x, z, y in grape_positions[: servings * 2]:
+        elements.append(cube(
+            [x, y, z], [x + 1.3, y + 1.3, z + 1.3], "#grapes",
         ))
     return elements
 
@@ -248,35 +245,90 @@ def wine_basket_id(wood: str) -> str:
 
 
 def basket_elements() -> list[dict[str, object]]:
+    elements = [
+        # Five open slats keep the base visibly woven instead of bed-like.
+        *(
+            cube([x, 0.45, 4.25], [x + 1.15, 1.0, 11.75], "#weave")
+            for x in (3.2, 5.3, 7.42, 9.55, 11.65)
+        ),
+        # Low octagonal basket wall.
+        cube([4.0, 0.8, 3.45], [12.0, 2.75, 4.25], "#weave"),
+        cube([4.0, 0.8, 11.75], [12.0, 2.75, 12.55], "#weave"),
+        cube([2.55, 0.8, 5.0], [3.35, 2.75, 11.0], "#weave"),
+        cube([12.65, 0.8, 5.0], [13.45, 2.75, 11.0], "#weave"),
+        rotated_cube(
+            [2.55, 0.8, 4.0], [5.0, 2.75, 4.8], "#weave",
+            origin=[3.75, 1.75, 4.4], axis="y", angle=45,
+        ),
+        rotated_cube(
+            [11.0, 0.8, 4.0], [13.45, 2.75, 4.8], "#weave",
+            origin=[12.25, 1.75, 4.4], axis="y", angle=-45,
+        ),
+        rotated_cube(
+            [2.55, 0.8, 11.2], [5.0, 2.75, 12.0], "#weave",
+            origin=[3.75, 1.75, 11.6], axis="y", angle=-45,
+        ),
+        rotated_cube(
+            [11.0, 0.8, 11.2], [13.45, 2.75, 12.0], "#weave",
+            origin=[12.25, 1.75, 11.6], axis="y", angle=45,
+        ),
+        # A slim top rim follows the same oval footprint.
+        cube([4.0, 2.55, 3.15], [12.0, 3.3, 4.25], "#rim"),
+        cube([4.0, 2.55, 11.75], [12.0, 3.3, 12.85], "#rim"),
+        cube([2.25, 2.55, 5.0], [3.35, 3.3, 11.0], "#rim"),
+        cube([12.65, 2.55, 5.0], [13.75, 3.3, 11.0], "#rim"),
+        rotated_cube(
+            [2.35, 2.55, 3.7], [5.05, 3.3, 4.8], "#rim",
+            origin=[3.7, 2.9, 4.25], axis="y", angle=45,
+        ),
+        rotated_cube(
+            [10.95, 2.55, 3.7], [13.65, 3.3, 4.8], "#rim",
+            origin=[12.3, 2.9, 4.25], axis="y", angle=-45,
+        ),
+        rotated_cube(
+            [2.35, 2.55, 11.2], [5.05, 3.3, 12.3], "#rim",
+            origin=[3.7, 2.9, 11.75], axis="y", angle=-45,
+        ),
+        rotated_cube(
+            [10.95, 2.55, 11.2], [13.65, 3.3, 12.3], "#rim",
+            origin=[12.3, 2.9, 11.75], axis="y", angle=45,
+        ),
+        # One restrained weave line on each long face.
+        cube([3.0, 1.45, 4.15], [13.0, 1.78, 4.42], "#binding"),
+        cube([3.0, 1.45, 11.58], [13.0, 1.78, 11.85], "#binding"),
+        # Correctly joined arch: left rises inward, right descends outward.
+        cube([2.7, 3.0, 7.4], [3.55, 7.15, 8.6], "#rim"),
+        cube([12.45, 3.0, 7.4], [13.3, 7.15, 8.6], "#rim"),
+        rotated_cube(
+            [3.15, 6.55, 7.4], [7.35, 7.4, 8.6], "#rim",
+            origin=[3.4, 6.95, 8.0], axis="z", angle=22.5,
+        ),
+        rotated_cube(
+            [8.65, 6.55, 7.4], [12.85, 7.4, 8.6], "#rim",
+            origin=[12.6, 6.95, 8.0], axis="z", angle=-22.5,
+        ),
+        cube([6.55, 8.0, 7.4], [9.45, 8.85, 8.6], "#rim"),
+    ]
+    return elements
+
+
+def basket_bottle_elements() -> list[dict[str, object]]:
+    """Compact horizontal bottle authored for the open basket cradle."""
     return [
-        # Stepped ends make a shallow oval cradle rather than a square crate.
-        cube([4.0, 0.35, 1.4], [12.0, 1.2, 14.6], "#weave"),
-        cube([3.2, 0.35, 2.4], [12.8, 1.2, 13.6], "#weave"),
-        cube([4.3, 1.0, 1.2], [11.7, 3.0, 2.25], "#weave"),
-        cube([4.3, 1.0, 13.75], [11.7, 3.0, 14.8], "#weave"),
-        cube([3.0, 1.0, 2.4], [4.05, 3.35, 13.6], "#weave"),
-        cube([11.95, 1.0, 2.4], [13.0, 3.35, 13.6], "#weave"),
-        # Broad rounded-looking rim and three slim woven side bands.
-        cube([4.1, 2.75, 0.85], [11.9, 3.65, 2.2], "#rim"),
-        cube([4.1, 2.75, 13.8], [11.9, 3.65, 15.15], "#rim"),
-        cube([2.65, 3.0, 2.3], [4.15, 3.9, 13.7], "#rim"),
-        cube([11.85, 3.0, 2.3], [13.35, 3.9, 13.7], "#rim"),
-        cube([2.75, 1.35, 2.5], [3.15, 1.7, 13.5], "#binding"),
-        cube([2.75, 2.1, 2.5], [3.15, 2.45, 13.5], "#binding"),
-        cube([12.85, 1.35, 2.5], [13.25, 1.7, 13.5], "#binding"),
-        cube([12.85, 2.1, 2.5], [13.25, 2.45, 13.5], "#binding"),
-        # Thin raised handle, arched in four restrained Minecraft segments.
-        cube([3.05, 3.2, 7.35], [3.85, 8.1, 8.65], "#rim"),
-        cube([12.15, 3.2, 7.35], [12.95, 8.1, 8.65], "#rim"),
-        rotated_cube(
-            [3.35, 7.5, 7.35], [7.0, 8.3, 8.65], "#rim",
-            origin=[3.75, 7.9, 8.0], axis="z", angle=-22.5,
-        ),
-        rotated_cube(
-            [9.0, 7.5, 7.35], [12.65, 8.3, 8.65], "#rim",
-            origin=[12.25, 7.9, 8.0], axis="z", angle=22.5,
-        ),
-        cube([6.35, 9.0, 7.35], [9.65, 9.8, 8.65], "#rim"),
+        # Cross-shaped sections give a softly stepped round silhouette without
+        # rotating the upright placed-bottle model and exposing internal caps.
+        cube([6.2, 6.65, 4.25], [9.8, 9.35, 13.05], "#bottle"),
+        cube([6.65, 6.2, 4.25], [9.35, 9.8, 13.05], "#bottle"),
+        cube([6.4, 6.45, 12.85], [9.6, 9.55, 13.7], "#bottle_dark"),
+        cube([6.55, 6.75, 3.55], [9.45, 9.25, 4.65], "#bottle"),
+        cube([7.1, 7.25, 1.65], [8.9, 8.75, 3.9], "#bottle"),
+        cube([7.35, 7.0, 1.65], [8.65, 9.0, 3.9], "#bottle"),
+        cube([7.0, 7.15, 1.15], [9.0, 8.85, 2.05], "#neck_foil"),
+        cube([7.25, 7.35, 0.75], [8.75, 8.65, 1.35], "#cork"),
+        # A small bordered label sits on the visible upper side.
+        cube([6.15, 9.72, 7.2], [9.85, 9.84, 10.25], "#label_border"),
+        cube([6.4, 9.82, 7.48], [9.6, 9.91, 9.98], "#label"),
+        cube([7.72, 9.90, 7.9], [8.28, 9.96, 9.55], "#label_ink"),
     ]
 
 
@@ -340,6 +392,26 @@ def generate_wine_basket() -> None:
         write_json(
             DATA / f"loot_table/blocks/{block_id}.json",
             self_drop(block_id),
+        )
+
+    for style in ("red", "white", "aged_red", "aged_white"):
+        model_id = f"wine_basket_bottle_{style}"
+        write_json(
+            ASSETS / f"models/item/{model_id}.json",
+            {
+                "parent": f"vintner:block/wine_bottle_palette_{style}",
+                "ambientocclusion": False,
+                "elements": basket_bottle_elements(),
+            },
+        )
+        write_json(
+            ASSETS / f"items/{model_id}.json",
+            {
+                "model": {
+                    "type": "minecraft:model",
+                    "model": f"vintner:item/{model_id}",
+                }
+            },
         )
 
 

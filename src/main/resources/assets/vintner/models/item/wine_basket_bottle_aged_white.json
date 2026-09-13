@@ -1,0 +1,369 @@
+{
+  "parent": "vintner:block/wine_bottle_palette_aged_white",
+  "ambientocclusion": false,
+  "elements": [
+    {
+      "from": [
+        6.2,
+        6.65,
+        4.25
+      ],
+      "to": [
+        9.8,
+        9.35,
+        13.05
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#bottle"
+        },
+        "up": {
+          "texture": "#bottle"
+        },
+        "north": {
+          "texture": "#bottle"
+        },
+        "south": {
+          "texture": "#bottle"
+        },
+        "west": {
+          "texture": "#bottle"
+        },
+        "east": {
+          "texture": "#bottle"
+        }
+      }
+    },
+    {
+      "from": [
+        6.65,
+        6.2,
+        4.25
+      ],
+      "to": [
+        9.35,
+        9.8,
+        13.05
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#bottle"
+        },
+        "up": {
+          "texture": "#bottle"
+        },
+        "north": {
+          "texture": "#bottle"
+        },
+        "south": {
+          "texture": "#bottle"
+        },
+        "west": {
+          "texture": "#bottle"
+        },
+        "east": {
+          "texture": "#bottle"
+        }
+      }
+    },
+    {
+      "from": [
+        6.4,
+        6.45,
+        12.85
+      ],
+      "to": [
+        9.6,
+        9.55,
+        13.7
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#bottle_dark"
+        },
+        "up": {
+          "texture": "#bottle_dark"
+        },
+        "north": {
+          "texture": "#bottle_dark"
+        },
+        "south": {
+          "texture": "#bottle_dark"
+        },
+        "west": {
+          "texture": "#bottle_dark"
+        },
+        "east": {
+          "texture": "#bottle_dark"
+        }
+      }
+    },
+    {
+      "from": [
+        6.55,
+        6.75,
+        3.55
+      ],
+      "to": [
+        9.45,
+        9.25,
+        4.65
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#bottle"
+        },
+        "up": {
+          "texture": "#bottle"
+        },
+        "north": {
+          "texture": "#bottle"
+        },
+        "south": {
+          "texture": "#bottle"
+        },
+        "west": {
+          "texture": "#bottle"
+        },
+        "east": {
+          "texture": "#bottle"
+        }
+      }
+    },
+    {
+      "from": [
+        7.1,
+        7.25,
+        1.65
+      ],
+      "to": [
+        8.9,
+        8.75,
+        3.9
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#bottle"
+        },
+        "up": {
+          "texture": "#bottle"
+        },
+        "north": {
+          "texture": "#bottle"
+        },
+        "south": {
+          "texture": "#bottle"
+        },
+        "west": {
+          "texture": "#bottle"
+        },
+        "east": {
+          "texture": "#bottle"
+        }
+      }
+    },
+    {
+      "from": [
+        7.35,
+        7.0,
+        1.65
+      ],
+      "to": [
+        8.65,
+        9.0,
+        3.9
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#bottle"
+        },
+        "up": {
+          "texture": "#bottle"
+        },
+        "north": {
+          "texture": "#bottle"
+        },
+        "south": {
+          "texture": "#bottle"
+        },
+        "west": {
+          "texture": "#bottle"
+        },
+        "east": {
+          "texture": "#bottle"
+        }
+      }
+    },
+    {
+      "from": [
+        7.0,
+        7.15,
+        1.15
+      ],
+      "to": [
+        9.0,
+        8.85,
+        2.05
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#neck_foil"
+        },
+        "up": {
+          "texture": "#neck_foil"
+        },
+        "north": {
+          "texture": "#neck_foil"
+        },
+        "south": {
+          "texture": "#neck_foil"
+        },
+        "west": {
+          "texture": "#neck_foil"
+        },
+        "east": {
+          "texture": "#neck_foil"
+        }
+      }
+    },
+    {
+      "from": [
+        7.25,
+        7.35,
+        0.75
+      ],
+      "to": [
+        8.75,
+        8.65,
+        1.35
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#cork"
+        },
+        "up": {
+          "texture": "#cork"
+        },
+        "north": {
+          "texture": "#cork"
+        },
+        "south": {
+          "texture": "#cork"
+        },
+        "west": {
+          "texture": "#cork"
+        },
+        "east": {
+          "texture": "#cork"
+        }
+      }
+    },
+    {
+      "from": [
+        6.15,
+        9.72,
+        7.2
+      ],
+      "to": [
+        9.85,
+        9.84,
+        10.25
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#label_border"
+        },
+        "up": {
+          "texture": "#label_border"
+        },
+        "north": {
+          "texture": "#label_border"
+        },
+        "south": {
+          "texture": "#label_border"
+        },
+        "west": {
+          "texture": "#label_border"
+        },
+        "east": {
+          "texture": "#label_border"
+        }
+      }
+    },
+    {
+      "from": [
+        6.4,
+        9.82,
+        7.48
+      ],
+      "to": [
+        9.6,
+        9.91,
+        9.98
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#label"
+        },
+        "up": {
+          "texture": "#label"
+        },
+        "north": {
+          "texture": "#label"
+        },
+        "south": {
+          "texture": "#label"
+        },
+        "west": {
+          "texture": "#label"
+        },
+        "east": {
+          "texture": "#label"
+        }
+      }
+    },
+    {
+      "from": [
+        7.72,
+        9.9,
+        7.9
+      ],
+      "to": [
+        8.28,
+        9.96,
+        9.55
+      ],
+      "shade": true,
+      "faces": {
+        "down": {
+          "texture": "#label_ink"
+        },
+        "up": {
+          "texture": "#label_ink"
+        },
+        "north": {
+          "texture": "#label_ink"
+        },
+        "south": {
+          "texture": "#label_ink"
+        },
+        "west": {
+          "texture": "#label_ink"
+        },
+        "east": {
+          "texture": "#label_ink"
+        }
+      }
+    }
+  ]
+}
