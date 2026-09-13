@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class WineBasketBlock extends BaseEntityBlock {
@@ -39,14 +40,18 @@ public final class WineBasketBlock extends BaseEntityBlock {
             BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty HAS_BOTTLE =
             BooleanProperty.create("has_bottle");
-    private static final VoxelShape NORTH_SOUTH_SHAPE =
-            Block.box(4, 0, 1, 12, 5, 15);
-    private static final VoxelShape EAST_WEST_SHAPE =
-            Block.box(1, 0, 4, 15, 5, 12);
-    private static final VoxelShape OCCUPIED_NORTH_SOUTH_SHAPE =
-            Block.box(4, 0, 1, 12, 8, 15);
-    private static final VoxelShape OCCUPIED_EAST_WEST_SHAPE =
-            Block.box(1, 0, 4, 15, 8, 12);
+    private static final VoxelShape NORTH_SOUTH_SHAPE = Shapes.or(
+            Block.box(3, 0, 1, 13, 4, 15),
+            Block.box(3, 3, 7, 4, 9, 9),
+            Block.box(12, 3, 7, 13, 9, 9),
+            Block.box(4, 8, 7, 12, 11, 9)
+    );
+    private static final VoxelShape EAST_WEST_SHAPE = Shapes.or(
+            Block.box(1, 0, 3, 15, 4, 13),
+            Block.box(7, 3, 3, 9, 9, 4),
+            Block.box(7, 3, 12, 9, 9, 13),
+            Block.box(7, 8, 4, 9, 11, 12)
+    );
 
     public WineBasketBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -70,10 +75,6 @@ public final class WineBasketBlock extends BaseEntityBlock {
             BlockState state, BlockGetter level, BlockPos pos,
             CollisionContext context
     ) {
-        if (state.getValue(HAS_BOTTLE)) {
-            return state.getValue(FACING).getAxis() == Direction.Axis.Z
-                    ? OCCUPIED_NORTH_SOUTH_SHAPE : OCCUPIED_EAST_WEST_SHAPE;
-        }
         return state.getValue(FACING).getAxis() == Direction.Axis.Z
                 ? NORTH_SOUTH_SHAPE : EAST_WEST_SHAPE;
     }

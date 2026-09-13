@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "P P",
+    "PWP",
+    "WWW"
+  ],
+  "key": {
+    "P": "minecraft:dark_oak_planks",
+    "W": "minecraft:wheat"
+  },
+  "result": {
+    "id": "vintner:dark_oak_wine_basket",
+    "count": 1
+  }
+}

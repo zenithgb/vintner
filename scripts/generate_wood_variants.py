@@ -422,6 +422,10 @@ def crate_id(wood: str) -> str:
     return "wine_crate" if wood == "oak" else f"{wood}_wine_crate"
 
 
+def wine_basket_id(wood: str) -> str:
+    return "wine_basket" if wood == "oak" else f"{wood}_wine_basket"
+
+
 def archive_id(wood: str) -> str:
     return (
         "vintage_archive"
@@ -2873,8 +2877,11 @@ def generate_survival_data() -> None:
             "neutral_aging_barrel",
             "large_cask",
             "grape_bowl",
-            "wine_basket",
         )
+    )
+    axe_blocks.extend(
+        f"vintner:{wine_basket_id(wood)}"
+        for wood in WOODS
     )
 
     write_json(
@@ -2933,6 +2940,9 @@ def generate_language() -> None:
         )
         language[f"block.vintner.{crate_id(wood)}"] = (
             f"{title} Wine Crate"
+        )
+        language[f"block.vintner.{wine_basket_id(wood)}"] = (
+            f"{title} Wine Basket"
         )
         language[f"block.vintner.{archive_id(wood)}"] = (
             f"{title} Vintage Archive"

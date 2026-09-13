@@ -161,6 +161,17 @@
     "vintner:neutral_aging_barrel",
     "vintner:large_cask",
     "vintner:grape_bowl",
-    "vintner:wine_basket"
+    "vintner:wine_basket",
+    "vintner:spruce_wine_basket",
+    "vintner:birch_wine_basket",
+    "vintner:jungle_wine_basket",
+    "vintner:acacia_wine_basket",
+    "vintner:dark_oak_wine_basket",
+    "vintner:mangrove_wine_basket",
+    "vintner:cherry_wine_basket",
+    "vintner:pale_oak_wine_basket",
+    "vintner:bamboo_wine_basket",
+    "vintner:crimson_wine_basket",
+    "vintner:warped_wine_basket"
   ]
 }

@@ -109,7 +109,7 @@ public final class ModBlockEntities {
                     ),
                     FabricBlockEntityTypeBuilder.create(
                             WineBasketBlockEntity::new,
-                            ModBlocks.WINE_BASKET
+                            ModBlocks.wineBasketBlocks()
                     ).build()
             );
 

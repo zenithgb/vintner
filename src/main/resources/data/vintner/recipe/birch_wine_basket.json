@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "P P",
+    "PWP",
+    "WWW"
+  ],
+  "key": {
+    "P": "minecraft:birch_planks",
+    "W": "minecraft:wheat"
+  },
+  "result": {
+    "id": "vintner:birch_wine_basket",
+    "count": 1
+  }
+}

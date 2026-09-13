@@ -114,7 +114,8 @@ public final class ModCreativeTabs {
                                         .forEach(output::accept);
                                 ModBlocks.TASTING_SERVICES.values()
                                         .forEach(output::accept);
-                                output.accept(ModBlocks.WINE_BASKET);
+                                ModBlocks.WINE_BASKETS.values()
+                                        .forEach(output::accept);
                             })
                             .build()
             );

@@ -767,8 +767,19 @@
   "block.vintner.crimson_tasting_service": "Crimson Tasting Service",
   "block.vintner.warped_tasting_service": "Warped Tasting Service",
   "block.vintner.grape_bowl": "Grape Bowl",
-  "block.vintner.wine_basket": "Wine Basket",
+  "block.vintner.wine_basket": "Oak Wine Basket",
   "item.vintner.grape_bowl_named": "%s Grape Bowl",
   "tooltip.vintner.grape_bowl.servings": "%s/%s servings",
-  "tag.item.vintner.grapes": "Vintner Grapes"
+  "tag.item.vintner.grapes": "Vintner Grapes",
+  "block.vintner.spruce_wine_basket": "Spruce Wine Basket",
+  "block.vintner.birch_wine_basket": "Birch Wine Basket",
+  "block.vintner.jungle_wine_basket": "Jungle Wine Basket",
+  "block.vintner.acacia_wine_basket": "Acacia Wine Basket",
+  "block.vintner.dark_oak_wine_basket": "Dark Oak Wine Basket",
+  "block.vintner.mangrove_wine_basket": "Mangrove Wine Basket",
+  "block.vintner.cherry_wine_basket": "Cherry Wine Basket",
+  "block.vintner.pale_oak_wine_basket": "Pale Oak Wine Basket",
+  "block.vintner.bamboo_wine_basket": "Bamboo Wine Basket",
+  "block.vintner.crimson_wine_basket": "Crimson Wine Basket",
+  "block.vintner.warped_wine_basket": "Warped Wine Basket"
 }

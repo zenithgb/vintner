@@ -38,7 +38,7 @@ public final class GrapeBowlBlock extends Block {
     public static final MapCodec<GrapeBowlBlock> CODEC = simpleCodec(GrapeBowlBlock::new);
     public static final IntegerProperty SERVINGS = IntegerProperty.create("servings", 0, MAX_SERVINGS);
     public static final EnumProperty<GrapeCultivar> CULTIVAR = EnumProperty.create("cultivar", GrapeCultivar.class);
-    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 5, 13);
+    private static final VoxelShape SHAPE = Block.box(2.7, 0, 2.7, 13.3, 3.5, 13.3);
 
     public GrapeBowlBlock(Properties properties) {
         super(properties);

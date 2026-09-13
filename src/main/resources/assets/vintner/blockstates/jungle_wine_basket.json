@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,has_bottle=false": {
+      "model": "vintner:block/jungle_wine_basket"
+    },
+    "facing=north,has_bottle=true": {
+      "model": "vintner:block/jungle_wine_basket"
+    },
+    "facing=east,has_bottle=false": {
+      "model": "vintner:block/jungle_wine_basket",
+      "y": 90
+    },
+    "facing=east,has_bottle=true": {
+      "model": "vintner:block/jungle_wine_basket",
+      "y": 90
+    },
+    "facing=south,has_bottle=false": {
+      "model": "vintner:block/jungle_wine_basket",
+      "y": 180
+    },
+    "facing=south,has_bottle=true": {
+      "model": "vintner:block/jungle_wine_basket",
+      "y": 180
+    },
+    "facing=west,has_bottle=false": {
+      "model": "vintner:block/jungle_wine_basket",
+      "y": 270
+    },
+    "facing=west,has_bottle=true": {
+      "model": "vintner:block/jungle_wine_basket",
+      "y": 270
+    }
+  }
+}

@@ -2,12 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "S S",
-    "SWS",
+    "P P",
+    "PWP",
     "WWW"
   ],
   "key": {
-    "S": "minecraft:stick",
+    "P": "minecraft:oak_planks",
     "W": "minecraft:wheat"
   },
   "result": {

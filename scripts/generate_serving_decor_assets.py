@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Generate resources for the cultivar grape bowl and single-bottle basket."""
+"""Generate resources for the cultivar grape bowl and wood wine baskets."""
 
 from __future__ import annotations
 
 import json
-import shutil
 from pathlib import Path
+
+from generate_wood_variants import WOODS, write_rgba_texture
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +28,16 @@ CULTIVARS = {
     "stoneflower": "stony",
 }
 PALETTES = tuple(dict.fromkeys(CULTIVARS.values()))
+GRAPE_COLORS = {
+    "crimson": ((100, 18, 28, 255), (185, 33, 52, 255), (56, 10, 16, 255)),
+    "shaded": ((100, 34, 70, 255), (185, 63, 129, 255), (56, 19, 39, 255)),
+    "sunlit": ((100, 31, 16, 255), (185, 58, 30, 255), (56, 17, 9, 255)),
+    "riverside": ((100, 30, 51, 255), (185, 56, 94, 255), (56, 17, 29, 255)),
+    "golden": ((135, 122, 51, 255), (232, 209, 88, 255), (94, 84, 36, 255)),
+    "frosted": ((130, 135, 108, 255), (223, 232, 190, 255), (82, 88, 68, 255)),
+    "honeyed": ((151, 112, 45, 255), (236, 187, 83, 255), (91, 62, 26, 255)),
+    "stony": ((121, 135, 97, 255), (207, 232, 167, 255), (75, 88, 61, 255)),
+}
 
 
 def write_json(path: Path, value: object) -> None:
@@ -49,24 +60,75 @@ def cube(
     }
 
 
+def rotated_cube(
+    start: list[float], end: list[float], texture: str,
+    *, origin: list[float], axis: str, angle: float,
+) -> dict[str, object]:
+    element = cube(start, end, texture)
+    element["rotation"] = {
+        "origin": origin,
+        "axis": axis,
+        "angle": angle,
+        "rescale": True,
+    }
+    return element
+
+
 def bowl_elements(servings: int) -> list[dict[str, object]]:
     elements = [
-        cube([3, 0, 3], [13, 1, 13], "#bowl"),
-        cube([3, 1, 3], [4, 4, 13], "#rim"),
-        cube([12, 1, 3], [13, 4, 13], "#rim"),
-        cube([4, 1, 3], [12, 4, 4], "#rim"),
-        cube([4, 1, 12], [12, 4, 13], "#rim"),
+        # A stepped octagonal footprint reads as a real bowl instead of a box.
+        cube([5, 0, 3.5], [11, 0.8, 12.5], "#base"),
+        cube([3.5, 0, 5], [12.5, 0.8, 11], "#base"),
+        cube([4, 0.8, 4], [12, 1.45, 12], "#inside"),
+        cube([4.1, 1.25, 3], [11.9, 2.8, 4.1], "#bowl"),
+        cube([4.1, 1.25, 11.9], [11.9, 2.8, 13], "#bowl"),
+        cube([3, 1.25, 4.1], [4.1, 2.8, 11.9], "#bowl"),
+        cube([11.9, 1.25, 4.1], [13, 2.8, 11.9], "#bowl"),
+        cube([4.0, 2.65, 2.7], [12.0, 3.35, 4.0], "#rim"),
+        cube([4.0, 2.65, 12.0], [12.0, 3.35, 13.3], "#rim"),
+        cube([2.7, 2.65, 4.0], [4.0, 3.35, 12.0], "#rim"),
+        cube([12.0, 2.65, 4.0], [13.3, 3.35, 12.0], "#rim"),
+        cube([3.3, 1.5, 3.3], [4.8, 2.9, 4.8], "#bowl"),
+        cube([11.2, 1.5, 3.3], [12.7, 2.9, 4.8], "#bowl"),
+        cube([3.3, 1.5, 11.2], [4.8, 2.9, 12.7], "#bowl"),
+        cube([11.2, 1.5, 11.2], [12.7, 2.9, 12.7], "#bowl"),
     ]
+    # Add grapes in balanced pairs so every serving state stays centred.
     grape_positions = (
-        (4.2, 4.2), (7.0, 4.0), (9.8, 4.4), (5.4, 6.7),
-        (8.3, 6.5), (10.2, 8.2), (6.0, 9.3), (8.7, 9.6),
+        (6.0, 6.0, 0.0), (8.2, 8.0, 22.5),
+        (8.5, 5.7, -22.5), (5.8, 8.3, 22.5),
+        (5.0, 5.2, -22.5), (9.3, 8.9, 0.0),
+        (9.5, 4.8, 22.5), (4.8, 9.4, -22.5),
     )
-    for x, z in grape_positions[: servings * 2]:
-        elements.append(cube(
-            [x, 1.25, z], [x + 2.2, 3.45, z + 2.2], "#grapes",
-            shade=False,
+    for x, z, angle in grape_positions[: servings * 2]:
+        elements.append(rotated_cube(
+            [x, 1.45, z], [x + 1.75, 3.2, z + 1.75], "#grapes",
+            origin=[x + 0.875, 1.45, z + 0.875],
+            axis="y",
+            angle=angle,
         ))
     return elements
+
+
+def write_grape_texture(palette: str) -> None:
+    base, highlight, shadow = GRAPE_COLORS[palette]
+    rows = []
+    for y in range(16):
+        row = []
+        for x in range(16):
+            value = base
+            if (x + y * 3) % 11 == 0:
+                value = highlight
+            elif (x * 3 + y) % 13 == 0:
+                value = shadow
+            row.append(value)
+        rows.append(row)
+    for x, y in ((3, 3), (4, 3), (11, 6), (7, 11)):
+        rows[y][x] = highlight
+    write_rgba_texture(
+        ASSETS / f"textures/block/grape_bowl_{palette}_grapes.png",
+        rows,
+    )
 
 
 def display_transforms() -> dict[str, object]:
@@ -99,9 +161,11 @@ def generate_grape_bowl() -> None:
     write_json(ASSETS / "blockstates/grape_bowl.json", {"variants": variants})
 
     base_textures = {
-        "bowl": "minecraft:block/terracotta",
-        "rim": "minecraft:block/brown_terracotta",
-        "particle": "minecraft:block/terracotta",
+        "base": "minecraft:block/stripped_oak_log_top",
+        "inside": "minecraft:block/oak_planks",
+        "bowl": "minecraft:block/oak_planks",
+        "rim": "minecraft:block/stripped_oak_log",
+        "particle": "minecraft:block/oak_planks",
     }
     write_json(
         ASSETS / "models/block/grape_bowl_empty.json",
@@ -112,12 +176,7 @@ def generate_grape_bowl() -> None:
         },
     )
     for palette in PALETTES:
-        block_texture = ASSETS / f"textures/block/grape_bowl_{palette}_grapes.png"
-        block_texture.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(
-            ASSETS / f"textures/item/{palette}_grapes.png",
-            block_texture,
-        )
+        write_grape_texture(palette)
         for servings in range(1, 5):
             model_id = f"grape_bowl_{palette}_{servings}"
             write_json(
@@ -184,65 +243,104 @@ def generate_grape_bowl() -> None:
     write_json(DATA / "loot_table/blocks/grape_bowl.json", self_drop("grape_bowl"))
 
 
-def generate_wine_basket() -> None:
-    variants: dict[str, object] = {}
-    rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
-    for facing, rotation in rotations.items():
-        for occupied in ("false", "true"):
-            entry: dict[str, object] = {"model": "vintner:block/wine_basket"}
-            if rotation:
-                entry["y"] = rotation
-            variants[f"facing={facing},has_bottle={occupied}"] = entry
-    write_json(ASSETS / "blockstates/wine_basket.json", {"variants": variants})
+def wine_basket_id(wood: str) -> str:
+    return "wine_basket" if wood == "oak" else f"{wood}_wine_basket"
 
-    basket_elements = [
-        cube([4, 0, 1], [12, 1.25, 15], "#weave"),
-        cube([4, 1.25, 1], [5, 3.8, 15], "#weave"),
-        cube([11, 1.25, 1], [12, 3.8, 15], "#weave"),
-        cube([5, 1.25, 1], [11, 4.8, 2], "#rim"),
-        cube([5, 1.25, 14], [11, 4.8, 15], "#rim"),
-        cube([3.75, 3.6, 1], [5.25, 4.8, 15], "#rim"),
-        cube([10.75, 3.6, 1], [12.25, 4.8, 15], "#rim"),
-        cube([4, 1.1, 4.2], [12, 1.65, 5.1], "#binding"),
-        cube([4, 1.1, 10.9], [12, 1.65, 11.8], "#binding"),
+
+def basket_elements() -> list[dict[str, object]]:
+    return [
+        # Stepped ends make a shallow oval cradle rather than a square crate.
+        cube([4.0, 0.35, 1.4], [12.0, 1.2, 14.6], "#weave"),
+        cube([3.2, 0.35, 2.4], [12.8, 1.2, 13.6], "#weave"),
+        cube([4.3, 1.0, 1.2], [11.7, 3.0, 2.25], "#weave"),
+        cube([4.3, 1.0, 13.75], [11.7, 3.0, 14.8], "#weave"),
+        cube([3.0, 1.0, 2.4], [4.05, 3.35, 13.6], "#weave"),
+        cube([11.95, 1.0, 2.4], [13.0, 3.35, 13.6], "#weave"),
+        # Broad rounded-looking rim and three slim woven side bands.
+        cube([4.1, 2.75, 0.85], [11.9, 3.65, 2.2], "#rim"),
+        cube([4.1, 2.75, 13.8], [11.9, 3.65, 15.15], "#rim"),
+        cube([2.65, 3.0, 2.3], [4.15, 3.9, 13.7], "#rim"),
+        cube([11.85, 3.0, 2.3], [13.35, 3.9, 13.7], "#rim"),
+        cube([2.75, 1.35, 2.5], [3.15, 1.7, 13.5], "#binding"),
+        cube([2.75, 2.1, 2.5], [3.15, 2.45, 13.5], "#binding"),
+        cube([12.85, 1.35, 2.5], [13.25, 1.7, 13.5], "#binding"),
+        cube([12.85, 2.1, 2.5], [13.25, 2.45, 13.5], "#binding"),
+        # Thin raised handle, arched in four restrained Minecraft segments.
+        cube([3.05, 3.2, 7.35], [3.85, 8.1, 8.65], "#rim"),
+        cube([12.15, 3.2, 7.35], [12.95, 8.1, 8.65], "#rim"),
+        rotated_cube(
+            [3.35, 7.5, 7.35], [7.0, 8.3, 8.65], "#rim",
+            origin=[3.75, 7.9, 8.0], axis="z", angle=-22.5,
+        ),
+        rotated_cube(
+            [9.0, 7.5, 7.35], [12.65, 8.3, 8.65], "#rim",
+            origin=[12.25, 7.9, 8.0], axis="z", angle=22.5,
+        ),
+        cube([6.35, 9.0, 7.35], [9.65, 9.8, 8.65], "#rim"),
     ]
-    write_json(
-        ASSETS / "models/block/wine_basket.json",
-        {
-            "textures": {
-                "weave": "minecraft:block/oak_planks",
-                "rim": "minecraft:block/stripped_oak_log",
-                "binding": "minecraft:block/hay_block_side",
-                "particle": "minecraft:block/oak_planks",
+
+
+def generate_wine_basket() -> None:
+    rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
+    for wood, properties in WOODS.items():
+        block_id = wine_basket_id(wood)
+        variants: dict[str, object] = {}
+        for facing, rotation in rotations.items():
+            for occupied in ("false", "true"):
+                entry: dict[str, object] = {
+                    "model": f"vintner:block/{block_id}"
+                }
+                if rotation:
+                    entry["y"] = rotation
+                variants[f"facing={facing},has_bottle={occupied}"] = entry
+        write_json(
+            ASSETS / f"blockstates/{block_id}.json",
+            {"variants": variants},
+        )
+
+        planks = f"minecraft:block/{wood}_planks"
+        write_json(
+            ASSETS / f"models/block/{block_id}.json",
+            {
+                "ambientocclusion": False,
+                "textures": {
+                    "weave": planks,
+                    "rim": properties["beam"],
+                    "binding": planks,
+                    "particle": planks,
+                },
+                "elements": basket_elements(),
+                "display": display_transforms(),
             },
-            "elements": basket_elements,
-            "display": display_transforms(),
-        },
-    )
-    write_json(
-        ASSETS / "items/wine_basket.json",
-        {
-            "model": {
-                "type": "minecraft:model",
-                "model": "vintner:block/wine_basket",
-            }
-        },
-    )
-    write_json(
-        DATA / "recipe/wine_basket.json",
-        {
-            "type": "minecraft:crafting_shaped",
-            "category": "misc",
-            "pattern": ["S S", "SWS", "WWW"],
-            "key": {"S": "minecraft:stick", "W": "minecraft:wheat"},
-            "result": {"id": "vintner:wine_basket", "count": 1},
-        },
-    )
-    write_json(
-        DATA / "advancement/recipes/vintner/wine_basket.json",
-        recipe_advancement("wine_basket", "minecraft:wheat"),
-    )
-    write_json(DATA / "loot_table/blocks/wine_basket.json", self_drop("wine_basket"))
+        )
+        write_json(
+            ASSETS / f"items/{block_id}.json",
+            {
+                "model": {
+                    "type": "minecraft:model",
+                    "model": f"vintner:block/{block_id}",
+                }
+            },
+        )
+        ingredient = f"minecraft:{wood}_planks"
+        write_json(
+            DATA / f"recipe/{block_id}.json",
+            {
+                "type": "minecraft:crafting_shaped",
+                "category": "misc",
+                "pattern": ["P P", "PWP", "WWW"],
+                "key": {"P": ingredient, "W": "minecraft:wheat"},
+                "result": {"id": f"vintner:{block_id}", "count": 1},
+            },
+        )
+        write_json(
+            DATA / f"advancement/recipes/vintner/{block_id}.json",
+            recipe_advancement(block_id, ingredient),
+        )
+        write_json(
+            DATA / f"loot_table/blocks/{block_id}.json",
+            self_drop(block_id),
+        )
 
 
 def self_drop(block_id: str) -> dict[str, object]:

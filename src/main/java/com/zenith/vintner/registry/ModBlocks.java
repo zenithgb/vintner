@@ -170,6 +170,14 @@ public final class ModBlocks {
             tabletopProperties()
     );
 
+    public static final Map<WoodVariant, Block> WINE_BASKETS =
+            registerTabletopVariants(
+                    WoodVariant.OAK,
+                    WINE_BASKET,
+                    WoodVariant::wineBasketId,
+                    WineBasketBlock::new
+            );
+
     public static final Block GRAPE_BOWL = registerWithCustomItem(
             "grape_bowl",
             GrapeBowlBlock::new,
@@ -363,6 +371,10 @@ public final class ModBlocks {
         return WINE_CRATES.get(woodVariant);
     }
 
+    public static Block wineBasket(WoodVariant woodVariant) {
+        return WINE_BASKETS.get(woodVariant);
+    }
+
     public static Block vintageArchive(
             WoodVariant woodVariant
     ) {
@@ -446,6 +458,10 @@ public final class ModBlocks {
 
     public static Block[] wineCrateBlocks() {
         return orderedBlocks(WINE_CRATES);
+    }
+
+    public static Block[] wineBasketBlocks() {
+        return orderedBlocks(WINE_BASKETS);
     }
 
     public static Block[] vintageArchiveBlocks() {
@@ -549,6 +565,33 @@ public final class ModBlocks {
                             idFactory.apply(woodVariant),
                             factory,
                             machineProperties()
+                    )
+            );
+        }
+
+        return Collections.unmodifiableMap(blocks);
+    }
+
+    private static Map<WoodVariant, Block> registerTabletopVariants(
+            WoodVariant existingVariant,
+            Block existingBlock,
+            Function<WoodVariant, String> idFactory,
+            Function<BlockBehaviour.Properties, Block> factory
+    ) {
+        EnumMap<WoodVariant, Block> blocks =
+                new EnumMap<>(WoodVariant.class);
+        blocks.put(existingVariant, existingBlock);
+
+        for (WoodVariant woodVariant : WoodVariant.values()) {
+            if (woodVariant == existingVariant) {
+                continue;
+            }
+            blocks.put(
+                    woodVariant,
+                    registerWithItem(
+                            idFactory.apply(woodVariant),
+                            factory,
+                            tabletopProperties()
                     )
             );
         }
@@ -752,7 +795,7 @@ public final class ModBlocks {
                     TASTING_CABINETS.values()
                             .forEach(output::accept);
                     TASTING_SERVICES.values().forEach(output::accept);
-                    output.accept(WINE_BASKET);
+                    WINE_BASKETS.values().forEach(output::accept);
                     output.accept(GRAPE_BOWL);
                 });
     }

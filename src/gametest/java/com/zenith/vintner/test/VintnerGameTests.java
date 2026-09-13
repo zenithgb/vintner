@@ -767,6 +767,11 @@ public final class VintnerGameTests {
                 "Every wood family should have a wine crate"
         );
         helper.assertValueEqual(
+                ModBlocks.WINE_BASKETS.size(),
+                expected,
+                "Every wood family should have a wine basket"
+        );
+        helper.assertValueEqual(
                 ModBlocks.VINTAGE_ARCHIVES.size(),
                 expected,
                 "Every wood family should have a vintage archive"
@@ -860,6 +865,14 @@ public final class VintnerGameTests {
                     ),
                     woodVariant.id()
                             + " wine crate should support its block entity"
+            );
+            helper.assertTrue(
+                    ModBlockEntities.WINE_BASKET.isValid(
+                            ModBlocks.wineBasket(woodVariant)
+                                    .defaultBlockState()
+                    ),
+                    woodVariant.id()
+                            + " wine basket should support its block entity"
             );
             helper.assertTrue(
                     ModBlockEntities.VINTAGE_ARCHIVE.isValid(

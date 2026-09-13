@@ -7,9 +7,10 @@ notes beside each item before publication.
 ## Grape Bowl
 
 - [ ] A full bowl looks intentional and grounded on a full block, slab, table and counter.
+- [ ] The bowl reads as a shallow rounded vessel rather than a square crate.
 - [ ] Each of the eight active cultivars uses the expected grape appearance.
 - [ ] The 8, 6, 4, 2 and 0-grape states are visibly distinct and grounded.
-- [ ] No bowl or fruit appears to float.
+- [ ] No bowl or fruit appears to float, fragment, flicker or expose transparent internal faces.
 - [ ] Eating one serving feels like a normal Minecraft food interaction.
 - [ ] The empty bowl remains after the fourth serving.
 - [ ] Empty-hand bowl retrieval feels discoverable and returns one vanilla bowl.
@@ -18,8 +19,9 @@ notes beside each item before publication.
 ## Wine Basket
 
 - [ ] The empty basket reads as a convincing low wicker serving basket.
+- [ ] Oak plus the other eleven vanilla wood families have distinct, correct textures.
 - [ ] The stored bottle sits diagonally and is visibly cradled by the basket.
-- [ ] The bottle does not float or visibly clip through the basket.
+- [ ] The bottle renders as one clean silhouette without floating, clipping, striping or fragmented caps.
 - [ ] North, east, south and west placement rotate the bottle and basket correctly.
 - [ ] A red bottle keeps the canonical red appearance.
 - [ ] A white bottle keeps the canonical white appearance.

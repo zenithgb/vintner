@@ -25,6 +25,7 @@ from generate_wood_variants import (
     surveyors_map_table_id,
     tasting_service_id,
     trellis_id,
+    wine_basket_id,
 )
 
 
@@ -683,32 +684,46 @@ def audit_serving_decor() -> None:
                     ASSETS / f"models/block/grape_bowl_{palette}_{servings}.json"
                 )
 
-    basket_state = load_json(ASSETS / "blockstates/wine_basket.json")
-    basket_variants = (
-        basket_state.get("variants")
-        if isinstance(basket_state, dict)
-        else None
-    )
     expected_basket_states = {
         f"facing={facing},has_bottle={occupied}"
         for facing in ("north", "east", "south", "west")
         for occupied in ("false", "true")
     }
-    if (
-        not isinstance(basket_variants, dict)
-        or set(basket_variants) != expected_basket_states
-    ):
-        fail("wine basket blockstate must cover facing and occupancy states")
+    for wood in WOODS:
+        block_id = wine_basket_id(wood)
+        basket_state = load_json(ASSETS / f"blockstates/{block_id}.json")
+        basket_variants = (
+            basket_state.get("variants")
+            if isinstance(basket_state, dict)
+            else None
+        )
+        if (
+            not isinstance(basket_variants, dict)
+            or set(basket_variants) != expected_basket_states
+        ):
+            fail(
+                f"{block_id} blockstate must cover facing and occupancy states"
+            )
+        model_path = ASSETS / f"models/block/{block_id}.json"
+        require_file(model_path)
+        model = load_json(model_path)
+        elements = model.get("elements") if isinstance(model, dict) else None
+        if not isinstance(elements, list) or len(elements) < 19:
+            fail(f"{block_id} must retain the shallow woven cradle and handle")
+        elif not any("rotation" in element for element in elements):
+            fail(f"{block_id} must retain its segmented raised handle")
+        for path in (
+            ASSETS / f"items/{block_id}.json",
+            DATA / f"recipe/{block_id}.json",
+            DATA / f"advancement/recipes/vintner/{block_id}.json",
+            DATA / f"loot_table/blocks/{block_id}.json",
+        ):
+            require_file(path)
 
     for path in (
-        ASSETS / "models/block/wine_basket.json",
-        ASSETS / "items/wine_basket.json",
         DATA / "recipe/grape_bowl.json",
-        DATA / "recipe/wine_basket.json",
         DATA / "advancement/recipes/vintner/grape_bowl.json",
-        DATA / "advancement/recipes/vintner/wine_basket.json",
         DATA / "loot_table/blocks/grape_bowl.json",
-        DATA / "loot_table/blocks/wine_basket.json",
         DATA / "tags/item/grapes.json",
         ROOT / "src/client/java/com/zenith/vintner/client/render/WineBasketRenderer.java",
     ):
@@ -720,7 +735,10 @@ def audit_serving_decor() -> None:
         if isinstance(axe_tag, dict)
         else set()
     )
-    for block_id in ("grape_bowl", "wine_basket"):
+    for block_id in (
+        "grape_bowl",
+        *(wine_basket_id(wood) for wood in WOODS),
+    ):
         if f"vintner:{block_id}" not in axe_values:
             fail(f"axe tag is missing vintner:{block_id}")
 
@@ -728,10 +746,13 @@ def audit_serving_decor() -> None:
     if isinstance(lang, dict):
         for key in (
             "block.vintner.grape_bowl",
-            "block.vintner.wine_basket",
             "item.vintner.grape_bowl_named",
             "tooltip.vintner.grape_bowl.servings",
             "tag.item.vintner.grapes",
+            *(
+                f"block.vintner.{wine_basket_id(wood)}"
+                for wood in WOODS
+            ),
         ):
             if key not in lang:
                 fail(f"serving decor is missing language key {key}")
