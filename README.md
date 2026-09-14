@@ -105,13 +105,17 @@ Craft a Vintner's Almanac from a book and both grape varieties. Use it while
 holding wine in the other hand to inspect the bottle's vintage, batch, tasting
 profile, body and finish, wine style, estate, quality score and production
 breakdown, numbered place in its batch, age, cumulative cellar history, batch
-provenance, ageing vessel, estimated trade value, cellar prestige, bottling
+provenance, ageing vessel, indicative appraisal, cellar prestige, bottling
 day, and whether the bottle should be held or enjoyed now. Provenance is established when a
 batch is pressed so grapes from matching vines remain stackable. Use the
 Almanac directly on a wine rack to
 inspect the cellar around that rack. Normal wine tooltips remain intentionally
 compact. Cellar advancements guide players from laying down their first rack
 to identifying a vintage and discovering ideal storage conditions.
+
+Almanac appraisal and regional preference profiles are planning guidance.
+Current merchant offers remain separate and are not changed or guaranteed by
+the displayed appraisal.
 
 Craft a Vintage Archive to build a physical record of a cellar collection.
 Use a wine bottle on the Archive to catalogue its current metadata without

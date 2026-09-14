@@ -27,8 +27,9 @@ the world; the management layer reports, organizes, and explains that work.
 - A bounded persistent estate ledger and reputation progression.
 - Recognition of physical barrel workshop, controlled-cellar, warehouse,
   tasting-room, and improved-irrigation facilities.
-- Read-only appraisal, buyer-fit, and regional-market guidance. No wine is sold
-  and no currency or reward is created by this release.
+- Read-only indicative appraisal, preference-profile fit, and regional-outlook
+  guidance. These planning signals do not alter existing merchant offers; no
+  market-linked sale, currency, or reward is created by this release.
 - Vintage Archives, Estate Management Desks, and Surveyor's Map Tables in all
   supported wood families, with facing-aligned mixed workstation rows and a
   shift-placement standalone option.
