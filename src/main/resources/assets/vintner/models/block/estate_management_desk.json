@@ -40,7 +40,8 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "leg"
     },
     {
       "from": [
@@ -72,7 +73,8 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "foot"
     },
     {
       "from": [
@@ -104,7 +106,8 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "leg"
     },
     {
       "from": [
@@ -136,7 +139,8 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "foot"
     },
     {
       "from": [
@@ -168,7 +172,8 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "leg"
     },
     {
       "from": [
@@ -200,7 +205,8 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "foot"
     },
     {
       "from": [
@@ -232,7 +238,8 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "leg"
     },
     {
       "from": [
@@ -264,7 +271,8 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "foot"
     },
     {
       "from": [
@@ -296,7 +304,8 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "stretcher"
     },
     {
       "from": [
@@ -328,7 +337,8 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "stretcher"
     },
     {
       "from": [
@@ -360,7 +370,8 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "stretcher"
     },
     {
       "from": [
@@ -392,7 +403,8 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "stretcher"
     },
     {
       "from": [
@@ -424,7 +436,8 @@
         "up": {
           "texture": "#writing"
         }
-      }
+      },
+      "name": "desktop"
     },
     {
       "from": [
@@ -456,7 +469,74 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "front_moulding"
+    },
+    {
+      "from": [
+        1,
+        11.5,
+        13.25
+      ],
+      "to": [
+        15,
+        14.25,
+        14.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#frame"
+        },
+        "east": {
+          "texture": "#frame"
+        },
+        "south": {
+          "texture": "#frame"
+        },
+        "west": {
+          "texture": "#frame"
+        },
+        "down": {
+          "texture": "#frame"
+        },
+        "up": {
+          "texture": "#frame"
+        }
+      },
+      "name": "rear_rail"
+    },
+    {
+      "from": [
+        0.75,
+        14.25,
+        13
+      ],
+      "to": [
+        15.25,
+        14.75,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#frame"
+        },
+        "east": {
+          "texture": "#frame"
+        },
+        "south": {
+          "texture": "#frame"
+        },
+        "west": {
+          "texture": "#frame"
+        },
+        "down": {
+          "texture": "#frame"
+        },
+        "up": {
+          "texture": "#writing"
+        }
+      },
+      "name": "rear_crown"
     },
     {
       "from": [
@@ -615,70 +695,6 @@
         },
         "up": {
           "texture": "#brass"
-        }
-      }
-    },
-    {
-      "from": [
-        1,
-        11.5,
-        13.25
-      ],
-      "to": [
-        15,
-        14.25,
-        14.75
-      ],
-      "faces": {
-        "north": {
-          "texture": "#frame"
-        },
-        "east": {
-          "texture": "#frame"
-        },
-        "south": {
-          "texture": "#frame"
-        },
-        "west": {
-          "texture": "#frame"
-        },
-        "down": {
-          "texture": "#frame"
-        },
-        "up": {
-          "texture": "#frame"
-        }
-      }
-    },
-    {
-      "from": [
-        0.75,
-        14.25,
-        13
-      ],
-      "to": [
-        15.25,
-        14.75,
-        15
-      ],
-      "faces": {
-        "north": {
-          "texture": "#frame"
-        },
-        "east": {
-          "texture": "#frame"
-        },
-        "south": {
-          "texture": "#frame"
-        },
-        "west": {
-          "texture": "#frame"
-        },
-        "down": {
-          "texture": "#frame"
-        },
-        "up": {
-          "texture": "#writing"
         }
       }
     },

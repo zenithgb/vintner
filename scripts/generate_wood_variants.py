@@ -10,6 +10,7 @@ import json
 import struct
 import zlib
 from pathlib import Path
+from estate_workstation_geometry import archive_model, connection
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -911,37 +912,14 @@ def machine_textures(wood: str) -> dict[str, str]:
 
 
 def vintage_archive_connection_model(left: bool) -> dict[str, object]:
-    """Extend the Archive's writing surface and gallery to a joined side."""
-    if left:
-        surface = ([0, 10.5, 1.5], [0.5, 12, 15.5])
-        gallery_side = ([0, 11.5, 8], [1, 15.5, 15])
-        crown = ([0, 15.5, 7.5], [0.5, 16, 15.5])
-    else:
-        surface = ([15.5, 10.5, 1.5], [16, 12, 15.5])
-        gallery_side = ([15, 11.5, 8], [16, 15.5, 15])
-        crown = ([15.5, 15.5, 7.5], [16, 16, 15.5])
-
-    def cuboid(
-        start: list[float],
-        end: list[float],
-    ) -> dict[str, object]:
-        return {
-            "from": start,
-            "to": end,
-            "faces": cube_faces("#wood"),
-        }
-
+    """Join the same furniture profile used by the Estate Desk and Map Table."""
     return {
         "parent": "minecraft:block/block",
         "textures": {
             "wood": "minecraft:block/oak_planks",
             "particle": "minecraft:block/oak_planks",
         },
-        "elements": [
-            cuboid(*surface),
-            cuboid(*gallery_side),
-            cuboid(*crown),
-        ],
+        "elements": connection(left, "#wood"),
     }
 
 
@@ -985,6 +963,7 @@ def estate_workstation_blockstate(block_id: str) -> dict[str, object]:
 
 
 def generate_machine_models() -> None:
+    write_json(ASSETS / "models/block/vintage_archive.json", archive_model())
     for left in (True, False):
         write_json(
             ASSETS
@@ -3202,7 +3181,7 @@ def generate_language() -> None:
         "Style: %s | Estate: %s"
     )
     language["message.vintner.almanac.value"] = (
-        "Estimated value: %s emeralds | Cellar prestige: %s"
+        "Indicative appraisal: %s emeralds | Cellar prestige: %s"
     )
     language["tasting_note.vintner.light_body"] = "light-bodied"
     language["tasting_note.vintner.rustic_body"] = "rustic-bodied"

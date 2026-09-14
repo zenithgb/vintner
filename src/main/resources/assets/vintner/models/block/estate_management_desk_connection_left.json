@@ -36,7 +36,8 @@
         "up": {
           "texture": "#writing"
         }
-      }
+      },
+      "name": "desktop"
     },
     {
       "from": [
@@ -68,7 +69,41 @@
         "up": {
           "texture": "#frame"
         }
-      }
+      },
+      "name": "front_moulding"
+    },
+    {
+      "from": [
+        0,
+        11.5,
+        13.25
+      ],
+      "to": [
+        1,
+        14.25,
+        14.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#frame"
+        },
+        "east": {
+          "texture": "#frame"
+        },
+        "south": {
+          "texture": "#frame"
+        },
+        "west": {
+          "texture": "#frame"
+        },
+        "down": {
+          "texture": "#frame"
+        },
+        "up": {
+          "texture": "#frame"
+        }
+      },
+      "name": "rear_rail"
     },
     {
       "from": [
@@ -100,7 +135,8 @@
         "up": {
           "texture": "#writing"
         }
-      }
+      },
+      "name": "rear_crown"
     }
   ]
 }

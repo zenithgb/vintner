@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from generate_wood_variants import WOODS
+from estate_workstation_geometry import carcass, connection
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,30 +73,10 @@ def write_json(path: Path, data: object) -> None:
 
 
 def base_model() -> dict[str, object]:
-    elements: list[dict[str, object]] = []
-
-    # Four narrow legs with slightly wider feet.
-    for x0, x1 in ((1.0, 2.5), (13.5, 15.0)):
-        for z0, z1 in ((1.5, 3.0), (12.5, 14.0)):
-            elements.append(cube([x0, 0, z0], [x1, 10.25, z1], "#frame"))
-            elements.append(cube(
-                [x0 - 0.25, 0, z0 - 0.25],
-                [x1 + 0.25, 0.5, z1 + 0.25],
-                "#frame",
-            ))
-
-    # Traditional stretchers keep the silhouette open and furniture-like.
-    elements.extend((
-        cube([1.25, 3.25, 3], [2.75, 4.25, 12.5], "#frame"),
-        cube([13.25, 3.25, 3], [14.75, 4.25, 12.5], "#frame"),
-        cube([2.5, 3.25, 1.5], [13.5, 4.25, 3], "#frame"),
-        cube([2.5, 3.25, 12.5], [13.5, 4.25, 14], "#frame"),
-    ))
+    elements = carcass("#frame", "#writing")
 
     # Writing surface, moulded front edge, and twin shallow drawers.
     elements.extend((
-        cube([0.5, 10.25, 1], [15.5, 11.5, 15], "#frame", "#writing"),
-        cube([0.25, 9.75, 0.75], [15.75, 10.5, 2.25], "#frame"),
         cube([1.25, 7.5, 1.25], [14.75, 9.75, 3], "#frame"),
         cube([2, 8, 0.85], [7.5, 9.2, 1.3], "#writing"),
         cube([8.5, 8, 0.85], [14, 9.2, 1.3], "#writing"),
@@ -105,8 +86,6 @@ def base_model() -> dict[str, object]:
 
     # Raised document gallery at the back of the desk.
     elements.extend((
-        cube([1, 11.5, 13.25], [15, 14.25, 14.75], "#frame"),
-        cube([0.75, 14.25, 13], [15.25, 14.75, 15], "#frame", "#writing"),
         cube([1.75, 12, 10.75], [14.25, 12.5, 14], "#frame", "#writing"),
         cube([1.25, 11.5, 10.75], [2.25, 14.25, 14.25], "#frame"),
         cube([13.75, 11.5, 10.75], [14.75, 14.25, 14.25], "#frame"),
@@ -222,16 +201,7 @@ def map_frame_model() -> dict[str, object]:
 
 
 def connection_model(left: bool) -> dict[str, object]:
-    """Fill only the small side gaps so adjacent desks read continuously."""
-    if left:
-        desktop = ([0, 10.25, 1], [0.5, 11.5, 15])
-        moulding = ([0, 9.75, 0.75], [0.25, 10.5, 2.25])
-        crown = ([0, 14.25, 13], [0.75, 14.75, 15])
-    else:
-        desktop = ([15.5, 10.25, 1], [16, 11.5, 15])
-        moulding = ([15.75, 9.75, 0.75], [16, 10.5, 2.25])
-        crown = ([15.25, 14.25, 13], [16, 14.75, 15])
-
+    """Join the shared desktop, moulding and complete rear rail."""
     return {
         "parent": "minecraft:block/block",
         "textures": {
@@ -239,11 +209,7 @@ def connection_model(left: bool) -> dict[str, object]:
             "writing": "minecraft:block/oak_planks",
             "particle": "minecraft:block/oak_planks",
         },
-        "elements": [
-            cube(*desktop, "#frame", "#writing"),
-            cube(*moulding, "#frame"),
-            cube(*crown, "#frame", "#writing"),
-        ],
+        "elements": connection(left, "#frame", "#writing"),
     }
 
 

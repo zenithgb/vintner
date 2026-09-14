@@ -8,13 +8,13 @@
     {
       "from": [
         0,
-        11.5,
-        0.5
+        10.25,
+        1
       ],
       "to": [
         0.5,
-        13,
-        15.5
+        11.5,
+        15
       ],
       "faces": {
         "north": {
@@ -29,24 +29,25 @@
         "west": {
           "texture": "#wood"
         },
-        "up": {
-          "texture": "#wood"
-        },
         "down": {
           "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
         }
-      }
+      },
+      "name": "desktop"
     },
     {
       "from": [
         0,
-        11.25,
-        0.25
+        9.75,
+        0.75
       ],
       "to": [
         0.25,
-        12,
-        1.25
+        10.5,
+        2.25
       ],
       "faces": {
         "north": {
@@ -61,24 +62,25 @@
         "west": {
           "texture": "#wood"
         },
-        "up": {
-          "texture": "#wood"
-        },
         "down": {
           "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
         }
-      }
+      },
+      "name": "front_moulding"
     },
     {
       "from": [
         0,
-        13,
-        13.5
+        11.5,
+        13.25
       ],
       "to": [
         1,
-        14,
-        14.5
+        14.25,
+        14.75
       ],
       "faces": {
         "north": {
@@ -93,13 +95,47 @@
         "west": {
           "texture": "#wood"
         },
+        "down": {
+          "texture": "#wood"
+        },
         "up": {
+          "texture": "#wood"
+        }
+      },
+      "name": "rear_rail"
+    },
+    {
+      "from": [
+        0,
+        14.25,
+        13
+      ],
+      "to": [
+        0.75,
+        14.75,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "west": {
           "texture": "#wood"
         },
         "down": {
           "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
         }
-      }
+      },
+      "name": "rear_crown"
     }
   ]
 }

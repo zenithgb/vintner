@@ -1432,6 +1432,63 @@ def audit_vintage_archive_connections() -> None:
         )
 
 
+def audit_estate_workstation_proportions() -> None:
+    """Check the rendered models, including inherited wood variants, meet flush.
+
+    These fixed acceptance dimensions deliberately do not import the generator:
+    changing its shared profile must still satisfy the visual contract here.
+    """
+    profiles = {
+        "desktop": ([.5, 10.25, 1], [15.5, 11.5, 15]),
+        "front_moulding": ([.25, 9.75, .75], [15.75, 10.5, 2.25]),
+        "rear_rail": ([1, 11.5, 13.25], [15, 14.25, 14.75]),
+        "rear_crown": ([.75, 14.25, 13], [15.25, 14.75, 15]),
+    }
+
+    def elements(identifier):
+        model = load_json(ASSETS / f"models/block/{identifier}.json")
+        if not isinstance(model, dict):
+            return []
+        if "elements" in model:
+            return model["elements"]
+        parent = model.get("parent", "")
+        if parent.startswith("vintner:block/"):
+            return elements(parent.removeprefix("vintner:block/"))
+        return []
+
+    reference_supports = None
+    for wood in WOODS:
+        for factory in (archive_id, estate_desk_id, surveyors_map_table_id):
+            identifier = factory(wood)
+            base = elements(identifier)
+            for name, (start, end) in profiles.items():
+                parts = [e for e in base if e.get("name") == name]
+                if len(parts) != 1 or parts[0].get("from") != start or parts[0].get("to") != end:
+                    fail(f"{identifier}: {name} violates the shared workstation envelope")
+            supports = [
+                (e.get("name"), e.get("from"), e.get("to")) for e in base
+                if e.get("name") in ("leg", "foot", "stretcher")
+            ]
+            if reference_supports is None:
+                reference_supports = supports
+            if supports != reference_supports or len(supports) != 12:
+                fail(f"{identifier}: legs, feet or stretchers differ from the shared base")
+            for side in ("left", "right"):
+                joined = elements(f"{identifier}_connection_{side}")
+                if len(joined) != len(profiles):
+                    fail(f"{identifier}: {side} connection has unexpected geometry")
+                for name, (start, end) in profiles.items():
+                    expected_start = [0 if side == "left" else end[0], *start[1:]]
+                    expected_end = [start[0] if side == "left" else 16, *end[1:]]
+                    parts = [e for e in joined if e.get("name") == name]
+                    if len(parts) != 1 or parts[0].get("from") != expected_start or parts[0].get("to") != expected_end:
+                        fail(f"{identifier}: {side} {name} does not meet its neighbour flush")
+
+    maps = elements("surveyors_map_table_maps")
+    if not maps or min(e["from"][1] for e in maps) != 11.51:
+        fail("surveyors_map_table: stored maps must rest on the shared desktop")
+
+
 def audit_notification_delivery() -> None:
     require_file(NOTIFICATION_GATE_PATH)
     for path in sorted(JAVA_SOURCE.rglob("*.java")):
@@ -1469,6 +1526,7 @@ def main() -> int:
     audit_estate_management_desk()
     audit_surveyors_map_table()
     audit_vintage_archive_connections()
+    audit_estate_workstation_proportions()
     audit_notification_delivery()
 
     if errors:

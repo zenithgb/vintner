@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from generate_wood_variants import WOODS
+from estate_workstation_geometry import carcass, connection
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,31 +41,19 @@ def cube(start: list[float], end: list[float], texture: str) -> dict:
 
 
 def base_model() -> dict:
-    elements = []
-    # Slender drafting-table legs and low stretchers keep this visually
-    # related to the Estate Desk without duplicating it.
-    for x0, x1 in ((1.0, 2.5), (13.5, 15.0)):
-        for z0, z1 in ((1.0, 2.5), (13.5, 15.0)):
-            elements.append(cube([x0, 0, z0], [x1, 11.5, z1], "#wood"))
+    elements = carcass("#wood")
     elements.extend((
-        cube([1.5, 3, 2], [2.5, 4, 14], "#wood"),
-        cube([13.5, 3, 2], [14.5, 4, 14], "#wood"),
-        cube([2.5, 3, 1.5], [13.5, 4, 2.5], "#wood"),
-        cube([2.5, 3, 13.5], [13.5, 4, 14.5], "#wood"),
-        cube([0.5, 11.5, 0.5], [15.5, 13, 15.5], "#wood"),
-        cube([0.25, 11.25, 0.25], [15.75, 12, 1.25], "#wood"),
         # Three shallow labelled map drawers face the player.
-        cube([1.5, 7.5, 1], [14.5, 11.5, 3], "#wood"),
-        cube([2, 8, 0.65], [5.6, 9.5, 1.1], "#drawer"),
-        cube([6.2, 8, 0.65], [9.8, 9.5, 1.1], "#drawer"),
-        cube([10.4, 8, 0.65], [14, 9.5, 1.1], "#drawer"),
-        cube([3.5, 8.55, 0.4], [4.1, 9, 0.7], "#brass"),
-        cube([7.7, 8.55, 0.4], [8.3, 9, 0.7], "#brass"),
-        cube([11.9, 8.55, 0.4], [12.5, 9, 0.7], "#brass"),
+        cube([1.25, 7.5, 1.25], [14.75, 9.75, 3], "#wood"),
+        cube([2, 8, 0.85], [5.6, 9.2, 1.3], "#drawer"),
+        cube([6.2, 8, 0.85], [9.8, 9.2, 1.3], "#drawer"),
+        cube([10.4, 8, 0.85], [14, 9.2, 1.3], "#drawer"),
+        cube([3.5, 8.4, 0.55], [4.1, 8.85, 0.9], "#brass"),
+        cube([7.7, 8.4, 0.55], [8.3, 8.85, 0.9], "#brass"),
+        cube([11.9, 8.4, 0.55], [12.5, 8.85, 0.9], "#brass"),
         # Raised ruler rail and corner weights identify the surveying station.
-        cube([1, 13, 13.5], [15, 14, 14.5], "#wood"),
-        cube([1.25, 13, 1.25], [2.25, 13.5, 2.25], "#brass"),
-        cube([13.75, 13, 1.25], [14.75, 13.5, 2.25], "#brass"),
+        cube([1.25, 11.5, 1.25], [2.25, 12, 2.25], "#brass"),
+        cube([13.75, 11.5, 1.25], [14.75, 12, 2.25], "#brass"),
     ))
     return {
         "parent": "minecraft:block/block",
@@ -97,38 +86,25 @@ def map_overlay_model() -> dict:
             "particle": "minecraft:block/oak_planks",
         },
         "elements": [
-            cube([2.0, 13.01, 2.25], [10.25, 13.09, 10.5], "#paper"),
-            cube([5.5, 13.1, 4.75], [13.75, 13.18, 13.0], "#paper"),
-            cube([2.6, 13.1, 2.85], [3.0, 13.22, 8.9], "#ink"),
-            cube([8.75, 13.18, 5.35], [9.15, 13.3, 11.4], "#ink"),
-            cube([5.0, 13.18, 8.5], [11.6, 13.3, 8.9], "#ink"),
-            cube([12.8, 13.18, 11.9], [14.2, 13.65, 13.3], "#leather"),
+            cube([2.0, 11.51, 2.25], [10.25, 11.59, 10.5], "#paper"),
+            cube([5.5, 11.6, 4.75], [13.75, 11.68, 13.0], "#paper"),
+            cube([2.6, 11.6, 2.85], [3.0, 11.72, 8.9], "#ink"),
+            cube([8.75, 11.68, 5.35], [9.15, 11.8, 11.4], "#ink"),
+            cube([5.0, 11.68, 8.5], [11.6, 11.8, 8.9], "#ink"),
+            cube([12.8, 11.68, 11.65], [14.2, 12.15, 13.05], "#leather"),
         ],
     }
 
 
 def connection_model(left: bool) -> dict:
-    """Extend the table's surface and trim to a connected side."""
-    if left:
-        desktop = ([0, 11.5, 0.5], [0.5, 13, 15.5])
-        moulding = ([0, 11.25, 0.25], [0.25, 12, 1.25])
-        rail = ([0, 13, 13.5], [1, 14, 14.5])
-    else:
-        desktop = ([15.5, 11.5, 0.5], [16, 13, 15.5])
-        moulding = ([15.75, 11.25, 0.25], [16, 12, 1.25])
-        rail = ([15, 13, 13.5], [16, 14, 14.5])
-
+    """Join the shared desktop, moulding and complete rear rail."""
     return {
         "parent": "minecraft:block/block",
         "textures": {
             "wood": "minecraft:block/oak_planks",
             "particle": "minecraft:block/oak_planks",
         },
-        "elements": [
-            cube(*desktop, "#wood"),
-            cube(*moulding, "#wood"),
-            cube(*rail, "#wood"),
-        ],
+        "elements": connection(left, "#wood"),
     }
 
 
