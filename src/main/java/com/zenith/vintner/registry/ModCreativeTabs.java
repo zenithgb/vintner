@@ -13,6 +13,12 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Block;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public final class ModCreativeTabs {
     private static final ResourceKey<CreativeModeTab> VINTNER_TAB_KEY =
@@ -35,92 +41,139 @@ public final class ModCreativeTabs {
                             .icon(() -> new ItemStack(
                                     ModItems.RED_GRAPES
                             ))
-                            .displayItems((parameters, output) -> {
-                                output.accept(ModItems.VINTNER_ALMANAC);
-                                output.accept(
-                                        ModBlocks.ESTATE_MANAGEMENT_DESK
-                                );
-                                output.accept(ModBlocks.SURVEYORS_MAP_TABLE);
-                                output.accept(ModItems.SOIL_PROBE);
-                                output.accept(ModItems.COMPOST);
-                                output.accept(ModBlocks.VINEYARD_SOIL);
-                                ModBlocks.TRELLISES.values()
-                                        .forEach(output::accept);
-                                for (GrapeCultivar cultivar
-                                        : GrapeCultivar.activeValues()) {
-                                    output.accept(
-                                            ModItems.cultivarCutting(cultivar)
-                                    );
-                                }
-                                output.accept(ModItems.ROOTSTOCK_CUTTING);
-                                output.accept(
-                                        ModItems.RESISTANT_ROOTSTOCK_CUTTING
-                                );
-                                output.accept(ModItems.GRAFTING_KNIFE);
-                                output.accept(ModItems.VINEYARD_NETTING);
-                                output.accept(ModBlocks.NURSERY_BED);
-                                for (GrapeCultivar cultivar
-                                        : GrapeCultivar.activeValues()) {
-                                    output.accept(
-                                            ModItems.cultivarGrapes(cultivar)
-                                    );
-                                    output.accept(
-                                            GrapeBowlItem.create(cultivar, 4)
-                                    );
-                                }
-                                ModBlocks.GRAPE_PRESSES.values()
-                                        .forEach(output::accept);
-                                output.accept(ModItems.RED_MUST);
-                                output.accept(ModItems.WHITE_MUST);
-                                ModBlocks.FERMENTATION_BARRELS.values()
-                                        .forEach(output::accept);
-                                output.accept(ModItems.RED_WINE);
-                                output.accept(ModItems.WHITE_WINE);
-                                ModBlocks.AGING_BARRELS.values()
-                                        .forEach(output::accept);
-                                output.accept(ModItems.COOPERS_MALLET);
-                                output.accept(ModItems.TOASTING_KIT);
-                                output.accept(ModItems.SEASONING_KIT);
-                                output.accept(
-                                        ModItems.CASK_CONVERSION_KIT
-                                );
-                                output.accept(ModItems.AGED_RED_WINE);
-                                output.accept(ModItems.AGED_WHITE_WINE);
-                                ModBlocks.WINE_RACKS.values()
-                                        .forEach(output::accept);
-                                ModBlocks.WINE_CRATES.values()
-                                        .forEach(output::accept);
-                                ModBlocks.VINTAGE_ARCHIVES.values()
-                                        .forEach(output::accept);
-                                ModBlocks.BARREL_STANDS.values()
-                                        .forEach(output::accept);
-                                ModBlocks.LABELLED_CELLAR_SHELVES.values()
-                                        .forEach(output::accept);
-                                ModBlocks.TASTING_CABINETS.values()
-                                        .forEach(output::accept);
-                                ModBlocks.ESTATE_MANAGEMENT_DESKS
-                                        .entrySet()
-                                        .stream()
-                                        .filter(entry -> entry.getKey()
-                                                != WoodVariant.OAK)
-                                        .map(java.util.Map.Entry::getValue)
-                                        .forEach(output::accept);
-                                ModBlocks.SURVEYORS_MAP_TABLES
-                                        .entrySet()
-                                        .stream()
-                                        .filter(entry -> entry.getKey()
-                                                != WoodVariant.OAK)
-                                        .map(java.util.Map.Entry::getValue)
-                                        .forEach(output::accept);
-                                ModBlocks.TASTING_SERVICES.values()
-                                        .forEach(output::accept);
-                                ModBlocks.WINE_BASKETS.values()
-                                        .forEach(output::accept);
-                            })
+                            .displayItems((parameters, output) ->
+                                    creativeGroups().forEach(group ->
+                                            output.acceptAll(group.entries())
+                                    )
+                            )
                             .build()
             );
 
     private ModCreativeTabs() {
+    }
+
+    public static List<CreativeGroup> creativeGroups() {
+        return List.of(
+                new CreativeGroup(
+                        "grapes_and_propagation",
+                        grapesAndPropagation()
+                ),
+                new CreativeGroup("vineyard", vineyard()),
+                new CreativeGroup(
+                        "pressing_and_fermentation",
+                        pressingAndFermentation()
+                ),
+                new CreativeGroup(
+                        "ageing_and_cooperage",
+                        ageingAndCooperage()
+                ),
+                new CreativeGroup(
+                        "cellar_storage",
+                        cellarStorage()
+                ),
+                new CreativeGroup(
+                        "serving_and_table",
+                        servingAndTable()
+                ),
+                new CreativeGroup(
+                        "estate_and_surveying",
+                        estateAndSurveying()
+                )
+        );
+    }
+
+    private static List<ItemStack> grapesAndPropagation() {
+        List<ItemStack> entries = new ArrayList<>();
+        for (GrapeCultivar cultivar : GrapeCultivar.activeValues()) {
+            entries.add(ModItems.cultivarGrapes(cultivar));
+            entries.add(ModItems.cultivarCutting(cultivar));
+        }
+        add(entries, ModItems.ROOTSTOCK_CUTTING);
+        add(entries, ModItems.RESISTANT_ROOTSTOCK_CUTTING);
+        add(entries, ModBlocks.NURSERY_BED);
+        add(entries, ModItems.GRAFTING_KNIFE);
+        return List.copyOf(entries);
+    }
+
+    private static List<ItemStack> vineyard() {
+        List<ItemStack> entries = new ArrayList<>();
+        add(entries, ModBlocks.VINEYARD_SOIL);
+        add(entries, ModItems.COMPOST);
+        addWoodFamily(entries, ModBlocks.TRELLISES);
+        add(entries, ModItems.VINEYARD_NETTING);
+        add(entries, ModItems.SOIL_PROBE);
+        return List.copyOf(entries);
+    }
+
+    private static List<ItemStack> pressingAndFermentation() {
+        List<ItemStack> entries = new ArrayList<>();
+        addWoodFamily(entries, ModBlocks.GRAPE_PRESSES);
+        add(entries, ModItems.RED_MUST);
+        add(entries, ModItems.WHITE_MUST);
+        addWoodFamily(entries, ModBlocks.FERMENTATION_BARRELS);
+        add(entries, ModItems.RED_WINE);
+        add(entries, ModItems.WHITE_WINE);
+        return List.copyOf(entries);
+    }
+
+    private static List<ItemStack> ageingAndCooperage() {
+        List<ItemStack> entries = new ArrayList<>();
+        addWoodFamily(entries, ModBlocks.AGING_BARRELS);
+        addWoodFamily(entries, ModBlocks.BARREL_STANDS);
+        add(entries, ModItems.COOPERS_MALLET);
+        add(entries, ModItems.TOASTING_KIT);
+        add(entries, ModItems.SEASONING_KIT);
+        add(entries, ModItems.CASK_CONVERSION_KIT);
+        add(entries, ModItems.AGED_RED_WINE);
+        add(entries, ModItems.AGED_WHITE_WINE);
+        return List.copyOf(entries);
+    }
+
+    private static List<ItemStack> cellarStorage() {
+        List<ItemStack> entries = new ArrayList<>();
+        addWoodFamily(entries, ModBlocks.WINE_RACKS);
+        addWoodFamily(entries, ModBlocks.WINE_CRATES);
+        addWoodFamily(entries, ModBlocks.LABELLED_CELLAR_SHELVES);
+        addWoodFamily(entries, ModBlocks.TASTING_CABINETS);
+        addWoodFamily(entries, ModBlocks.VINTAGE_ARCHIVES);
+        return List.copyOf(entries);
+    }
+
+    private static List<ItemStack> servingAndTable() {
+        List<ItemStack> entries = new ArrayList<>();
+        addWoodFamily(entries, ModBlocks.TASTING_SERVICES);
+        addWoodFamily(entries, ModBlocks.WINE_BASKETS);
+        for (GrapeCultivar cultivar : GrapeCultivar.activeValues()) {
+            entries.add(GrapeBowlItem.create(cultivar, 4));
+        }
+        return List.copyOf(entries);
+    }
+
+    private static List<ItemStack> estateAndSurveying() {
+        List<ItemStack> entries = new ArrayList<>();
+        addWoodFamily(entries, ModBlocks.ESTATE_MANAGEMENT_DESKS);
+        addWoodFamily(entries, ModBlocks.SURVEYORS_MAP_TABLES);
+        add(entries, ModItems.VINTNER_ALMANAC);
+        return List.copyOf(entries);
+    }
+
+    private static void addWoodFamily(
+            List<ItemStack> entries,
+            Map<WoodVariant, Block> family
+    ) {
+        for (WoodVariant wood : WoodVariant.values()) {
+            add(entries, family.get(wood));
+        }
+    }
+
+    private static void add(
+            List<ItemStack> entries,
+            ItemLike item
+    ) {
+        entries.add(new ItemStack(item));
+    }
+
+    public record CreativeGroup(String id, List<ItemStack> entries) {
     }
 
     public static void initialize() {

@@ -976,7 +976,7 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 20)
-    public void creativeTabContainsEstateManagementItems(
+    public void creativeTabUsesCompleteSemanticOrdering(
             GameTestHelper helper
     ) {
         ModCreativeTabs.VINTNER_TAB.buildContents(
@@ -987,29 +987,166 @@ public final class VintnerGameTests {
                 )
         );
 
-        helper.assertTrue(
-                ModCreativeTabs.VINTNER_TAB.contains(
-                        new ItemStack(ModBlocks.ESTATE_MANAGEMENT_DESK)
-                ),
-                "Vintner tab should contain the oak Estate Management Desk"
+        List<ModCreativeTabs.CreativeGroup> groups =
+                ModCreativeTabs.creativeGroups();
+        List<String> expectedGroupIds = List.of(
+                "grapes_and_propagation",
+                "vineyard",
+                "pressing_and_fermentation",
+                "ageing_and_cooperage",
+                "cellar_storage",
+                "serving_and_table",
+                "estate_and_surveying"
         );
-        for (WoodVariant woodVariant : WoodVariant.values()) {
+        List<Integer> expectedGroupSizes = List.of(
+                20, 16, 28, 30, 60, 32, 25
+        );
+        helper.assertTrue(
+                groups.stream().map(ModCreativeTabs.CreativeGroup::id)
+                        .toList().equals(expectedGroupIds),
+                "Vintner tab should keep the seven semantic groups in order"
+        );
+        helper.assertTrue(
+                groups.stream().map(group -> group.entries().size())
+                        .toList().equals(expectedGroupSizes),
+                "Vintner tab semantic group sizes should remain intentional"
+        );
+
+        List<ItemStack> expected = groups.stream()
+                .flatMap(group -> group.entries().stream())
+                .toList();
+        List<ItemStack> actual = new ArrayList<>(
+                ModCreativeTabs.VINTNER_TAB.getDisplayItems()
+        );
+        helper.assertTrue(
+                actual.size() == 211 && actual.size() == expected.size(),
+                "Vintner tab should contain all 211 intended stacks"
+        );
+        for (int index = 0; index < expected.size(); index++) {
             helper.assertTrue(
-                    ModCreativeTabs.VINTNER_TAB.contains(
-                            new ItemStack(
-                                    ModBlocks.estateManagementDesk(woodVariant)
+                    ItemStack.isSameItemSameComponents(
+                            expected.get(index),
+                            actual.get(index)
+                    ),
+                    "Vintner tab should preserve semantic order at position "
+                            + (index + 1)
+            );
+        }
+
+        for (int first = 0; first < actual.size(); first++) {
+            for (int second = first + 1; second < actual.size(); second++) {
+                helper.assertFalse(
+                        ItemStack.isSameItemSameComponents(
+                                actual.get(first),
+                                actual.get(second)
+                        ),
+                        "Vintner tab should not contain duplicate stacks at "
+                                + (first + 1) + " and " + (second + 1)
+                );
+            }
+        }
+
+        List<ItemStack> searchEntries = new ArrayList<>(
+                ModCreativeTabs.VINTNER_TAB.getSearchTabDisplayItems()
+        );
+        helper.assertTrue(
+                searchEntries.size() == actual.size(),
+                "Every Vintner tab entry should remain visible to search"
+        );
+        for (ItemStack stack : actual) {
+            helper.assertTrue(
+                    searchEntries.stream().anyMatch(candidate ->
+                            ItemStack.isSameItemSameComponents(
+                                    stack,
+                                    candidate
                             )
                     ),
-                    "Vintner tab should contain every Estate Management Desk"
+                    "Every displayed Vintner stack should remain searchable"
             );
+        }
+
+        List<Item> intentionalUpgradeOnlyItems = List.of(
+                ModBlocks.CHESTNUT_AGING_BARREL.asItem(),
+                ModBlocks.NEUTRAL_AGING_BARREL.asItem(),
+                ModBlocks.LARGE_CASK.asItem()
+        );
+        for (Item item : BuiltInRegistries.ITEM) {
+            Identifier id = BuiltInRegistries.ITEM.getKey(item);
+            if (!id.getNamespace().equals("vintner")) {
+                continue;
+            }
+            boolean displayed = actual.stream()
+                    .anyMatch(stack -> stack.getItem() == item);
+            if (intentionalUpgradeOnlyItems.contains(item)) {
+                helper.assertFalse(
+                        displayed,
+                        id + " should remain obtainable through barrel upgrades"
+                );
+            } else {
+                helper.assertTrue(
+                        displayed,
+                        id + " should be represented in the Vintner tab"
+                );
+            }
+        }
+
+        List<GrapeCultivar> cultivars = GrapeCultivar.activeValues();
+        helper.assertTrue(
+                cultivars.equals(List.of(
+                        GrapeCultivar.EMBER_NOIR,
+                        GrapeCultivar.VALE_PINOT,
+                        GrapeCultivar.SUNCREST,
+                        GrapeCultivar.RIVER_GARNET,
+                        GrapeCultivar.GOLDEN_VALE,
+                        GrapeCultivar.FROSTLING,
+                        GrapeCultivar.HONEYCREST,
+                        GrapeCultivar.STONEFLOWER
+                )),
+                "Creative cultivar order should match the active roster"
+        );
+
+        List<java.util.Map<WoodVariant, Block>> woodFamilies = List.of(
+                ModBlocks.TRELLISES,
+                ModBlocks.GRAPE_PRESSES,
+                ModBlocks.FERMENTATION_BARRELS,
+                ModBlocks.AGING_BARRELS,
+                ModBlocks.BARREL_STANDS,
+                ModBlocks.WINE_RACKS,
+                ModBlocks.WINE_CRATES,
+                ModBlocks.LABELLED_CELLAR_SHELVES,
+                ModBlocks.TASTING_CABINETS,
+                ModBlocks.VINTAGE_ARCHIVES,
+                ModBlocks.TASTING_SERVICES,
+                ModBlocks.WINE_BASKETS,
+                ModBlocks.ESTATE_MANAGEMENT_DESKS,
+                ModBlocks.SURVEYORS_MAP_TABLES
+        );
+        for (java.util.Map<WoodVariant, Block> family : woodFamilies) {
+            List<Item> orderedFamily = java.util.Arrays.stream(
+                            WoodVariant.values()
+                    )
+                    .map(family::get)
+                    .map(Block::asItem)
+                    .toList();
+            int start = -1;
+            for (int index = 0; index < actual.size(); index++) {
+                if (actual.get(index).getItem()
+                        == orderedFamily.getFirst()) {
+                    start = index;
+                    break;
+                }
+            }
             helper.assertTrue(
-                    ModCreativeTabs.VINTNER_TAB.contains(
-                            new ItemStack(
-                                    ModBlocks.surveyorsMapTable(woodVariant)
-                            )
-                    ),
-                    "Vintner tab should contain every Surveyor's Map Table"
+                    start >= 0,
+                    "Every wood family should be present"
             );
+            for (int offset = 0; offset < orderedFamily.size(); offset++) {
+                helper.assertTrue(
+                        actual.get(start + offset).getItem()
+                                == orderedFamily.get(offset),
+                        "Every wood family should use WoodVariant order"
+                );
+            }
         }
         helper.succeed();
     }
