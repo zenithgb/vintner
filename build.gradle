@@ -26,6 +26,9 @@ loom {
 
 	runs {
 		client {
+			runDir = providers.gradleProperty("clientRunDir")
+					.orElse("run")
+					.get()
 			programArgs "--username", "VintnerDev"
 		}
 
@@ -126,6 +129,17 @@ tasks.register("auditReleaseAssets", Exec) {
 	description = "Audits Vintner JSON, models, textures, recipes, loot, and language coverage."
 	workingDir projectDir
 	commandLine "python3", "scripts/audit_release_assets.py"
+}
+
+tasks.register("auditNurseryBedModels", Exec) {
+	group = "verification"
+	description = "Audits the Blockbench-authored Nursery Bed models and state map."
+	workingDir projectDir
+	commandLine "python3", "scripts/audit_nursery_bed_models.py"
+}
+
+tasks.named("auditReleaseAssets") {
+	dependsOn tasks.named("auditNurseryBedModels")
 }
 
 tasks.register("prepareReleaseServer") {
