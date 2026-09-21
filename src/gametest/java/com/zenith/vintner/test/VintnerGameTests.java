@@ -11937,6 +11937,190 @@ public final class VintnerGameTests {
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 40)
+    public void placedWineCreativePickCopiesExactBottleSafely(
+            GameTestHelper helper
+    ) {
+        Item[] wineItems = {
+                ModItems.RED_WINE,
+                ModItems.WHITE_WINE,
+                ModItems.AGED_RED_WINE,
+                ModItems.AGED_WHITE_WINE,
+        };
+        String[] effectProfiles = {
+                WineEffectProfile.RED.id(),
+                WineEffectProfile.WHITE.id(),
+                WineEffectProfile.AGED_RED.id(),
+                WineEffectProfile.AGED_WHITE.id(),
+        };
+
+        BlockPos absolute = helper.absolutePos(FIRST);
+        ServerPlayer creative = helper.makeMockServerPlayerInLevel();
+        creative.setGameMode(GameType.CREATIVE);
+        creative.setPos(
+                absolute.getX() + 0.5,
+                absolute.getY(),
+                absolute.getZ() - 2.0
+        );
+        BlockHitResult bottleHit = new BlockHitResult(
+                Vec3.atCenterOf(absolute),
+                Direction.NORTH,
+                absolute,
+                false
+        );
+
+        for (int index = 0; index < wineItems.length; index++) {
+            helper.setBlock(FIRST, ModBlocks.WINE_BOTTLE);
+            WineBottleBlockEntity bottleEntity = helper.getBlockEntity(
+                    FIRST,
+                    WineBottleBlockEntity.class
+            );
+            ItemStack wine = new ItemStack(wineItems[index]);
+            WineMetadata.apply(
+                    wine,
+                    21 + index,
+                    WineQuality.EXCEPTIONAL
+            );
+            WineMetadata.ensureBatchIdentity(wine, 210021L + index);
+            WineMetadata.assignBottleNumber(wine, index + 1, 12);
+            WineMetadata.setServings(wine, index == 1 ? 2 : 4);
+            WineMetadata.setEffectProfile(wine, effectProfiles[index]);
+            WineMetadata.setEstateName(wine, "North Slope Estate");
+            wine.set(
+                    DataComponents.CUSTOM_NAME,
+                    Component.literal("Cellar Selection " + index)
+            );
+            bottleEntity.setBottle(wine);
+            ItemStack expected = bottleEntity.getBottleCopy();
+
+            ItemStack wrongMetadata = new ItemStack(wineItems[index]);
+            WineMetadata.apply(
+                    wrongMetadata,
+                    1,
+                    WineQuality.TABLE
+            );
+            WineMetadata.ensureBatchIdentity(
+                    wrongMetadata,
+                    990001L + index
+            );
+            WineMetadata.setServings(wrongMetadata, 1);
+
+            creative.getInventory().clearContent();
+            creative.getInventory().setItem(0, wrongMetadata.copy());
+            creative.getInventory().setSelectedSlot(0);
+
+            helper.assertTrue(
+                    TastingServiceCreativePicker.tryPick(
+                            creative,
+                            absolute,
+                            bottleHit
+                    ),
+                    "Creative pick should accept placed wine variant "
+                            + index
+            );
+            helper.assertTrue(
+                    ItemStack.isSameItemSameComponents(
+                            expected,
+                            creative.getInventory().getSelectedItem()
+                    ),
+                    "Placed pick must select the exact wine components for "
+                            + index
+            );
+            helper.assertTrue(
+                    ItemStack.isSameItemSameComponents(
+                            wrongMetadata,
+                            creative.getInventory().getItem(0)
+                    ),
+                    "Same-item wine with different metadata must not substitute"
+            );
+            helper.assertTrue(
+                    ItemStack.isSameItemSameComponents(
+                            expected,
+                            bottleEntity.getBottleCopy()
+                    ),
+                    "Placed pick must leave the source unchanged"
+            );
+
+            helper.assertTrue(
+                    TastingServiceCreativePicker.tryPick(
+                            creative,
+                            absolute,
+                            bottleHit
+                    ),
+                    "Repeated Creative pick should reuse the exact copy"
+            );
+            long exactCopies = creative.getInventory()
+                    .getNonEquipmentItems()
+                    .stream()
+                    .filter(stack -> ItemStack.isSameItemSameComponents(
+                            expected,
+                            stack
+                    ))
+                    .mapToLong(ItemStack::getCount)
+                    .sum();
+            helper.assertValueEqual(
+                    exactCopies,
+                    1L,
+                    "Repeated picking must not add another exact copy"
+            );
+            helper.assertTrue(
+                    ItemStack.isSameItemSameComponents(
+                            expected,
+                            bottleEntity.getBottleCopy()
+                    ),
+                    "Repeated picking must not mutate remaining servings"
+            );
+            helper.assertTrue(
+                    bottleEntity.getUpdatePacket() != null,
+                    "Placed wine metadata must remain available for client sync"
+            );
+
+            BlockEntity restored = reload(helper, bottleEntity);
+            helper.assertTrue(
+                    restored instanceof WineBottleBlockEntity
+                            && ItemStack.isSameItemSameComponents(
+                            expected,
+                            ((WineBottleBlockEntity) restored)
+                                    .getBottleCopy()
+                    ),
+                    "Save/load must preserve pick-relevant wine metadata"
+            );
+        }
+
+        ServerPlayer survival = helper.makeMockServerPlayerInLevel();
+        survival.setGameMode(GameType.SURVIVAL);
+        survival.setPos(
+                absolute.getX() + 0.5,
+                absolute.getY(),
+                absolute.getZ() - 2.0
+        );
+        helper.assertFalse(
+                TastingServiceCreativePicker.tryPick(
+                        survival,
+                        absolute,
+                        bottleHit
+                ),
+                "Survival must never receive a placed-wine Creative copy"
+        );
+
+        helper.setBlock(
+                FIRST,
+                ModBlocks.WINE_BOTTLE.defaultBlockState()
+                        .setValue(WineBottleBlock.SERVINGS, 0)
+        );
+        helper.getBlockEntity(FIRST, WineBottleBlockEntity.class)
+                .setBottle(ItemStack.EMPTY);
+        helper.assertFalse(
+                TastingServiceCreativePicker.tryPick(
+                        creative,
+                        absolute,
+                        bottleHit
+                ),
+                "An empty placed bottle must not produce wine"
+        );
+        helper.succeed();
+    }
+
     private static int targetedLocalSlot(
             BlockState state,
             BlockPos pos,

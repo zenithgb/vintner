@@ -1,6 +1,7 @@
 package com.zenith.vintner.mixin.client;
 
 import com.zenith.vintner.block.TastingServiceBlock;
+import com.zenith.vintner.block.WineBottleBlock;
 import com.zenith.vintner.network.TastingServicePickPayload;
 import com.zenith.vintner.wine.VisibleWineSlotTargeting;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -13,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Routes only an actual displayed-bottle pick through the narrow C2S path. */
+/** Routes only an actual displayed-wine pick through the narrow C2S path. */
 @Mixin(MultiPlayerGameMode.class)
 abstract class MultiPlayerGameModeMixin {
     @Inject(
@@ -21,7 +22,7 @@ abstract class MultiPlayerGameModeMixin {
             at = @At("HEAD"),
             cancellable = true
     )
-    private void vintner$pickTastingServiceBottle(
+    private void vintner$pickDisplayedWineBottle(
             BlockPos pos,
             boolean includeData,
             CallbackInfo callback
@@ -39,13 +40,17 @@ abstract class MultiPlayerGameModeMixin {
         }
 
         var state = client.level.getBlockState(pos);
-        if (!(state.getBlock() instanceof TastingServiceBlock)
-                || state.getValue(TastingServiceBlock.SERVINGS) <= 0
-                || !VisibleWineSlotTargeting.targetsTastingServiceBottle(
-                state,
-                pos,
-                hit
-        )) {
+        boolean placedBottle = state.getBlock() instanceof WineBottleBlock
+                && state.getValue(WineBottleBlock.SERVINGS) > 0;
+        boolean serviceBottle = state.getBlock()
+                instanceof TastingServiceBlock
+                && state.getValue(TastingServiceBlock.SERVINGS) > 0
+                && VisibleWineSlotTargeting.targetsTastingServiceBottle(
+                        state,
+                        pos,
+                        hit
+                );
+        if (!placedBottle && !serviceBottle) {
             return;
         }
 

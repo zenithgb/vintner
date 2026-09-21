@@ -1,6 +1,8 @@
 package com.zenith.vintner.network;
 
+import com.zenith.vintner.block.WineBottleBlock;
 import com.zenith.vintner.block.entity.TastingServiceBlockEntity;
+import com.zenith.vintner.block.entity.WineBottleBlockEntity;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.wine.VisibleWineSlotTargeting;
 import com.zenith.vintner.wine.WineMetadata;
@@ -13,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
-/** Server-authoritative handling for the Tasting Service bottle pick. */
+/** Server-authoritative handling for displayed wine bottle picks. */
 public final class TastingServiceCreativePicker {
     private TastingServiceCreativePicker() {
     }
@@ -56,17 +58,23 @@ public final class TastingServiceCreativePicker {
         }
 
         var state = level.getBlockState(requestedPos);
-        if (!VisibleWineSlotTargeting.targetsTastingServiceBottle(
+        ItemStack bottle;
+        if (state.getBlock() instanceof WineBottleBlock
+                && level.getBlockEntity(requestedPos)
+                instanceof WineBottleBlockEntity placedBottle) {
+            bottle = placedBottle.getBottleCopy();
+        } else if (VisibleWineSlotTargeting.targetsTastingServiceBottle(
                 state,
                 requestedPos,
                 currentHit
         )
-                || !(level.getBlockEntity(requestedPos)
-                instanceof TastingServiceBlockEntity service)) {
+                && level.getBlockEntity(requestedPos)
+                instanceof TastingServiceBlockEntity service) {
+            bottle = service.getBottleCopy();
+        } else {
             return false;
         }
 
-        ItemStack bottle = service.getBottleCopy();
         if (!(bottle.getItem() instanceof WineItem)
                 || WineMetadata.servings(bottle) <= 0) {
             return false;

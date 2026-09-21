@@ -48,14 +48,14 @@ TEXTURES = {
 
 BOTTLE_BODY_TEXTURES = {
     "red": {
-        "bottle": "minecraft:block/red_terracotta",
-        "bottle_dark": "minecraft:block/red_concrete",
-        "bottle_highlight": "minecraft:block/pink_terracotta",
+        "bottle": "minecraft:block/green_terracotta",
+        "bottle_dark": "minecraft:block/green_concrete",
+        "bottle_highlight": "minecraft:block/lime_terracotta",
     },
     "white": {
-        "bottle": "vintner:block/white_wine",
-        "bottle_dark": "minecraft:block/yellow_terracotta",
-        "bottle_highlight": "minecraft:block/end_stone",
+        "bottle": "minecraft:block/green_terracotta",
+        "bottle_dark": "minecraft:block/green_concrete",
+        "bottle_highlight": "minecraft:block/lime_terracotta",
     },
 }
 

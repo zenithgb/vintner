@@ -1403,20 +1403,18 @@ def generate_canonical_bottle_models() -> None:
     generate_tasting_liquid_textures()
     palettes = {
         "red": {
-            # Carry the wine colour across the whole readable body. Labels and
-            # silhouette remain secondary cues instead of doing all the work.
-            "bottle": "minecraft:block/red_terracotta",
-            "bottle_dark": "minecraft:block/red_concrete",
-            "bottle_highlight": "minecraft:block/pink_terracotta",
+            "bottle": "minecraft:block/green_terracotta",
+            "bottle_dark": "minecraft:block/green_concrete",
+            "bottle_highlight": "minecraft:block/lime_terracotta",
             "neck_foil": "minecraft:block/red_terracotta",
             "seal": "minecraft:block/red_terracotta",
             "label": "minecraft:block/red_terracotta",
             "label_ink": "minecraft:block/bone_block_side",
         },
         "white": {
-            "bottle": "vintner:block/white_wine",
-            "bottle_dark": "minecraft:block/yellow_terracotta",
-            "bottle_highlight": "minecraft:block/end_stone",
+            "bottle": "minecraft:block/green_terracotta",
+            "bottle_dark": "minecraft:block/green_concrete",
+            "bottle_highlight": "minecraft:block/lime_terracotta",
             "neck_foil": "vintner:block/white_wine",
             "seal": "vintner:block/white_wine",
             "label": "vintner:block/white_wine",

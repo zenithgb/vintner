@@ -1634,6 +1634,90 @@ def audit_notification_delivery() -> None:
                 )
 
 
+def audit_wine_bottle_palettes() -> None:
+    green_body = {
+        "bottle": "minecraft:block/green_terracotta",
+        "bottle_dark": "minecraft:block/green_concrete",
+        "bottle_highlight": "minecraft:block/lime_terracotta",
+    }
+    accent_profiles = {
+        "red": {
+            "neck_foil": "minecraft:block/red_terracotta",
+            "seal": "minecraft:block/red_terracotta",
+            "label": "minecraft:block/red_terracotta",
+            "label_border": "minecraft:block/brown_terracotta",
+        },
+        "white": {
+            "neck_foil": "vintner:block/white_wine",
+            "seal": "vintner:block/white_wine",
+            "label": "vintner:block/white_wine",
+            "label_border": "minecraft:block/brown_terracotta",
+        },
+        "aged_red": {
+            "neck_foil": "minecraft:block/gold_block",
+            "seal": "minecraft:block/gold_block",
+            "label": "minecraft:block/red_terracotta",
+            "label_border": "minecraft:block/gold_block",
+        },
+        "aged_white": {
+            "neck_foil": "minecraft:block/gold_block",
+            "seal": "minecraft:block/gold_block",
+            "label": "vintner:block/white_wine",
+            "label_border": "minecraft:block/gold_block",
+        },
+    }
+
+    for profile, accents in accent_profiles.items():
+        palette = load_json(
+            ASSETS / f"models/block/wine_bottle_palette_{profile}.json"
+        )
+        if not isinstance(palette, dict):
+            continue
+        textures = palette.get("textures", {})
+        for texture_name, expected in {**green_body, **accents}.items():
+            if textures.get(texture_name) != expected:
+                fail(
+                    f"wine_bottle_palette_{profile}: {texture_name} must be "
+                    f"{expected!r}"
+                )
+
+        service = load_json(
+            ASSETS / f"models/block/tasting_service_bottle_{profile}.json"
+        )
+        if not isinstance(service, dict):
+            continue
+        service_textures = service.get("textures", {})
+        service_accents = {
+            texture_name: expected
+            for texture_name, expected in accents.items()
+            if texture_name != "label"
+        }
+        for texture_name, expected in {
+            **green_body,
+            **service_accents,
+        }.items():
+            if service_textures.get(texture_name) != expected:
+                fail(
+                    f"tasting_service_bottle_{profile}: {texture_name} must "
+                    f"be {expected!r}"
+                )
+
+        item_model = load_json(
+            ASSETS / f"models/item/{profile}_wine.json"
+        )
+        expected_parent = (
+            f"vintner:block/wine_bottle_{profile}_fill_4"
+        )
+        if (
+            not isinstance(item_model, dict)
+            or item_model.get("parent") != expected_parent
+        ):
+            fail(
+                f"{profile}_wine item must reuse canonical bottle model "
+                f"{expected_parent!r}"
+            )
+
+
 def main() -> int:
     audit_all_json()
     reachable_models = audit_model_references()
@@ -1652,6 +1736,7 @@ def main() -> int:
     audit_surveyors_map_table()
     audit_vintage_archive_connections()
     audit_estate_workstation_proportions()
+    audit_wine_bottle_palettes()
     audit_notification_delivery()
 
     if errors:
