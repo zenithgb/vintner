@@ -203,6 +203,15 @@ public final class CellarCollectionBlockEntity extends BlockEntity {
         return result;
     }
 
+    public ItemStack getBottleCopy(int slot) {
+        if (slot < 0 || slot >= getCapacity()) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack bottle = bottles.get(slot);
+        return bottle.isEmpty() ? ItemStack.EMPTY : bottle.copy();
+    }
+
     public WineDisplayAge getDisplayAge() {
         return WineDisplayAge.from(bottles);
     }

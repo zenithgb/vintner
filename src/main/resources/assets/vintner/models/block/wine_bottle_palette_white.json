@@ -2,15 +2,15 @@
   "parent": "minecraft:block/block",
   "ambientocclusion": false,
   "textures": {
-    "bottle": "minecraft:block/green_terracotta",
-    "bottle_dark": "minecraft:block/green_concrete",
-    "bottle_highlight": "minecraft:block/lime_terracotta",
+    "bottle": "vintner:block/white_wine",
+    "bottle_dark": "minecraft:block/yellow_terracotta",
+    "bottle_highlight": "minecraft:block/end_stone",
     "neck_foil": "vintner:block/white_wine",
     "seal": "vintner:block/white_wine",
     "label": "vintner:block/white_wine",
     "label_ink": "minecraft:block/brown_concrete",
     "cork": "minecraft:block/stripped_oak_log_top",
     "label_border": "minecraft:block/brown_terracotta",
-    "particle": "minecraft:block/green_terracotta"
+    "particle": "vintner:block/white_wine"
   }
 }

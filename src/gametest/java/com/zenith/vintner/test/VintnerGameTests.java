@@ -53,6 +53,7 @@ import com.zenith.vintner.item.GrapeBowlItem;
 import com.zenith.vintner.item.WineEffectProfile;
 import com.zenith.vintner.item.WineItem;
 import com.zenith.vintner.network.EstateDeskPayload;
+import com.zenith.vintner.network.TastingServiceCreativePicker;
 import com.zenith.vintner.recipe.GrapeBowlRecipe;
 import com.zenith.vintner.registry.ModAttachments;
 import com.zenith.vintner.registry.ModBlockEntities;
@@ -78,12 +79,14 @@ import com.zenith.vintner.wine.WineQualityProfile;
 import com.zenith.vintner.wine.WineAgeStage;
 import com.zenith.vintner.wine.WineAppraisal;
 import com.zenith.vintner.wine.WineBuyerType;
+import com.zenith.vintner.wine.WineBottleAppearance;
 import com.zenith.vintner.wine.WineMarketOutlook;
 import com.zenith.vintner.wine.WineMarketRegion;
 import com.zenith.vintner.wine.WineReadiness;
 import com.zenith.vintner.wine.WineTastingProfile;
 import com.zenith.vintner.wine.WineStyle;
 import com.zenith.vintner.wine.WineVintageConditions;
+import com.zenith.vintner.wine.VisibleWineSlotTargeting;
 import com.zenith.vintner.vineyard.ClimateProfile;
 import com.zenith.vintner.vineyard.GrapeVariety;
 import com.zenith.vintner.vineyard.GrapeCultivar;
@@ -4076,6 +4079,31 @@ public final class VintnerGameTests {
         ItemStack red = new ItemStack(ModItems.RED_WINE);
         WineMetadata.ensureBatchIdentity(white, 44101L);
         WineMetadata.ensureBatchIdentity(red, 44102L);
+
+        helper.assertValueEqual(
+                WineBottleAppearance.from(red),
+                WineBottleAppearance.RED,
+                "Ordinary red metadata should select the red bottle finish"
+        );
+        helper.assertValueEqual(
+                WineBottleAppearance.from(
+                        new ItemStack(ModItems.WHITE_WINE)
+                ),
+                WineBottleAppearance.WHITE,
+                "Ordinary white metadata should select the white bottle finish"
+        );
+        helper.assertValueEqual(
+                WineBottleAppearance.from(
+                        new ItemStack(ModItems.AGED_RED_WINE)
+                ),
+                WineBottleAppearance.AGED_RED,
+                "Aged red wine should select the aged red bottle finish"
+        );
+        helper.assertValueEqual(
+                WineBottleAppearance.from(white),
+                WineBottleAppearance.AGED_WHITE,
+                "Aged white metadata should select the aged white finish"
+        );
 
         helper.assertTrue(
                 rack.insertOne(white),
@@ -8662,6 +8690,16 @@ public final class VintnerGameTests {
                 List.of(first.getHoverName(), other.getHoverName()),
                 "The cabinet should expose every canonical wine name in order"
         );
+        helper.assertValueEqual(
+                WineBottleAppearance.from(cabinet.getBottleCopy(0)),
+                WineBottleAppearance.AGED_RED,
+                "The first cabinet display slot should use its stored bottle"
+        );
+        helper.assertValueEqual(
+                WineBottleAppearance.from(cabinet.getBottleCopy(1)),
+                WineBottleAppearance.AGED_WHITE,
+                "The second cabinet display slot should use its stored bottle"
+        );
         helper.assertBlockProperty(
                 shelfPos,
                 CellarCollectionBlock.BOTTLE_COUNT,
@@ -11558,6 +11596,400 @@ public final class VintnerGameTests {
         helper.assertValueEqual(bottles, 1L,
                 "Creative breaking should preserve the stored bottle once");
         helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void visibleWineTargetingResolvesFacingAwareSlots(
+            GameTestHelper helper
+    ) {
+        BlockPos absolute = helper.absolutePos(FIRST);
+
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            BlockState rack = ModBlocks.WINE_RACK.defaultBlockState()
+                    .setValue(WineRackBlock.FACING, facing);
+            helper.assertValueEqual(
+                    targetedLocalSlot(
+                            rack,
+                            absolute,
+                            facing,
+                            5.0 / 16.0,
+                            2.68 / 16.0,
+                            -0.5,
+                            1.5
+                    ),
+                    0,
+                    "Rack slot zero should follow facing " + facing
+            );
+            helper.assertValueEqual(
+                    targetedLocalSlot(
+                            rack,
+                            absolute,
+                            facing,
+                            0.5,
+                            0.4,
+                            -0.5,
+                            1.5
+                    ),
+                    VisibleWineSlotTargeting.NO_SLOT,
+                    "Rack furniture gaps must not select a bottle"
+            );
+
+            BlockState cabinet = ModBlocks.TASTING_CABINET
+                    .defaultBlockState()
+                    .setValue(CellarCollectionBlock.FACING, facing);
+            helper.assertValueEqual(
+                    targetedLocalSlot(
+                            cabinet,
+                            absolute,
+                            facing,
+                            9.75 / 16.0,
+                            10.18 / 16.0,
+                            -0.5,
+                            1.5
+                    ),
+                    6,
+                    "Cabinet slot six should follow facing " + facing
+            );
+
+            BlockState service = ModBlocks.TASTING_SERVICE
+                    .defaultBlockState()
+                    .setValue(TastingServiceBlock.FACING, facing)
+                    .setValue(TastingServiceBlock.HAS_BOTTLE, true);
+            BlockHitResult serviceBottleHit = new BlockHitResult(
+                    northLocalToWorld(
+                            absolute,
+                            facing,
+                            11.5 / 16.0,
+                            0.5,
+                            11.25 / 16.0
+                    ),
+                    facing.getOpposite(),
+                    absolute,
+                    false
+            );
+            helper.assertTrue(
+                    VisibleWineSlotTargeting
+                            .targetsTastingServiceBottle(
+                                    service,
+                                    absolute,
+                                    serviceBottleHit
+                            ),
+                    "The angled service bottle should follow facing "
+                            + facing
+            );
+            BlockHitResult serviceTrayHit = new BlockHitResult(
+                    northLocalToWorld(
+                            absolute,
+                            facing,
+                            0.5,
+                            1.0 / 16.0,
+                            0.5
+                    ),
+                    Direction.UP,
+                    absolute,
+                    false
+            );
+            helper.assertFalse(
+                    VisibleWineSlotTargeting
+                            .targetsTastingServiceBottle(
+                                    service,
+                                    absolute,
+                                    serviceTrayHit
+                            ),
+                    "The service tray must remain vanilla for facing "
+                            + facing
+            );
+        }
+
+        helper.setBlock(
+                FIRST,
+                ModBlocks.WINE_RACK.defaultBlockState()
+                        .setValue(WineRackBlock.FACING, Direction.NORTH)
+        );
+        WineRackBlockEntity sparseRack = helper.getBlockEntity(
+                FIRST,
+                WineRackBlockEntity.class
+        );
+        helper.assertTrue(
+                sparseRack.insertOne(new ItemStack(ModItems.RED_WINE)),
+                "The sparse targeting fixture should accept slot zero"
+        );
+        int emptyRackSlot = targetedLocalSlot(
+                helper.getBlockState(FIRST),
+                absolute,
+                Direction.NORTH,
+                11.0 / 16.0,
+                2.68 / 16.0,
+                -0.5,
+                1.5
+        );
+        helper.assertValueEqual(
+                emptyRackSlot,
+                1,
+                "An empty visible slot must resolve to itself"
+        );
+        helper.assertTrue(
+                sparseRack.getBottleCopy(emptyRackSlot).isEmpty(),
+                "An empty targeted slot must not fall back to slot zero"
+        );
+
+        BlockState shelf = ModBlocks.LABELLED_CELLAR_SHELF
+                .defaultBlockState()
+                .setValue(CellarCollectionBlock.FACING, Direction.SOUTH);
+        helper.assertValueEqual(
+                targetedLocalSlot(
+                        shelf,
+                        absolute,
+                        Direction.SOUTH,
+                        6.25 / 16.0,
+                        3.18 / 16.0,
+                        -0.5,
+                        1.5
+                ),
+                1,
+                "Labelled shelf targeting should use its storage slot order"
+        );
+
+        helper.assertValueEqual(
+                targetedLocalSlot(
+                        ModBlocks.WINE_BOTTLE.defaultBlockState(),
+                        absolute,
+                        Direction.NORTH,
+                        0.5,
+                        0.3,
+                        -0.5,
+                        1.5
+                ),
+                0,
+                "A placed bottle should expose its only visible slot"
+        );
+        BlockState basket = ModBlocks.WINE_BASKET.defaultBlockState()
+                .setValue(WineBasketBlock.FACING, Direction.NORTH)
+                .setValue(WineBasketBlock.HAS_BOTTLE, true);
+        helper.assertValueEqual(
+                targetedLocalSlot(
+                        basket,
+                        absolute,
+                        Direction.NORTH,
+                        0.5,
+                        4.5 / 16.0,
+                        -0.5,
+                        1.5
+                ),
+                0,
+                "A basket should expose only its angled bottle pose"
+        );
+
+        BlockState crate = ModBlocks.WINE_CRATE.defaultBlockState()
+                .setValue(WineCrateBlock.FACING, Direction.WEST);
+        Vec3 crateStart = northLocalToWorld(
+                absolute,
+                Direction.WEST,
+                9.67 / 16.0,
+                1.5,
+                6.33 / 16.0
+        );
+        Vec3 crateEnd = northLocalToWorld(
+                absolute,
+                Direction.WEST,
+                9.67 / 16.0,
+                0.0,
+                6.33 / 16.0
+        );
+        helper.assertValueEqual(
+                VisibleWineSlotTargeting.targetedSlot(
+                        crate,
+                        absolute,
+                        crateStart,
+                        crateEnd
+                ),
+                6,
+                "Top-down crate targeting should resolve the exact grid slot"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void tastingServiceCreativePickCopiesExactBottleSafely(
+            GameTestHelper helper
+    ) {
+        helper.setBlock(
+                FIRST,
+                ModBlocks.TASTING_SERVICE.defaultBlockState()
+                        .setValue(TastingServiceBlock.FACING, Direction.NORTH)
+        );
+        BlockPos absolute = helper.absolutePos(FIRST);
+        TastingServiceBlockEntity service = helper.getBlockEntity(
+                FIRST,
+                TastingServiceBlockEntity.class
+        );
+        ItemStack wine = new ItemStack(ModItems.AGED_WHITE_WINE);
+        WineMetadata.apply(wine, 17, WineQuality.EXCEPTIONAL);
+        WineMetadata.ensureBatchIdentity(wine, 170017L);
+        WineMetadata.assignBottleNumber(wine, 3, 8);
+        WineMetadata.setServings(wine, 2);
+        WineMetadata.setEffectProfile(
+                wine,
+                WineEffectProfile.AGED_WHITE.id()
+        );
+        wine.set(
+                DataComponents.CUSTOM_NAME,
+                Component.literal("North Slope Reserve")
+        );
+        helper.assertTrue(
+                service.insertBottle(wine),
+                "The pick fixture should accept its source bottle"
+        );
+        ItemStack expected = service.getBottleCopy();
+
+        ServerPlayer creative = helper.makeMockServerPlayerInLevel();
+        creative.setGameMode(GameType.CREATIVE);
+        creative.setPos(
+                absolute.getX() + 0.5,
+                absolute.getY(),
+                absolute.getZ() - 2.0
+        );
+        BlockHitResult bottleHit = new BlockHitResult(
+                new Vec3(
+                        absolute.getX() + 11.5 / 16.0,
+                        absolute.getY() + 0.5,
+                        absolute.getZ() + 10.0 / 16.0
+                ),
+                Direction.NORTH,
+                absolute,
+                false
+        );
+        helper.assertTrue(
+                TastingServiceCreativePicker.tryPick(
+                        creative,
+                        absolute,
+                        bottleHit
+                ),
+                "A Creative bottle hit should be accepted"
+        );
+        helper.assertTrue(
+                creative.getInventory().contains(stack ->
+                        ItemStack.isSameItemSameComponents(expected, stack)),
+                "Creative pick must copy every canonical bottle component"
+        );
+        helper.assertTrue(
+                ItemStack.isSameItemSameComponents(
+                        expected,
+                        service.getBottleCopy()
+                ),
+                "Creative pick must not mutate the service contents"
+        );
+
+        BlockHitResult trayHit = new BlockHitResult(
+                Vec3.atCenterOf(absolute).add(0.0, -0.4, 0.0),
+                Direction.UP,
+                absolute,
+                false
+        );
+        helper.assertFalse(
+                VisibleWineSlotTargeting.targetsTastingServiceBottle(
+                        helper.getBlockState(FIRST),
+                        absolute,
+                        trayHit
+                ),
+                "A tray hit must remain on vanilla service picking"
+        );
+        helper.assertTrue(
+                helper.getBlockState(FIRST)
+                        .getCloneItemStack(helper.getLevel(), absolute, false)
+                        .is(ModBlocks.TASTING_SERVICE.asItem()),
+                "Vanilla tray picking should still clone the service item"
+        );
+
+        ServerPlayer survival = helper.makeMockServerPlayerInLevel();
+        survival.setGameMode(GameType.SURVIVAL);
+        survival.setPos(
+                absolute.getX() + 0.5,
+                absolute.getY(),
+                absolute.getZ() - 2.0
+        );
+        helper.assertFalse(
+                TastingServiceCreativePicker.tryPick(
+                        survival,
+                        absolute,
+                        bottleHit
+                ),
+                "Survival must never receive the Creative duplicate"
+        );
+        helper.assertFalse(
+                TastingServiceCreativePicker.tryPick(
+                        creative,
+                        absolute.east(),
+                        bottleHit
+                ),
+                "A stale position must be rejected"
+        );
+
+        service.removeBottle();
+        helper.assertFalse(
+                TastingServiceCreativePicker.tryPick(
+                        creative,
+                        absolute,
+                        bottleHit
+                ),
+                "An empty service must not produce wine"
+        );
+        helper.succeed();
+    }
+
+    private static int targetedLocalSlot(
+            BlockState state,
+            BlockPos pos,
+            Direction facing,
+            double localX,
+            double localY,
+            double startZ,
+            double endZ
+    ) {
+        return VisibleWineSlotTargeting.targetedSlot(
+                state,
+                pos,
+                northLocalToWorld(
+                        pos, facing, localX, localY, startZ
+                ),
+                northLocalToWorld(
+                        pos, facing, localX, localY, endZ
+                )
+        );
+    }
+
+    private static Vec3 northLocalToWorld(
+            BlockPos pos,
+            Direction facing,
+            double localX,
+            double localY,
+            double localZ
+    ) {
+        double x;
+        double z;
+        switch (facing) {
+            case EAST -> {
+                x = 1.0 - localZ;
+                z = localX;
+            }
+            case SOUTH -> {
+                x = 1.0 - localX;
+                z = 1.0 - localZ;
+            }
+            case WEST -> {
+                x = localZ;
+                z = 1.0 - localX;
+            }
+            default -> {
+                x = localX;
+                z = localZ;
+            }
+        }
+        return new Vec3(
+                pos.getX() + x,
+                pos.getY() + localY,
+                pos.getZ() + z
+        );
     }
 
     private static ItemStack cultivarGrapes(GrapeCultivar cultivar) {

@@ -132,13 +132,19 @@ def main() -> int:
         if active_faces.count({"north", "south"}) != 6 or active_faces.count({"east", "west"}) != 6:
             fail(errors, f"age {age} must use six two-plane cuttings")
 
-    expected_item_elements = base + groups.get("growth_age_2", [])
-    if len(item_project.get("elements", [])) != 22:
-        fail(errors, "item Blockbench source must contain the frame plus age-2 growth")
+    expected_item_elements = base
+    if len(item_project.get("elements", [])) != 10:
+        fail(errors, "item Blockbench source must contain only the empty frame and soil")
     elif [geometry(element) for element in item_project["elements"]] != [
         geometry(element) for element in expected_item_elements
     ]:
-        fail(errors, "item Blockbench geometry differs from frame plus age-2 growth")
+        fail(errors, "item Blockbench geometry differs from the empty frame and soil")
+    if any(
+        face.get("texture") == 2
+        for element in item_project.get("elements", [])
+        for face in element.get("faces", {}).values()
+    ):
+        fail(errors, "item Blockbench source must not reference planted-growth texture geometry")
     display = item_project.get("display", {})
     if set(display) != DISPLAY_SLOTS:
         fail(errors, f"item display slots changed: {sorted(display)}")
@@ -178,8 +184,10 @@ def main() -> int:
                 fail(errors, f"nursery_bed_{family}_{age}: wrapper changed")
 
     item_model = load(ASSETS / "models/item/nursery_bed.json")
-    if len(item_model.get("elements", [])) != 22 or item_model.get("display") != display:
-        fail(errors, "runtime item model must include reviewed growth and display transforms")
+    if len(item_model.get("elements", [])) != 10 or item_model.get("display") != display:
+        fail(errors, "runtime item model must contain the empty frame and reviewed display transforms")
+    if "plant" in item_model.get("textures", {}):
+        fail(errors, "runtime item model must not retain a planted-growth texture")
     recipe = load(DATA / "recipe/nursery_bed.json")
     if recipe.get("result") != {"id": "vintner:nursery_bed", "count": 1}:
         fail(errors, "Nursery Bed recipe result identity changed")
@@ -214,7 +222,7 @@ def report(errors: list[str]) -> int:
     print(
         "Nursery Bed model audit passed: 58 authored elements, 10-element "
         "16x5x16 frame, six cuttings across four visual ages (tops "
-        "6.5/8/10/12), 22-element transformed item model, 16 state-family "
+        "6.5/8/10/12), empty 10-element transformed item model, 16 state-family "
         "mappings, unchanged recipe/registry/shape, reproducible export."
     )
     return 0

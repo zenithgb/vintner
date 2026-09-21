@@ -1403,18 +1403,20 @@ def generate_canonical_bottle_models() -> None:
     generate_tasting_liquid_textures()
     palettes = {
         "red": {
-            "bottle": "minecraft:block/green_terracotta",
-            "bottle_dark": "minecraft:block/green_concrete",
-            "bottle_highlight": "minecraft:block/lime_terracotta",
+            # Carry the wine colour across the whole readable body. Labels and
+            # silhouette remain secondary cues instead of doing all the work.
+            "bottle": "minecraft:block/red_terracotta",
+            "bottle_dark": "minecraft:block/red_concrete",
+            "bottle_highlight": "minecraft:block/pink_terracotta",
             "neck_foil": "minecraft:block/red_terracotta",
             "seal": "minecraft:block/red_terracotta",
             "label": "minecraft:block/red_terracotta",
             "label_ink": "minecraft:block/bone_block_side",
         },
         "white": {
-            "bottle": "minecraft:block/green_terracotta",
-            "bottle_dark": "minecraft:block/green_concrete",
-            "bottle_highlight": "minecraft:block/lime_terracotta",
+            "bottle": "vintner:block/white_wine",
+            "bottle_dark": "minecraft:block/yellow_terracotta",
+            "bottle_highlight": "minecraft:block/end_stone",
             "neck_foil": "vintner:block/white_wine",
             "seal": "vintner:block/white_wine",
             "label": "vintner:block/white_wine",
@@ -1781,37 +1783,9 @@ def generate_cellar_fixture_blockstates() -> None:
                 if rotation:
                     apply["y"] = rotation
                 multipart.append({"when": {"facing": facing}, "apply": apply})
-            for display_age in ("table", "aged", "mixed"):
-                for slot in range(1, 9):
-                    visible = "|".join(
-                        str(value) for value in range(slot, 9)
-                    )
-                    aged = display_age == "aged" or (
-                        display_age == "mixed" and slot % 2 == 0
-                    )
-                    for facing, rotation in rotations.items():
-                        bottle_prefix = (
-                            "tasting_cabinet_bottle_slot"
-                            if block_id == cabinet_id(wood)
-                            else "cellar_fixture_bottle_slot"
-                        )
-                        age_suffix = "_aged" if aged else ""
-                        apply = {
-                            "model": (
-                                "vintner:block/"
-                                f"{bottle_prefix}{age_suffix}_{slot}"
-                            )
-                        }
-                        if rotation:
-                            apply["y"] = rotation
-                        multipart.append({
-                            "when": {
-                                "facing": facing,
-                                "bottle_count": visible,
-                                "display_age": display_age,
-                            },
-                            "apply": apply,
-                        })
+            # Bottles are rendered from each synchronized block-entity slot.
+            # Keeping aggregate bottles out of the blockstate prevents mixed
+            # displays from lying about colour or aged finish.
             for color in GLASS_COLORS:
                 for facing, rotation in rotations.items():
                     glass_prefix = (
@@ -2167,52 +2141,8 @@ def generate_rack_blockstate() -> None:
             apply["y"] = rotation
         multipart.append({"when": {"facing": facing}, "apply": apply})
 
-    for style in ("red", "white", "mixed"):
-        for display_age in ("table", "aged", "mixed"):
-            for slot in range(1, 5):
-                visible_at = "|".join(
-                    str(value) for value in range(slot, 5)
-                )
-                colour = (
-                    "white"
-                    if style == "white"
-                    or (style == "mixed" and slot % 2 == 0)
-                    else "red"
-                )
-                aged = display_age == "aged" or (
-                    display_age == "mixed" and slot % 2 == 0
-                )
-                for facing, rotation in rotations.items():
-                    if aged:
-                        model = (
-                            "vintner:block/wine_rack_bottle_aged_"
-                            + (
-                                f"white_{slot}"
-                                if colour == "white"
-                                else str(slot)
-                            )
-                        )
-                    else:
-                        model = (
-                            "vintner:block/wine_rack_bottle_"
-                            + (
-                                f"white_{slot}"
-                                if colour == "white"
-                                else str(slot)
-                            )
-                        )
-                    apply = {"model": model}
-                    if rotation:
-                        apply["y"] = rotation
-                    multipart.append({
-                        "when": {
-                            "facing": facing,
-                            "bottles": visible_at,
-                            "display_style": style,
-                            "display_age": display_age,
-                        },
-                        "apply": apply,
-                    })
+    # Bottle geometry is submitted per slot by WineStorageRenderer. The state
+    # still retains its summary properties for compatibility and diagnostics.
 
     write_json(
         ASSETS / "blockstates/wine_rack.json",
@@ -2311,47 +2241,8 @@ def generate_crate_blockstate() -> None:
             }
         )
 
-    for style in ("red", "white", "mixed"):
-        for display_age in ("table", "aged", "mixed"):
-            for slot in range(1, 17):
-                visible_at = "|".join(
-                    str(value) for value in range(slot, 17)
-                )
-                colour = (
-                    "white"
-                    if style == "white"
-                    or (style == "mixed" and slot % 2 == 0)
-                    else "red"
-                )
-                aged = display_age == "aged" or (
-                    display_age == "mixed" and slot % 2 == 0
-                )
-
-                for facing, rotation in rotations.items():
-                    age_prefix = "aged_" if aged else ""
-                    apply = {
-                        "model": (
-                            "vintner:block/wine_crate_bottle_"
-                            + (
-                                f"{age_prefix}white_slot_{slot}"
-                                if colour == "white"
-                                else f"{age_prefix}slot_{slot}"
-                            )
-                        )
-                    }
-                    if rotation:
-                        apply["y"] = rotation
-                    multipart.append(
-                        {
-                            "when": {
-                                "facing": facing,
-                                "bottle_count": visible_at,
-                                "display_style": style,
-                                "display_age": display_age,
-                            },
-                            "apply": apply,
-                        }
-                    )
+    # Bottle geometry is submitted per slot by WineStorageRenderer. The state
+    # still retains its summary properties for compatibility and diagnostics.
 
     write_json(
         ASSETS / "blockstates/wine_crate.json",

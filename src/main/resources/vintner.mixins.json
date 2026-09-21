@@ -8,6 +8,9 @@
     "PlayerMixin",
     "StructureTemplatePoolAccessor"
   ],
+  "client": [
+    "client.MultiPlayerGameModeMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

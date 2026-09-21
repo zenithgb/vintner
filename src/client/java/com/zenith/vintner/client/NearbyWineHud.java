@@ -1,10 +1,11 @@
 package com.zenith.vintner.client;
 
-import com.zenith.vintner.block.CellarFixtureKind;
 import com.zenith.vintner.block.entity.CellarCollectionBlockEntity;
 import com.zenith.vintner.block.entity.WineBottleBlockEntity;
 import com.zenith.vintner.block.entity.WineBasketBlockEntity;
+import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.block.entity.WineRackBlockEntity;
+import com.zenith.vintner.wine.VisibleWineSlotTargeting;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -13,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
@@ -60,28 +62,37 @@ public final class NearbyWineHud implements HudElement {
             return List.of();
         }
 
-        var blockEntity = client.level.getBlockEntity(hit.getBlockPos());
-        if (blockEntity instanceof WineBottleBlockEntity bottleEntity) {
-            return wineNames(List.of(bottleEntity.getBottleCopy()));
+        Vec3 rayStart = client.player.getEyePosition(1.0F);
+        Vec3 rayEnd = hit.getLocation().add(
+                client.player.getViewVector(1.0F).scale(2.0)
+        );
+        var state = client.level.getBlockState(hit.getBlockPos());
+        int slot = VisibleWineSlotTargeting.targetedSlot(
+                state,
+                hit.getBlockPos(),
+                rayStart,
+                rayEnd
+        );
+        if (slot == VisibleWineSlotTargeting.NO_SLOT) {
+            return List.of();
         }
-        if (blockEntity instanceof WineBasketBlockEntity basketEntity) {
-            return wineNames(List.of(basketEntity.getBottleCopy()));
-        }
-        if (blockEntity instanceof WineRackBlockEntity rackEntity) {
-            return wineNames(rackEntity.getStoredBottlesCopy());
-        }
-        if (blockEntity instanceof CellarCollectionBlockEntity collectionEntity
-                && collectionEntity.getKind()
-                == CellarFixtureKind.TASTING_CABINET) {
-            return wineNames(collectionEntity.getStoredBottlesCopy());
-        }
-        return List.of();
-    }
 
-    private static List<Component> wineNames(List<ItemStack> bottles) {
-        return bottles.stream()
-                .filter(bottle -> !bottle.isEmpty())
-                .map(ItemStack::getHoverName)
-                .toList();
+        var blockEntity = client.level.getBlockEntity(hit.getBlockPos());
+        ItemStack bottle = ItemStack.EMPTY;
+        if (blockEntity instanceof WineBottleBlockEntity bottleEntity) {
+            bottle = bottleEntity.getBottleCopy();
+        } else if (blockEntity instanceof WineBasketBlockEntity basketEntity) {
+            bottle = basketEntity.getBottleCopy();
+        } else if (blockEntity instanceof WineRackBlockEntity rackEntity) {
+            bottle = rackEntity.getBottleCopy(slot);
+        } else if (blockEntity instanceof WineCrateBlockEntity crateEntity) {
+            bottle = crateEntity.getBottleCopy(slot);
+        } else if (blockEntity
+                instanceof CellarCollectionBlockEntity collectionEntity) {
+            bottle = collectionEntity.getBottleCopy(slot);
+        }
+        return bottle.isEmpty()
+                ? List.of()
+                : List.of(bottle.getHoverName());
     }
 }

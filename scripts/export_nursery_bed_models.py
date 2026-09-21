@@ -86,10 +86,16 @@ def export(check: bool = False) -> None:
                 "parent": f"vintner:block/nursery_bed_growth_{age}",
                 "textures": {"plant": texture},
             }
-    item_elements = base + [runtime_element(element) for element in groups["growth_age_2"]]
+    # The ordinary Nursery Bed item is empty. Keep its reviewed transforms and
+    # frame/soil geometry in the dedicated Blockbench item source instead of
+    # borrowing an occupied growth stage from the placed-block source.
+    item_elements = [
+        runtime_element(element)
+        for element in item_project["elements"]
+    ]
     outputs[ITEM_DIR / "nursery_bed.json"] = {
         "ambientocclusion": False,
-        "textures": {"wood": "minecraft:block/oak_planks", "soil": "vintner:block/vineyard_soil", "plant": "vintner:block/red_grapevine_age_1", "particle": "vintner:block/vineyard_soil"},
+        "textures": {"wood": "minecraft:block/oak_planks", "soil": "vintner:block/vineyard_soil", "particle": "vintner:block/vineyard_soil"},
         "elements": item_elements,
         "display": item_project["display"],
     }

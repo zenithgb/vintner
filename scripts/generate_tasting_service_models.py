@@ -46,6 +46,19 @@ TEXTURES = {
     "particle": "minecraft:block/oak_planks",
 }
 
+BOTTLE_BODY_TEXTURES = {
+    "red": {
+        "bottle": "minecraft:block/red_terracotta",
+        "bottle_dark": "minecraft:block/red_concrete",
+        "bottle_highlight": "minecraft:block/pink_terracotta",
+    },
+    "white": {
+        "bottle": "vintner:block/white_wine",
+        "bottle_dark": "minecraft:block/yellow_terracotta",
+        "bottle_highlight": "minecraft:block/end_stone",
+    },
+}
+
 DYE_COLOURS = (
     "white",
     "orange",
@@ -263,23 +276,31 @@ generated: dict[Path, dict[str, object]] = {
     BLOCK_MODELS / "tasting_service_bottle_red.json": model(
         bottle_elements("red"),
         seal_texture=TEXTURES["red_seal"],
+        texture_overrides=BOTTLE_BODY_TEXTURES["red"],
     ),
     BLOCK_MODELS / "tasting_service_bottle_white.json": model(
         bottle_elements("white"),
         seal_texture=TEXTURES["white_seal"],
         neck_foil_texture=TEXTURES["white_seal"],
+        texture_overrides=BOTTLE_BODY_TEXTURES["white"],
     ),
     BLOCK_MODELS / "tasting_service_bottle_aged_red.json": model(
         bottle_elements("red"),
         seal_texture="minecraft:block/gold_block",
         neck_foil_texture="minecraft:block/gold_block",
-        texture_overrides={"label_border": "minecraft:block/gold_block"},
+        texture_overrides={
+            **BOTTLE_BODY_TEXTURES["red"],
+            "label_border": "minecraft:block/gold_block",
+        },
     ),
     BLOCK_MODELS / "tasting_service_bottle_aged_white.json": model(
         bottle_elements("white"),
         seal_texture="minecraft:block/gold_block",
         neck_foil_texture="minecraft:block/gold_block",
-        texture_overrides={"label_border": "minecraft:block/gold_block"},
+        texture_overrides={
+            **BOTTLE_BODY_TEXTURES["white"],
+            "label_border": "minecraft:block/gold_block",
+        },
     ),
 }
 

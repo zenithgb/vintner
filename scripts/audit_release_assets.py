@@ -1013,6 +1013,130 @@ def audit_serving_decor() -> None:
                 fail(f"serving decor is missing language key {key}")
 
 
+def audit_per_slot_wine_displays() -> None:
+    """Require storage furniture to render real synchronized bottle slots."""
+    renderer_path = (
+        ROOT
+        / "src/client/java/com/zenith/vintner/client/render"
+        / "WineStorageRenderer.java"
+    )
+    render_state_path = (
+        ROOT
+        / "src/client/java/com/zenith/vintner/client/render"
+        / "WineStorageRenderState.java"
+    )
+    appearance_path = (
+        JAVA_SOURCE / "wine/WineBottleAppearance.java"
+    )
+    client_path = (
+        ROOT
+        / "src/client/java/com/zenith/vintner/client/VintnerClient.java"
+    )
+    for path in (
+        renderer_path,
+        render_state_path,
+        appearance_path,
+        client_path,
+    ):
+        require_file(path)
+
+    try:
+        renderer_source = renderer_path.read_text()
+        client_source = client_path.read_text()
+    except (OSError, UnicodeError) as error:
+        fail(f"cannot inspect per-slot wine renderer: {error}")
+        return
+
+    for block_entity in (
+        "WINE_RACK",
+        "WINE_CRATE",
+        "CELLAR_COLLECTION",
+    ):
+        if f"ModBlockEntities.{block_entity}" not in client_source:
+            fail(
+                "per-slot wine renderer is not registered for "
+                f"{block_entity}"
+            )
+    if "WineBottleAppearance.from(bottle)" not in renderer_source:
+        fail("wine storage renderer must select each stored bottle appearance")
+    if "getBottleCopy" not in renderer_source:
+        fail("wine storage renderer must read synchronized per-slot stacks")
+
+    facings = {"north", "east", "south", "west"}
+    for wood in WOODS:
+        for block_id in (rack_id(wood), crate_id(wood)):
+            blockstate = load_json(
+                ASSETS / f"blockstates/{block_id}.json"
+            )
+            if not isinstance(blockstate, dict):
+                continue
+            multipart = blockstate.get("multipart")
+            if not isinstance(multipart, list):
+                fail(f"{block_id}: blockstate must use multipart models")
+                continue
+            base_model = f"vintner:block/{block_id}"
+            coverage = {
+                part.get("when", {}).get("facing")
+                for part in multipart
+                if isinstance(part, dict)
+                and isinstance(part.get("when"), dict)
+                and isinstance(part.get("apply"), dict)
+                and part["apply"].get("model") == base_model
+                and len(part["when"]) == 1
+            }
+            if coverage != facings:
+                fail(f"{block_id}: furniture base is missing a facing")
+            if len(multipart) != 4:
+                fail(
+                    f"{block_id}: per-slot renderer blockstate must contain "
+                    "only four facing-aware furniture bases"
+                )
+            if any(
+                any("bottle" in value for value in strings(part))
+                for part in multipart
+            ):
+                fail(
+                    f"{block_id}: aggregate bottle models would duplicate "
+                    "the per-slot renderer"
+                )
+
+        for block_id in (shelf_id(wood), cabinet_id(wood)):
+            blockstate = load_json(
+                ASSETS / f"blockstates/{block_id}.json"
+            )
+            if not isinstance(blockstate, dict):
+                continue
+            multipart = blockstate.get("multipart")
+            if not isinstance(multipart, list):
+                fail(f"{block_id}: blockstate must use multipart models")
+                continue
+            base_model = f"vintner:block/{block_id}"
+            coverage = {
+                part.get("when", {}).get("facing")
+                for part in multipart
+                if isinstance(part, dict)
+                and isinstance(part.get("when"), dict)
+                and isinstance(part.get("apply"), dict)
+                and part["apply"].get("model") == base_model
+                and len(part["when"]) == 1
+            }
+            if coverage != facings:
+                fail(f"{block_id}: furniture base is missing a facing")
+            if len(multipart) != 72:
+                fail(
+                    f"{block_id}: per-slot renderer blockstate must retain "
+                    "four furniture bases and 68 glass overlays"
+                )
+            if any(
+                any("bottle" in value for value in strings(part))
+                for part in multipart
+            ):
+                fail(
+                    f"{block_id}: aggregate bottle models would duplicate "
+                    "the per-slot renderer"
+                )
+
+
 def audit_young_grapevine_wires(
     grapevines: set[str],
 ) -> None:
@@ -1520,6 +1644,7 @@ def main() -> int:
     audit_axe_tag(public_blocks)
     audit_translations()
     audit_serving_decor()
+    audit_per_slot_wine_displays()
     audit_young_grapevine_wires(grapevines)
     audit_fermentation_airlock_bounds()
     audit_barrel_status_indicators()
