@@ -1001,8 +1001,15 @@ public final class VintnerGameTests {
                 "serving_and_table",
                 "estate_and_surveying"
         );
+        int woodFamilyCount = WoodVariant.values().length;
         List<Integer> expectedGroupSizes = List.of(
-                20, 16, 28, 30, 60, 32, 25
+                20,
+                woodFamilyCount + 4,
+                woodFamilyCount * 2 + 4,
+                woodFamilyCount * 2 + 6,
+                woodFamilyCount * 5,
+                woodFamilyCount * 2 + 8,
+                woodFamilyCount * 2 + 1
         );
         helper.assertTrue(
                 groups.stream().map(ModCreativeTabs.CreativeGroup::id)
@@ -1021,9 +1028,11 @@ public final class VintnerGameTests {
         List<ItemStack> actual = new ArrayList<>(
                 ModCreativeTabs.VINTNER_TAB.getDisplayItems()
         );
+        int expectedTotal = 43 + woodFamilyCount * 14;
         helper.assertTrue(
-                actual.size() == 211 && actual.size() == expected.size(),
-                "Vintner tab should contain all 211 intended stacks"
+                actual.size() == expectedTotal
+                        && actual.size() == expected.size(),
+                "Vintner tab should contain all intended stacks"
         );
         for (int index = 0; index < expected.size(); index++) {
             helper.assertTrue(
@@ -2875,6 +2884,7 @@ public final class VintnerGameTests {
             case MANGROVE -> Items.MANGROVE_PLANKS;
             case CHERRY -> Items.CHERRY_PLANKS;
             case PALE_OAK -> Items.PALE_OAK_PLANKS;
+            case POPLAR -> Items.POPLAR_PLANKS;
             case BAMBOO -> Items.BAMBOO_PLANKS;
             case CRIMSON -> Items.CRIMSON_PLANKS;
             case WARPED -> Items.WARPED_PLANKS;

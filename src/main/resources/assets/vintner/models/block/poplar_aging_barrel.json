@@ -1,0 +1,8 @@
+{
+  "parent": "vintner:block/aging_barrel",
+  "textures": {
+    "wood": "minecraft:block/poplar_planks",
+    "end": "minecraft:block/poplar_log_top",
+    "particle": "minecraft:block/poplar_planks"
+  }
+}

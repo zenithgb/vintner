@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "S S",
+    "PSP",
+    "P P"
+  ],
+  "key": {
+    "P": "minecraft:poplar_planks",
+    "S": "minecraft:poplar_slab"
+  },
+  "result": {
+    "id": "vintner:poplar_barrel_stand",
+    "count": 2
+  }
+}

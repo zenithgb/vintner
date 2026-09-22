@@ -1,0 +1,652 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "vintner:block/trellis/poplar_trellis_single"
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "east": "level",
+        "sloped": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level"
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "east": "level",
+        "facing": "north|south",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level"
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "east": "level",
+        "facing": "east",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_up"
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "east": "level",
+        "facing": "west",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_down"
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "south": "level",
+        "sloped": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "south": "level",
+        "facing": "east|west",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "south": "level",
+        "facing": "south",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_up",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "south": "level",
+        "facing": "north",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_down",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "west": "level",
+        "sloped": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "west": "level",
+        "facing": "north|south",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "west": "level",
+        "facing": "west",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_up",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "west": "level",
+        "facing": "east",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_down",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "north": "level",
+        "sloped": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "north": "level",
+        "facing": "east|west",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "north": "level",
+        "facing": "north",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_up",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "upper": "true",
+        "north": "level",
+        "facing": "south",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_down",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "east": "level",
+        "sloped": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level"
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "east": "level",
+        "facing": "north|south",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level"
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "east": "level",
+        "facing": "east",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_up"
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "east": "level",
+        "facing": "west",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_down"
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "south": "level",
+        "sloped": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "south": "level",
+        "facing": "east|west",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "south": "level",
+        "facing": "south",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_up",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "south": "level",
+        "facing": "north",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_down",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "west": "level",
+        "sloped": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "west": "level",
+        "facing": "north|south",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "west": "level",
+        "facing": "west",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_up",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "west": "level",
+        "facing": "east",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_down",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "north": "level",
+        "sloped": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "north": "level",
+        "facing": "east|west",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_level",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "north": "level",
+        "facing": "north",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_up",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "age": "0|1",
+        "has_above": "false",
+        "upper": "false",
+        "north": "level",
+        "facing": "south",
+        "sloped": "true"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/wire_down",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "age": "0",
+        "cultivar": "0",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/crimson_grapevine_age_0"
+      }
+    },
+    {
+      "when": {
+        "age": "1|2|3",
+        "cultivar": "0",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/crimson_grapevine_age_1"
+      }
+    },
+    {
+      "when": {
+        "age": "2",
+        "cultivar": "0",
+        "upper": "true"
+      },
+      "apply": {
+        "model": "vintner:block/crimson_grapevine_age_2"
+      }
+    },
+    {
+      "when": {
+        "age": "3",
+        "cultivar": "0",
+        "upper": "true"
+      },
+      "apply": [
+        {
+          "model": "vintner:block/crimson_grapevine_age_3"
+        },
+        {
+          "model": "vintner:block/crimson_grapevine_age_3_b"
+        },
+        {
+          "model": "vintner:block/crimson_grapevine_age_3_c"
+        }
+      ]
+    },
+    {
+      "when": {
+        "age": "0",
+        "cultivar": "1",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/shaded_grapevine_age_0"
+      }
+    },
+    {
+      "when": {
+        "age": "1|2|3",
+        "cultivar": "1",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/shaded_grapevine_age_1"
+      }
+    },
+    {
+      "when": {
+        "age": "2",
+        "cultivar": "1",
+        "upper": "true"
+      },
+      "apply": {
+        "model": "vintner:block/shaded_grapevine_age_2"
+      }
+    },
+    {
+      "when": {
+        "age": "3",
+        "cultivar": "1",
+        "upper": "true"
+      },
+      "apply": [
+        {
+          "model": "vintner:block/shaded_grapevine_age_3"
+        },
+        {
+          "model": "vintner:block/shaded_grapevine_age_3_b"
+        },
+        {
+          "model": "vintner:block/shaded_grapevine_age_3_c"
+        }
+      ]
+    },
+    {
+      "when": {
+        "age": "0",
+        "cultivar": "2",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/sunlit_grapevine_age_0"
+      }
+    },
+    {
+      "when": {
+        "age": "1|2|3",
+        "cultivar": "2",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/sunlit_grapevine_age_1"
+      }
+    },
+    {
+      "when": {
+        "age": "2",
+        "cultivar": "2",
+        "upper": "true"
+      },
+      "apply": {
+        "model": "vintner:block/sunlit_grapevine_age_2"
+      }
+    },
+    {
+      "when": {
+        "age": "3",
+        "cultivar": "2",
+        "upper": "true"
+      },
+      "apply": [
+        {
+          "model": "vintner:block/sunlit_grapevine_age_3"
+        },
+        {
+          "model": "vintner:block/sunlit_grapevine_age_3_b"
+        },
+        {
+          "model": "vintner:block/sunlit_grapevine_age_3_c"
+        }
+      ]
+    },
+    {
+      "when": {
+        "age": "0",
+        "cultivar": "3",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/riverside_grapevine_age_0"
+      }
+    },
+    {
+      "when": {
+        "age": "1|2|3",
+        "cultivar": "3",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/riverside_grapevine_age_1"
+      }
+    },
+    {
+      "when": {
+        "age": "2",
+        "cultivar": "3",
+        "upper": "true"
+      },
+      "apply": {
+        "model": "vintner:block/riverside_grapevine_age_2"
+      }
+    },
+    {
+      "when": {
+        "age": "3",
+        "cultivar": "3",
+        "upper": "true"
+      },
+      "apply": [
+        {
+          "model": "vintner:block/riverside_grapevine_age_3"
+        },
+        {
+          "model": "vintner:block/riverside_grapevine_age_3_b"
+        },
+        {
+          "model": "vintner:block/riverside_grapevine_age_3_c"
+        }
+      ]
+    },
+    {
+      "when": {
+        "north": "none",
+        "east": "none",
+        "south": "none",
+        "west": "level",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/poplar_end_brace"
+      }
+    },
+    {
+      "when": {
+        "north": "level",
+        "east": "none",
+        "south": "none",
+        "west": "none",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/poplar_end_brace",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "north": "none",
+        "east": "level",
+        "south": "none",
+        "west": "none",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/poplar_end_brace",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "north": "none",
+        "east": "none",
+        "south": "level",
+        "west": "none",
+        "upper": "false"
+      },
+      "apply": {
+        "model": "vintner:block/trellis/poplar_end_brace",
+        "y": 270
+      }
+    }
+  ]
+}

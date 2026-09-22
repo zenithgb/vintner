@@ -12,6 +12,7 @@ public enum WoodVariant implements StringRepresentable {
     MANGROVE("mangrove"),
     CHERRY("cherry"),
     PALE_OAK("pale_oak"),
+    POPLAR("poplar"),
     BAMBOO("bamboo"),
     CRIMSON("crimson"),
     WARPED("warped");

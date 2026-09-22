@@ -806,5 +806,21 @@
   "advancement.vintner.manage_estate.title": "Run the Estate",
   "advancement.vintner.manage_estate.description": "Open an Estate Management Desk to review your registered estate",
   "advancement.vintner.map_estate.title": "Map the Estate",
-  "advancement.vintner.map_estate.description": "Use a connected Surveyor's Map Table to review your vineyard plots in the Estate Atlas"
+  "advancement.vintner.map_estate.description": "Use a connected Surveyor's Map Table to review your vineyard plots in the Estate Atlas",
+  "block.vintner.poplar_trellis": "Poplar Trellis",
+  "block.vintner.poplar_grape_press": "Poplar Grape Press",
+  "block.vintner.poplar_fermentation_barrel": "Poplar Fermentation Barrel",
+  "block.vintner.poplar_aging_barrel": "Poplar Aging Barrel",
+  "block.vintner.poplar_wine_rack": "Poplar Wine Rack",
+  "block.vintner.poplar_wine_crate": "Poplar Wine Crate",
+  "block.vintner.poplar_wine_basket": "Poplar Wine Basket",
+  "block.vintner.poplar_vintage_archive": "Poplar Vintage Archive",
+  "block.vintner.poplar_barrel_stand": "Poplar Barrel Stand",
+  "block.vintner.poplar_labelled_cellar_shelf": "Poplar Labelled Cellar Shelf",
+  "block.vintner.poplar_tasting_cabinet": "Poplar Tasting Cabinet",
+  "block.vintner.poplar_estate_management_desk": "Poplar Estate Management Desk",
+  "block.vintner.poplar_surveyors_map_table": "Poplar Surveyor's Map Table",
+  "block.vintner.poplar_tasting_service": "Poplar Tasting Service",
+  "block.vintner.poplar_red_grapevine": "Poplar Red Grapevine",
+  "block.vintner.poplar_white_grapevine": "Poplar White Grapevine"
 }

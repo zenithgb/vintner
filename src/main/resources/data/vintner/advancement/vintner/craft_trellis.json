@@ -55,6 +55,12 @@
       },
       "trigger": "minecraft:recipe_crafted"
     },
+    "crafted_poplar": {
+      "conditions": {
+        "recipes": "vintner:poplar_trellis"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
     "crafted_bamboo": {
       "conditions": {
         "recipes": "vintner:bamboo_trellis"
@@ -96,6 +102,7 @@
       "crafted_mangrove",
       "crafted_cherry",
       "crafted_pale_oak",
+      "crafted_poplar",
       "crafted_bamboo",
       "crafted_crimson",
       "crafted_warped"

@@ -63,6 +63,11 @@ WOODS = {
         "beam": "minecraft:block/pale_oak_log",
         "end": "minecraft:block/pale_oak_log_top",
     },
+    "poplar": {
+        "title": "Poplar",
+        "beam": "minecraft:block/poplar_log",
+        "end": "minecraft:block/poplar_log_top",
+    },
     "bamboo": {
         "title": "Bamboo",
         "beam": "minecraft:block/bamboo_block",
@@ -3129,7 +3134,7 @@ def main() -> None:
     generate_tutorial_advancements()
     generate_language()
     print(
-        "Generated 12 wood families for trellises, grape presses, "
+        f"Generated {len(WOODS)} wood families for trellises, grape presses, "
         "fermentation barrels, aging barrels, wine racks, wine "
         "crates, vintage archives, tasting services, and grapevine "
         "supports."

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "SPS",
+    "PNP"
+  ],
+  "key": {
+    "P": "minecraft:poplar_planks",
+    "S": "minecraft:stick",
+    "N": "minecraft:paper"
+  },
+  "result": {
+    "id": "vintner:poplar_labelled_cellar_shelf",
+    "count": 1
+  }
+}

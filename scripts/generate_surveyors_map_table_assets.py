@@ -158,6 +158,7 @@ def loot_table(identifier: str) -> dict:
             }],
             "conditions": [{"condition": "minecraft:survives_explosion"}],
         }],
+        "random_sequence": f"vintner:blocks/{identifier}",
     }
 
 
@@ -165,17 +166,18 @@ def recipe_advancement(identifier: str, planks: str) -> dict:
     return {
         "parent": "minecraft:recipes/root",
         "criteria": {
-            "has_planks": {
-                "trigger": "minecraft:inventory_changed",
+            "has_material": {
                 "conditions": {"items": [{"items": planks}]},
+                "trigger": "minecraft:inventory_changed",
             },
             "has_the_recipe": {
-                "trigger": "minecraft:recipe_unlocked",
                 "conditions": {"recipes": f"vintner:{identifier}"},
+                "trigger": "minecraft:recipe_unlocked",
             },
         },
-        "requirements": [["has_planks", "has_the_recipe"]],
+        "requirements": [["has_material", "has_the_recipe"]],
         "rewards": {"recipes": [f"vintner:{identifier}"]},
+        "sends_telemetry_event": False,
     }
 
 
