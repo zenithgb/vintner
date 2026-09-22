@@ -6,10 +6,10 @@ so each `growth_age_*` group can be shown independently with `bed_frame` in
 Blockbench. The embedded textures make the source immediately reviewable.
 
 `nursery_bed_item.bbmodel` is the Blockbench item-presentation companion. It
-contains the exact frame plus representative age-2 growth and the reviewed GUI,
-hand, ground and fixed transforms. Runtime geometry remains derived from the
+contains only the exact empty frame and soil plus the reviewed GUI, hand,
+ground and fixed transforms. Runtime geometry remains derived from the
 authoritative grouped source; the focused audit rejects geometry drift between
-the two files.
+the two files and rejects any plant geometry in the item source.
 
 After editing in Blockbench, export deterministically and validate with:
 

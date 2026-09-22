@@ -138,8 +138,16 @@ tasks.register("auditNurseryBedModels", Exec) {
 	commandLine "python3", "scripts/audit_nursery_bed_models.py"
 }
 
+tasks.register("auditBlockbenchModels", Exec) {
+	group = "verification"
+	description = "Audits Blockbench sources and generated model-family invariants."
+	workingDir projectDir
+	commandLine "python3", "scripts/audit_blockbench_models.py"
+}
+
 tasks.named("auditReleaseAssets") {
 	dependsOn tasks.named("auditNurseryBedModels")
+	dependsOn tasks.named("auditBlockbenchModels")
 }
 
 tasks.register("prepareReleaseServer") {
