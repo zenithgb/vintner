@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:coopers_mallet"
+        "recipes": "vintner:coopers_mallet"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

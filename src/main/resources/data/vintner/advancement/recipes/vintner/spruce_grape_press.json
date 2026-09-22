@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:spruce_grape_press"
+        "recipes": "vintner:spruce_grape_press"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

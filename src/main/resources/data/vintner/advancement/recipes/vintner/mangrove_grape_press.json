@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:mangrove_grape_press"
+        "recipes": "vintner:mangrove_grape_press"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

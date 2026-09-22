@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:acacia_fermentation_barrel"
+        "recipes": "vintner:acacia_fermentation_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

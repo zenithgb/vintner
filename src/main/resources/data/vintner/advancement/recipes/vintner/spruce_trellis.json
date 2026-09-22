@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:spruce_trellis"
+        "recipes": "vintner:spruce_trellis"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

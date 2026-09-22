@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:crimson_tasting_cabinet"
+        "recipes": "vintner:crimson_tasting_cabinet"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

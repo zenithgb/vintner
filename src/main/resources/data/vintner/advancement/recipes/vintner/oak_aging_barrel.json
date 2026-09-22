@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:oak_aging_barrel"
+        "recipes": "vintner:oak_aging_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

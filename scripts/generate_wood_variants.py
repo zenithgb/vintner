@@ -2034,20 +2034,20 @@ def generate_cooperage_kits() -> None:
     master = read_json(master_path)
     master_criteria = {
         "mallet": {
-            "conditions": {"recipe_id": "vintner:coopers_mallet"},
+            "conditions": {"recipes": "vintner:coopers_mallet"},
             "trigger": "minecraft:recipe_crafted",
         },
         "toasted": {
-            "conditions": {"recipe_id": "vintner:toasting_kit"},
+            "conditions": {"recipes": "vintner:toasting_kit"},
             "trigger": "minecraft:recipe_crafted",
         },
         "seasoned": {
-            "conditions": {"recipe_id": "vintner:seasoning_kit"},
+            "conditions": {"recipes": "vintner:seasoning_kit"},
             "trigger": "minecraft:recipe_crafted",
         },
         "cellar_cask": {
             "conditions": {
-                "recipe_id": "vintner:cask_conversion_kit",
+                "recipes": "vintner:cask_conversion_kit",
             },
             "trigger": "minecraft:recipe_crafted",
         },
@@ -2483,7 +2483,7 @@ def recipe_advancement(
             },
             "has_the_recipe": {
                 "conditions": {
-                    "recipe": f"vintner:{recipe_id}",
+                    "recipes": f"vintner:{recipe_id}",
                 },
                 "trigger": "minecraft:recipe_unlocked",
             },
@@ -2774,7 +2774,7 @@ def generate_craft_trellis_advancement() -> None:
     criteria = {
         f"crafted_{wood}": {
             "conditions": {
-                "recipe_id": f"vintner:{trellis_id(wood)}",
+                "recipes": f"vintner:{trellis_id(wood)}",
             },
             "trigger": "minecraft:recipe_crafted",
         }

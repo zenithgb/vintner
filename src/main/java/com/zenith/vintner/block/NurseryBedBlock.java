@@ -1,7 +1,6 @@
 package com.zenith.vintner.block;
 
 import com.zenith.vintner.advancement.ModAdvancements;
-import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.vineyard.NurseryPlant;
 import com.zenith.vintner.vineyard.GraftedCuttingData;
 import com.zenith.vintner.vineyard.GrapeCultivar;
@@ -32,8 +31,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /** A compact propagation bed that turns one cutting into several cuttings. */
 public final class NurseryBedBlock extends Block {
-    public static final MapCodec<NurseryBedBlock> CODEC =
-            simpleCodec(NurseryBedBlock::new);
     public static final BooleanProperty OCCUPIED =
             BooleanProperty.create("occupied");
     public static final IntegerProperty AGE =
@@ -54,11 +51,6 @@ public final class NurseryBedBlock extends Block {
                         .setValue(AGE, 0)
                         .setValue(PLANT, NurseryPlant.RED_GRAPE)
         );
-    }
-
-    @Override
-    protected MapCodec<? extends Block> codec() {
-        return CODEC;
     }
 
     @Override

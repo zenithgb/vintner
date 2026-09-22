@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:warped_trellis"
+        "recipes": "vintner:warped_trellis"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

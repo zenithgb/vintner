@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:resistant_rootstock_cutting"
+        "recipes": "vintner:resistant_rootstock_cutting"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

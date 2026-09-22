@@ -42,6 +42,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.BonemealSource;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -953,7 +954,8 @@ public abstract class GrapevineBlock
     public boolean isValidBonemealTarget(
             LevelReader level,
             BlockPos pos,
-            BlockState state
+            BlockState state,
+            BonemealSource source
     ) {
         BlockPos rootPos = state.getValue(UPPER)
                 ? pos.below()
@@ -984,9 +986,10 @@ public abstract class GrapevineBlock
             Level level,
             RandomSource random,
             BlockPos pos,
-            BlockState state
+            BlockState state,
+            BonemealSource source
     ) {
-        return isValidBonemealTarget(level, pos, state);
+        return isValidBonemealTarget(level, pos, state, source);
     }
 
     @Override
@@ -994,7 +997,8 @@ public abstract class GrapevineBlock
             ServerLevel level,
             RandomSource random,
             BlockPos pos,
-            BlockState state
+            BlockState state,
+            BonemealSource source
     ) {
         BlockPos rootPos = state.getValue(UPPER)
                 ? pos.below()

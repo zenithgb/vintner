@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:acacia_aging_barrel"
+        "recipes": "vintner:acacia_aging_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

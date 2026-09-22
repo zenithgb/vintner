@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:crimson_barrel_stand"
+        "recipes": "vintner:crimson_barrel_stand"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

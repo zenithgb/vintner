@@ -589,10 +589,10 @@ def audit_recipes() -> int:
             if isinstance(recipe_unlocked, dict):
                 conditions = recipe_unlocked.get("conditions")
                 if isinstance(conditions, dict):
-                    recipe_condition = conditions.get("recipe")
+                    recipe_condition = conditions.get("recipes")
         if recipe_condition != recipe_id:
             fail(
-                f"recipe advancement {path.stem}: has_the_recipe must "
+                f"recipe advancement {path.stem}: has_the_recipe recipes must "
                 f"reference {recipe_id}"
             )
 

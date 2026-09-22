@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:vintage_archive"
+        "recipes": "vintner:vintage_archive"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

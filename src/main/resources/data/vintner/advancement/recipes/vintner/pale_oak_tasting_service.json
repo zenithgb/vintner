@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:pale_oak_tasting_service"
+        "recipes": "vintner:pale_oak_tasting_service"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:dark_oak_wine_basket"
+        "recipes": "vintner:dark_oak_wine_basket"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

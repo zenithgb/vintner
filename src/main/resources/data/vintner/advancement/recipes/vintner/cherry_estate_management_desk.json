@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:cherry_estate_management_desk"
+        "recipes": "vintner:cherry_estate_management_desk"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

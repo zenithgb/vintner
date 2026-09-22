@@ -1,6 +1,5 @@
 package com.zenith.vintner.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -28,10 +27,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TrellisBlock extends HorizontalDirectionalBlock {
-    public static final MapCodec<TrellisBlock> CODEC =
-            simpleCodec(TrellisBlock::new);
-
-
 
     public static final EnumProperty<RowConnection> NORTH =
             EnumProperty.create("north", RowConnection.class);
@@ -168,11 +163,6 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
             level.setBlock(pos, refreshed, Block.UPDATE_ALL);
             schedulePotentialRowNeighbours(level, pos);
         }
-    }
-
-    @Override
-    public MapCodec<? extends TrellisBlock> codec() {
-        return CODEC;
     }
 
     @Override

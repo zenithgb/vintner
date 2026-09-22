@@ -1,7 +1,6 @@
 package com.zenith.vintner.block;
 
 import com.zenith.vintner.util.VintnerNotifications;
-import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.WineCrateBlockEntity;
 import com.zenith.vintner.estate.EstateLedgerSavedData;
@@ -49,8 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class WineCrateBlock extends BaseEntityBlock {
-    public static final MapCodec<WineCrateBlock> CODEC =
-            simpleCodec(WineCrateBlock::new);
     public static final EnumProperty<Direction> FACING =
             BlockStateProperties.HORIZONTAL_FACING;
     public static final IntegerProperty BOTTLE_COUNT =
@@ -71,11 +68,6 @@ public final class WineCrateBlock extends BaseEntityBlock {
                         .setValue(DISPLAY_STYLE, WineDisplayStyle.RED)
                         .setValue(DISPLAY_AGE, WineDisplayAge.TABLE)
         );
-    }
-
-    @Override
-    public MapCodec<WineCrateBlock> codec() {
-        return CODEC;
     }
 
     @Override

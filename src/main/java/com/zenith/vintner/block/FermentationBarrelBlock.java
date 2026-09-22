@@ -1,6 +1,5 @@
 package com.zenith.vintner.block;
 
-import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.FermentationBarrelBlockEntity;
 import com.zenith.vintner.registry.ModBlockEntities;
@@ -43,9 +42,6 @@ import java.util.List;
 
 public final class FermentationBarrelBlock
         extends BaseEntityBlock {
-    public static final MapCodec<FermentationBarrelBlock> CODEC =
-            simpleCodec(FermentationBarrelBlock::new);
-
     public static final EnumProperty<Direction> FACING =
             BlockStateProperties.HORIZONTAL_FACING;
 
@@ -76,11 +72,6 @@ public final class FermentationBarrelBlock
                         .setValue(STATUS, 0)
                         .setValue(WINE_TYPE, 0)
         );
-    }
-
-    @Override
-    public MapCodec<FermentationBarrelBlock> codec() {
-        return CODEC;
     }
 
     @Override

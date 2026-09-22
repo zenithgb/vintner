@@ -8,8 +8,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 import java.util.Set;
 
@@ -38,7 +37,7 @@ public final class ModLootTables {
 
                     builder.withPool(
                             LootPool.lootPool()
-                                    .setRolls(ConstantValue.exactly(1))
+                                    .setRolls(ContextIntProviders.exactly(1))
                                     .when(
                                             LootItemRandomChanceCondition
                                                     .randomChance(
@@ -50,7 +49,7 @@ public final class ModLootTables {
                                                     ModItems.RED_GRAPE_CUTTING
                                             ).apply(
                                                     SetItemCountFunction.setCount(
-                                                            UniformGenerator.between(
+                                                            ContextIntProviders.between(
                                                                     1,
                                                                     2
                                                             )
@@ -62,7 +61,7 @@ public final class ModLootTables {
                                                     ModItems.WHITE_GRAPE_CUTTING
                                             ).apply(
                                                     SetItemCountFunction.setCount(
-                                                            UniformGenerator.between(
+                                                            ContextIntProviders.between(
                                                                     1,
                                                                     2
                                                             )

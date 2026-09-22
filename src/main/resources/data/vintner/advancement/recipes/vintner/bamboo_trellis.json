@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:bamboo_trellis"
+        "recipes": "vintner:bamboo_trellis"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -525,7 +525,7 @@ def recipe_advancement(recipe_id: str, material: str) -> dict[str, object]:
                 "trigger": "minecraft:inventory_changed",
             },
             "has_the_recipe": {
-                "conditions": {"recipe": f"vintner:{recipe_id}"},
+                "conditions": {"recipes": f"vintner:{recipe_id}"},
                 "trigger": "minecraft:recipe_unlocked",
             },
         },

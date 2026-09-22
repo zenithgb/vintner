@@ -1,6 +1,5 @@
 package com.zenith.vintner.block;
 
-import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.WineBottleBlockEntity;
 import com.zenith.vintner.item.VintnerAlmanacItem;
 import com.zenith.vintner.registry.ModBlockEntities;
@@ -41,8 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class WineBottleBlock extends BaseEntityBlock {
-    public static final MapCodec<WineBottleBlock> CODEC =
-            simpleCodec(WineBottleBlock::new);
     public static final EnumProperty<Direction> FACING =
             BlockStateProperties.HORIZONTAL_FACING;
     public static final IntegerProperty SERVINGS =
@@ -76,11 +73,6 @@ public final class WineBottleBlock extends BaseEntityBlock {
                                 WineMetadata.SERVINGS_PER_BOTTLE
                         )
         );
-    }
-
-    @Override
-    public MapCodec<WineBottleBlock> codec() {
-        return CODEC;
     }
 
     @Override

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:warped_grape_press"
+        "recipes": "vintner:warped_grape_press"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

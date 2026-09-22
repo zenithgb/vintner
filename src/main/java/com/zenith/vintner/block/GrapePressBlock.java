@@ -1,6 +1,5 @@
 package com.zenith.vintner.block;
 
-import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.GrapePressBlockEntity;
 import com.zenith.vintner.registry.ModItems;
@@ -40,9 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class GrapePressBlock extends BaseEntityBlock {
-    public static final MapCodec<GrapePressBlock> CODEC =
-            simpleCodec(GrapePressBlock::new);
-
     public static final EnumProperty<Direction> FACING =
             BlockStateProperties.HORIZONTAL_FACING;
 
@@ -65,11 +61,6 @@ public final class GrapePressBlock extends BaseEntityBlock {
                         .setValue(INPUT_TYPE, 0)
                         .setValue(OUTPUT_TYPE, 0)
         );
-    }
-
-    @Override
-    public MapCodec<GrapePressBlock> codec() {
-        return CODEC;
     }
 
     @Override

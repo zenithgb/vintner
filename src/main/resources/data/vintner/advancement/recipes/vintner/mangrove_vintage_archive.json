@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:mangrove_vintage_archive"
+        "recipes": "vintner:mangrove_vintage_archive"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

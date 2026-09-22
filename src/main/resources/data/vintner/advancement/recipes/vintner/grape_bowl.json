@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:grape_bowl"
+        "recipes": "vintner:grape_bowl"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

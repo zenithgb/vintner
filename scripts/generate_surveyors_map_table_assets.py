@@ -171,7 +171,7 @@ def recipe_advancement(identifier: str, planks: str) -> dict:
             },
             "has_the_recipe": {
                 "trigger": "minecraft:recipe_unlocked",
-                "conditions": {"recipe": f"vintner:{identifier}"},
+                "conditions": {"recipes": f"vintner:{identifier}"},
             },
         },
         "requirements": [["has_planks", "has_the_recipe"]],

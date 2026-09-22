@@ -18,7 +18,7 @@ def check_contact() -> None:
     offset_match = re.search(r"translate\((-?[\d.]+)F / 16\.0F, 0\.0F, (-?[\d.]+)F / 16\.0F", renderer)
     offset, offset_z = (float(offset_match[index]) for index in (1, 2))
     rotations = [(axis, float(angle)) for axis, angle in re.findall(
-        r"Axis\.([XYZ])P.rotationDegrees\((-?[\d.]+)F\)", renderer)]
+        r"rotateDegrees\(Axis\.([XYZ])P, (-?[\d.]+)F\)", renderer)]
     scale = float(re.search(r"poseStack.scale\(([\d.]+)F", renderer)[1])
 
     def rotate(point, sequence=rotations):

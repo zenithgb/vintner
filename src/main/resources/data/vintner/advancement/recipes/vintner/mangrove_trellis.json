@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:mangrove_trellis"
+        "recipes": "vintner:mangrove_trellis"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

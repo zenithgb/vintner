@@ -60,7 +60,7 @@ final class VineyardSoilInteraction {
             level.playSound(
                     null,
                     soilPos,
-                    SoundEvents.HOE_TILL,
+                    SoundEvents.HOE_TILL.value(),
                     SoundSource.BLOCKS,
                     1.0F,
                     0.9F

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:warped_tasting_cabinet"
+        "recipes": "vintner:warped_tasting_cabinet"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:spruce_labelled_cellar_shelf"
+        "recipes": "vintner:spruce_labelled_cellar_shelf"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

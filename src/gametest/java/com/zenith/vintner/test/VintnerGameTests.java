@@ -197,7 +197,7 @@ public final class VintnerGameTests {
         var commons = net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer("zenithgb_library")
                 .orElseThrow().getMetadata();
         helper.assertTrue(commons.getId().equals("zenithgb_library")
-                && commons.getVersion().getFriendlyString().equals("0.1.1"), "Exact loaded Commons release identity/version");
+                && commons.getVersion().getFriendlyString().equals("0.1.2"), "Exact loaded Commons release identity/version");
         var modules = com.zenithgb.library.module.ModuleRegistry.getInstance().modules();
         var vintnerModules = modules.stream()
                 .filter(module -> module.id().getNamespace().equals("vintner")).toList();
@@ -1274,7 +1274,7 @@ public final class VintnerGameTests {
             );
             var structureManager = helper.getLevel()
                     .getServer()
-                    .getStructureManager();
+                    .getStructureTemplateManager();
 
             helper.assertValueEqual(
                     vineyard.getSize(
@@ -1316,7 +1316,7 @@ public final class VintnerGameTests {
                 : ModVillageStructures.vineyardTemplates()) {
             var template = helper.getLevel()
                     .getServer()
-                    .getStructureManager()
+                    .getStructureTemplateManager()
                     .get(templateId)
                     .orElse(null);
 
@@ -1761,7 +1761,8 @@ public final class VintnerGameTests {
                 helper.getLevel(),
                 RandomSource.create(1L),
                 helper.absolutePos(FIRST),
-                helper.getBlockState(FIRST)
+                helper.getBlockState(FIRST),
+                net.minecraft.world.level.block.BonemealSource.INTERACTION
         );
 
         helper.assertBlockPresent(upperVine, UPPER);
@@ -5622,6 +5623,12 @@ public final class VintnerGameTests {
             ledger.record(owner, LedgerEventType.BOTTLING,
                     prefix + " Vintage", 1, amber ? 101L : 202L, amber ? 61 : 89);
         }
+        EstateInfrastructureReport infrastructure =
+                EstateInfrastructureReport.survey(level, deskPos);
+        EstateReputationSavedData reputation =
+                EstateReputationSavedData.get(level);
+        reputation.recordInfrastructure(ownerA.getUUID(), infrastructure);
+        reputation.recordInfrastructure(ownerB.getUUID(), infrastructure);
         DeskOwnerState beforeA = deskOwnerState(level, ownerA);
         DeskOwnerState beforeB = deskOwnerState(level, ownerB);
         helper.assertValueEqual(beforeA.estate().ownerId(), ownerA.getUUID().toString(),
@@ -6547,11 +6554,11 @@ public final class VintnerGameTests {
         );
 
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
-        player.getAbilities().instabuild = false;
+        player.setGameMode(GameType.SURVIVAL);
         player.setItemInHand(InteractionHand.MAIN_HAND, wine.copy());
         BlockPos lowerPos = helper.absolutePos(FIRST);
 
-        player.gameMode.useItemOn(
+        InteractionResult placement = player.gameMode.useItemOn(
                 player,
                 helper.getLevel(),
                 player.getItemInHand(InteractionHand.MAIN_HAND),
@@ -6584,6 +6591,10 @@ public final class VintnerGameTests {
                 UPPER,
                 WineBottleBlock.AGED_WINE,
                 true
+        );
+        helper.assertTrue(
+                placement.consumesAction(),
+                "Bottle placement should consume the interaction"
         );
         helper.assertValueEqual(
                 player.getItemInHand(InteractionHand.MAIN_HAND).getCount(),
@@ -10638,15 +10649,14 @@ public final class VintnerGameTests {
                 false
         );
 
-        helper.assertValueEqual(
+        helper.assertTrue(
                 player.gameMode.useItemOn(
                         player,
                         helper.getLevel(),
                         netting,
                         InteractionHand.MAIN_HAND,
                         hit
-                ),
-                InteractionResult.SUCCESS,
+                ).consumesAction(),
                 "A trained vine should accept vineyard netting"
         );
         helper.assertTrue(
@@ -10847,7 +10857,7 @@ public final class VintnerGameTests {
                 "The grafted cutting should carry adapted roots before use"
         );
         player.setItemInHand(InteractionHand.MAIN_HAND, cutting);
-        helper.assertValueEqual(
+        helper.assertTrue(
                 player.gameMode.useItemOn(
                         player,
                         helper.getLevel(),
@@ -10859,8 +10869,7 @@ public final class VintnerGameTests {
                                 absoluteRoot,
                                 false
                         )
-                ),
-                InteractionResult.SUCCESS,
+                ).consumesAction(),
                 "A grafted cutting should plant on a bare trellis"
         );
 
@@ -11016,7 +11025,7 @@ public final class VintnerGameTests {
                 GrapeCultivar.RIVER_GARNET
         );
         player.setItemInHand(InteractionHand.MAIN_HAND, cutting);
-        helper.assertValueEqual(
+        helper.assertTrue(
                 player.gameMode.useItemOn(
                         player,
                         helper.getLevel(),
@@ -11028,8 +11037,7 @@ public final class VintnerGameTests {
                                 absoluteRoot,
                                 false
                         )
-                ),
-                InteractionResult.SUCCESS,
+                ).consumesAction(),
                 "A named cultivar cutting should plant normally"
         );
         helper.assertValueEqual(

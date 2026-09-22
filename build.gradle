@@ -74,7 +74,7 @@ fabricApi {
 
 def commonsJarPath = providers.gradleProperty("commonsJar")
 if (!commonsJarPath.isPresent() || !file(commonsJarPath.get()).isFile()) {
-	throw new GradleException("Supply -PcommonsJar=/absolute/path/to/zenithgb-commons-0.1.1.jar")
+	throw new GradleException("Supply -PcommonsJar=/absolute/path/to/zenithgb-commons-0.1.2.jar")
 }
 try {
 	new java.util.zip.ZipFile(file(commonsJarPath.get())).withCloseable { jar ->
@@ -83,14 +83,14 @@ try {
 		def metadata = jar.getInputStream(entry).withCloseable { input ->
 			new groovy.json.JsonSlurper().parse(input)
 		}
-		if (metadata.id != 'zenithgb_library' || metadata.version != '0.1.1') {
-			throw new GradleException("Expected zenithgb_library version 0.1.1; supplied ${metadata.id} version ${metadata.version}")
+		if (metadata.id != 'zenithgb_library' || metadata.version != '0.1.2') {
+			throw new GradleException("Expected zenithgb_library version 0.1.2; supplied ${metadata.id} version ${metadata.version}")
 		}
 	}
 } catch (GradleException failure) {
 	throw failure
 } catch (Exception failure) {
-	throw new GradleException("Cannot read Commons artifact ${commonsJarPath.get()}; supply a valid Commons 0.1.1 JAR", failure)
+	throw new GradleException("Cannot read Commons artifact ${commonsJarPath.get()}; supply a valid Commons 0.1.2 JAR", failure)
 }
 
 dependencies {
@@ -106,8 +106,8 @@ dependencies {
 	// Enables a second GameTest pass against the real optional integration.
 	if (providers.gradleProperty("sereneSeasonsTest").isPresent()) {
 		// Version IDs avoid ambiguous cross-loader version numbers on Modrinth Maven.
-		add("localRuntime", "maven.modrinth:serene-seasons:13sXhUkI")
-		add("localRuntime", "maven.modrinth:glitchcore:SDUCBYRU")
+		add("localRuntime", "maven.modrinth:serene-seasons:V9PxJPuw")
+		add("localRuntime", "maven.modrinth:glitchcore:aaUghyGp")
 	}
 }
 

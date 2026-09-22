@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:compost"
+        "recipes": "vintner:compost"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

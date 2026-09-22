@@ -3,73 +3,73 @@
   "criteria": {
     "crafted_oak": {
       "conditions": {
-        "recipe_id": "vintner:wine_rack"
+        "recipes": "vintner:wine_rack"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_spruce": {
       "conditions": {
-        "recipe_id": "vintner:spruce_wine_rack"
+        "recipes": "vintner:spruce_wine_rack"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_birch": {
       "conditions": {
-        "recipe_id": "vintner:birch_wine_rack"
+        "recipes": "vintner:birch_wine_rack"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_jungle": {
       "conditions": {
-        "recipe_id": "vintner:jungle_wine_rack"
+        "recipes": "vintner:jungle_wine_rack"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_acacia": {
       "conditions": {
-        "recipe_id": "vintner:acacia_wine_rack"
+        "recipes": "vintner:acacia_wine_rack"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_dark_oak": {
       "conditions": {
-        "recipe_id": "vintner:dark_oak_wine_rack"
+        "recipes": "vintner:dark_oak_wine_rack"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_mangrove": {
       "conditions": {
-        "recipe_id": "vintner:mangrove_wine_rack"
+        "recipes": "vintner:mangrove_wine_rack"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_cherry": {
       "conditions": {
-        "recipe_id": "vintner:cherry_wine_rack"
+        "recipes": "vintner:cherry_wine_rack"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_pale_oak": {
       "conditions": {
-        "recipe_id": "vintner:pale_oak_wine_rack"
+        "recipes": "vintner:pale_oak_wine_rack"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_bamboo": {
       "conditions": {
-        "recipe_id": "vintner:bamboo_wine_rack"
+        "recipes": "vintner:bamboo_wine_rack"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_crimson": {
       "conditions": {
-        "recipe_id": "vintner:crimson_wine_rack"
+        "recipes": "vintner:crimson_wine_rack"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_warped": {
       "conditions": {
-        "recipe_id": "vintner:warped_wine_rack"
+        "recipes": "vintner:warped_wine_rack"
       },
       "trigger": "minecraft:recipe_crafted"
     }

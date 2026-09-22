@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:mangrove_wine_crate"
+        "recipes": "vintner:mangrove_wine_crate"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

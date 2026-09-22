@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:jungle_wine_rack"
+        "recipes": "vintner:jungle_wine_rack"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

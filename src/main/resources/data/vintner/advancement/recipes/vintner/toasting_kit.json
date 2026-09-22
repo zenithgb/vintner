@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:toasting_kit"
+        "recipes": "vintner:toasting_kit"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

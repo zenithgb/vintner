@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:seasoning_kit"
+        "recipes": "vintner:seasoning_kit"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -1,6 +1,5 @@
 package com.zenith.vintner.block;
 
-import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.item.GrapeBowlItem;
 import com.zenith.vintner.item.GrapeItem;
 import com.zenith.vintner.vineyard.GrapeCultivar;
@@ -35,7 +34,6 @@ import java.util.List;
 /** A four-serving tabletop food; all persistent state uses vanilla block states. */
 public final class GrapeBowlBlock extends Block {
     public static final int MAX_SERVINGS = 4;
-    public static final MapCodec<GrapeBowlBlock> CODEC = simpleCodec(GrapeBowlBlock::new);
     public static final IntegerProperty SERVINGS = IntegerProperty.create("servings", 0, MAX_SERVINGS);
     public static final EnumProperty<GrapeCultivar> CULTIVAR = EnumProperty.create("cultivar", GrapeCultivar.class);
     private static final VoxelShape SHAPE = Block.box(2.7, 0, 2.7, 13.3, 3.5, 13.3);
@@ -45,11 +43,6 @@ public final class GrapeBowlBlock extends Block {
         registerDefaultState(stateDefinition.any()
                 .setValue(SERVINGS, MAX_SERVINGS)
                 .setValue(CULTIVAR, GrapeCultivar.EMBER_NOIR));
-    }
-
-    @Override
-    public MapCodec<GrapeBowlBlock> codec() {
-        return CODEC;
     }
 
     @Override

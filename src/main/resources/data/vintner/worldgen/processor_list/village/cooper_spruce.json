@@ -11,9 +11,7 @@
           "location_predicate": {
             "predicate_type": "minecraft:always_true"
           },
-          "output_state": {
-            "Name": "vintner:spruce_barrel_stand"
-          }
+          "output_state": "vintner:spruce_barrel_stand"
         }
       ]
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:acacia_labelled_cellar_shelf"
+        "recipes": "vintner:acacia_labelled_cellar_shelf"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

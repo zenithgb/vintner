@@ -1,6 +1,5 @@
 package com.zenith.vintner.block;
 
-import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.EstateManagementDeskBlockEntity;
 import com.zenith.vintner.estate.EstateDeskReport;
 import net.minecraft.core.BlockPos;
@@ -55,8 +54,6 @@ public final class EstateManagementDeskBlock
             EstateWorkstationConnections.RIGHT_CONNECTED;
     public static final BooleanProperty STANDALONE =
             EstateWorkstationConnections.STANDALONE;
-    public static final MapCodec<EstateManagementDeskBlock> CODEC =
-            simpleCodec(EstateManagementDeskBlock::new);
     private static final VoxelShape SHAPE = Block.box(
             0.25,
             0,
@@ -152,11 +149,6 @@ public final class EstateManagementDeskBlock
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.TRY_WITH_EMPTY_HAND;
-    }
-
-    @Override
-    public MapCodec<EstateManagementDeskBlock> codec() {
-        return CODEC;
     }
 
     @Override

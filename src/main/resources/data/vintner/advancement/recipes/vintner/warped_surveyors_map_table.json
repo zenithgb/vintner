@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:warped_surveyors_map_table"
+        "recipes": "vintner:warped_surveyors_map_table"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

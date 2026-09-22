@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:birch_tasting_service"
+        "recipes": "vintner:birch_tasting_service"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

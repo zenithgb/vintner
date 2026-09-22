@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:jungle_labelled_cellar_shelf"
+        "recipes": "vintner:jungle_labelled_cellar_shelf"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

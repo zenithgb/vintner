@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:warped_wine_basket"
+        "recipes": "vintner:warped_wine_basket"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

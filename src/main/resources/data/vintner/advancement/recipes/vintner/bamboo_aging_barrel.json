@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:bamboo_aging_barrel"
+        "recipes": "vintner:bamboo_aging_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

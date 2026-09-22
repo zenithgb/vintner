@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:mangrove_barrel_stand"
+        "recipes": "vintner:mangrove_barrel_stand"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

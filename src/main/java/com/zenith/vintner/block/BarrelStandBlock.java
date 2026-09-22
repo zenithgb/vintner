@@ -1,6 +1,5 @@
 package com.zenith.vintner.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -15,8 +14,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 public final class BarrelStandBlock extends HorizontalDirectionalBlock {
-    public static final MapCodec<BarrelStandBlock> CODEC =
-            simpleCodec(BarrelStandBlock::new);
     private static final VoxelShape SHAPE =
             Block.box(0.5, 0, 0.5, 15.5, 16, 15.5);
 
@@ -25,11 +22,6 @@ public final class BarrelStandBlock extends HorizontalDirectionalBlock {
         registerDefaultState(
                 stateDefinition.any().setValue(FACING, Direction.NORTH)
         );
-    }
-
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
     }
 
     @Nullable

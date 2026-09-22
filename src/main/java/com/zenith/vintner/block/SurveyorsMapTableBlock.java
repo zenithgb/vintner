@@ -1,7 +1,6 @@
 package com.zenith.vintner.block;
 
 import com.zenith.vintner.util.VintnerNotifications;
-import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.SurveyorsMapTableBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -53,8 +52,6 @@ public final class SurveyorsMapTableBlock extends BaseEntityBlock
             EstateWorkstationConnections.RIGHT_CONNECTED;
     public static final BooleanProperty STANDALONE =
             EstateWorkstationConnections.STANDALONE;
-    public static final MapCodec<SurveyorsMapTableBlock> CODEC =
-            simpleCodec(SurveyorsMapTableBlock::new);
     private static final VoxelShape SHAPE = Block.box(
             0.5, 0, 0.5, 15.5, 14.5, 15.5
     );
@@ -154,11 +151,6 @@ public final class SurveyorsMapTableBlock extends BaseEntityBlock
                 )
         );
         return InteractionResult.SUCCESS;
-    }
-
-    @Override
-    public MapCodec<SurveyorsMapTableBlock> codec() {
-        return CODEC;
     }
 
     @Override

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:cask_conversion_kit"
+        "recipes": "vintner:cask_conversion_kit"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

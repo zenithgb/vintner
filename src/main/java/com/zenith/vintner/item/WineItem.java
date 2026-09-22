@@ -145,7 +145,7 @@ public final class WineItem extends Item {
         }
 
         if (!(level instanceof ServerLevel serverLevel)) {
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS.withoutItem();
         }
 
         serverLevel.setBlock(pos, state, Block.UPDATE_ALL);
@@ -186,7 +186,7 @@ public final class WineItem extends Item {
             context.getItemInHand().shrink(1);
         }
 
-        return InteractionResult.SUCCESS;
+        return InteractionResult.SUCCESS.withoutItem();
     }
 
     public WineEffectProfile effectProfile() {

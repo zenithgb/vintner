@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:crimson_wine_rack"
+        "recipes": "vintner:crimson_wine_rack"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

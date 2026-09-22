@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:jungle_aging_barrel"
+        "recipes": "vintner:jungle_aging_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

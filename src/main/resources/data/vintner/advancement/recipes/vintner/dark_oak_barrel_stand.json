@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:dark_oak_barrel_stand"
+        "recipes": "vintner:dark_oak_barrel_stand"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

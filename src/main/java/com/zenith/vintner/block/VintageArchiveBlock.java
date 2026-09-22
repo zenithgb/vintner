@@ -2,7 +2,6 @@ package com.zenith.vintner.block;
 
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.util.VintnerNotifications;
-import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.VintageArchiveBlockEntity;
 import com.zenith.vintner.estate.EstateProfile;
 import com.zenith.vintner.estate.EstateLedgerEvent;
@@ -54,8 +53,6 @@ import java.util.List;
 
 public final class VintageArchiveBlock extends BaseEntityBlock
         implements EstateWorkstationBlock {
-    public static final MapCodec<VintageArchiveBlock> CODEC =
-            simpleCodec(VintageArchiveBlock::new);
     public static final EnumProperty<Direction> FACING =
             EstateWorkstationConnections.FACING;
     public static final BooleanProperty LEFT_CONNECTED =
@@ -80,11 +77,6 @@ public final class VintageArchiveBlock extends BaseEntityBlock
                         .setValue(RIGHT_CONNECTED, false)
                         .setValue(STANDALONE, false)
         );
-    }
-
-    @Override
-    public MapCodec<VintageArchiveBlock> codec() {
-        return CODEC;
     }
 
     @Override

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:spruce_estate_management_desk"
+        "recipes": "vintner:spruce_estate_management_desk"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

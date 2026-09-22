@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:spruce_wine_basket"
+        "recipes": "vintner:spruce_wine_basket"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

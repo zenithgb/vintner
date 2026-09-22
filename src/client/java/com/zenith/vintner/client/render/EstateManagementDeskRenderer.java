@@ -83,15 +83,16 @@ public final class EstateManagementDeskRenderer implements
 
         poseStack.pushPose();
         poseStack.translate(0.5F, 0.754F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(
+        poseStack.rotateDegrees(
+                Axis.YP,
                 state.facing.toYRot() + 180.0F
-        ));
+        );
 
         // Match the multipart model convention (north = zero rotation) and
         // fill the framed left-hand document well. The ledger remains on the
         // other half of the blotter without sharing any surface area.
         poseStack.translate(-0.15625F, 0.004F, -0.109375F);
-        poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
+        poseStack.rotateDegrees(Axis.XP, 90.0F);
         poseStack.scale(MAP_SCALE, MAP_SCALE, MAP_SCALE);
         poseStack.translate(-64.0F, -64.0F, -1.0F);
         mapRenderer.render(

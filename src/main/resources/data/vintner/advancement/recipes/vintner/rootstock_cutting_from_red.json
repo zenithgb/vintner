@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:rootstock_cutting_from_red"
+        "recipes": "vintner:rootstock_cutting_from_red"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

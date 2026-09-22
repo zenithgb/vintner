@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:cherry_fermentation_barrel"
+        "recipes": "vintner:cherry_fermentation_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:dark_oak_estate_management_desk"
+        "recipes": "vintner:dark_oak_estate_management_desk"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

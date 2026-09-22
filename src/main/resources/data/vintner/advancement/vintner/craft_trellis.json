@@ -3,73 +3,73 @@
   "criteria": {
     "crafted_oak": {
       "conditions": {
-        "recipe_id": "vintner:oak_trellis"
+        "recipes": "vintner:oak_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_spruce": {
       "conditions": {
-        "recipe_id": "vintner:spruce_trellis"
+        "recipes": "vintner:spruce_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_birch": {
       "conditions": {
-        "recipe_id": "vintner:birch_trellis"
+        "recipes": "vintner:birch_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_jungle": {
       "conditions": {
-        "recipe_id": "vintner:jungle_trellis"
+        "recipes": "vintner:jungle_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_acacia": {
       "conditions": {
-        "recipe_id": "vintner:acacia_trellis"
+        "recipes": "vintner:acacia_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_dark_oak": {
       "conditions": {
-        "recipe_id": "vintner:dark_oak_trellis"
+        "recipes": "vintner:dark_oak_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_mangrove": {
       "conditions": {
-        "recipe_id": "vintner:mangrove_trellis"
+        "recipes": "vintner:mangrove_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_cherry": {
       "conditions": {
-        "recipe_id": "vintner:cherry_trellis"
+        "recipes": "vintner:cherry_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_pale_oak": {
       "conditions": {
-        "recipe_id": "vintner:pale_oak_trellis"
+        "recipes": "vintner:pale_oak_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_bamboo": {
       "conditions": {
-        "recipe_id": "vintner:bamboo_trellis"
+        "recipes": "vintner:bamboo_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_crimson": {
       "conditions": {
-        "recipe_id": "vintner:crimson_trellis"
+        "recipes": "vintner:crimson_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "crafted_warped": {
       "conditions": {
-        "recipe_id": "vintner:warped_trellis"
+        "recipes": "vintner:warped_trellis"
       },
       "trigger": "minecraft:recipe_crafted"
     }

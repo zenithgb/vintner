@@ -1,6 +1,5 @@
 package com.zenith.vintner.block;
 
-import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.TastingServiceBlockEntity;
 import com.zenith.vintner.item.VintnerAlmanacItem;
@@ -56,8 +55,6 @@ import java.util.UUID;
  * metadata; the four integrated tasting cups are a visual serving counter.
  */
 public final class TastingServiceBlock extends BaseEntityBlock {
-    public static final MapCodec<TastingServiceBlock> CODEC =
-            simpleCodec(TastingServiceBlock::new);
     public static final EnumProperty<Direction> FACING =
             BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty HAS_BOTTLE =
@@ -144,11 +141,6 @@ public final class TastingServiceBlock extends BaseEntityBlock {
                         .setValue(CUP_4, false)
                         .setValue(LINEN, DyeColor.RED)
         );
-    }
-
-    @Override
-    public MapCodec<TastingServiceBlock> codec() {
-        return CODEC;
     }
 
     @Override

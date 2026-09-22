@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:crimson_trellis"
+        "recipes": "vintner:crimson_trellis"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

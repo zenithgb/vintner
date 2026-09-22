@@ -3,25 +3,25 @@
   "criteria": {
     "mallet": {
       "conditions": {
-        "recipe_id": "vintner:coopers_mallet"
+        "recipes": "vintner:coopers_mallet"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "toasted": {
       "conditions": {
-        "recipe_id": "vintner:toasting_kit"
+        "recipes": "vintner:toasting_kit"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "seasoned": {
       "conditions": {
-        "recipe_id": "vintner:seasoning_kit"
+        "recipes": "vintner:seasoning_kit"
       },
       "trigger": "minecraft:recipe_crafted"
     },
     "cellar_cask": {
       "conditions": {
-        "recipe_id": "vintner:cask_conversion_kit"
+        "recipes": "vintner:cask_conversion_kit"
       },
       "trigger": "minecraft:recipe_crafted"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:acacia_trellis"
+        "recipes": "vintner:acacia_trellis"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

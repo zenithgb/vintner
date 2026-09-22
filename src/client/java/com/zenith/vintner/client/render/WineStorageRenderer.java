@@ -153,9 +153,10 @@ public final class WineStorageRenderer<T extends BlockEntity> implements
     ) {
         poseStack.pushPose();
         poseStack.translate(0.5F, 0.0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(
+        poseStack.rotateDegrees(
+                Axis.YP,
                 180.0F - state.facing.toYRot()
-        ));
+        );
 
         for (int slot = 0; slot < state.bottles.length; slot++) {
             ItemStackRenderState bottle = state.bottles[slot];
@@ -251,7 +252,7 @@ public final class WineStorageRenderer<T extends BlockEntity> implements
                     position.z / 16.0F - 0.5F
             );
             if (position.vertical) {
-                poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
+                poseStack.rotateDegrees(Axis.XP, 90.0F);
             }
             poseStack.scale(scale, scale, scale);
             bottle.submit(

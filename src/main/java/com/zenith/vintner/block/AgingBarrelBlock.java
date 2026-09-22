@@ -1,7 +1,6 @@
 package com.zenith.vintner.block;
 
 import com.zenith.vintner.util.VintnerNotifications;
-import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.advancement.ModAdvancements;
 import com.zenith.vintner.block.entity.AgingBarrelBlockEntity;
 import com.zenith.vintner.estate.EstateLedgerSavedData;
@@ -48,9 +47,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AgingBarrelBlock extends BaseEntityBlock {
-    public static final MapCodec<AgingBarrelBlock> CODEC =
-            simpleCodec(AgingBarrelBlock::new);
-
     public static final EnumProperty<Direction> FACING =
             BlockStateProperties.HORIZONTAL_FACING;
 
@@ -89,11 +85,6 @@ public class AgingBarrelBlock extends BaseEntityBlock {
 
     public AgingVessel vessel() {
         return vessel;
-    }
-
-    @Override
-    public MapCodec<AgingBarrelBlock> codec() {
-        return CODEC;
     }
 
     @Override

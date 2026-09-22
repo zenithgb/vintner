@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:bamboo_grape_press"
+        "recipes": "vintner:bamboo_grape_press"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

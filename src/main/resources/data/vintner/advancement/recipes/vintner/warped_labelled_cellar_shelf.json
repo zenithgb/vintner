@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "vintner:warped_labelled_cellar_shelf"
+        "recipes": "vintner:warped_labelled_cellar_shelf"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

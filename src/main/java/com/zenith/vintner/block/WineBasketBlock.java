@@ -1,6 +1,5 @@
 package com.zenith.vintner.block;
 
-import com.mojang.serialization.MapCodec;
 import com.zenith.vintner.block.entity.WineBasketBlockEntity;
 import com.zenith.vintner.item.VintnerAlmanacItem;
 import com.zenith.vintner.registry.ModItems;
@@ -34,8 +33,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class WineBasketBlock extends BaseEntityBlock {
-    public static final MapCodec<WineBasketBlock> CODEC =
-            simpleCodec(WineBasketBlock::new);
     public static final EnumProperty<Direction> FACING =
             BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty HAS_BOTTLE =
@@ -58,11 +55,6 @@ public final class WineBasketBlock extends BaseEntityBlock {
         registerDefaultState(stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(HAS_BOTTLE, false));
-    }
-
-    @Override
-    public MapCodec<WineBasketBlock> codec() {
-        return CODEC;
     }
 
     @Override
