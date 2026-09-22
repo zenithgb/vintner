@@ -183,8 +183,12 @@ def main() -> int:
     helper_paths = sorted(RECIPE_HELPERS.glob("*.json"))
     recipe_ids = {path.stem for path in recipe_paths}
     helper_ids = {path.stem for path in helper_paths}
-    if len(helper_paths) != 182:
-        fail(errors, f"recipe helper count is {len(helper_paths)}, expected 182")
+    if len(helper_paths) != len(recipe_paths):
+        fail(
+            errors,
+            "recipe helper count is "
+            f"{len(helper_paths)}, expected {len(recipe_paths)}",
+        )
     if helper_ids != recipe_ids:
         fail(errors, "recipe helper IDs do not exactly match recipe IDs")
     for path in helper_paths:
