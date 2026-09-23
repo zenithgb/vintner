@@ -135,11 +135,28 @@ Clean build, advancement (218 total: 22 visible plus 196 recipe unlocks),
 release-resource (2,025 JSON/196 recipes), Blockbench (907 models), Nursery,
 serving/contact and vineyard audits pass. Blockstate/model/PNG counts remain
 215/907/100, and two consecutive datagen runs report zero generated files and
-zero churn. The generated-village POI remains discoverable at the same world
-position after save and full server restart.
+zero churn.
 
-Exact candidate identity and exact-JAR runtime results are recorded in the
-evidence manifest after the committed-source gates complete. The human checklist is
+The exact committed candidate is `vintner-1.4.0.jar`, 1,581,352 bytes, with
+SHA-256
+`e24e6cf4170a942be48d38520d5e0463e0d342f07ee3819bfb4854abe3891cb6`.
+It supersedes the pre-rebuild candidate
+`84da0383a9a5bbb4dcbfd4e81bd37ad6a3dcc199a20812d8454663697fd9f6d1`.
+
+An exact-JAR Minecraft 26.3 dedicated server loaded Vintner 1.4.0, Fabric API
+0.161.0+26.3 and exact Commons 0.1.2, injected all fifteen Vintner pool
+entries, generated real Plains villages and placed the rebuilt Grape Press at
+`(584, 80, -25)`. The corresponding POI region contains
+`vintner:winemaker`; an eligible villager in that generated work area claimed
+the site and became `vintner:winemaker`. After a save, clean stop and full
+server restart, that villager still loaded as `vintner:winemaker`. The exact
+client loaded the same JAR, completed Vintner/Commons client initialization,
+rebuilt the block and item atlases, initialized audio, connected to the exact
+server and disconnected cleanly when the server stopped. No structure,
+registry, model or texture load error occurred.
+
+The exact candidate, logs, test XML and screenshots are frozen in the external
+evidence directory above. The human checklist is
 `docs/qa/village-vineyard-manual-acceptance-1.4.0.md` and remains pending.
 
 ## Intentionally deferred

@@ -24,9 +24,9 @@ screenshots do not self-approve subjective release quality.
 
 ## Acceptance notes
 
-- Candidate JAR:
-- Candidate SHA-256:
-- World/seed:
+- Candidate JAR: `vintner-1.4.0.jar` (1,581,352 bytes)
+- Candidate SHA-256: `e24e6cf4170a942be48d38520d5e0463e0d342f07ee3819bfb4854abe3891cb6`
+- World/seed: disposable exact-JAR world `Vintner-Village-Exact`; seed retained in the external runtime evidence
 - Resource packs/shaders:
-- Screenshots:
+- Screenshots: `/Users/zachariaheverson/Developer/Minecraft/vintner-release-evidence/1.4.0-village-vineyard-rebuild-20260923/screenshots/`
 - Zach's verdict:
