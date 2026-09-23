@@ -145,9 +145,25 @@ tasks.register("auditBlockbenchModels", Exec) {
 	commandLine "python3", "scripts/audit_blockbench_models.py"
 }
 
+tasks.register("auditVillageVineyards", Exec) {
+	group = "verification"
+	description = "Audits generated village vineyard templates, POIs, and rotation invariants."
+	workingDir projectDir
+	commandLine "python3", "scripts/audit_village_vineyards.py"
+}
+
+tasks.register("checkVillageVineyardGeneration", Exec) {
+	group = "verification"
+	description = "Requires committed village vineyard NBT to match its authoritative generator."
+	workingDir projectDir
+	commandLine "python3", "scripts/generate_village_vineyards.py", "--check"
+}
+
 tasks.named("auditReleaseAssets") {
 	dependsOn tasks.named("auditNurseryBedModels")
 	dependsOn tasks.named("auditBlockbenchModels")
+	dependsOn tasks.named("auditVillageVineyards")
+	dependsOn tasks.named("checkVillageVineyardGeneration")
 }
 
 tasks.register("prepareReleaseServer") {

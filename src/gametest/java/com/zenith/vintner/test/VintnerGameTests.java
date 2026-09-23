@@ -164,13 +164,16 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CrossCollisionBlock;
+import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -1290,7 +1293,7 @@ public final class VintnerGameTests {
                             structureManager,
                             Rotation.NONE
                     ),
-                    new net.minecraft.core.Vec3i(11, 5, 9),
+                    new net.minecraft.core.Vec3i(15, 10, 13),
                     "Vineyard pool element size"
             );
             helper.assertValueEqual(
@@ -1309,7 +1312,7 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void villageVineyardsContainCompleteTrellisedRows(
+    public void villageVineyardsAreFinishedWinemakerWorkplaces(
             GameTestHelper helper
     ) {
         helper.assertValueEqual(
@@ -1335,17 +1338,17 @@ public final class VintnerGameTests {
             );
             helper.assertValueEqual(
                     template.getSize().getX(),
-                    11,
+                    15,
                     "Vineyard width"
             );
             helper.assertValueEqual(
                     template.getSize().getY(),
-                    5,
+                    10,
                     "Vineyard height"
             );
             helper.assertValueEqual(
                     template.getSize().getZ(),
-                    9,
+                    13,
                     "Vineyard depth"
             );
             helper.assertValueEqual(
@@ -1354,49 +1357,8 @@ public final class VintnerGameTests {
                             settings,
                             ModBlocks.VINEYARD_SOIL
                     ).size(),
-                    16,
+                    10,
                     "Vineyard soil plots"
-            );
-            int foundationBlocks = template.filterBlocks(
-                    BlockPos.ZERO,
-                    settings,
-                    Blocks.DIRT
-            ).size() + template.filterBlocks(
-                    BlockPos.ZERO,
-                    settings,
-                    Blocks.SANDSTONE
-            ).size();
-            int retainingBorder = template.filterBlocks(
-                    BlockPos.ZERO,
-                    settings,
-                    Blocks.STRIPPED_OAK_LOG
-            ).size() + template.filterBlocks(
-                    BlockPos.ZERO,
-                    settings,
-                    Blocks.STRIPPED_ACACIA_LOG
-            ).size() + template.filterBlocks(
-                    BlockPos.ZERO,
-                    settings,
-                    Blocks.STRIPPED_SPRUCE_LOG
-            ).size();
-            helper.assertValueEqual(
-                    retainingBorder,
-                    35,
-                    "Culture-matched buried retaining border"
-            );
-            helper.assertValueEqual(
-                    foundationBlocks + retainingBorder,
-                    99,
-                    "Vineyard must contain a complete buried foundation"
-            );
-            helper.assertValueEqual(
-                    template.filterBlocks(
-                            BlockPos.ZERO,
-                            settings,
-                            Blocks.AIR
-                    ).size(),
-                    264,
-                    "Vineyard must clear vegetation from the full plot"
             );
 
             int grapevineBlocks = 0;
@@ -1417,7 +1379,7 @@ public final class VintnerGameTests {
 
             helper.assertValueEqual(
                     grapevineBlocks,
-                    32,
+                    20,
                     "Two complete two-block-tall grapevine rows"
             );
             helper.assertValueEqual(
@@ -1445,12 +1407,322 @@ public final class VintnerGameTests {
                             settings,
                             Blocks.COMPOSTER
                     ).size(),
+                    0,
+                    "Vineyard must not introduce a Farmer workstation"
+            );
+
+            int grapePresses = 0;
+            for (Block press : ModBlocks.grapePressBlocks()) {
+                grapePresses += template.filterBlocks(
+                        BlockPos.ZERO,
+                        settings,
+                        press
+                ).size();
+            }
+            helper.assertValueEqual(
+                    grapePresses,
                     1,
-                    "Vineyard composter"
+                    "Exactly one valid Winemaker workstation"
+            );
+
+            int wineRacks = 0;
+            for (Block rack : ModBlocks.WINE_RACKS.values()) {
+                wineRacks += template.filterBlocks(
+                        BlockPos.ZERO,
+                        settings,
+                        rack
+                ).size();
+            }
+            helper.assertValueEqual(
+                    wineRacks,
+                    1,
+                    "One culture-matched wine rack"
+            );
+
+            int doors = template.filterBlocks(
+                    BlockPos.ZERO,
+                    settings,
+                    Blocks.OAK_DOOR
+            ).size() + template.filterBlocks(
+                    BlockPos.ZERO,
+                    settings,
+                    Blocks.ACACIA_DOOR
+            ).size() + template.filterBlocks(
+                    BlockPos.ZERO,
+                    settings,
+                    Blocks.SPRUCE_DOOR
+            ).size();
+            helper.assertValueEqual(
+                    doors,
+                    2,
+                    "Finished two-block cottage entrance"
+            );
+            helper.assertValueEqual(
+                    template.filterBlocks(
+                            BlockPos.ZERO,
+                            settings,
+                            Blocks.GLASS
+                    ).size(),
+                    7,
+                    "Finished cottage windows"
             );
         }
 
         helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void villageVineyardPlacesCorrectlyInEveryRotation(
+            GameTestHelper helper
+    ) {
+        StructureTemplate template = helper.getLevel()
+                .getServer()
+                .getStructureTemplateManager()
+                .get(Identifier.fromNamespaceAndPath(
+                        "vintner",
+                        "village/plains/vineyard"
+                ))
+                .orElseThrow();
+        BlockPos relativeOrigin = new BlockPos(1, 3, 1);
+        BlockPos origin = helper.absolutePos(relativeOrigin);
+        BlockPos authoredPress = new BlockPos(11, 3, 6);
+        BlockPos authoredRack = new BlockPos(12, 3, 4);
+        BlockPos authoredDoor = new BlockPos(8, 3, 6);
+
+        for (Rotation rotation : Rotation.values()) {
+            StructurePlaceSettings settings = new StructurePlaceSettings()
+                    .setRotation(rotation)
+                    .setRotationPivot(BlockPos.ZERO)
+                    .setIgnoreEntities(true);
+            helper.assertTrue(
+                    template.placeInWorld(
+                            helper.getLevel(),
+                            origin,
+                            origin,
+                            settings,
+                            RandomSource.create(1400L + rotation.ordinal()),
+                            Block.UPDATE_ALL
+                    ),
+                    "Vineyard template must place at " + rotation
+            );
+
+            BlockPos press = origin.offset(StructureTemplate.transform(
+                    authoredPress,
+                    Mirror.NONE,
+                    rotation,
+                    BlockPos.ZERO
+            ));
+            BlockState pressState = helper.getLevel().getBlockState(press);
+            helper.assertTrue(
+                    pressState.is(ModBlocks.GRAPE_PRESS),
+                    "Rotated vineyard must retain its oak grape press at "
+                            + rotation
+            );
+            helper.assertValueEqual(
+                    pressState.getValue(BlockStateProperties.HORIZONTAL_FACING),
+                    rotation.rotate(Direction.WEST),
+                    "Rotated grape-press facing"
+            );
+
+            BlockPos rack = origin.offset(StructureTemplate.transform(
+                    authoredRack,
+                    Mirror.NONE,
+                    rotation,
+                    BlockPos.ZERO
+            ));
+            BlockState rackState = helper.getLevel().getBlockState(rack);
+            helper.assertTrue(
+                    rackState.is(ModBlocks.WINE_RACK),
+                    "Rotated vineyard must retain its oak wine rack at "
+                            + rotation
+            );
+            helper.assertValueEqual(
+                    rackState.getValue(BlockStateProperties.HORIZONTAL_FACING),
+                    rotation.rotate(Direction.WEST),
+                    "Rotated wine-rack facing"
+            );
+
+            BlockPos door = origin.offset(StructureTemplate.transform(
+                    authoredDoor,
+                    Mirror.NONE,
+                    rotation,
+                    BlockPos.ZERO
+            ));
+            BlockState doorState = helper.getLevel().getBlockState(door);
+            helper.assertTrue(
+                    doorState.is(Blocks.OAK_DOOR),
+                    "Rotated vineyard must retain its entrance at " + rotation
+            );
+            helper.assertValueEqual(
+                    doorState.getValue(BlockStateProperties.HORIZONTAL_FACING),
+                    rotation.rotate(Direction.WEST),
+                    "Rotated entrance facing"
+            );
+        }
+
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void villageVineyardFoundationHandlesOrdinaryTerrain(
+            GameTestHelper helper
+    ) {
+        StructureTemplate template = helper.getLevel()
+                .getServer()
+                .getStructureTemplateManager()
+                .get(Identifier.fromNamespaceAndPath(
+                        "vintner",
+                        "village/plains/vineyard"
+                ))
+                .orElseThrow();
+        BlockPos relativeOrigin = new BlockPos(1, 3, 1);
+        BlockPos origin = helper.absolutePos(relativeOrigin);
+
+        // Model a normal village-grade contour: flat at the path connector,
+        // dropping one block across the middle and two at the far corners.
+        for (int x = 0; x < 15; x++) {
+            for (int z = 0; z < 13; z++) {
+                int drop = x < 5 ? 0 : (x < 10 ? 1 : 2);
+                int terrainTop = relativeOrigin.getY() + 2 - drop;
+                for (int y = 1; y <= terrainTop; y++) {
+                    helper.setBlock(
+                            new BlockPos(
+                                    relativeOrigin.getX() + x,
+                                    y,
+                                    relativeOrigin.getZ() + z
+                            ),
+                            Blocks.DIRT
+                    );
+                }
+            }
+        }
+
+        helper.assertTrue(
+                template.placeInWorld(
+                        helper.getLevel(),
+                        origin,
+                        origin,
+                        new StructurePlaceSettings().setIgnoreEntities(true),
+                        RandomSource.create(1400L),
+                        Block.UPDATE_ALL
+                ),
+                "Vineyard template must place on village-grade terrain"
+        );
+
+        for (int x = 0; x < 15; x++) {
+            for (int z = 0; z < 13; z++) {
+                BlockPos bottomFoundation = origin.offset(x, 0, z);
+                helper.assertTrue(
+                        !helper.getLevel().getBlockState(bottomFoundation).isAir(),
+                        "Complete lower foundation at " + x + "," + z
+                );
+                helper.assertTrue(
+                        !helper.getLevel().getBlockState(
+                                bottomFoundation.below()
+                        ).isAir(),
+                        "Foundation must meet terrain at " + x + "," + z
+                );
+            }
+        }
+
+        helper.assertTrue(
+                helper.getLevel().getBlockState(origin.offset(11, 3, 6))
+                        .is(ModBlocks.GRAPE_PRESS),
+                "Terrain placement must preserve the Winemaker workstation"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 400)
+    public void generatedVillageVineyardCreatesReachableWinemakerPoi(
+            GameTestHelper helper
+    ) {
+        StructureTemplate template = helper.getLevel()
+                .getServer()
+                .getStructureTemplateManager()
+                .get(Identifier.fromNamespaceAndPath(
+                        "vintner",
+                        "village/plains/vineyard"
+                ))
+                .orElseThrow();
+        BlockPos relativeOrigin = new BlockPos(1, 3, 1);
+        BlockPos origin = helper.absolutePos(relativeOrigin);
+
+        for (int x = 0; x < 15; x++) {
+            for (int z = 0; z < 13; z++) {
+                helper.setBlock(
+                        relativeOrigin.offset(x, -1, z),
+                        Blocks.DIRT
+                );
+            }
+        }
+        helper.assertTrue(
+                template.placeInWorld(
+                        helper.getLevel(),
+                        origin,
+                        origin,
+                        new StructurePlaceSettings().setIgnoreEntities(true),
+                        RandomSource.create(1400L),
+                        Block.UPDATE_ALL
+                ),
+                "Generated vineyard must place before profession testing"
+        );
+
+        BlockPos relativePress = relativeOrigin.offset(11, 3, 6);
+        BlockPos press = helper.absolutePos(relativePress);
+        helper.assertTrue(
+                ModVillagers.WINEMAKER_POI.is(
+                        helper.getLevel().getBlockState(press)
+                ),
+                "Authored grape press must be a Winemaker POI state"
+        );
+        helper.assertTrue(
+                helper.getLevel().getPoiManager().getType(press)
+                        .map(holder -> holder.is(
+                                ModVillagers.WINEMAKER_POI_KEY
+                        ))
+                        .orElse(false),
+                "Placed structure must register the Winemaker POI"
+        );
+
+        helper.getLevel()
+                .dimensionType()
+                .defaultClock()
+                .ifPresent(clock -> helper.getLevel()
+                        .clockManager()
+                        .setTotalTicks(clock, 2000L));
+        Villager winemaker = helper.spawn(
+                EntityTypes.VILLAGER,
+                relativeOrigin.offset(6, 3, 6)
+        );
+
+        helper.succeedWhen(() -> {
+            helper.assertTrue(
+                    winemaker.getVillagerData()
+                            .profession()
+                            .is(ModVillagers.WINEMAKER),
+                    "Villager must enter the cottage and claim its grape press; "
+                            + winemakerAcquisitionState(
+                                    helper,
+                                    winemaker,
+                                    relativePress
+                            )
+            );
+            helper.assertTrue(
+                    winemaker.getBrain()
+                            .getMemory(MemoryModuleType.JOB_SITE)
+                            .isPresent(),
+                    "Claimed Winemaker must retain a job-site memory"
+            );
+            helper.assertTrue(
+                    helper.getLevel().getPoiManager().getType(press)
+                            .map(holder -> holder.is(
+                                    ModVillagers.WINEMAKER_POI_KEY
+                            ))
+                            .orElse(false),
+                    "Winemaker POI must remain registered after claiming"
+            );
+        });
     }
 
     @GameTest(maxTicks = 300)
