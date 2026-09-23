@@ -1,7 +1,7 @@
 # Vintner 1.4.0 Village Vineyard Manual Acceptance
 
 Candidate-specific automated evidence is recorded in
-`docs/VILLAGE_VINEYARD_REBUILD_1_4_0.md`. The checks below are deliberately
+`docs/VILLAGE_TIER1_PLAYER_IMPORT_1_4_0.md`. The checks below are deliberately
 left for Zach's direct visual and gameplay acceptance. Automated tests and
 screenshots do not self-approve subjective release quality.
 
@@ -21,12 +21,15 @@ screenshots do not self-approve subjective release quality.
 - [ ] All supported rotations look correct.
 - [ ] Structure looks good without shaders.
 - [ ] Structure looks good with showcase shaders if available.
+- [ ] The integrated Plains build matches Zach's authored Tier-1 winery.
+- [ ] Vineyard, entrance, interior and work area have no import omissions.
+- [ ] The one technical street connector does not create a visible seam.
 
 ## Acceptance notes
 
-- Candidate JAR: `vintner-1.4.0.jar` (1,581,352 bytes)
-- Candidate SHA-256: `e24e6cf4170a942be48d38520d5e0463e0d342f07ee3819bfb4854abe3891cb6`
-- World/seed: disposable exact-JAR world `Vintner-Village-Exact`; seed retained in the external runtime evidence
+- Candidate JAR: `vintner-1.4.0.jar` (1,584,707 bytes)
+- Candidate SHA-256: `ae08e6050ee07a78029e6d38c36b7d6efb75d23f2b619e87b005eb1e54fb68a3`
+- World/seed: disposable exact-JAR world `Vintner-Player-Tier1-Exact`; seed `1400`
 - Resource packs/shaders:
-- Screenshots: `/Users/zachariaheverson/Developer/Minecraft/vintner-release-evidence/1.4.0-village-vineyard-rebuild-20260923/screenshots/`
+- Screenshots: `/Users/zachariaheverson/Developer/Minecraft/vintner-release-evidence/1.4.0-player-tier1-winery-20260923/screenshots/`
 - Zach's verdict:
