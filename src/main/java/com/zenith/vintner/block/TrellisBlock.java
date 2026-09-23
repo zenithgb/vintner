@@ -16,6 +16,8 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -207,6 +209,40 @@ public class TrellisBlock extends HorizontalDirectionalBlock {
                 context.getLevel(),
                 placementPos
         );
+    }
+
+    @Override
+    protected BlockState rotate(BlockState state, Rotation rotation) {
+        BlockState rotated = state.setValue(
+                FACING,
+                rotation.rotate(state.getValue(FACING))
+        );
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            rotated = rotated.setValue(
+                    propertyFor(rotation.rotate(direction)),
+                    state.getValue(propertyFor(direction))
+            );
+        }
+        return rotated;
+    }
+
+    @Override
+    protected BlockState mirror(BlockState state, Mirror mirror) {
+        BlockState mirrored = state.setValue(
+                FACING,
+                mirror.getRotation(state.getValue(FACING))
+                        .rotate(state.getValue(FACING))
+        );
+        if (mirror == Mirror.LEFT_RIGHT) {
+            mirrored = mirrored
+                    .setValue(NORTH, state.getValue(SOUTH))
+                    .setValue(SOUTH, state.getValue(NORTH));
+        } else if (mirror == Mirror.FRONT_BACK) {
+            mirrored = mirrored
+                    .setValue(EAST, state.getValue(WEST))
+                    .setValue(WEST, state.getValue(EAST));
+        }
+        return mirrored;
     }
 
     @Override

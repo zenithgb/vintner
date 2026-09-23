@@ -1,12 +1,28 @@
 #!/usr/bin/env python3
-"""Generate Vintner's culture-matched village vineyard structures."""
+"""Generate Vintner's village vineyard runtime structures."""
 
 from __future__ import annotations
 
 import argparse
 import gzip
-import struct
+import hashlib
 from pathlib import Path
+
+from structure_nbt import (
+    TAG_COMPOUND,
+    TAG_END,
+    TAG_INT,
+    TAG_STRING,
+    decode_root,
+    encode_gzip,
+    encode_root,
+    require_list,
+    require_tag,
+    tag_compound,
+    tag_int,
+    tag_list,
+    tag_string,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,6 +31,14 @@ STRUCTURE_ROOT = (
 )
 DATA_VERSION = 4903
 SIZE = (15, 10, 13)
+CANONICAL_PLAINS_SOURCE = (
+    ROOT
+    / "structure_sources/village/plains/vineyard_tier1.nbt"
+)
+CANONICAL_PLAINS_SHA256 = (
+    "7914e27f3bce456181324a23c459c8159ce26c1b8d227d588f99b3b8986e8c94"
+)
+PLAINS_JIGSAW_POSITION = (9, 1, 0)
 
 CULTURES = {
     "plains": "oak",
@@ -55,79 +79,6 @@ WALLS = {
     "snowy": "minecraft:spruce_planks",
     "taiga": "minecraft:spruce_planks",
 }
-
-TAG_END = 0
-TAG_BYTE = 1
-TAG_INT = 3
-TAG_STRING = 8
-TAG_LIST = 9
-TAG_COMPOUND = 10
-
-
-def tag_byte(value: int) -> tuple[int, int]:
-    return TAG_BYTE, value
-
-
-def tag_int(value: int) -> tuple[int, int]:
-    return TAG_INT, value
-
-
-def tag_string(value: str) -> tuple[int, str]:
-    return TAG_STRING, value
-
-
-def tag_list(
-    element_type: int,
-    values: list[object],
-) -> tuple[int, tuple[int, list[object]]]:
-    return TAG_LIST, (element_type, values)
-
-
-def tag_compound(
-    value: dict[str, tuple[int, object]],
-) -> tuple[int, dict[str, tuple[int, object]]]:
-    return TAG_COMPOUND, value
-
-
-def encode_string(value: str) -> bytes:
-    encoded = value.encode("utf-8")
-    return struct.pack(">H", len(encoded)) + encoded
-
-
-def encode_payload(tag_type: int, value: object) -> bytes:
-    if tag_type == TAG_BYTE:
-        return struct.pack(">b", int(value))
-    if tag_type == TAG_INT:
-        return struct.pack(">i", int(value))
-    if tag_type == TAG_STRING:
-        return encode_string(str(value))
-    if tag_type == TAG_LIST:
-        element_type, values = value
-        return (
-            struct.pack(">bi", element_type, len(values))
-            + b"".join(
-                encode_payload(element_type, element)
-                for element in values
-            )
-        )
-    if tag_type == TAG_COMPOUND:
-        encoded = bytearray()
-        for name, (child_type, child_value) in value.items():
-            encoded.extend(struct.pack(">b", child_type))
-            encoded.extend(encode_string(name))
-            encoded.extend(encode_payload(child_type, child_value))
-        encoded.extend(struct.pack(">b", TAG_END))
-        return bytes(encoded)
-    raise ValueError(f"Unsupported NBT tag type: {tag_type}")
-
-
-def encode_root(value: dict[str, tuple[int, object]]) -> bytes:
-    return (
-        struct.pack(">b", TAG_COMPOUND)
-        + encode_string("")
-        + encode_payload(TAG_COMPOUND, value)
-    )
-
 
 def palette_entry(
     name: str,
@@ -184,6 +135,83 @@ def vine_properties(
         "has_above": str(not upper).lower(),
         "has_below": str(upper).lower(),
     }
+
+
+def create_canonical_plains_structure() -> bytes:
+    """Add only the street connector to Zach's player-authored build."""
+    source_bytes = CANONICAL_PLAINS_SOURCE.read_bytes()
+    source_sha256 = hashlib.sha256(source_bytes).hexdigest()
+    if source_sha256 != CANONICAL_PLAINS_SHA256:
+        raise ValueError(
+            "canonical Plains Tier-1 winery changed unexpectedly: "
+            f"{source_sha256}"
+        )
+
+    source_payload = gzip.decompress(source_bytes)
+    root = decode_root(source_payload)
+    if encode_root(root) != source_payload:
+        raise ValueError(
+            "canonical Plains Tier-1 winery is not lossless through the "
+            "maintained NBT codec"
+        )
+
+    size = require_list(root, "size", TAG_INT)
+    if size != [17, 11, 11]:
+        raise ValueError(f"canonical Plains size changed: {size}")
+
+    palette = require_list(root, "palette", TAG_COMPOUND)
+    blocks = require_list(root, "blocks", TAG_COMPOUND)
+    if len(blocks) != 17 * 11 * 11:
+        raise ValueError(
+            "canonical Plains structure must author its complete volume"
+        )
+
+    state_names: list[str] = []
+    for entry in palette:
+        if not isinstance(entry, dict):
+            raise ValueError("canonical Plains palette entry is malformed")
+        state_names.append(str(require_tag(entry, "id", TAG_STRING)))
+    if "minecraft:jigsaw" in state_names:
+        raise ValueError("canonical player source must not contain a jigsaw")
+
+    connector_block = None
+    for block in blocks:
+        if not isinstance(block, dict):
+            raise ValueError("canonical Plains block entry is malformed")
+        position = tuple(require_list(block, "pos", TAG_INT))
+        if position == PLAINS_JIGSAW_POSITION:
+            connector_block = block
+            break
+    if connector_block is None:
+        raise ValueError("canonical Plains road connector position is absent")
+
+    connector_state = int(require_tag(connector_block, "state", TAG_INT))
+    if state_names[connector_state] != "minecraft:dirt_path":
+        raise ValueError(
+            "canonical Plains connector must replace the center dirt path"
+        )
+
+    jigsaw_state = len(palette)
+    palette.append(
+        {
+            "id": tag_string("minecraft:jigsaw"),
+            "properties": tag_compound(
+                {"orientation": tag_string("north_up")}
+            ),
+        }
+    )
+    connector_block["state"] = tag_int(jigsaw_state)
+    connector_block["nbt"] = tag_compound(
+        {
+            "joint": tag_string("aligned"),
+            "final_state": tag_string("minecraft:dirt_path"),
+            "name": tag_string("minecraft:building_entrance"),
+            "pool": tag_string("minecraft:village/plains/streets"),
+            "id": tag_string("minecraft:jigsaw"),
+            "target": tag_string("minecraft:building_entrance"),
+        }
+    )
+    return encode_gzip(root)
 
 
 def create_structure(culture: str, wood: str) -> bytes:
@@ -477,7 +505,7 @@ def create_structure(culture: str, wood: str) -> bytes:
         "palette": tag_list(TAG_COMPOUND, palette),
         "DataVersion": tag_int(DATA_VERSION),
     }
-    return gzip.compress(encode_root(root), mtime=0)
+    return encode_gzip(root)
 
 
 def main() -> None:
@@ -491,7 +519,11 @@ def main() -> None:
 
     for culture, wood in CULTURES.items():
         output = STRUCTURE_ROOT / culture / "vineyard.nbt"
-        generated = create_structure(culture, wood)
+        generated = (
+            create_canonical_plains_structure()
+            if culture == "plains"
+            else create_structure(culture, wood)
+        )
         relative = output.relative_to(ROOT)
 
         if args.check:
