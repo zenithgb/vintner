@@ -24,6 +24,18 @@ The one-vineyard guard is a field on each jigsaw `Placer`. It begins false for
 each village and becomes true only after a vineyard piece is actually added.
 There is no static, cross-village or stale-reload suppression.
 
+## Showcase secondary control
+
+The Showcase profile was inspected read-only. It contains one Vintner JAR with
+SHA-256 `84da0383a9a5bbb4dcbfd4e81bd37ad6a3dcc199a20812d8454663697fd9f6d1`,
+the older Blockbench-audited build, rather than any player-winery candidate.
+There is no world datapack overriding village pools and no duplicate Vintner
+JAR. The profile also contains WorldEdit, Serene Seasons and visual/client mods,
+but no second village/worldgen mod was identified. Existing Showcase chunks
+remain non-retroactive. This stale profile is a secondary environment issue;
+it does not explain the independently reproduced collision defect in clean
+exact-JAR fresh worlds.
+
 ## Controlled results
 
 | Candidate | Exact vineyard hits | Rate |
