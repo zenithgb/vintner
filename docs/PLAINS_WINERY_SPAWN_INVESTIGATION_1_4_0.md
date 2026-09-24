@@ -68,10 +68,22 @@ remains enforced. The correction does not guarantee a winery where no
 collision-free house connection exists, and it affects only newly generated
 villages or unexplored chunks.
 
-## Acceptance boundary
+## Acceptance result
 
-Structure-start scanning provides the natural-generation result. The
-structure audit separately proves one Grape Press, zero Composters and valid
-connector/resource data; GameTests prove the generated Press remains a
-reachable `vintner:winemaker` POI. Exact candidate identity, full regression
-results and runtime logs are recorded only after committed-source validation.
+Structure-start scanning provides the natural-generation result. The structure
+audit separately proves one Grape Press, zero Composters and valid connector
+data. Standard and Serene Seasons GameTests pass 197/197; deterministic
+generation, clean build, release-resource, advancement, model-family, Nursery
+and serving/contact audits pass.
+
+The exact candidate survived `/reload` with zero duplicate additions and
+generated a further fresh Plains village afterward. In one of the four natural
+winery hits, the Grape Press at `(16913, 74, 21)` registered the
+`vintner:winemaker` POI. An unemployed Plains villager reached it, became
+`vintner:winemaker`, retained job-site memory and preserved both after a full
+server restart.
+
+The final candidate is `vintner-1.4.0.jar`, 1,585,112 bytes, SHA-256
+`9149278b342a60f702f1069f11bdf37132069daf3a7b91ca4484cf45fb475ba6`.
+The exact player-built source remains unchanged, no other village culture was
+rebalanced, and nothing was pushed, tagged, uploaded or published.

@@ -157,12 +157,14 @@ authoritative height gate.
 
 ## Release candidate and deferred work
 
-The superseded first-fit/full-width diagnostic candidate was
-`b9a063e482e246c943857284cfc3e673244a3d17c6871cf6d9d289bc611f25cf`.
-The final replacement identity is recorded only after exact committed-source
-validation. The lower-placement full-width candidate
-`cc7bdeb02b78af5aee5ba6cd291efe830debde285fd460ff3369f5cc5478d52c`
-also remains preserved in the evidence directory.
+The final structure-inclusive candidate is `vintner-1.4.0.jar`, 1,585,112
+bytes, SHA-256
+`9149278b342a60f702f1069f11bdf37132069daf3a7b91ca4484cf45fb475ba6`.
+It supersedes the first-fit/full-width diagnostic candidate
+`b9a063e482e246c943857284cfc3e673244a3d17c6871cf6d9d289bc611f25cf`
+and lower-placement full-width candidate
+`cc7bdeb02b78af5aee5ba6cd291efe830debde285fd460ff3369f5cc5478d52c`;
+both remain preserved in evidence.
 
 Deferred work is limited to distinct player-designed Desert, Savanna, Snowy
 and Taiga winery variants and Zach's subjective shader/no-shader visual

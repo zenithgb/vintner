@@ -158,10 +158,10 @@ serving/contact and vineyard audits pass. Blockstate/model/PNG counts remain
 215/907/100, and two consecutive datagen runs report zero generated files and
 zero churn.
 
-The superseded first-fit/full-width diagnostic candidate has SHA-256
+The final exact candidate is `vintner-1.4.0.jar`, 1,585,112 bytes, SHA-256
+`9149278b342a60f702f1069f11bdf37132069daf3a7b91ca4484cf45fb475ba6`.
+It supersedes the first-fit/full-width diagnostic candidate
 `b9a063e482e246c943857284cfc3e673244a3d17c6871cf6d9d289bc611f25cf`.
-The final replacement identity is recorded after exact committed-source
-validation.
 
 An exact-JAR Minecraft 26.3 dedicated server loaded Vintner 1.4.0, Fabric API
 0.161.0+26.3 and exact Commons 0.1.2, injected all fifteen Vintner pool
