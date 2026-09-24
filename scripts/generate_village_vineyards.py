@@ -139,7 +139,7 @@ def vine_properties(
 
 
 def create_canonical_plains_structure() -> bytes:
-    """Add the street connector that lowers Zach's build by one block."""
+    """Prepare Zach's build for reliable lowered village placement."""
     source_bytes = CANONICAL_PLAINS_SOURCE.read_bytes()
     source_sha256 = hashlib.sha256(source_bytes).hexdigest()
     if source_sha256 != CANONICAL_PLAINS_SHA256:
@@ -199,6 +199,21 @@ def create_canonical_plains_structure() -> bytes:
     if state_names[connector_state] != "minecraft:air":
         raise ValueError("lowered Plains connector must replace authored air")
     air_state = state_names.index("minecraft:air")
+
+    # The player's x=0 edge is only an exported terrain/air margin. Keeping
+    # it in the runtime box makes the otherwise vanilla-sized winery collide
+    # with village road pieces before it can be placed. Trim that non-built
+    # margin while keeping the authored source byte-exact and every structural
+    # or decorative block unchanged.
+    runtime_blocks = []
+    for block in blocks:
+        position = require_list(block, "pos", TAG_INT)
+        if position[0] == 0:
+            continue
+        position[0] -= 1
+        runtime_blocks.append(block)
+    blocks[:] = runtime_blocks
+    size[0] = 16
 
     jigsaw_state = len(palette)
     palette.append(

@@ -1247,6 +1247,9 @@ public final class VintnerGameTests {
                     .getValueOrThrow(poolKey);
             List<Pair<StructurePoolElement, Integer>> houses =
                     pool.getTemplates();
+            boolean canonicalPlains = poolKey.identifier()
+                    .toString()
+                    .equals("minecraft:village/plains/houses");
 
             helper.assertTrue(
                     ModVillageStructures.isInjected(
@@ -1272,7 +1275,7 @@ public final class VintnerGameTests {
             );
             helper.assertValueEqual(
                     houses.get(houses.size() - 1).getSecond(),
-                    1,
+                    canonicalPlains ? 1 : 24,
                     "Vineyard farm weight"
             );
 
@@ -1291,20 +1294,41 @@ public final class VintnerGameTests {
                             candidates,
                             false
                     );
-            helper.assertTrue(
-                    !beforePlacement.isEmpty()
-                            && ModVillageStructures.isVineyardElement(
-                            beforePlacement.getFirst()
-                    ),
-                    "Vineyard must be the first eligible house candidate"
-            );
-            helper.assertValueEqual(
-                    beforePlacement.stream()
-                            .filter(ModVillageStructures::isVineyardElement)
-                            .count(),
-                    1L,
-                    "Only one vineyard candidate may be attempted per slot"
-            );
+            if (canonicalPlains) {
+                helper.assertTrue(
+                        !beforePlacement.isEmpty()
+                                && ModVillageStructures
+                                .isPrioritizedPlainsVineyardElement(
+                                        beforePlacement.getFirst()
+                                ),
+                        "Plains winery must be the first eligible candidate"
+                );
+                helper.assertValueEqual(
+                        beforePlacement.stream()
+                                .filter(
+                                        ModVillageStructures
+                                                ::isVineyardElement
+                                )
+                                .count(),
+                        1L,
+                        "Only one Plains winery may be attempted per slot"
+                );
+            } else {
+                helper.assertTrue(
+                        beforePlacement.equals(candidates),
+                        "Non-Plains house candidate ordering must remain unchanged"
+                );
+                helper.assertValueEqual(
+                        beforePlacement.stream()
+                                .filter(
+                                        ModVillageStructures
+                                                ::isVineyardElement
+                                )
+                                .count(),
+                        24L,
+                        "Other culture vineyards retain accepted weighting"
+                );
+            }
             helper.assertTrue(
                     ModVillageStructures.orderVineyardCandidates(
                                     candidates,
@@ -1319,17 +1343,13 @@ public final class VintnerGameTests {
             var structureManager = helper.getLevel()
                     .getServer()
                     .getStructureTemplateManager();
-            boolean canonicalPlains = poolKey.identifier()
-                    .toString()
-                    .equals("minecraft:village/plains/houses");
-
             helper.assertValueEqual(
                     vineyard.getSize(
                             structureManager,
                             Rotation.NONE
                     ),
                     canonicalPlains
-                            ? new net.minecraft.core.Vec3i(17, 11, 11)
+                            ? new net.minecraft.core.Vec3i(16, 11, 11)
                             : new net.minecraft.core.Vec3i(15, 10, 13),
                     "Vineyard pool element size"
             );
@@ -1347,7 +1367,7 @@ public final class VintnerGameTests {
             if (canonicalPlains) {
                 helper.assertValueEqual(
                         pathConnectors.getFirst().pos(),
-                        new BlockPos(9, 2, 0),
+                        new BlockPos(8, 2, 0),
                         "Raised Plains connector must lower the winery by one block"
                 );
             }
@@ -1385,7 +1405,7 @@ public final class VintnerGameTests {
                     .equals("vintner:village/plains/vineyard");
             helper.assertValueEqual(
                     template.getSize().getX(),
-                    canonicalPlains ? 17 : 15,
+                    canonicalPlains ? 16 : 15,
                     "Vineyard width"
             );
             helper.assertValueEqual(
@@ -1445,7 +1465,7 @@ public final class VintnerGameTests {
             if (canonicalPlains) {
                 helper.assertValueEqual(
                         pathConnections.getFirst().pos(),
-                        new BlockPos(9, 2, 0),
+                        new BlockPos(8, 2, 0),
                         "Player-authored connector must lower the winery by one block"
                 );
                 helper.assertValueEqual(
@@ -1565,9 +1585,9 @@ public final class VintnerGameTests {
                 .orElseThrow();
         BlockPos relativeOrigin = new BlockPos(1, 3, 1);
         BlockPos origin = helper.absolutePos(relativeOrigin);
-        BlockPos authoredPress = new BlockPos(8, 1, 7);
-        BlockPos authoredRack = new BlockPos(12, 1, 2);
-        BlockPos authoredDoor = new BlockPos(11, 1, 7);
+        BlockPos authoredPress = new BlockPos(7, 1, 7);
+        BlockPos authoredRack = new BlockPos(11, 1, 2);
+        BlockPos authoredDoor = new BlockPos(10, 1, 7);
 
         for (Rotation rotation : Rotation.values()) {
             StructurePlaceSettings settings = new StructurePlaceSettings()
@@ -1640,11 +1660,11 @@ public final class VintnerGameTests {
             );
 
             BlockPos[] authoredDirectionalBlocks = {
-                    new BlockPos(14, 2, 7),
-                    new BlockPos(14, 2, 8),
-                    new BlockPos(14, 1, 7),
-                    new BlockPos(14, 5, 3),
-                    new BlockPos(14, 5, 0)
+                    new BlockPos(13, 2, 7),
+                    new BlockPos(13, 2, 8),
+                    new BlockPos(13, 1, 7),
+                    new BlockPos(13, 5, 3),
+                    new BlockPos(13, 5, 0)
             };
             Block[] expectedDirectionalBlocks = {
                     ModBlocks.FERMENTATION_BARREL,
@@ -1687,7 +1707,7 @@ public final class VintnerGameTests {
                 );
             }
 
-            BlockPos authoredVine = new BlockPos(3, 2, 5);
+            BlockPos authoredVine = new BlockPos(2, 2, 5);
             BlockPos vine = origin.offset(StructureTemplate.transform(
                     authoredVine,
                     Mirror.NONE,
@@ -1718,7 +1738,7 @@ public final class VintnerGameTests {
             );
 
             BlockPos connector = origin.offset(StructureTemplate.transform(
-                    new BlockPos(9, 2, 0),
+                    new BlockPos(8, 2, 0),
                     Mirror.NONE,
                     rotation,
                     BlockPos.ZERO
@@ -1729,7 +1749,7 @@ public final class VintnerGameTests {
                     "Rotated winery must retain its village connector"
             );
             BlockPos clearedPath = origin.offset(StructureTemplate.transform(
-                    new BlockPos(9, 1, 0),
+                    new BlockPos(8, 1, 0),
                     Mirror.NONE,
                     rotation,
                     BlockPos.ZERO
@@ -1775,7 +1795,7 @@ public final class VintnerGameTests {
 
         // Model a normal village-grade contour: flat at the path connector,
         // dropping one block across the middle and two at the far corners.
-        for (int x = 0; x < 17; x++) {
+        for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 11; z++) {
                 int drop = x < 6 ? 0 : (x < 12 ? 1 : 2);
                 int terrainTop = relativeOrigin.getY() + 2 - drop;
@@ -1804,7 +1824,7 @@ public final class VintnerGameTests {
                 "Vineyard template must place on village-grade terrain"
         );
 
-        for (int x = 0; x < 17; x++) {
+        for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 11; z++) {
                 BlockPos bottomFoundation = origin.offset(x, 0, z);
                 helper.assertTrue(
@@ -1821,7 +1841,7 @@ public final class VintnerGameTests {
         }
 
         helper.assertTrue(
-                helper.getLevel().getBlockState(origin.offset(8, 1, 7))
+                helper.getLevel().getBlockState(origin.offset(7, 1, 7))
                         .is(ModBlocks.GRAPE_PRESS),
                 "Terrain placement must preserve the Winemaker workstation"
         );
@@ -1843,7 +1863,7 @@ public final class VintnerGameTests {
         BlockPos relativeOrigin = new BlockPos(1, 3, 1);
         BlockPos origin = helper.absolutePos(relativeOrigin);
 
-        for (int x = 0; x < 17; x++) {
+        for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 11; z++) {
                 helper.setBlock(
                         relativeOrigin.offset(x, -1, z),
@@ -1863,7 +1883,7 @@ public final class VintnerGameTests {
                 "Generated vineyard must place before profession testing"
         );
 
-        BlockPos relativePress = relativeOrigin.offset(8, 1, 7);
+        BlockPos relativePress = relativeOrigin.offset(7, 1, 7);
         BlockPos press = helper.absolutePos(relativePress);
         helper.assertTrue(
                 ModVillagers.WINEMAKER_POI.is(

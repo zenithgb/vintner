@@ -23,9 +23,12 @@ import java.util.WeakHashMap;
 
 public final class ModVillageStructures {
     private static final int SPECIALIST_HOUSE_WEIGHT = 1;
-    // The placement mixin gives this single candidate first-fit priority until
-    // one vineyard succeeds, then removes it from later house-pool selections.
-    private static final int VINEYARD_WEIGHT = 1;
+    private static final int DEFAULT_VINEYARD_WEIGHT = 24;
+    // Only the large player-authored Plains winery needs first-fit placement.
+    // Other accepted culture templates retain their established weighting.
+    private static final int PLAINS_VINEYARD_WEIGHT = 1;
+    private static final Identifier PLAINS_VINEYARD =
+            vintner("village/plains/vineyard");
 
     private static final List<VillageStructureDefinition>
             VILLAGE_STRUCTURES = List.of(
@@ -128,6 +131,13 @@ public final class ModVillageStructures {
                 );
     }
 
+    public static boolean isPrioritizedPlainsVineyardElement(
+            StructurePoolElement element
+    ) {
+        return element instanceof SinglePoolElement single
+                && single.getTemplateLocation().equals(PLAINS_VINEYARD);
+    }
+
     public static List<StructurePoolElement> orderVineyardCandidates(
             List<StructurePoolElement> candidates,
             boolean vineyardPlaced
@@ -139,7 +149,10 @@ public final class ModVillageStructures {
         }
 
         StructurePoolElement vineyard = candidates.stream()
-                .filter(ModVillageStructures::isVineyardElement)
+                .filter(
+                        ModVillageStructures
+                                ::isPrioritizedPlainsVineyardElement
+                )
                 .findFirst()
                 .orElse(null);
         if (vineyard == null) {
@@ -254,7 +267,9 @@ public final class ModVillageStructures {
                 ),
                 vintner("village/" + culture + "/vineyard"),
                 null,
-                VINEYARD_WEIGHT
+                culture.equals("plains")
+                        ? PLAINS_VINEYARD_WEIGHT
+                        : DEFAULT_VINEYARD_WEIGHT
         );
     }
 

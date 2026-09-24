@@ -31,9 +31,12 @@ CANONICAL_PLAINS_SHA256 = (
     "7914e27f3bce456181324a23c459c8159ce26c1b8d227d588f99b3b8986e8c94"
 )
 CANONICAL_PLAINS_SIZE = (17, 11, 11)
+RUNTIME_PLAINS_SIZE = (16, 11, 11)
 LEGACY_INTERIM_SIZE = (15, 10, 13)
 PLAINS_SOURCE_PATH_POSITION = (9, 1, 0)
-PLAINS_JIGSAW_POSITION = (9, 2, 0)
+PLAINS_SOURCE_JIGSAW_POSITION = (9, 2, 0)
+PLAINS_RUNTIME_PATH_POSITION = (8, 1, 0)
+PLAINS_RUNTIME_JIGSAW_POSITION = (8, 2, 0)
 EXPECTED_DATA_VERSIONS = {
     "plains": 5023,
     "desert": 4903,
@@ -345,34 +348,48 @@ def audit_canonical_plains(model: dict[str, object]) -> str:
 
     source_visible = visible_signature(source)
     runtime_visible = visible_signature(model)
-    technical_positions = {
+    source_technical_positions = {
         PLAINS_SOURCE_PATH_POSITION,
-        PLAINS_JIGSAW_POSITION,
+        PLAINS_SOURCE_JIGSAW_POSITION,
     }
-    source_authored = [
-        entry for entry in source_visible
-        if tuple(entry[0]) not in technical_positions
-    ]
+    runtime_technical_positions = {
+        PLAINS_RUNTIME_PATH_POSITION,
+        PLAINS_RUNTIME_JIGSAW_POSITION,
+    }
+    source_authored = []
+    for entry in source_visible:
+        position = tuple(entry[0])
+        if position[0] == 0 or position in source_technical_positions:
+            continue
+        source_authored.append(
+            [
+                (position[0] - 1, position[1], position[2]),
+                entry[1],
+                entry[2],
+            ]
+        )
+    source_authored.sort(key=lambda entry: entry[0])
     runtime_authored = [
         entry for entry in runtime_visible
-        if tuple(entry[0]) not in technical_positions
+        if tuple(entry[0]) not in runtime_technical_positions
     ]
     if runtime_authored != source_authored:
         raise ValueError(
             "runtime Plains template changes player-authored blocks outside "
-            "the lowered road connector"
+            "the trimmed terrain margin and lowered road connector"
         )
-    if model["positioned"][PLAINS_SOURCE_PATH_POSITION][0] != "minecraft:air":
+    if model["positioned"][PLAINS_RUNTIME_PATH_POSITION][0] != "minecraft:air":
         raise ValueError("runtime Plains source road path was not lifted")
-    if source["positioned"][PLAINS_JIGSAW_POSITION][0] != "minecraft:air":
+    if source["positioned"][PLAINS_SOURCE_JIGSAW_POSITION][0] != "minecraft:air":
         raise ValueError("canonical source has no air for the lifted connector")
 
     for position, (_name, _properties, source_block) in source[
         "positioned"
     ].items():
-        if position in technical_positions:
+        if position[0] == 0 or position in source_technical_positions:
             continue
-        runtime_block = model["positioned"][position][2]
+        runtime_position = (position[0] - 1, position[1], position[2])
+        runtime_block = model["positioned"][runtime_position][2]
         if source_block.get("nbt") != runtime_block.get("nbt"):
             raise ValueError(
                 f"runtime Plains block entity differs at {position}"
@@ -385,7 +402,7 @@ def audit_canonical_plains(model: dict[str, object]) -> str:
     audit_jigsaw(
         "plains",
         model,
-        PLAINS_JIGSAW_POSITION,
+        PLAINS_RUNTIME_JIGSAW_POSITION,
         "north_up",
         "minecraft:dirt_path",
     )
@@ -393,12 +410,12 @@ def audit_canonical_plains(model: dict[str, object]) -> str:
     positioned = model["positioned"]
     if counts["vintner:grape_press"] != 1:
         raise ValueError("plains: expected exactly one Grape Press")
-    press_name_actual, press_properties, _block = positioned[(8, 1, 7)]
+    press_name_actual, press_properties, _block = positioned[(7, 1, 7)]
     if press_name_actual != "vintner:grape_press":
         raise ValueError("plains: canonical Grape Press moved")
     if press_properties.get("facing") != "east":
         raise ValueError("plains: canonical Grape Press facing changed")
-    for approach in ((9, 1, 7), (10, 1, 7)):
+    for approach in ((8, 1, 7), (9, 1, 7)):
         if positioned[approach][0] != "minecraft:air":
             raise ValueError(f"plains: Grape Press aisle blocked at {approach}")
     if counts["vintner:wine_rack"] != 6:
@@ -412,17 +429,18 @@ def audit_canonical_plains(model: dict[str, object]) -> str:
         raise ValueError("plains: player-authored grapevines changed")
     if any(
         positioned[(x, 0, z)][0] == "minecraft:air"
-        for x in range(CANONICAL_PLAINS_SIZE[0])
-        for z in range(CANONICAL_PLAINS_SIZE[2])
+        for x in range(RUNTIME_PLAINS_SIZE[0])
+        for z in range(RUNTIME_PLAINS_SIZE[2])
     ):
         raise ValueError("plains: foundation layer has a gap")
 
     print(
-        "PASS plains: canonical player NBT 17x11x11, 2057 blocks, "
+        "PASS plains: canonical source 17x11x11/2057 blocks, runtime "
+        "16x11x11/1936 blocks after trimming one terrain-only margin, "
         "67 source/68 runtime states, 10 source/11 runtime block entities, "
         "1 technical jigsaw, 1 Winemaker Grape Press, 0 entities, "
-        "0 composters, authored-equivalent outside the one-block-raised "
-        "road connector, rotations 0/90/180/270"
+        "0 composters, authored-equivalent outside the terrain-only margin "
+        "and one-block-raised road connector, rotations 0/90/180/270"
     )
     print(f"PASS plains visible SHA-256: {visible_hash}")
     return visible_hash
@@ -478,7 +496,7 @@ def main() -> None:
             raise ValueError(f"missing structure {path.relative_to(ROOT)}")
         model = load_structure(path)
         expected_size = (
-            CANONICAL_PLAINS_SIZE
+            RUNTIME_PLAINS_SIZE
             if culture == "plains"
             else LEGACY_INTERIM_SIZE
         )

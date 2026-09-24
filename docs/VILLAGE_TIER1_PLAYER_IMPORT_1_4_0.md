@@ -26,20 +26,25 @@ the repository's standard-library lossless NBT codec, and derives the runtime
 Plains template deterministically. Running generation twice produces no Git
 or byte churn.
 
-Only two technical anchor edits are permitted. The boundary dirt-path block at
-local `(9, 1, 0)` becomes air, and the source air block directly above at
-`(9, 2, 0)` becomes the street connector
+Only bounded integration edits are permitted. The source's local x=0 edge is
+an exported terrain/air margin (99 air, 11 dirt and 11 grass blocks) with no
+architectural or decorative block. Runtime generation omits that edge and
+shifts the remaining build one local block toward x=0, producing a 16 x 11 x
+11 collision box while leaving the byte-exact 17 x 11 x 11 source untouched.
+The boundary dirt-path block at source-local `(9, 1, 0)` (runtime `(8, 1, 0)`)
+becomes air, and the source air block directly above becomes the street connector
 `minecraft:jigsaw[orientation=north_up]`, whose final state is
 `minecraft:dirt_path` and whose target pool is the Plains village streets
 pool. Raising the connector one local block makes Minecraft place the entire
-authored winery exactly one world block lower while keeping the village road
-at its original grade. Every other positioned block, block state and
-block-entity payload is identical to the player export. The source
+authored winery exactly one world block lower while keeping the road at its
+original grade. Every structural/decorative block, block state and block-entity
+payload is equivalent to the player export after the coordinate shift. The source
 visible-equivalence signature is
 `8de7a8808f57ea431a9ef367cfe2a2b094e49f44395d0a74631d1e3158da9975`.
 
-`scripts/audit_village_vineyards.py` enforces that two-position anchor contract,
-the complete 17 x 11 x 11 volume, bounds, state identifiers, block entities,
+`scripts/audit_village_vineyards.py` enforces the source hash, terrain-margin
+trim, two-position anchor contract, complete 16 x 11 x 11 runtime volume,
+bounds, state identifiers, block entities,
 required functional inventory, forbidden blocks, entities, connector and all
 four rotations. The original export is also frozen outside Git in the phase
 evidence directory.
@@ -48,12 +53,12 @@ evidence directory.
 
 The imported Plains winery contains:
 
-- one `vintner:grape_press[facing=east]` at local `(8, 1, 7)`;
-- six oak Wine Racks at local x=12..14, y=1..2, z=2;
-- one Fermentation Barrel at `(14, 2, 7)`;
-- one oak Aging Barrel at `(14, 2, 8)`;
+- one `vintner:grape_press[facing=east]` at runtime local `(7, 1, 7)`;
+- six oak Wine Racks at runtime local x=11..13, y=1..2, z=2;
+- one Fermentation Barrel at runtime `(13, 2, 7)`;
+- one oak Aging Barrel at runtime `(13, 2, 8)`;
 - two oak Barrel Stands beneath those barrels;
-- one oak Tasting Service at `(14, 5, 3)`;
+- one oak Tasting Service at runtime `(13, 5, 3)`;
 - 27 Vineyard Soil blocks and 52 established red Grapevine blocks;
 - two oak Trellis blocks and the player-authored three-row vineyard layout;
 - the original walls, roof, foundation, interior, entrance and decoration.
@@ -66,9 +71,10 @@ POI is present.
 
 The runtime ID remains `vintner:village/plains/vineyard`. It is injected as a
 single rigid pool element in the vanilla Plains houses pool. The placement
-mixin tries the vineyard first at eligible house connections until one
-succeeds, then removes it from later selections so each village still receives
-at most one. The authored boundary path connector joins the vanilla Plains
+mixin gives only the Plains winery one first-fit attempt at each eligible house
+connection until one succeeds, then removes it from later selections so each
+village still receives at most one. Desert, Savanna, Snowy and Taiga retain
+their accepted weight and shuffled ordering. The authored boundary path connector joins the vanilla Plains
 streets pool from one local block higher, lowering the complete structure by
 one world block.
 
@@ -119,22 +125,22 @@ placement-only candidate was then installed into the same exact profile and
 again initialized Vintner, Commons, resource atlases and audio successfully.
 That client is intentionally left open for Zach's one-block-lower visual check.
 
-The follow-up natural-generation investigation reproduced the discoverability
-problem independently of the height adjustment. With the prior weighted pool
-entry, only two of ten fresh Plains villages in a fixed exact-runtime sample
-contained a Winemaker POI. Raising the connector still generated the winery at
-the same seed and village anchor, proving the one-block-lower edit was not the
-cause. A weight-only increase was rejected after it remained unreliable.
+The follow-up investigation used structure-start NBT, rather than nearby
+Winemaker POIs (which can come from the separate Winemaker house), to identify
+the exact winery template in 25 deterministic fresh Plains villages. The
+pre-height candidate appeared in 3/25; the accepted one-block-lower full-width
+candidate appeared in 1/25. Runtime pool inspection proved the entry was
+present before and after `/reload`, while jigsaw diagnostics showed the 17-wide
+box repeatedly rejected for intersections with meeting points, streets and
+other pieces. The primary defect was therefore placement rejection, not pool
+injection, reload loss or a stale one-per-village guard.
 
-The final first-fit policy keeps one vineyard candidate in each supported
-houses pool, tries it before ordinary houses until one collision-free placement
-succeeds, and removes it after that success. The same ten-village sample then
-contained five natural wineries. The remaining misses had no viable placement
-for the 17 x 11 footprint in that village layout; the policy deliberately does
-not force a winery through terrain or neighboring pieces. It therefore makes
-the winery common and readily discoverable while retaining the maximum of one
-per village. This applies only to newly generated villages or unexplored
-chunks; it does not retrofit structures into already saved villages.
+The final narrow policy trims only the source's empty/terrain x=0 margin and
+gives only the Plains winery a first-fit attempt until one collision-free
+placement succeeds. The same 25 target villages then contained 4 wineries
+(16%), with no structure start containing more than one. Misses remain valid
+where the village has no collision-free connection. This applies only to newly
+generated villages or unexplored chunks; it does not retrofit saved villages.
 
 Evidence is frozen at:
 
@@ -151,15 +157,12 @@ authoritative height gate.
 
 ## Release candidate and deferred work
 
-The generation-corrected structure-inclusive candidate is
-`vintner-1.4.0.jar`, 1,584,942 bytes,
-SHA-256
+The superseded first-fit/full-width diagnostic candidate was
 `b9a063e482e246c943857284cfc3e673244a3d17c6871cf6d9d289bc611f25cf`.
-It supersedes the lower-placement candidate
-`cc7bdeb02b78af5aee5ba6cd291efe830debde285fd460ff3369f5cc5478d52c`,
-which remains preserved in the evidence directory. Standard and Serene
-Seasons GameTests pass 197/197 after isolating the generated-village profession
-fixture from adjacent test POIs with explicit padding.
+The final replacement identity is recorded only after exact committed-source
+validation. The lower-placement full-width candidate
+`cc7bdeb02b78af5aee5ba6cd291efe830debde285fd460ff3369f5cc5478d52c`
+also remains preserved in the evidence directory.
 
 Deferred work is limited to distinct player-designed Desert, Savanna, Snowy
 and Taiga winery variants and Zach's subjective shader/no-shader visual
