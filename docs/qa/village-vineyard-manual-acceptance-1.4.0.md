@@ -28,9 +28,9 @@ screenshots do not self-approve subjective release quality.
 
 ## Acceptance notes
 
-- Candidate JAR: `vintner-1.4.0.jar` (1,584,707 bytes)
-- Candidate SHA-256: `ae08e6050ee07a78029e6d38c36b7d6efb75d23f2b619e87b005eb1e54fb68a3`
+- Candidate JAR: `vintner-1.4.0.jar` (1,584,777 bytes)
+- Candidate SHA-256: `cc7bdeb02b78af5aee5ba6cd291efe830debde285fd460ff3369f5cc5478d52c`
 - World/seed: disposable exact-JAR world `Vintner-Player-Tier1-Exact`; seed `1400`
 - Resource packs/shaders:
-- Screenshots: `/Users/zachariaheverson/Developer/Minecraft/vintner-release-evidence/1.4.0-player-tier1-winery-20260923/screenshots/`
+- Screenshots: existing pre-shift set at `/Users/zachariaheverson/Developer/Minecraft/vintner-release-evidence/1.4.0-player-tier1-winery-20260923/screenshots/`; replacement height screenshot pending Zach's current exact-client check
 - Zach's verdict:

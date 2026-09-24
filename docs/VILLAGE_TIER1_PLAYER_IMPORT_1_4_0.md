@@ -110,10 +110,12 @@ villager claimed it and became `vintner:winemaker`. After save, clean stop and
 full restart, that villager, profession, POI and west-facing rotated press all
 persisted. No accidental Composter/Farmer workplace was introduced.
 
-The exact client initialized Vintner and Commons, loaded the resource atlases
-and audio, connected to the exact server, displayed the player-authored build,
-and was stopped cleanly after the server test. The test profile's previous
-accepted JAR was restored afterward.
+The original exact client pass initialized Vintner and Commons, loaded the
+resource atlases and audio, connected to the exact server, displayed the
+player-authored build, and stopped cleanly after the server test. The final
+placement-only candidate was then installed into the same exact profile and
+again initialized Vintner, Commons, resource atlases and audio successfully.
+That client is intentionally left open for Zach's one-block-lower visual check.
 
 Evidence is frozen at:
 
@@ -123,15 +125,19 @@ The evidence includes the original source export, audits, both 197-test XML
 reports, first-run/restart server logs, exact-client log, candidate JAR and
 screenshots of the canonical exterior, vineyard/entrance, interior work area
 and real generated-village context. Screenshots prepare review; they do not
-self-approve subjective appearance.
+self-approve subjective appearance. The existing screenshots and server
+worldgen log predate the one-block-lower anchor adjustment; the new exact
+client log is preserved separately and Zach's current visual check is the
+authoritative height gate.
 
 ## Release candidate and deferred work
 
-The structure-inclusive candidate is `vintner-1.4.0.jar`, 1,584,707 bytes,
+The structure-inclusive candidate is `vintner-1.4.0.jar`, 1,584,777 bytes,
 SHA-256
-`ae08e6050ee07a78029e6d38c36b7d6efb75d23f2b619e87b005eb1e54fb68a3`.
-It supersedes the prior generated-winery candidate
-`e24e6cf4170a942be48d38520d5e0463e0d342f07ee3819bfb4854abe3891cb6`.
+`cc7bdeb02b78af5aee5ba6cd291efe830debde285fd460ff3369f5cc5478d52c`.
+It supersedes the pre-shift player-winery candidate
+`ae08e6050ee07a78029e6d38c36b7d6efb75d23f2b619e87b005eb1e54fb68a3`,
+which remains preserved in the evidence directory.
 
 Deferred work is limited to distinct player-designed Desert, Savanna, Snowy
 and Taiga winery variants and Zach's subjective shader/no-shader visual
