@@ -27,9 +27,11 @@ five direct NBT templates:
 
 `ModVillageStructures` injects each template as a rigid
 `SinglePoolElement` into the corresponding vanilla village houses pool with
-weight 24. The same runtime injection also adds one Winemaker house and one
-Cooper house at weight 1. `JigsawPlacementPlacerMixin` limits vineyards to one
-per village. No processor list replaces the vineyard workstation.
+weight 1. The same runtime injection also adds one Winemaker house and one
+Cooper house at weight 1. `JigsawPlacementPlacerMixin` gives the vineyard
+candidate first-fit priority until one succeeds, then removes all further
+vineyard candidates so no village can receive more than one. No processor list
+replaces the vineyard workstation.
 
 Supported village palettes remain exactly Plains, Desert, Savanna, Snowy and
 Taiga. Plains uses oak, Desert and Savanna use acacia, and Snowy and Taiga use
@@ -127,6 +129,24 @@ actual jigsaw-generated village context, focused/full test logs and exact-JAR
 runtime logs. Screenshots demonstrate review readiness but do not replace
 Zach's manual visual verdict.
 
+## Natural-generation discoverability correction
+
+An exact fresh-world sample reproduced the reported low appearance rate: only
+two of ten naturally generated Plains villages contained the vineyard under
+the former weighted-pool policy. The raised connector/lowered building still
+generated at the same seed and anchor, ruling out the height adjustment as the
+cause. A weight-only increase did not reliably improve the result and was not
+retained.
+
+Village jigsaw placement now tries one culture-matched vineyard candidate
+first at eligible house connections until a collision-free placement succeeds,
+then removes vineyard candidates for the rest of that village. The same sample
+improved to five of ten natural Plains villages, with at most one winery in
+each. Villages whose piece layout cannot accommodate the winery's footprint
+remain valid misses rather than receiving intersecting or forced structures.
+Only newly generated villages and unexplored chunks use this policy; existing
+saved villages are unchanged.
+
 ## Validation status
 
 The focused vineyard suite passes 4/4. Standard and Serene Seasons GameTests
@@ -137,11 +157,11 @@ serving/contact and vineyard audits pass. Blockstate/model/PNG counts remain
 215/907/100, and two consecutive datagen runs report zero generated files and
 zero churn.
 
-The exact committed candidate is `vintner-1.4.0.jar`, 1,581,352 bytes, with
+The latest exact candidate is `vintner-1.4.0.jar`, 1,584,942 bytes, with
 SHA-256
-`e24e6cf4170a942be48d38520d5e0463e0d342f07ee3819bfb4854abe3891cb6`.
-It supersedes the pre-rebuild candidate
-`84da0383a9a5bbb4dcbfd4e81bd37ad6a3dcc199a20812d8454663697fd9f6d1`.
+`b9a063e482e246c943857284cfc3e673244a3d17c6871cf6d9d289bc611f25cf`.
+It supersedes the lower-placement player-winery candidate
+`cc7bdeb02b78af5aee5ba6cd291efe830debde285fd460ff3369f5cc5478d52c`.
 
 An exact-JAR Minecraft 26.3 dedicated server loaded Vintner 1.4.0, Fabric API
 0.161.0+26.3 and exact Commons 0.1.2, injected all fifteen Vintner pool

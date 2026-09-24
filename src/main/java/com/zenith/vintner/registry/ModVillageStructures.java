@@ -23,10 +23,9 @@ import java.util.WeakHashMap;
 
 public final class ModVillageStructures {
     private static final int SPECIALIST_HOUSE_WEIGHT = 1;
-    // A vineyard is a defining village farm for Vintner. A weight of 24 makes
-    // one likely across a normal village's several house-pool selections,
-    // without requiring or guaranteeing one in every settlement.
-    private static final int VINEYARD_WEIGHT = 24;
+    // The placement mixin gives this single candidate first-fit priority until
+    // one vineyard succeeds, then removes it from later house-pool selections.
+    private static final int VINEYARD_WEIGHT = 1;
 
     private static final List<VillageStructureDefinition>
             VILLAGE_STRUCTURES = List.of(
@@ -127,6 +126,33 @@ public final class ModVillageStructures {
                 && vineyardTemplates().contains(
                         single.getTemplateLocation()
                 );
+    }
+
+    public static List<StructurePoolElement> orderVineyardCandidates(
+            List<StructurePoolElement> candidates,
+            boolean vineyardPlaced
+    ) {
+        if (vineyardPlaced) {
+            return candidates.stream()
+                    .filter(element -> !isVineyardElement(element))
+                    .toList();
+        }
+
+        StructurePoolElement vineyard = candidates.stream()
+                .filter(ModVillageStructures::isVineyardElement)
+                .findFirst()
+                .orElse(null);
+        if (vineyard == null) {
+            return candidates;
+        }
+
+        List<StructurePoolElement> prioritized =
+                new ArrayList<>(candidates.size());
+        prioritized.add(vineyard);
+        candidates.stream()
+                .filter(element -> !isVineyardElement(element))
+                .forEach(prioritized::add);
+        return prioritized;
     }
 
     public static boolean isInjected(

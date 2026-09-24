@@ -37,15 +37,10 @@ abstract class JigsawPlacementPlacerMixin {
         List<StructurePoolElement> candidates =
                 pool.getShuffledTemplates(random);
 
-        if (!vintner$vineyardPlaced) {
-            return candidates;
-        }
-
-        return candidates.stream()
-                .filter(element ->
-                        !ModVillageStructures.isVineyardElement(element)
-                )
-                .toList();
+        return ModVillageStructures.orderVineyardCandidates(
+                candidates,
+                vintner$vineyardPlaced
+        );
     }
 
     @Redirect(

@@ -1272,7 +1272,7 @@ public final class VintnerGameTests {
             );
             helper.assertValueEqual(
                     houses.get(houses.size() - 1).getSecond(),
-                    24,
+                    1,
                     "Vineyard farm weight"
             );
 
@@ -1283,6 +1283,38 @@ public final class VintnerGameTests {
                     ModVillageStructures.isVineyardElement(vineyard),
                     "Vineyard pool entries must be identifiable for the "
                             + "one-per-village placement guard"
+            );
+            List<StructurePoolElement> candidates =
+                    pool.getShuffledTemplates(RandomSource.create(1400L));
+            List<StructurePoolElement> beforePlacement =
+                    ModVillageStructures.orderVineyardCandidates(
+                            candidates,
+                            false
+                    );
+            helper.assertTrue(
+                    !beforePlacement.isEmpty()
+                            && ModVillageStructures.isVineyardElement(
+                            beforePlacement.getFirst()
+                    ),
+                    "Vineyard must be the first eligible house candidate"
+            );
+            helper.assertValueEqual(
+                    beforePlacement.stream()
+                            .filter(ModVillageStructures::isVineyardElement)
+                            .count(),
+                    1L,
+                    "Only one vineyard candidate may be attempted per slot"
+            );
+            helper.assertTrue(
+                    ModVillageStructures.orderVineyardCandidates(
+                                    candidates,
+                                    true
+                            )
+                            .stream()
+                            .noneMatch(
+                                    ModVillageStructures::isVineyardElement
+                            ),
+                    "Placed villages must reject later vineyard candidates"
             );
             var structureManager = helper.getLevel()
                     .getServer()
@@ -1796,7 +1828,7 @@ public final class VintnerGameTests {
         helper.succeed();
     }
 
-    @GameTest(maxTicks = 400)
+    @GameTest(maxTicks = 400, padding = 48)
     public void generatedVillageVineyardCreatesReachableWinemakerPoi(
             GameTestHelper helper
     ) {

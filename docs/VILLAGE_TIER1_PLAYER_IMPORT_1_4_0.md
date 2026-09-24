@@ -65,10 +65,12 @@ POI is present.
 ## Village integration and biome policy
 
 The runtime ID remains `vintner:village/plains/vineyard`. It is injected as a
-rigid pool element into the vanilla Plains houses pool with weight 24, and the
-existing one-vineyard-per-village limiter is unchanged. The authored boundary
-path connector joins the vanilla Plains streets pool from one local block
-higher, lowering the complete structure by one world block.
+single rigid pool element in the vanilla Plains houses pool. The placement
+mixin tries the vineyard first at eligible house connections until one
+succeeds, then removes it from later selections so each village still receives
+at most one. The authored boundary path connector joins the vanilla Plains
+streets pool from one local block higher, lowering the complete structure by
+one world block.
 
 For Vintner 1.4.0, the player build becomes canonical for Plains only. Desert,
 Savanna, Snowy and Taiga retain the already accepted interim 15 x 10 x 13
@@ -117,6 +119,23 @@ placement-only candidate was then installed into the same exact profile and
 again initialized Vintner, Commons, resource atlases and audio successfully.
 That client is intentionally left open for Zach's one-block-lower visual check.
 
+The follow-up natural-generation investigation reproduced the discoverability
+problem independently of the height adjustment. With the prior weighted pool
+entry, only two of ten fresh Plains villages in a fixed exact-runtime sample
+contained a Winemaker POI. Raising the connector still generated the winery at
+the same seed and village anchor, proving the one-block-lower edit was not the
+cause. A weight-only increase was rejected after it remained unreliable.
+
+The final first-fit policy keeps one vineyard candidate in each supported
+houses pool, tries it before ordinary houses until one collision-free placement
+succeeds, and removes it after that success. The same ten-village sample then
+contained five natural wineries. The remaining misses had no viable placement
+for the 17 x 11 footprint in that village layout; the policy deliberately does
+not force a winery through terrain or neighboring pieces. It therefore makes
+the winery common and readily discoverable while retaining the maximum of one
+per village. This applies only to newly generated villages or unexplored
+chunks; it does not retrofit structures into already saved villages.
+
 Evidence is frozen at:
 
 `/Users/zachariaheverson/Developer/Minecraft/vintner-release-evidence/1.4.0-player-tier1-winery-20260923/`
@@ -132,12 +151,15 @@ authoritative height gate.
 
 ## Release candidate and deferred work
 
-The structure-inclusive candidate is `vintner-1.4.0.jar`, 1,584,777 bytes,
+The generation-corrected structure-inclusive candidate is
+`vintner-1.4.0.jar`, 1,584,942 bytes,
 SHA-256
-`cc7bdeb02b78af5aee5ba6cd291efe830debde285fd460ff3369f5cc5478d52c`.
-It supersedes the pre-shift player-winery candidate
-`ae08e6050ee07a78029e6d38c36b7d6efb75d23f2b619e87b005eb1e54fb68a3`,
-which remains preserved in the evidence directory.
+`b9a063e482e246c943857284cfc3e673244a3d17c6871cf6d9d289bc611f25cf`.
+It supersedes the lower-placement candidate
+`cc7bdeb02b78af5aee5ba6cd291efe830debde285fd460ff3369f5cc5478d52c`,
+which remains preserved in the evidence directory. Standard and Serene
+Seasons GameTests pass 197/197 after isolating the generated-village profession
+fixture from adjacent test POIs with explicit padding.
 
 Deferred work is limited to distinct player-designed Desert, Savanna, Snowy
 and Taiga winery variants and Zach's subjective shader/no-shader visual
