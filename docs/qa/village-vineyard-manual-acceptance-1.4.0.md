@@ -23,7 +23,8 @@ screenshots do not self-approve subjective release quality.
 - [ ] Structure looks good with showcase shaders if available.
 - [ ] The integrated Plains build matches Zach's authored Tier-1 winery.
 - [ ] Vineyard, entrance, interior and work area have no import omissions.
-- [ ] The one technical street connector does not create a visible seam.
+- [ ] The winery sits exactly one block lower relative to the village road.
+- [ ] The raised technical street connector does not create a visible seam.
 
 ## Acceptance notes
 

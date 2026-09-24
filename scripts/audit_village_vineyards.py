@@ -32,7 +32,8 @@ CANONICAL_PLAINS_SHA256 = (
 )
 CANONICAL_PLAINS_SIZE = (17, 11, 11)
 LEGACY_INTERIM_SIZE = (15, 10, 13)
-PLAINS_JIGSAW_POSITION = (9, 1, 0)
+PLAINS_SOURCE_PATH_POSITION = (9, 1, 0)
+PLAINS_JIGSAW_POSITION = (9, 2, 0)
 EXPECTED_DATA_VERSIONS = {
     "plains": 5023,
     "desert": 4903,
@@ -344,13 +345,32 @@ def audit_canonical_plains(model: dict[str, object]) -> str:
 
     source_visible = visible_signature(source)
     runtime_visible = visible_signature(model)
-    if runtime_visible != source_visible:
-        raise ValueError("runtime Plains template changes player-visible blocks")
+    technical_positions = {
+        PLAINS_SOURCE_PATH_POSITION,
+        PLAINS_JIGSAW_POSITION,
+    }
+    source_authored = [
+        entry for entry in source_visible
+        if tuple(entry[0]) not in technical_positions
+    ]
+    runtime_authored = [
+        entry for entry in runtime_visible
+        if tuple(entry[0]) not in technical_positions
+    ]
+    if runtime_authored != source_authored:
+        raise ValueError(
+            "runtime Plains template changes player-authored blocks outside "
+            "the lowered road connector"
+        )
+    if model["positioned"][PLAINS_SOURCE_PATH_POSITION][0] != "minecraft:air":
+        raise ValueError("runtime Plains source road path was not lifted")
+    if source["positioned"][PLAINS_JIGSAW_POSITION][0] != "minecraft:air":
+        raise ValueError("canonical source has no air for the lifted connector")
 
     for position, (_name, _properties, source_block) in source[
         "positioned"
     ].items():
-        if position == PLAINS_JIGSAW_POSITION:
+        if position in technical_positions:
             continue
         runtime_block = model["positioned"][position][2]
         if source_block.get("nbt") != runtime_block.get("nbt"):
@@ -401,7 +421,8 @@ def audit_canonical_plains(model: dict[str, object]) -> str:
         "PASS plains: canonical player NBT 17x11x11, 2057 blocks, "
         "67 source/68 runtime states, 10 source/11 runtime block entities, "
         "1 technical jigsaw, 1 Winemaker Grape Press, 0 entities, "
-        "0 composters, visible-equivalent, rotations 0/90/180/270"
+        "0 composters, authored-equivalent outside the one-block-raised "
+        "road connector, rotations 0/90/180/270"
     )
     print(f"PASS plains visible SHA-256: {visible_hash}")
     return visible_hash

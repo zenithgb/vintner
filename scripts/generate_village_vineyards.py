@@ -38,7 +38,8 @@ CANONICAL_PLAINS_SOURCE = (
 CANONICAL_PLAINS_SHA256 = (
     "7914e27f3bce456181324a23c459c8159ce26c1b8d227d588f99b3b8986e8c94"
 )
-PLAINS_JIGSAW_POSITION = (9, 1, 0)
+PLAINS_SOURCE_PATH_POSITION = (9, 1, 0)
+PLAINS_JIGSAW_POSITION = (9, 2, 0)
 
 CULTURES = {
     "plains": "oak",
@@ -138,7 +139,7 @@ def vine_properties(
 
 
 def create_canonical_plains_structure() -> bytes:
-    """Add only the street connector to Zach's player-authored build."""
+    """Add the street connector that lowers Zach's build by one block."""
     source_bytes = CANONICAL_PLAINS_SOURCE.read_bytes()
     source_sha256 = hashlib.sha256(source_bytes).hexdigest()
     if source_sha256 != CANONICAL_PLAINS_SHA256:
@@ -174,22 +175,30 @@ def create_canonical_plains_structure() -> bytes:
     if "minecraft:jigsaw" in state_names:
         raise ValueError("canonical player source must not contain a jigsaw")
 
+    source_path_block = None
     connector_block = None
     for block in blocks:
         if not isinstance(block, dict):
             raise ValueError("canonical Plains block entry is malformed")
         position = tuple(require_list(block, "pos", TAG_INT))
-        if position == PLAINS_JIGSAW_POSITION:
+        if position == PLAINS_SOURCE_PATH_POSITION:
+            source_path_block = block
+        elif position == PLAINS_JIGSAW_POSITION:
             connector_block = block
-            break
+    if source_path_block is None:
+        raise ValueError("canonical Plains road path position is absent")
     if connector_block is None:
         raise ValueError("canonical Plains road connector position is absent")
 
-    connector_state = int(require_tag(connector_block, "state", TAG_INT))
-    if state_names[connector_state] != "minecraft:dirt_path":
+    source_path_state = int(require_tag(source_path_block, "state", TAG_INT))
+    if state_names[source_path_state] != "minecraft:dirt_path":
         raise ValueError(
-            "canonical Plains connector must replace the center dirt path"
+            "canonical Plains road anchor must start as the center dirt path"
         )
+    connector_state = int(require_tag(connector_block, "state", TAG_INT))
+    if state_names[connector_state] != "minecraft:air":
+        raise ValueError("lowered Plains connector must replace authored air")
+    air_state = state_names.index("minecraft:air")
 
     jigsaw_state = len(palette)
     palette.append(
@@ -200,6 +209,10 @@ def create_canonical_plains_structure() -> bytes:
             ),
         }
     )
+    # Raising the connector one local block makes jigsaw alignment lower the
+    # complete player-authored structure by one world block. Move the authored
+    # boundary path with the connector so the village road remains at grade.
+    source_path_block["state"] = tag_int(air_state)
     connector_block["state"] = tag_int(jigsaw_state)
     connector_block["nbt"] = tag_compound(
         {

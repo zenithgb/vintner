@@ -1301,16 +1301,24 @@ public final class VintnerGameTests {
                             : new net.minecraft.core.Vec3i(15, 10, 13),
                     "Vineyard pool element size"
             );
+            var pathConnectors = vineyard.getShuffledJigsawBlocks(
+                    structureManager,
+                    BlockPos.ZERO,
+                    Rotation.NONE,
+                    RandomSource.create(0L)
+            );
             helper.assertValueEqual(
-                    vineyard.getShuffledJigsawBlocks(
-                            structureManager,
-                            BlockPos.ZERO,
-                            Rotation.NONE,
-                            RandomSource.create(0L)
-                    ).size(),
+                    pathConnectors.size(),
                     1,
                     "Vineyard must expose one village path connector"
             );
+            if (canonicalPlains) {
+                helper.assertValueEqual(
+                        pathConnectors.getFirst().pos(),
+                        new BlockPos(9, 2, 0),
+                        "Raised Plains connector must lower the winery by one block"
+                );
+            }
         }
 
         helper.succeed();
@@ -1389,21 +1397,25 @@ public final class VintnerGameTests {
                     canonicalPlains ? 52 : 20,
                     "Complete authored grapevine rows"
             );
-            helper.assertValueEqual(
-                    template.filterBlocks(
-                            BlockPos.ZERO,
-                            settings,
-                            Blocks.JIGSAW
-                    ).size(),
-                    1,
-                    "Village path connection"
-            );
-            String entranceState = template.filterBlocks(
+            var pathConnections = template.filterBlocks(
                     BlockPos.ZERO,
                     settings,
                     Blocks.JIGSAW
-            ).getFirst().nbt().getStringOr("final_state", "");
+            );
+            helper.assertValueEqual(
+                    pathConnections.size(),
+                    1,
+                    "Village path connection"
+            );
+            String entranceState = pathConnections.getFirst()
+                    .nbt()
+                    .getStringOr("final_state", "");
             if (canonicalPlains) {
+                helper.assertValueEqual(
+                        pathConnections.getFirst().pos(),
+                        new BlockPos(9, 2, 0),
+                        "Player-authored connector must lower the winery by one block"
+                );
                 helper.assertValueEqual(
                         entranceState,
                         "minecraft:dirt_path",
@@ -1674,7 +1686,7 @@ public final class VintnerGameTests {
             );
 
             BlockPos connector = origin.offset(StructureTemplate.transform(
-                    new BlockPos(9, 1, 0),
+                    new BlockPos(9, 2, 0),
                     Mirror.NONE,
                     rotation,
                     BlockPos.ZERO
@@ -1683,6 +1695,16 @@ public final class VintnerGameTests {
                     helper.getLevel().getBlockState(connector)
                             .is(Blocks.JIGSAW),
                     "Rotated winery must retain its village connector"
+            );
+            BlockPos clearedPath = origin.offset(StructureTemplate.transform(
+                    new BlockPos(9, 1, 0),
+                    Mirror.NONE,
+                    rotation,
+                    BlockPos.ZERO
+            ));
+            helper.assertTrue(
+                    helper.getLevel().getBlockState(clearedPath).isAir(),
+                    "Rotated winery must clear its original boundary path"
             );
         }
 
@@ -1832,9 +1854,13 @@ public final class VintnerGameTests {
                 .ifPresent(clock -> helper.getLevel()
                         .clockManager()
                         .setTotalTicks(clock, 2000L));
+        // Spawn on the supported interior approach cell beside the press.
+        // This deliberately avoids ending navigation just beyond the POI
+        // interaction threshold, which can make the profession assertion
+        // depend on pathfinder timing rather than workstation reachability.
         Villager winemaker = helper.spawn(
                 EntityTypes.VILLAGER,
-                relativeOrigin.offset(9, 2, 4)
+                relativeOrigin.offset(9, 1, 7)
         );
 
         helper.succeedWhen(() -> {

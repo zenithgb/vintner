@@ -26,15 +26,19 @@ the repository's standard-library lossless NBT codec, and derives the runtime
 Plains template deterministically. Running generation twice produces no Git
 or byte churn.
 
-Only one technical substitution is permitted. The dirt-path block at local
-`(9, 1, 0)` becomes the street connector
+Only two technical anchor edits are permitted. The boundary dirt-path block at
+local `(9, 1, 0)` becomes air, and the source air block directly above at
+`(9, 2, 0)` becomes the street connector
 `minecraft:jigsaw[orientation=north_up]`, whose final state is
 `minecraft:dirt_path` and whose target pool is the Plains village streets
-pool. Every other positioned block, block state and block-entity payload is
-identical to the player export. The visible-equivalence signature is
+pool. Raising the connector one local block makes Minecraft place the entire
+authored winery exactly one world block lower while keeping the village road
+at its original grade. Every other positioned block, block state and
+block-entity payload is identical to the player export. The source
+visible-equivalence signature is
 `8de7a8808f57ea431a9ef367cfe2a2b094e49f44395d0a74631d1e3158da9975`.
 
-`scripts/audit_village_vineyards.py` enforces that one-difference contract,
+`scripts/audit_village_vineyards.py` enforces that two-position anchor contract,
 the complete 17 x 11 x 11 volume, bounds, state identifiers, block entities,
 required functional inventory, forbidden blocks, entities, connector and all
 four rotations. The original export is also frozen outside Git in the phase
@@ -63,7 +67,8 @@ POI is present.
 The runtime ID remains `vintner:village/plains/vineyard`. It is injected as a
 rigid pool element into the vanilla Plains houses pool with weight 24, and the
 existing one-vineyard-per-village limiter is unchanged. The authored boundary
-path connector joins the vanilla Plains streets pool.
+path connector joins the vanilla Plains streets pool from one local block
+higher, lowering the complete structure by one world block.
 
 For Vintner 1.4.0, the player build becomes canonical for Plains only. Desert,
 Savanna, Snowy and Taiga retain the already accepted interim 15 x 10 x 13
