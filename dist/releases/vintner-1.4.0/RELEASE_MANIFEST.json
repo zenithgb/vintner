@@ -1,0 +1,39 @@
+{
+  "status": "RELEASE CANDIDATE - MANUAL ACCEPTANCE REQUIRED",
+  "publicationApproved": false,
+  "version": "1.4.0",
+  "sourceCommit": "71c35bd1f46f84b04ebed268eb5aa0d72f923439",
+  "productionSpawnFixCommit": "7ee08a7645fbb38adb150c4527b814e6477e1cc0",
+  "artifact": {
+    "file": "vintner-1.4.0.jar",
+    "sizeBytes": 1585112,
+    "sha256": "9149278b342a60f702f1069f11bdf37132069daf3a7b91ca4484cf45fb475ba6"
+  },
+  "runtime": {
+    "minecraft": "26.3",
+    "java": "25",
+    "fabricLoader": "0.19.5",
+    "fabricApi": "0.161.0+26.3",
+    "loom": "1.17.20"
+  },
+  "commons": {
+    "id": "zenithgb_library",
+    "version": "0.1.2",
+    "protocol": 2,
+    "external": true,
+    "sha256": "f8285005dc74d62da902ec3da6ede05fdafc3d204913a5b36466a0e7b00dd7a5",
+    "publicAvailability": "VERIFICATION REQUIRED"
+  },
+  "automatedAcceptance": {
+    "standardGameTests": "197/197 PASS",
+    "sereneSeasonsGameTests": "197/197 PASS",
+    "releaseResourceAudit": "PASS",
+    "modelAudit": "907 models PASS",
+    "exactServerRuntime": "PASS"
+  },
+  "manualGates": [
+    "exact-current-RC visual and ordinary gameplay",
+    "exact-current-RC real two-player",
+    "genuine public-1.3.1 copied-world upgrade"
+  ]
+}
