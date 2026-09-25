@@ -1,5 +1,12 @@
 # Vintner 1.4.0 Creative-tab order manual acceptance
 
+Reconciled status: **8 A — HISTORICALLY HUMAN-ACCEPTED; 7 C — SUPERSEDED**.
+The preserved 2026-09-21 project acceptance covers the original group
+readability and cultivar-order observations. Poplar later expanded exact tab
+membership, wood-family sequence, duplicate/missing/search coverage and visual
+scale. The original checkbox record remains unmodified; the compact current-RC
+Poplar check is in `docs/qa/1.4.0-current-rc-delta-manual-acceptance.md`.
+
 Automated checks cover membership, exact stack uniqueness, semantic group
 contiguity, wood-family order, cultivar order and Creative Search membership.
 They do not establish the visual scanning experience. Complete this checklist

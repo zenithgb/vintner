@@ -1,6 +1,12 @@
 # Nursery Bed model manual acceptance — Vintner 1.4.0
 
-Status: **MANUAL VISUAL ACCEPTANCE REQUIRED**
+Reconciled status: **31 A — HISTORICALLY HUMAN-ACCEPTED**.
+
+The preserved 2026-09-21 project acceptance covers the then-current Nursery
+Bed checklist, including the corrected empty item presentation. Later release
+work did not change this model. The original checkbox record remains as the
+historical run sheet and is not mechanically backfilled; the classification
+ledger is `docs/releases/1.4.0-release-state.md`.
 
 Use the exact candidate identity recorded in
 `dist/releases/vintner-1.4.0/RELEASE_MANIFEST.json`. Automated model, resource,

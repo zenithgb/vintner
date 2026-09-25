@@ -1,35 +1,50 @@
 # Vintner Release Schedule
 
-Last updated: September 2, 2026
+Last updated: September 25, 2026
 
-This schedule replaces the original `0.x` proposal in the full development
-roadmap. Vintner is already publicly released at `1.0.1`, so future feature
-updates use stable minor versions. Patch versions are reserved for fixes.
+This document preserves the earlier release-train plan, but its dates and
+version ordering are now **superseded**. It must not be used as publication
+authorization or as the current release calendar.
 
-Dates are targets, not promises. Features may move to a later release rather
-than weakening a release's stability.
+Vintner 1.4.0 is the active Minecraft 26.3 release candidate. No public release
+date is assigned. Its exact state and remaining gates are recorded in
+`docs/releases/1.4.0-release-state.md`. Later feature releases remain unscheduled
+and do not begin automatically when 1.4.0 engineering work is complete.
+
+## Current release status
+
+- Repository release tags exist through `v1.3.1`.
+- Vintner 1.4.0 implementation and automated acceptance are complete.
+- Exact-current-RC visual/ordinary-play, real two-player and genuine public
+  1.3.1 copied-world upgrade sessions remain open.
+- Commons 0.1.2 public availability must be verified before publication.
+- No 1.4.0 release date, merge, tag, upload or publication is assigned here.
 
 ## Release policy
 
 - Public Modrinth versions are marked **Release**, not Alpha or Beta.
 - New features ship in minor versions such as `1.1.0`.
 - Fix-only updates ship in patch versions such as `1.1.1`.
-- Each feature release freezes on a Monday and releases on the following
-  Friday after a dedicated QA week.
+- A feature release receives a date only after its release-specific gates and
+  dependency availability are known.
 - An unlisted `-rc.1` build may be used during QA when external testing is
   useful.
 - Critical fixes may ship immediately. Normal fixes are grouped into the next
   Friday patch.
 
-## Release train
+## Historical release train — superseded
 
-| Version | Release | Development window | Freeze and QA | Roadmap scope |
+The table below is retained only as planning history. Every listed date is a
+former target, not a current commitment. Version scope and ordering require a
+fresh roadmap decision after 1.4.0.
+
+| Version | Former target | Development window | Freeze and QA | Roadmap scope |
 | --- | --- | --- | --- | --- |
 | **1.1.0 — Useful First Vintage** | **August 7, 2026** | July 23–August 2 | August 3–6 | Complete Phase 2: wine profiles, consumption limits, first food pairings, survival recipe audit, advancement coverage, save/reload verification |
 | **1.2.0 — Cellar and Identity** | **October 2, 2026** | August 10–September 20 | September 21–October 1 | Phase 3: deeper batch identity, tasting profiles, bottle ageing, cellar conditions, wine racks and storage |
 | **1.3.0 — Wine at the Table** | **September 2, 2026** | August 14–27 | August 28–September 2 | Placeable wine bottles, persistent partial servings, shareable Tasting Services, unified bottle presentation, and multiplayer-safe serving |
 | **1.3.1 — Cellar Crafting Patch** | **September 2, 2026** | Patch | Patch verification | More accessible cellar recipes and expanded recipe validation |
-| **1.4.0 — Vineyard Expansion** | **February 12, 2027** | December 7–January 31 | February 1–11 | Vineyard expansion plus estate oversight: cultivars, vine age, propagation, grafting, threats, yield management, named plots, ledger, reputation, Estate Management Desk and Estate Atlas |
+| **1.4.0 — Vineyard Expansion** | **Superseded: February 12, 2027; current date TBD** | Superseded | Exact-RC gates remain | Vineyard expansion, Poplar, player-built Plains winery and estate oversight; current scope is frozen |
 | **1.5.0 — Table and Pantry** | **April 16, 2027** | February 15–April 4 | April 5–15 | Phase 6: expanded benefits, cooking, meal pairings, Farmer's Delight integration, feasts and by-products |
 | **1.6.0 — Estates** | **June 25, 2027** | April 19–June 13 | June 14–24 | Phase 7 continuation: deeper physical upgrades, estate labels, hospitality, awards and estate progression beyond the 1.4 management foundation |
 | **1.7.0 — Trade** | **September 3, 2027** | June 28–August 22 | August 23–September 2 | Transactional Phase 8: contracts, negotiations, sales, routes and changing demand beyond the read-only 1.4 market outlook |
@@ -58,7 +73,10 @@ If a gate fails, the affected feature moves out of the release or the release
 date moves. A known destructive save issue, crash, duplication exploit or
 missing-asset problem always blocks release.
 
-## Immediate timetable: 1.1.0
+## Historical immediate timetable: 1.1.0 — superseded
+
+The dates below are preserved as historical planning notes and are no longer
+operative.
 
 - **July 23:** Phase 2A implementation and manual QA complete.
 - **July 24–29:** Add and test the first red/white food pairings.

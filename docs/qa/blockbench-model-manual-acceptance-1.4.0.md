@@ -1,8 +1,15 @@
 # Vintner 1.4.0 model manual acceptance
 
+Classification: **B — AUTOMATED-ONLY**. The later model-family audit passes,
+but no project record proves this complete 26-observation checklist was
+performed by a human.
+
 Use the exact committed candidate in a disposable Minecraft 26.3 world. Human
 visual checks remain pending until a person marks them complete; automated
 build, GameTest or startup evidence does not approve subjective appearance.
+
+Current candidate SHA-256:
+`9149278b342a60f702f1069f11bdf37132069daf3a7b91ca4484cf45fb475ba6`.
 
 ## Vineyard
 

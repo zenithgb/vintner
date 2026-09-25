@@ -1,5 +1,10 @@
 # Vintner 1.4.0 Advancement Tutorial — Manual Acceptance
 
+Reconciled status: **20 A — HISTORICALLY HUMAN-ACCEPTED**. The preserved
+2026-09-21 project acceptance covers this then-existing checklist, and later
+release work did not change the visible tutorial tree. The original checkbox
+record remains unmodified; see `docs/releases/1.4.0-release-state.md`.
+
 Use a disposable fresh Survival-style player and world with the exact release
 candidate. Do not use the permanent showcase-world master. None of these checks
 is satisfied by automated tests or startup smoke.

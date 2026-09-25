@@ -1,5 +1,11 @@
 # Vintner 1.4.0 — green bottles and placed-bottle pick checklist
 
+Reconciled status: **7 A — HISTORICALLY HUMAN-ACCEPTED; 1 C — SUPERSEDED**.
+The preserved 2026-09-21 acceptance covers the targeted green-bottle,
+Pick Block and identification checks. The final cross-storage/showcase sweep
+predates Poplar and is represented in the exact-current-RC delta session. The
+original checkbox record is retained rather than retroactively rewritten.
+
 Use the replacement candidate identified in
 `docs/releases/1.4.0-green-bottles-and-placed-pick.md`. These are direct human
 observations; leave an item unchecked until it has been seen in Minecraft.

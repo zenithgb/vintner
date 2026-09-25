@@ -1,9 +1,11 @@
 # Vintner 1.4.0 Village Vineyard Manual Acceptance
 
 Candidate-specific automated evidence is recorded in
-`docs/VILLAGE_TIER1_PLAYER_IMPORT_1_4_0.md`. The checks below are deliberately
-left for Zach's direct visual and gameplay acceptance. Automated tests and
-screenshots do not self-approve subjective release quality.
+`docs/PLAINS_WINERY_SPAWN_INVESTIGATION_1_4_0.md` and
+`docs/VILLAGE_TIER1_PLAYER_IMPORT_1_4_0.md`. Classification: **D — STILL
+REQUIRED ON CURRENT RC**. The checks below are deliberately left for Zach's
+direct visual and gameplay acceptance. Automated tests and screenshots do not
+self-approve subjective release quality.
 
 ## Visual and gameplay checklist
 
@@ -28,9 +30,9 @@ screenshots do not self-approve subjective release quality.
 
 ## Acceptance notes
 
-- Candidate JAR: `vintner-1.4.0.jar` (1,584,777 bytes)
-- Candidate SHA-256: `cc7bdeb02b78af5aee5ba6cd291efe830debde285fd460ff3369f5cc5478d52c`
+- Candidate JAR: `vintner-1.4.0.jar` (1,585,112 bytes)
+- Candidate SHA-256: `9149278b342a60f702f1069f11bdf37132069daf3a7b91ca4484cf45fb475ba6`
 - World/seed: disposable exact-JAR world `Vintner-Player-Tier1-Exact`; seed `1400`
 - Resource packs/shaders:
-- Screenshots: existing pre-shift set at `/Users/zachariaheverson/Developer/Minecraft/vintner-release-evidence/1.4.0-player-tier1-winery-20260923/screenshots/`; replacement height screenshot pending Zach's current exact-client check
+- Screenshots: historical pre-fix set at `/Users/zachariaheverson/Developer/Minecraft/vintner-release-evidence/1.4.0-player-tier1-winery-20260923/screenshots/`; current exact-RC inspection remains required
 - Zach's verdict:

@@ -1,5 +1,11 @@
 # Vintner 1.4.0 — Market Truthfulness Manual Acceptance
 
+Reconciled status: **8 A — HISTORICALLY HUMAN-ACCEPTED**. The preserved
+2026-09-21 project acceptance covers this then-existing wording/layout
+checklist, and later release work did not change these surfaces. The original
+checkbox record remains unmodified; see
+`docs/releases/1.4.0-release-state.md`.
+
 Use the exact replacement candidate in a disposable acceptance world. Do not
 infer any item below from JSON parsing, compilation, or startup smoke.
 
@@ -19,4 +25,5 @@ infer any item below from JSON parsing, compilation, or startup smoke.
       small, default, and large GUI scales.
 - [ ] No raw localization key or `%s` placeholder appears.
 
-Manual result: **PENDING**.
+Historical manual result: **ACCEPTED**. Exact-current-RC ordinary-play smoke
+remains a separate final session.

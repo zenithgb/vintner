@@ -1,6 +1,12 @@
 # Vintner 1.4.0 — four-correction manual acceptance
 
-Status: **PENDING MANUAL ACCEPTANCE**
+Reconciled status: **18 A — HISTORICALLY HUMAN-ACCEPTED; 1 C — SUPERSEDED**.
+
+The preserved 2026-09-21 project acceptance covers this checklist except the
+“all affected wood variants” sweep, whose exact scope later expanded with
+Poplar. The original checkbox record is retained rather than retroactively
+rewritten. See `docs/releases/1.4.0-release-state.md` and the exact-current-RC
+delta checklist for the remaining representative Poplar check.
 
 Use the replacement 1.4.0 candidate in a disposable profile and world copy.
 Run once with shaders disabled, then repeat the visual/contact observations in
