@@ -20,6 +20,7 @@ from structure_nbt import (
     require_list,
     require_tag,
 )
+from generate_village_vineyards import PLAYER_SOURCES, create_player_structure
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,17 +33,16 @@ CANONICAL_PLAINS_SHA256 = (
 )
 CANONICAL_PLAINS_SIZE = (17, 11, 11)
 RUNTIME_PLAINS_SIZE = (16, 11, 11)
-LEGACY_INTERIM_SIZE = (15, 10, 13)
 PLAINS_SOURCE_PATH_POSITION = (9, 1, 0)
 PLAINS_SOURCE_JIGSAW_POSITION = (9, 2, 0)
 PLAINS_RUNTIME_PATH_POSITION = (8, 1, 0)
 PLAINS_RUNTIME_JIGSAW_POSITION = (8, 2, 0)
 EXPECTED_DATA_VERSIONS = {
     "plains": 5023,
-    "desert": 4903,
-    "savanna": 4903,
-    "snowy": 4903,
-    "taiga": 4903,
+    "desert": 5023,
+    "savanna": 5023,
+    "snowy": 5023,
+    "taiga": 5023,
 }
 CULTURES = {
     "plains": "oak",
@@ -50,6 +50,16 @@ CULTURES = {
     "savanna": "acacia",
     "snowy": "spruce",
     "taiga": "spruce",
+}
+PAIRED_SOURCES = {
+    "savanna": {
+        "winery_tier1": ("7f50357028418cdd2599164fdf40d6ebbd625748832b7147f37128bcca1fa91a", (15, 8, 18)),
+        "vineyard_field_tier1": ("39733138bb05eed5f9b48e0028a0a2587b7b5bdefa147c5afd0b9cb4c5d2b799", (7, 3, 18)),
+    },
+    "taiga": {
+        "winery_tier1": ("8198a9905ceb011c55a7546087ca33ef74b6bdd19d74877d8504e8db189583fb", (11, 11, 15)),
+        "vineyard_field_tier1": ("b9ce1de6fdbf215960f310b59664e8b223111bab62eac98bc976ff69b95e45c3", (11, 3, 13)),
+    },
 }
 FORBIDDEN_BLOCKS = {
     "minecraft:barrier",
@@ -446,51 +456,60 @@ def audit_canonical_plains(model: dict[str, object]) -> str:
     return visible_hash
 
 
-def audit_interim_variant(
-    culture: str,
-    wood: str,
-    model: dict[str, object],
-) -> None:
-    audit_jigsaw(
-        culture,
-        model,
-        (0, 2, 6),
-        "west_up",
-        f"minecraft:{wood}_stairs["
-        "facing=east,half=bottom,shape=straight,waterlogged=false]",
-    )
-    counts = model["counts"]
-    positioned = model["positioned"]
-    expected_press = press_name(wood)
-    all_presses = sum(
-        count for name, count in counts.items() if name.endswith("grape_press")
-    )
-    if all_presses != 1 or counts[expected_press] != 1:
-        raise ValueError(f"{culture}: wrong Winemaker workstation")
-    if positioned[(11, 3, 6)][0] != expected_press:
-        raise ValueError(f"{culture}: Winemaker workstation moved")
-    if positioned[(10, 3, 6)][0] != "minecraft:air":
-        raise ValueError(f"{culture}: press approach is obstructed")
-    if positioned[(9, 3, 6)][0] != "minecraft:air":
-        raise ValueError(f"{culture}: workstation aisle is obstructed")
-    if counts[rack_name(wood)] != 1:
-        raise ValueError(f"{culture}: culture-matched wine rack missing")
-    if counts["vintner:vineyard_soil"] != 10:
-        raise ValueError(f"{culture}: vineyard plot count changed")
-    grapevine_count = sum(
-        count for name, count in counts.items() if name.endswith("grapevine")
-    )
-    if grapevine_count != 20:
-        raise ValueError(f"{culture}: grapevine count changed")
+def audit_player_variant(culture: str, model: dict[str, object]) -> None:
+    expected_hash, size, connector, orientation = PLAYER_SOURCES[culture]
+    source_path = ROOT / "structure_sources/village" / culture / "vineyard_tier1.nbt"
+    source_bytes = source_path.read_bytes()
+    if hashlib.sha256(source_bytes).hexdigest() != expected_hash:
+        raise ValueError(f"{culture}: immutable player source hash changed")
+    source = load_structure(source_path)
+    if encode_root(source["root"]) != gzip.decompress(source_bytes):
+        raise ValueError(f"{culture}: source is not NBT codec-lossless")
+    if source["size"] != size or source["data_version"] != 5023:
+        raise ValueError(f"{culture}: source dimensions or version changed")
+    if source["entities"]:
+        raise ValueError(f"{culture}: source contains entities")
+    if len(source["positioned"]) != size[0] * size[1] * size[2]:
+        raise ValueError(f"{culture}: incomplete player export")
+    if any(source["counts"][name] for name in FORBIDDEN_BLOCKS | {"minecraft:jigsaw"}):
+        raise ValueError(f"{culture}: forbidden source block")
+    if model["path"].read_bytes() != create_player_structure(culture):
+        raise ValueError(f"{culture}: runtime is not deterministic from source")
+
+    original_name, original_properties, original_block = source["positioned"][connector]
+    final_state = original_name
+    if original_properties:
+        final_state += "[" + ",".join(
+            f"{key}={value}" for key, value in sorted(original_properties.items())
+        ) + "]"
+    audit_jigsaw(culture, model, connector, orientation, final_state)
+    for position, authored in source["positioned"].items():
+        if position == connector:
+            continue
+        if model["positioned"][position] != authored:
+            raise ValueError(f"{culture}: player block changed at {position}")
+    if original_block.get("nbt"):
+        raise ValueError(f"{culture}: connector replaces authored block entity")
+    presses = [
+        (position, name, properties)
+        for position, (name, properties, _block) in source["positioned"].items()
+        if name.endswith("grape_press")
+    ]
+    if len(presses) != 1 or model["positioned"][presses[0][0]][:2] != presses[0][1:]:
+        raise ValueError(f"{culture}: Winemaker workstation changed")
+    if not any(name.endswith("grapevine") for name in source["counts"]):
+        raise ValueError(f"{culture}: source has no vineyard")
     print(
-        f"PASS {culture}: interim 15x10x13 template, {len(model['blocks'])} "
-        f"blocks, 1 {expected_press}, 1 jigsaw, 0 entities, 0 composters, "
-        "rotations 0/90/180/270"
+        f"PASS {culture}: source/runtime {size}, {len(source['blocks'])} blocks, "
+        f"{source['block_entity_count']} authored block entities, 0 entities, "
+        f"0 Composters, 1 press {presses[0]}, connector {connector} {orientation}, "
+        "all other authored blocks and data byte-equivalent, "
+        "rotations 0/90/180/270 in bounds"
     )
 
 
 def main() -> None:
-    for culture, wood in CULTURES.items():
+    for culture in CULTURES:
         path = STRUCTURE_ROOT / culture / "vineyard.nbt"
         if not path.is_file():
             raise ValueError(f"missing structure {path.relative_to(ROOT)}")
@@ -498,16 +517,39 @@ def main() -> None:
         expected_size = (
             RUNTIME_PLAINS_SIZE
             if culture == "plains"
-            else LEGACY_INTERIM_SIZE
+            else PLAYER_SOURCES[culture][1]
         )
         audit_common(culture, model, expected_size)
         if culture == "plains":
             audit_canonical_plains(model)
         else:
-            audit_interim_variant(culture, wood, model)
+            audit_player_variant(culture, model)
+    for culture, pieces in PAIRED_SOURCES.items():
+        for name, (expected_hash, expected_size) in pieces.items():
+            source_path = ROOT / "structure_sources/village" / culture / f"{name}.nbt"
+            runtime_path = STRUCTURE_ROOT / culture / f"{name}.nbt"
+            source_bytes = source_path.read_bytes()
+            if hashlib.sha256(source_bytes).hexdigest() != expected_hash:
+                raise ValueError(f"{culture}/{name}: immutable split source hash changed")
+            if runtime_path.read_bytes() != source_bytes:
+                raise ValueError(f"{culture}/{name}: runtime differs from source")
+            model = load_structure(source_path)
+            if model["size"] != expected_size or model["entities"]:
+                raise ValueError(f"{culture}/{name}: dimensions or entities changed")
+            if any(model["counts"][block] for block in FORBIDDEN_BLOCKS | {"minecraft:jigsaw"}):
+                raise ValueError(f"{culture}/{name}: forbidden block")
+            presses = sum(count for block, count in model["counts"].items()
+                          if block.endswith("grape_press"))
+            if presses != (1 if name == "winery_tier1" else 0):
+                raise ValueError(f"{culture}/{name}: wrong workstation count")
+            if name == "vineyard_field_tier1" and not any(
+                    block.endswith("grapevine") for block in model["counts"]):
+                raise ValueError(f"{culture}/{name}: no vineyard vines")
+            print(f"PASS {culture}/{name}: source/runtime byte-identical, "
+                  f"SHA-256 {expected_hash}, size {expected_size}, "
+                  f"{presses} press, 0 entities and forbidden blocks")
     print(
-        "Village vineyard structure audit: PASS (canonical Plains import + "
-        "4 interim biome templates)"
+        "Village vineyard structure audit: PASS (five player-authored wineries)"
     )
 
 

@@ -1,0 +1,66 @@
+package com.zenith.vintner.mixin;
+
+import com.zenith.vintner.registry.PostJigsawWineryPairs;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
+
+import java.util.function.Predicate;
+
+@Mixin(Structure.class)
+abstract class StructureGenerateMixin {
+    @Redirect(
+            method = "generate",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/level/levelgen/structure/"
+                            + "pieces/StructurePiecesBuilder;build()"
+                            + "Lnet/minecraft/world/level/levelgen/structure/"
+                            + "pieces/PiecesContainer;"
+            )
+    )
+    private PiecesContainer vintner$appendPostJigsawPair(
+            StructurePiecesBuilder builder,
+            Holder<Structure> structure,
+            ResourceKey<Level> dimension,
+            RegistryAccess registries,
+            ChunkGenerator generator,
+            BiomeSource biomeSource,
+            Climate.Sampler sampler,
+            RandomState randomState,
+            StructureTemplateManager templates,
+            long seed,
+            ChunkPos chunkPos,
+            int references,
+            LevelHeightAccessor heightAccessor,
+            Predicate<Holder<Biome>> validBiome
+    ) {
+        String culture = structure.unwrapKey()
+                .map(key -> switch (key.identifier().toString()) {
+                    case "minecraft:village_savanna" -> "savanna";
+                    case "minecraft:village_taiga" -> "taiga";
+                    default -> "";
+                })
+                .orElse("");
+        PostJigsawWineryPairs.append(
+                culture, builder, chunkPos, generator, randomState,
+                templates, heightAccessor
+        );
+        return builder.build();
+    }
+}

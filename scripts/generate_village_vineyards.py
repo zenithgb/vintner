@@ -49,6 +49,81 @@ CULTURES = {
     "taiga": "spruce",
 }
 
+# The four player exports are immutable. Each connector replaces one boundary
+# block at the authored street approach; its final_state restores that block.
+PLAYER_SOURCES = {
+    "desert": (
+        "7be4b217c7f987829e1b2a2eeabdc87bbf83054984daa2db56610eb1f712d805",
+        (13, 10, 13), (6, 0, 0), "north_up",
+    ),
+    "savanna": (
+        "60348dbd4b0a5c4443029af827e3f7806d1a22783f3b4f19bf5c29ce2bf1b80b",
+        (22, 8, 18), (7, 0, 0), "north_up",
+    ),
+    "snowy": (
+        "1fdfc017cca2ea97318bb61b06296972ea3ebeef9208222f69430ff048e00549",
+        (13, 16, 10), (2, 0, 9), "south_up",
+    ),
+    "taiga": (
+        "f3a924c609b69c36e9a0b627478585402fc2f7537eaadfc6b6f02ad91a9f2a9a",
+        (23, 11, 15), (12, 1, 0), "north_up",
+    ),
+}
+
+
+def create_player_structure(culture: str) -> bytes:
+    expected_hash, expected_size, connector, orientation = PLAYER_SOURCES[culture]
+    source = ROOT / "structure_sources/village" / culture / "vineyard_tier1.nbt"
+    source_bytes = source.read_bytes()
+    if hashlib.sha256(source_bytes).hexdigest() != expected_hash:
+        raise ValueError(f"{culture}: player source hash changed")
+    payload = gzip.decompress(source_bytes)
+    root = decode_root(payload)
+    if encode_root(root) != payload:
+        raise ValueError(f"{culture}: player source is not codec-lossless")
+    if tuple(require_list(root, "size", TAG_INT)) != expected_size:
+        raise ValueError(f"{culture}: player source size changed")
+    if require_tag(root, "entities", 9)[1]:
+        raise ValueError(f"{culture}: player source contains entities")
+
+    palette = require_list(root, "palette", TAG_COMPOUND)
+    blocks = require_list(root, "blocks", TAG_COMPOUND)
+    if len(blocks) != expected_size[0] * expected_size[1] * expected_size[2]:
+        raise ValueError(f"{culture}: player source volume is incomplete")
+    names = [str(require_tag(entry, "id", TAG_STRING)) for entry in palette]
+    if "minecraft:jigsaw" in names or "minecraft:composter" in names:
+        raise ValueError(f"{culture}: source contains a jigsaw or Composter")
+    original = None
+    for block in blocks:
+        if tuple(require_list(block, "pos", TAG_INT)) == connector:
+            original = block
+            break
+    if original is None or "nbt" in original:
+        raise ValueError(f"{culture}: connector block is missing or has data")
+    original_state = palette[int(require_tag(original, "state", TAG_INT))]
+    final_state = str(require_tag(original_state, "id", TAG_STRING))
+    properties_tag = original_state.get("properties")
+    if properties_tag is not None:
+        properties = properties_tag[1]
+        final_state += "[" + ",".join(
+            f"{key}={value[1]}" for key, value in sorted(properties.items())
+        ) + "]"
+
+    original["state"] = tag_int(len(palette))
+    original["nbt"] = tag_compound({
+        "joint": tag_string("aligned"),
+        "final_state": tag_string(final_state),
+        "name": tag_string("minecraft:building_entrance"),
+        "pool": tag_string(f"minecraft:village/{culture}/streets"),
+        "id": tag_string("minecraft:jigsaw"),
+        "target": tag_string("minecraft:building_entrance"),
+    })
+    palette.append({
+        "id": tag_string("minecraft:jigsaw"),
+        "properties": tag_compound({"orientation": tag_string(orientation)}),
+    })
+    return encode_gzip(root)
+
 FOUNDATIONS = {
     "plains": "minecraft:dirt",
     "desert": "minecraft:sandstone",
@@ -550,7 +625,7 @@ def main() -> None:
         generated = (
             create_canonical_plains_structure()
             if culture == "plains"
-            else create_structure(culture, wood)
+            else create_player_structure(culture)
         )
         relative = output.relative_to(ROOT)
 

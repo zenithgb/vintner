@@ -5,7 +5,9 @@
   "mixins": [
     "ItemStackMixin",
     "JigsawPlacementPlacerMixin",
+    "LakeFeatureVineyardProtectionMixin",
     "PlayerMixin",
+    "StructureGenerateMixin",
     "StructureTemplatePoolAccessor"
   ],
   "client": [

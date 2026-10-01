@@ -64,7 +64,6 @@ public final class ModVillageStructures {
                     "savanna_tool_smith_1",
                     "cooper_acacia"
             ),
-            vineyard("savanna"),
             house(
                     "snowy",
                     "snowy_cartographer_house_1",
@@ -85,8 +84,9 @@ public final class ModVillageStructures {
                     "taiga",
                     "taiga_tool_smith_1",
                     "cooper_spruce"
-            ),
-            vineyard("taiga")
+            )
+            // Taiga's full player winery and field join the finished village
+            // as an atomic pair instead of competing for a house-pool slot.
     );
 
     private static final Set<StructureTemplatePool> INJECTED_POOLS =
