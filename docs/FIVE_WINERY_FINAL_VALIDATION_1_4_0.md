@@ -1,9 +1,9 @@
 # Five player-built wineries: final integration evidence
 
 This record applies to the `phase/1.4.0-five-winery-integration` branch. It
-does not change the historical candidate records. The exact candidate identity
-and runtime results are recorded in `docs/releases/1.4.0-release-state.md`
-after validation from committed HEAD.
+does not change the historical candidate records. The integration was committed
+as `429a21fc636e2c158a0ac9b2598ed8e965424dfe`. Exact-client connection
+remains unverified, so no replacement 1.4.0 candidate is frozen.
 
 ## Sources and runtime contracts
 
@@ -65,7 +65,7 @@ visual-review items.
 ## Automated checks
 
 - Standard GameTests: 216/216 after the bounded parallel test.
-- Serene Seasons GameTests: see final suite log and release-state entry.
+- Serene Seasons GameTests: 216/216.
 - Generator `--check`, village source/runtime audit, natural saved-world audit,
   advancement, release assets, Blockbench/model family, Nursery Bed, and serving
   contact audits passed.
@@ -75,3 +75,21 @@ visual-review items.
 Automated placement and workstation tests do not accept the visible buildings,
 gameplay feel, real two-player behavior, or upgrade of a copy of a genuine
 public 1.3.1 world. The exact-RC human checklist remains open.
+
+## Exact artifact validation status
+
+The clean build of committed `429a21f` produced a 1,628,753-byte JAR with
+SHA-256 `02ce96df4421fc954db346de29b84fe18b689386476a6a76f03a8503481a3137`.
+It is a validation artifact, not a new authoritative RC. An isolated Java 25,
+Minecraft 26.3, Fabric Loader 0.19.5, Fabric API 0.161.0+26.3, and Commons
+0.1.2 dedicated server started, reloaded, saved, stopped, and restarted. A
+fresh Taiga village at `[1680, -1056]` had one complete winery and one complete
+field both before and after restart. The same exact JAR loaded in an isolated
+client and completed resource atlas initialization without a Vintner missing
+model/texture error. The attempted quick-play client connection did not produce
+a server join, so registry sync, visible generated winery, disconnect/reconnect,
+and in-game Quit remain unverified. The launcher stopped the isolated client.
+
+Evidence is preserved under
+`/Users/zachariaheverson/Developer/Minecraft/vintner-release-evidence/1.4.0-five-winery-429a21f-20261001`.
+The previous `9149278b...` RC remains authoritative.
