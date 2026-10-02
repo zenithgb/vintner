@@ -100,13 +100,31 @@ def main() -> int:
         vine_ids = {name for name in model["counts"]
                     if name.startswith("vintner:") and name.endswith("grapevine")}
         differences = []
+        unsupported_foundation = []
+        unsupported_field_soil = 0
         for local, (authored, _properties, _nbt) in model["positioned"].items():
+            dx, dy, dz = transformed(local, rotation, model["size"])
+            world_x, world_y, world_z = box[0] + dx, box[1] + dy, box[2] + dz
+            if args.culture == "desert" and local[1] == 0 and authored in {
+                    "minecraft:cut_sandstone", "minecraft:smooth_sandstone",
+                    "minecraft:smooth_sandstone_stairs", "minecraft:sandstone",
+                    "minecraft:sandstone_stairs", "minecraft:sandstone_wall"}:
+                support = block(world_x, world_y - 1, world_z)
+                if support == "minecraft:air":
+                    unsupported_foundation.append(list(local))
+                elif support in {"minecraft:cut_sandstone",
+                                 "minecraft:smooth_sandstone",
+                                 "minecraft:sandstone"}:
+                    summary["foundation_support_cells"] += 1
+            if paired and template == field_id and authored == "vintner:vineyard_soil":
+                if block(world_x, world_y - 1, world_z) == "minecraft:air":
+                    summary["field_soil_over_air_cells"] += 1
+                    unsupported_field_soil += 1
             if not (authored.startswith("vintner:")
                     or (authored.startswith("minecraft:")
                         and authored.endswith("_door"))):
                 continue
-            dx, dy, dz = transformed(local, rotation, model["size"])
-            actual = block(box[0] + dx, box[1] + dy, box[2] + dz)
+            actual = block(world_x, world_y, world_z)
             allowed = {authored}
             if authored.endswith("_trellis"):
                 allowed.update(vine_ids)
@@ -119,6 +137,11 @@ def main() -> int:
             failures.append(f"{village}: {template} {box}: {differences[:20]}")
         else:
             summary["complete_features"] += 1
+        if unsupported_foundation:
+            failures.append(f"{village}: unsupported Desert foundation "
+                            f"{box}: {unsupported_foundation[:20]}")
+        if unsupported_field_soil:
+            summary["fields_with_soil_over_air"] += 1
 
     for number, location in enumerate(locations, 1):
         if len(location) != 2:

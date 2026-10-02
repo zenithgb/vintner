@@ -143,9 +143,15 @@ public final class PostJigsawWineryPairs {
                         portX, portZ)) {
                     continue;
                 }
+                // The authored surface at local Y=0 must meet the road-side
+                // terrain rather than sit on top of it. Taiga's winery has
+                // an additional two-block cellar/foundation below its
+                // walkable entrance; its field does not.
+                int terrainContact = portSurface - 2
+                        - (winery && config.taiga ? 1 : 0);
                 BlockPos origin = new BlockPos(
                         portX - transformedRoadEdge.getX(),
-                        portSurface - 1 - transformedRoadEdge.getY(),
+                        terrainContact - transformedRoadEdge.getY(),
                         portZ - transformedRoadEdge.getZ()
                 );
                 BoundingBox box = element.getBoundingBox(

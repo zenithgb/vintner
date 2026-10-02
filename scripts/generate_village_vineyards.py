@@ -54,7 +54,7 @@ CULTURES = {
 PLAYER_SOURCES = {
     "desert": (
         "7be4b217c7f987829e1b2a2eeabdc87bbf83054984daa2db56610eb1f712d805",
-        (13, 10, 13), (6, 0, 0), "north_up",
+        (13, 10, 13), (5, 1, 0), "north_up",
     ),
     "savanna": (
         "60348dbd4b0a5c4443029af827e3f7806d1a22783f3b4f19bf5c29ce2bf1b80b",
@@ -62,7 +62,7 @@ PLAYER_SOURCES = {
     ),
     "snowy": (
         "1fdfc017cca2ea97318bb61b06296972ea3ebeef9208222f69430ff048e00549",
-        (13, 16, 10), (2, 0, 9), "south_up",
+        (13, 16, 10), (2, 1, 9), "south_up",
     ),
     "taiga": (
         "f3a924c609b69c36e9a0b627478585402fc2f7537eaadfc6b6f02ad91a9f2a9a",

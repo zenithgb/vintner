@@ -56,6 +56,7 @@ import com.zenith.vintner.network.EstateDeskPayload;
 import com.zenith.vintner.network.TastingServiceCreativePicker;
 import com.zenith.vintner.recipe.GrapeBowlRecipe;
 import com.zenith.vintner.registry.ModAttachments;
+import com.zenith.vintner.registry.DesertWineryFoundationSupport;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModCreativeTabs;
@@ -1512,9 +1513,9 @@ public final class VintnerGameTests {
                 helper.assertValueEqual(
                         pathConnections.getFirst().pos(),
                         switch (culture) {
-                            case "desert" -> new BlockPos(6, 0, 0);
+                            case "desert" -> new BlockPos(5, 1, 0);
                             case "savanna" -> new BlockPos(7, 0, 0);
-                            case "snowy" -> new BlockPos(2, 0, 9);
+                            case "snowy" -> new BlockPos(2, 1, 9);
                             case "taiga" -> new BlockPos(12, 1, 0);
                             default -> throw new IllegalStateException();
                         },
@@ -1523,9 +1524,9 @@ public final class VintnerGameTests {
                 helper.assertValueEqual(
                         entranceState,
                         switch (culture) {
-                            case "desert" -> "minecraft:cut_sandstone";
+                            case "desert" -> "minecraft:smooth_sandstone";
                             case "savanna", "taiga" -> "minecraft:dirt_path";
-                            case "snowy" -> "minecraft:grass_block[snowy=false]";
+                            case "snowy" -> "minecraft:air";
                             default -> throw new IllegalStateException();
                         },
                         "Player street surface remains after connection"
@@ -1826,7 +1827,7 @@ public final class VintnerGameTests {
                 new BlockPos(11, 1, 1), Direction.WEST,
                 new BlockPos(6, 1, 0), Blocks.JUNGLE_DOOR, Direction.NORTH,
                 new BlockPos(5, 1, 7), GrapeVariety.RED,
-                new BlockPos(6, 0, 0)
+                new BlockPos(5, 1, 0)
         ));
     }
 
@@ -1850,7 +1851,7 @@ public final class VintnerGameTests {
                 new BlockPos(4, 0, 3), Direction.EAST,
                 new BlockPos(3, 3, 5), Blocks.SPRUCE_DOOR, Direction.WEST,
                 new BlockPos(4, 1, 9), GrapeVariety.WHITE,
-                new BlockPos(2, 0, 9)
+                new BlockPos(2, 1, 9)
         ));
     }
 
@@ -2123,6 +2124,51 @@ public final class VintnerGameTests {
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 40)
+    public void desertWinerySupportsOnlyShortFoundationGaps(
+            GameTestHelper helper
+    ) {
+        BlockPos start = helper.absolutePos(new BlockPos(2, 6, 2));
+        var level = helper.getLevel();
+        for (int dx = 0; dx < 5; dx++) {
+            BlockPos base = start.offset(dx, 0, 0);
+            level.setBlock(base, Blocks.CUT_SANDSTONE.defaultBlockState(),
+                    Block.UPDATE_ALL);
+            for (int depth = 1; depth <= 3; depth++) {
+                level.setBlock(base.below(depth),
+                        Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
+        }
+        // Flat sand, a one-block dip, a two-block dip, and a cave. The last
+        // foundation cell is outside the winery's actual bounding box.
+        level.setBlock(start.below(), Blocks.SAND.defaultBlockState(),
+                Block.UPDATE_ALL);
+        level.setBlock(start.offset(1, -2, 0),
+                Blocks.SAND.defaultBlockState(), Block.UPDATE_ALL);
+        level.setBlock(start.offset(2, -3, 0),
+                Blocks.SAND.defaultBlockState(), Block.UPDATE_ALL);
+        level.setBlock(start.offset(4, -2, 0),
+                Blocks.SAND.defaultBlockState(), Block.UPDATE_ALL);
+        var piece = new net.minecraft.world.level.levelgen.structure.BoundingBox(
+                start.getX(), start.getY(), start.getZ(),
+                start.getX() + 3, start.getY() + 2, start.getZ()
+        );
+        helper.assertValueEqual(DesertWineryFoundationSupport.fill(
+                        level, piece, piece), 3,
+                "Only ordinary one- and two-block dips need support");
+        helper.assertTrue(level.getBlockState(start.below()).is(Blocks.SAND),
+                "Flat natural sand must remain unchanged");
+        helper.assertTrue(level.getBlockState(start.offset(1, -1, 0))
+                .is(Blocks.CUT_SANDSTONE), "One-block dip must be supported");
+        helper.assertTrue(level.getBlockState(start.offset(2, -2, 0))
+                .is(Blocks.CUT_SANDSTONE), "Two-block dip must be supported");
+        helper.assertTrue(level.getBlockState(start.offset(3, -1, 0)).isAir(),
+                "Cave must not acquire a long support column");
+        helper.assertTrue(level.getBlockState(start.offset(4, -1, 0)).isAir(),
+                "Support must stay within the winery footprint");
+        helper.succeed();
+    }
+
     private static BlockPos prepareLakeFixture(GameTestHelper helper) {
         BlockPos relative = new BlockPos(10, 4, 10);
         for (int x = 0; x < 16; x++) {
@@ -2218,10 +2264,14 @@ public final class VintnerGameTests {
                 if (template.equals(
                         "vintner:village/" + culture + "/winery_tier1")) {
                     winery++;
+                    assertPairTerrainContact(helper, poolPiece,
+                            culture, true, generator, randomState);
                 } else if (template.equals(
                         "vintner:village/" + culture
                                 + "/vineyard_field_tier1")) {
                     field++;
+                    assertPairTerrainContact(helper, poolPiece,
+                            culture, false, generator, randomState);
                 }
             }
             if (winery > 1 || field > 1) {
@@ -2293,6 +2343,37 @@ public final class VintnerGameTests {
         helper.assertValueEqual(duplicates, 0,
                 "No village may contain duplicate pair pieces");
         helper.succeed();
+    }
+
+    private static void assertPairTerrainContact(
+            GameTestHelper helper,
+            net.minecraft.world.level.levelgen.structure
+                    .PoolElementStructurePiece piece,
+            String culture,
+            boolean winery,
+            net.minecraft.world.level.chunk.ChunkGenerator generator,
+            net.minecraft.world.level.levelgen.RandomState randomState
+    ) {
+        BlockPos roadEdge = switch (culture) {
+            case "savanna" -> winery
+                    ? new BlockPos(5, 0, 17) : new BlockPos(3, 0, 0);
+            case "taiga" -> winery
+                    ? new BlockPos(0, 1, 6) : new BlockPos(10, 0, 9);
+            default -> throw new IllegalStateException(culture);
+        };
+        BlockPos rotated = StructureTemplate.transform(roadEdge,
+                Mirror.NONE, piece.getRotation(), BlockPos.ZERO);
+        BlockPos port = piece.getPosition().offset(rotated);
+        int free = generator.getFirstFreeHeight(
+                port.getX(), port.getZ(),
+                net.minecraft.world.level.levelgen.Heightmap.Types
+                        .WORLD_SURFACE_WG,
+                helper.getLevel(), randomState
+        );
+        int expected = free - 2 - (winery && culture.equals("taiga") ? 1 : 0);
+        helper.assertValueEqual(port.getY(), expected,
+                culture + " " + (winery ? "winery" : "field")
+                        + " road-side contact at " + port);
     }
 
     private static TrellisBlock.RowConnection rowConnection(
