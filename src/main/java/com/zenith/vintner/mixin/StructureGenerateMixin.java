@@ -52,13 +52,16 @@ abstract class StructureGenerateMixin {
     ) {
         String culture = structure.unwrapKey()
                 .map(key -> switch (key.identifier().toString()) {
+                    case "minecraft:village_plains" -> "plains";
+                    case "minecraft:village_desert" -> "desert";
                     case "minecraft:village_savanna" -> "savanna";
+                    case "minecraft:village_snowy" -> "snowy";
                     case "minecraft:village_taiga" -> "taiga";
                     default -> "";
                 })
                 .orElse("");
         PostJigsawWineryPairs.append(
-                culture, builder, chunkPos, generator, randomState,
+                culture, seed, builder, chunkPos, generator, randomState,
                 templates, heightAccessor
         );
         return builder.build();

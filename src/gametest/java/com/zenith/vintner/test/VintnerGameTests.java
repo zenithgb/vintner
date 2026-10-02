@@ -64,6 +64,8 @@ import com.zenith.vintner.registry.ModItems;
 import com.zenith.vintner.registry.ModGameRules;
 import com.zenith.vintner.registry.ModTrades;
 import com.zenith.vintner.registry.ModVillageStructures;
+import com.zenith.vintner.registry.PostJigsawWineryPairs;
+import com.zenith.vintner.registry.VillageWineryEligibility;
 import com.zenith.vintner.registry.ModVillagers;
 import com.zenith.vintner.wine.CellarConditions;
 import com.zenith.vintner.wine.AlmanacInspection;
@@ -1239,167 +1241,29 @@ public final class VintnerGameTests {
     public void vintnerStructuresJoinEveryVillageCulture(
             GameTestHelper helper
     ) {
-        for (
-                ResourceKey<StructureTemplatePool> poolKey
-                : ModVillageStructures.housePools()
-        ) {
+        for (ResourceKey<StructureTemplatePool> poolKey
+                : ModVillageStructures.housePools()) {
             StructureTemplatePool pool = helper.getLevel()
                     .registryAccess()
                     .lookupOrThrow(Registries.TEMPLATE_POOL)
                     .getValueOrThrow(poolKey);
             List<Pair<StructurePoolElement, Integer>> houses =
                     pool.getTemplates();
-            boolean canonicalPlains = poolKey.identifier()
-                    .toString()
-                    .equals("minecraft:village/plains/houses");
-            boolean postJigsawPair = poolKey.identifier().toString()
-                    .matches("minecraft:village/(savanna|taiga)/houses");
-
-            helper.assertTrue(
-                    ModVillageStructures.isInjected(
-                            helper.getLevel().registryAccess(),
-                            poolKey
-                    ),
+            helper.assertTrue(ModVillageStructures.isInjected(
+                            helper.getLevel().registryAccess(), poolKey),
                     "Specialist houses must be injected into "
-                            + poolKey.identifier()
-            );
-            helper.assertTrue(
-                    houses.size() >= (postJigsawPair ? 2 : 3),
-                    "Every village culture must contain Vintner structures"
-            );
-            helper.assertValueEqual(
-                    houses.get(houses.size() - (postJigsawPair ? 2 : 3)).getSecond(),
-                    1,
-                    "Winemaker house weight"
-            );
-            helper.assertValueEqual(
-                    houses.get(houses.size() - (postJigsawPair ? 1 : 2)).getSecond(),
-                    1,
-                    "Cooper house weight"
-            );
-            List<StructurePoolElement> candidates =
-                    pool.getShuffledTemplates(RandomSource.create(1400L));
-            List<StructurePoolElement> beforePlacement =
-                    ModVillageStructures.orderVineyardCandidates(
-                            candidates,
-                            false
-                    );
-            StructurePoolElement vineyard = null;
-            if (!postJigsawPair) {
-            helper.assertValueEqual(
-                    houses.get(houses.size() - 1).getSecond(),
-                    canonicalPlains ? 1 : 24,
-                    "Vineyard farm weight"
-            );
-
-            vineyard = houses
-                    .get(houses.size() - 1)
-                    .getFirst();
-            helper.assertTrue(
-                    ModVillageStructures.isVineyardElement(vineyard),
-                    "Vineyard pool entries must be identifiable for the "
-                            + "one-per-village placement guard"
-            );
-            if (canonicalPlains) {
-                helper.assertTrue(
-                        !beforePlacement.isEmpty()
-                                && ModVillageStructures
-                                .isPrioritizedPlainsVineyardElement(
-                                        beforePlacement.getFirst()
-                                ),
-                        "Plains winery must be the first eligible candidate"
-                );
-                helper.assertValueEqual(
-                        beforePlacement.stream()
-                                .filter(
-                                        ModVillageStructures
-                                                ::isVineyardElement
-                                )
-                                .count(),
-                        1L,
-                        "Only one Plains winery may be attempted per slot"
-                );
-            } else {
-                helper.assertTrue(
-                        beforePlacement.equals(candidates),
-                        "Non-Plains house candidate ordering must remain unchanged"
-                );
-                helper.assertValueEqual(
-                        beforePlacement.stream()
-                                .filter(
-                                        ModVillageStructures
-                                                ::isVineyardElement
-                                )
-                                .count(),
-                        24L,
-                        "Other culture vineyards retain accepted weighting"
-                );
-            }
-            } else {
-                helper.assertTrue(beforePlacement.equals(candidates),
-                        "Paired culture house candidates must remain unchanged");
-                helper.assertValueEqual(candidates.stream()
-                        .filter(ModVillageStructures::isVineyardElement)
-                        .count(), 0L,
-                        "Paired winery must not compete for a house slot");
-            }
-            helper.assertTrue(
-                    ModVillageStructures.orderVineyardCandidates(
-                                    candidates,
-                                    true
-                            )
-                            .stream()
-                            .noneMatch(
-                                    ModVillageStructures::isVineyardElement
-                            ),
-                    "Placed villages must reject later vineyard candidates"
-            );
-            var structureManager = helper.getLevel()
-                    .getServer()
-                    .getStructureTemplateManager();
-            if (postJigsawPair) {
-                continue;
-            }
-            net.minecraft.core.Vec3i expectedSize = switch (
-                    poolKey.identifier().toString()
-            ) {
-                case "minecraft:village/plains/houses" ->
-                        new net.minecraft.core.Vec3i(16, 11, 11);
-                case "minecraft:village/desert/houses" ->
-                        new net.minecraft.core.Vec3i(13, 10, 13);
-                case "minecraft:village/savanna/houses" ->
-                        new net.minecraft.core.Vec3i(22, 8, 18);
-                case "minecraft:village/snowy/houses" ->
-                        new net.minecraft.core.Vec3i(13, 16, 10);
-                case "minecraft:village/taiga/houses" ->
-                        new net.minecraft.core.Vec3i(23, 11, 15);
-                default -> throw new IllegalStateException("Unexpected pool");
-            };
-            helper.assertValueEqual(
-                    vineyard.getSize(structureManager, Rotation.NONE),
-                    expectedSize,
-                    "Player-built vineyard pool element size"
-            );
-            var pathConnectors = vineyard.getShuffledJigsawBlocks(
-                    structureManager,
-                    BlockPos.ZERO,
-                    Rotation.NONE,
-                    RandomSource.create(0L)
-            );
-            helper.assertValueEqual(
-                    pathConnectors.size(),
-                    1,
-                    "Vineyard must expose one village path connector"
-            );
-            if (canonicalPlains) {
-                helper.assertValueEqual(
-                        pathConnectors.getFirst().pos(),
-                        new BlockPos(8, 2, 0),
-                        "Raised Plains connector must lower the winery by one block"
-                );
-            }
+                            + poolKey.identifier());
+            helper.assertTrue(houses.size() >= 2,
+                    "Each culture needs both specialist houses");
+            helper.assertValueEqual(houses.get(houses.size() - 2).getSecond(),
+                    1, "Winemaker house weight");
+            helper.assertValueEqual(houses.get(houses.size() - 1).getSecond(),
+                    1, "Cooper house weight");
+            helper.assertTrue(pool.getShuffledTemplates(
+                            RandomSource.create(1400L)).stream()
+                            .noneMatch(ModVillageStructures::isVineyardElement),
+                    "Winery eligibility is decided after the vanilla layout");
         }
-
         helper.succeed();
     }
 
@@ -1922,6 +1786,145 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 200, padding = 48)
+    public void villageWineryEligibilityIsStableAndParallelSafe(
+            GameTestHelper helper
+    ) {
+        for (String culture : List.of(
+                "plains", "desert", "savanna", "snowy", "taiga")) {
+            List<Boolean> serial = java.util.stream.IntStream.range(0, 500)
+                    .mapToObj(sample -> VillageWineryEligibility.eligible(
+                            1400L, 200 + sample * 71,
+                            300 + sample * 97, culture))
+                    .toList();
+            List<Boolean> parallel = java.util.stream.IntStream.range(0, 500)
+                    .parallel()
+                    .mapToObj(sample -> VillageWineryEligibility.eligible(
+                            1400L, 200 + sample * 71,
+                            300 + sample * 97, culture))
+                    .toList();
+            helper.assertTrue(serial.equals(parallel),
+                    culture + " eligibility must be parallel safe");
+            for (int sample = 499; sample >= 0; sample--) {
+                helper.assertValueEqual(
+                        VillageWineryEligibility.eligible(
+                                1400L, 200 + sample * 71,
+                                300 + sample * 97, culture),
+                        serial.get(sample),
+                        culture + " eligibility must ignore generation order"
+                );
+            }
+            long eligible = serial.stream().filter(Boolean::booleanValue)
+                    .count();
+            System.out.println("VINTNER_ELIGIBILITY_500 culture=" + culture
+                    + " eligible=" + eligible + " starts=500");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 200, padding = 48)
+    public void villageWineryPlacementFrequency500(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var generator = level.getChunkSource().getGenerator();
+        var randomState = level.getChunkSource().randomState();
+        var sampler = randomState.createClimateSampler(
+                net.minecraft.world.level.levelgen.densityfunction
+                        .SamplerContext.EMPTY_UNCACHED);
+        var structures = level.registryAccess()
+                .lookupOrThrow(Registries.STRUCTURE);
+        long sampleSeed = level.getSeed();
+        for (String culture : List.of(
+                "plains", "desert", "savanna", "snowy", "taiga")) {
+            var holder = structures.getOrThrow(ResourceKey.create(
+                    Registries.STRUCTURE,
+                    Identifier.fromNamespaceAndPath(
+                            "minecraft", "village_" + culture)));
+            int eligible = 0;
+            int attempted = 0;
+            int successful = 0;
+            int failedEligible = 0;
+            int duplicates = 0;
+            int halfPairs = 0;
+            int generated = 0;
+            boolean paired = culture.equals("savanna")
+                    || culture.equals("taiga");
+            for (int sample = 0; sample < 500; sample++) {
+                var chunk = new net.minecraft.world.level.ChunkPos(
+                        200 + sample * 71, 300 + sample * 97);
+                var start = holder.value().generate(holder,
+                        level.dimension(), level.registryAccess(), generator,
+                        generator.getBiomeSource(), sampler, randomState,
+                        level.getStructureTemplateManager(), sampleSeed, chunk,
+                        0, level, biome -> true);
+                if (!start.isValid()) {
+                    continue;
+                }
+                generated++;
+                boolean shouldAttempt = VillageWineryEligibility.eligible(
+                        sampleSeed, chunk.getMiddleBlockX(),
+                        chunk.getMiddleBlockZ(), culture);
+                if (shouldAttempt) {
+                    eligible++;
+                    attempted++;
+                }
+                long winery = 0;
+                long field = 0;
+                for (var piece : start.getPieces()) {
+                    if (!(piece instanceof net.minecraft.world.level.levelgen
+                            .structure.PoolElementStructurePiece pool)
+                            || !(pool.getElement() instanceof
+                            net.minecraft.world.level.levelgen.structure.pools
+                                    .SinglePoolElement single)) {
+                        continue;
+                    }
+                    String id = single.getTemplateLocation().toString();
+                    if (paired) {
+                        if (id.equals("vintner:village/" + culture
+                                + "/winery_tier1")) winery++;
+                        if (id.equals("vintner:village/" + culture
+                                + "/vineyard_field_tier1")) field++;
+                    } else if (ModVillageStructures.isVineyardElement(
+                            pool.getElement())) {
+                        winery++;
+                    }
+                }
+                if (winery > 1 || field > 1) duplicates++;
+                if (paired && winery != field) halfPairs++;
+                if (winery == 1 && (!paired || field == 1)) {
+                    successful++;
+                    helper.assertTrue(shouldAttempt,
+                            culture + " winery bypassed eligibility");
+                } else if (shouldAttempt) {
+                    failedEligible++;
+                }
+            }
+            System.out.println("VINTNER_FREQUENCY_500 culture=" + culture
+                    + " starts=" + generated + " eligible=" + eligible
+                    + " attempted=" + attempted + " successful=" + successful
+                    + " failed_eligible=" + failedEligible
+                    + " duplicates=" + duplicates
+                    + " half_pairs=" + halfPairs);
+            helper.assertValueEqual(generated, 500,
+                    culture + " must generate all synthetic starts");
+            helper.assertValueEqual(duplicates, 0,
+                    culture + " must not duplicate winery pieces");
+            helper.assertValueEqual(halfPairs, 0,
+                    culture + " pairs must remain atomic");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 200, padding = 48)
+    public void villageWineryWaterHeightmapPolicy(GameTestHelper helper) {
+        helper.assertTrue(PostJigsawWineryPairs.dryHeightmapContact(64, 64),
+                "Dry ground must remain eligible beside a shoreline");
+        helper.assertTrue(!PostJigsawWineryPairs.dryHeightmapContact(65, 64),
+                "One water block over ground must reject contact");
+        helper.assertTrue(!PostJigsawWineryPairs.dryHeightmapContact(70, 64),
+                "Deep water must reject contact");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 200, padding = 48)
     public void playerWineriesNaturalJigsawStartsAreDiscoverableAndUnique(
             GameTestHelper helper
     ) {
@@ -2374,6 +2377,10 @@ public final class VintnerGameTests {
         helper.assertValueEqual(port.getY(), expected,
                 culture + " " + (winery ? "winery" : "field")
                         + " road-side contact at " + port);
+        if (winery && culture.equals("taiga")) {
+            helper.assertValueEqual(piece.getGroundLevelDelta(), 2,
+                    "Taiga terrain beard must meet the authored entrance");
+        }
     }
 
     private static TrellisBlock.RowConnection rowConnection(

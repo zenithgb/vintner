@@ -23,10 +23,6 @@ import java.util.WeakHashMap;
 
 public final class ModVillageStructures {
     private static final int SPECIALIST_HOUSE_WEIGHT = 1;
-    private static final int DEFAULT_VINEYARD_WEIGHT = 24;
-    // Only the large player-authored Plains winery needs first-fit placement.
-    // Other accepted culture templates retain their established weighting.
-    private static final int PLAINS_VINEYARD_WEIGHT = 1;
     private static final Identifier PLAINS_VINEYARD =
             vintner("village/plains/vineyard");
 
@@ -42,7 +38,6 @@ public final class ModVillageStructures {
                     "plains_tool_smith_1",
                     "cooper_oak"
             ),
-            vineyard("plains"),
             house(
                     "desert",
                     "desert_cartographer_house_1",
@@ -53,7 +48,6 @@ public final class ModVillageStructures {
                     "desert_tool_smith_1",
                     "cooper_acacia"
             ),
-            vineyard("desert"),
             house(
                     "savanna",
                     "savanna_cartographer_1",
@@ -74,7 +68,6 @@ public final class ModVillageStructures {
                     "snowy_tool_smith_1",
                     "cooper_spruce"
             ),
-            vineyard("snowy"),
             house(
                     "taiga",
                     "taiga_cartographer_house_1",
@@ -85,8 +78,7 @@ public final class ModVillageStructures {
                     "taiga_tool_smith_1",
                     "cooper_spruce"
             )
-            // Taiga's full player winery and field join the finished village
-            // as an atomic pair instead of competing for a house-pool slot.
+            // All five player wineries join completed village layouts.
     );
 
     private static final Set<StructureTemplatePool> INJECTED_POOLS =
@@ -116,10 +108,11 @@ public final class ModVillageStructures {
     }
 
     public static List<Identifier> vineyardTemplates() {
-        return VILLAGE_STRUCTURES.stream()
-                .filter(definition -> definition.processor() == null)
-                .map(VillageStructureDefinition::template)
-                .toList();
+        return List.of(
+                PLAINS_VINEYARD,
+                vintner("village/desert/vineyard"),
+                vintner("village/snowy/vineyard")
+        );
     }
 
     public static boolean isVineyardElement(
@@ -142,17 +135,22 @@ public final class ModVillageStructures {
             List<StructurePoolElement> candidates,
             boolean vineyardPlaced
     ) {
-        if (vineyardPlaced) {
+        return orderVineyardCandidates(candidates, vineyardPlaced, true);
+    }
+
+    public static List<StructurePoolElement> orderVineyardCandidates(
+            List<StructurePoolElement> candidates,
+            boolean vineyardPlaced,
+            boolean eligible
+    ) {
+        if (vineyardPlaced || !eligible) {
             return candidates.stream()
                     .filter(element -> !isVineyardElement(element))
                     .toList();
         }
 
         StructurePoolElement vineyard = candidates.stream()
-                .filter(
-                        ModVillageStructures
-                                ::isPrioritizedPlainsVineyardElement
-                )
+                .filter(ModVillageStructures::isVineyardElement)
                 .findFirst()
                 .orElse(null);
         if (vineyard == null) {
@@ -256,20 +254,6 @@ public final class ModVillageStructures {
                         vintner("village/" + processor)
                 ),
                 SPECIALIST_HOUSE_WEIGHT
-        );
-    }
-
-    private static VillageStructureDefinition vineyard(String culture) {
-        return new VillageStructureDefinition(
-                ResourceKey.create(
-                        Registries.TEMPLATE_POOL,
-                        minecraft("village/" + culture + "/houses")
-                ),
-                vintner("village/" + culture + "/vineyard"),
-                null,
-                culture.equals("plains")
-                        ? PLAINS_VINEYARD_WEIGHT
-                        : DEFAULT_VINEYARD_WEIGHT
         );
     }
 
