@@ -20,7 +20,11 @@ from structure_nbt import (
     require_list,
     require_tag,
 )
-from generate_village_vineyards import PLAYER_SOURCES, create_player_structure
+from generate_village_vineyards import (
+    DESERT_FLOOR_Y_LOCAL,
+    PLAYER_SOURCES,
+    create_player_structure,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -44,6 +48,7 @@ EXPECTED_DATA_VERSIONS = {
     "snowy": 5023,
     "taiga": 5023,
 }
+DESERT_OMITTED_LOWER_AIR = 1034
 CULTURES = {
     "plains": "oak",
     "desert": "acacia",
@@ -224,13 +229,16 @@ def audit_common(
     positioned = model["positioned"]
     counts = model["counts"]
     expected_volume = expected_size[0] * expected_size[1] * expected_size[2]
-    if len(blocks) != expected_volume:
+    expected_blocks = expected_volume - (
+        DESERT_OMITTED_LOWER_AIR if culture == "desert" else 0
+    )
+    if len(blocks) != expected_blocks:
         raise ValueError(
-            f"{culture}: expected fully authored {expected_volume}-block "
-            f"volume, found {len(blocks)}"
+            f"{culture}: expected {expected_blocks} runtime blocks, "
+            f"found {len(blocks)}"
         )
-    if len(positioned) != expected_volume:
-        raise ValueError(f"{culture}: authored volume has missing positions")
+    if len(positioned) != expected_blocks:
+        raise ValueError(f"{culture}: runtime has duplicate positions")
     for position in positioned:
         if not all(
             0 <= position[index] < expected_size[index]
@@ -251,7 +259,7 @@ def audit_common(
             transformed(position, rotation, expected_size)
             for position in positioned
         }
-        if len(rotated) != expected_volume:
+        if len(rotated) != expected_blocks:
             raise ValueError(f"{culture}: collision at {rotation} degrees")
         rotated_width = (
             expected_size[0]
@@ -483,7 +491,20 @@ def audit_player_variant(culture: str, model: dict[str, object]) -> None:
             f"{key}={value}" for key, value in sorted(original_properties.items())
         ) + "]"
     audit_jigsaw(culture, model, connector, orientation, final_state)
+    omitted = {
+        position for position, (name, _properties, _block)
+        in source["positioned"].items()
+        if culture == "desert"
+        and position[1] < DESERT_FLOOR_Y_LOCAL
+        and name == "minecraft:air"
+    }
+    if culture == "desert" and len(omitted) != DESERT_OMITTED_LOWER_AIR:
+        raise ValueError("desert: unexpected lower-air count")
+    if set(model["positioned"]) != set(source["positioned"]) - omitted:
+        raise ValueError(f"{culture}: runtime omission exceeds lower Desert air")
     for position, authored in source["positioned"].items():
+        if position in omitted:
+            continue
         if position == connector:
             continue
         if model["positioned"][position] != authored:
@@ -500,10 +521,12 @@ def audit_player_variant(culture: str, model: dict[str, object]) -> None:
     if not any(name.endswith("grapevine") for name in source["counts"]):
         raise ValueError(f"{culture}: source has no vineyard")
     print(
-        f"PASS {culture}: source/runtime {size}, {len(source['blocks'])} blocks, "
+        f"PASS {culture}: source/runtime {size}, "
+        f"{len(source['blocks'])}/{len(model['blocks'])} blocks, "
         f"{source['block_entity_count']} authored block entities, 0 entities, "
         f"0 Composters, 1 press {presses[0]}, connector {connector} {orientation}, "
-        "all other authored blocks and data byte-equivalent, "
+        f"{len(omitted)} lower-air cells omitted, "
+        "all retained authored blocks and data byte-equivalent, "
         "rotations 0/90/180/270 in bounds"
     )
 

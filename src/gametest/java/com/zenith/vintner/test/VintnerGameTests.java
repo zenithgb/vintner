@@ -56,7 +56,8 @@ import com.zenith.vintner.network.EstateDeskPayload;
 import com.zenith.vintner.network.TastingServiceCreativePicker;
 import com.zenith.vintner.recipe.GrapeBowlRecipe;
 import com.zenith.vintner.registry.ModAttachments;
-import com.zenith.vintner.registry.DesertWineryFoundationSupport;
+import com.zenith.vintner.registry.DesertWineryCandidate;
+import com.zenith.vintner.registry.GeneratedWineryStock;
 import com.zenith.vintner.registry.ModBlockEntities;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.ModCreativeTabs;
@@ -175,6 +176,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -1237,6 +1239,167 @@ public final class VintnerGameTests {
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 200)
+    public void generatedWineryStockIsDeterministicAndSparse(GameTestHelper helper) {
+        Identifier[] buildings = {
+                Identifier.parse("vintner:village/plains/vineyard"),
+                Identifier.parse("vintner:village/desert/vineyard"),
+                Identifier.parse("vintner:village/savanna/winery_tier1"),
+                Identifier.parse("vintner:village/snowy/vineyard"),
+                Identifier.parse("vintner:village/taiga/winery_tier1")
+        };
+        var templates = helper.getLevel().getServer().getStructureTemplateManager();
+        long firstSeed = GeneratedWineryStock.winerySeed(1400L,
+                buildings[0], new BlockPos(100, 60, 100));
+        helper.assertValueEqual(firstSeed, GeneratedWineryStock.winerySeed(1400L,
+                buildings[0], new BlockPos(100, 90, 100)),
+                "Winery seed ignores final vertical grade");
+        helper.assertTrue(firstSeed != GeneratedWineryStock.winerySeed(1400L,
+                buildings[0], new BlockPos(101, 60, 100)),
+                "Different winery sites vary");
+        helper.assertValueEqual(GeneratedWineryStock.containerSeed(firstSeed,
+                new BlockPos(4, 5, 6), "rack"),
+                GeneratedWineryStock.containerSeed(firstSeed,
+                        new BlockPos(4, 5, 6), "rack"),
+                "Container seed is stable");
+
+        for (int culture = 0; culture < buildings.length; culture++) {
+            Identifier id = buildings[culture];
+            var template = templates.getOrCreate(id);
+            for (Rotation rotation : Rotation.values()) {
+                BlockPos origin = helper.absolutePos(new BlockPos(
+                        2 + culture * 48, 4, 2 + rotation.ordinal() * 48));
+                StructurePlaceSettings settings = new StructurePlaceSettings()
+                        .setRotation(rotation).setIgnoreEntities(true);
+                BoundingBox box = new BoundingBox(origin.getX() - 32,
+                        origin.getY() - 4, origin.getZ() - 32,
+                        origin.getX() + 32, origin.getY() + 32,
+                        origin.getZ() + 32);
+                StructurePoolElement element = StructurePoolElement.single(id.toString())
+                        .apply(StructureTemplatePool.Projection.RIGID);
+                helper.assertTrue(element.place(templates, helper.getLevel(),
+                        helper.getLevel().structureManager(),
+                        helper.getLevel().getChunkSource().getGenerator(),
+                        origin, origin, rotation, box,
+                        RandomSource.create(1400L),
+                        net.minecraft.world.level.levelgen.structure.templatesystem
+                                .LiquidSettings.APPLY_WATERLOGGING, false),
+                        "Natural element placement succeeded for " + id + rotation);
+                int expected = switch (GeneratedWineryStock.profile(
+                        GeneratedWineryStock.winerySeed(helper.getLevel().getSeed(),
+                                id, origin))) {
+                    case LIGHT -> 1;
+                    case NORMAL -> 2;
+                    case STOCKED -> 4;
+                };
+                int count = 0;
+                for (Block rackBlock : ModBlocks.WINE_RACKS.values()) {
+                    for (var info : template.filterBlocks(origin, settings, rackBlock)) {
+                        if (helper.getLevel().getBlockEntity(info.pos())
+                                instanceof WineRackBlockEntity rack) {
+                            count += rack.getBottleCount();
+                            for (ItemStack bottle : rack.getStoredBottlesCopy()) {
+                                helper.assertValueEqual(WineMetadata.quality(bottle),
+                                        WineQuality.TABLE, "Generated wine is ordinary");
+                                helper.assertValueEqual(WineMetadata.vintage(bottle),
+                                        1, "Generated wine is not a future vintage");
+                                helper.assertTrue(WineMetadata.batchId(bottle) != 0,
+                                        "Generated wine has canonical batch identity");
+                            }
+                        }
+                    }
+                }
+                for (Block crateBlock : ModBlocks.WINE_CRATES.values())
+                    for (var info : template.filterBlocks(origin, settings, crateBlock))
+                        if (helper.getLevel().getBlockEntity(info.pos())
+                                instanceof WineCrateBlockEntity crate)
+                            count += crate.getBottleCount();
+                for (Block shelfBlock : ModBlocks.LABELLED_CELLAR_SHELVES.values())
+                    for (var info : template.filterBlocks(origin, settings, shelfBlock))
+                        if (helper.getLevel().getBlockEntity(info.pos())
+                                instanceof CellarCollectionBlockEntity shelf)
+                            count += shelf.getBottleCount();
+                for (Block basketBlock : ModBlocks.WINE_BASKETS.values())
+                    for (var info : template.filterBlocks(origin, settings, basketBlock))
+                        if (helper.getLevel().getBlockEntity(info.pos())
+                                instanceof WineBasketBlockEntity basket
+                                && !basket.getBottleCopy().isEmpty()) count++;
+                for (Block serviceBlock : ModBlocks.TASTING_SERVICES.values())
+                    for (var info : template.filterBlocks(origin, settings, serviceBlock))
+                        if (helper.getLevel().getBlockEntity(info.pos())
+                                instanceof TastingServiceBlockEntity service
+                                && !service.getBottleCopy().isEmpty()) count++;
+                helper.assertValueEqual(count, expected,
+                        "Exactly the profile bottle budget for " + id + rotation);
+                GeneratedWineryStock.populate(templates, helper.getLevel(), id,
+                        origin, origin, rotation, box);
+                // The second pass must not add to any already selected display.
+                int again = 0;
+                for (Block rackBlock : ModBlocks.WINE_RACKS.values())
+                    for (var info : template.filterBlocks(origin, settings, rackBlock))
+                        if (helper.getLevel().getBlockEntity(info.pos())
+                                instanceof WineRackBlockEntity rack) again += rack.getBottleCount();
+                helper.assertTrue(again <= expected,
+                        "A second pass cannot fill additional rack slots");
+            }
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void generatedWineryStockSurvivesSplitPieceOrder(GameTestHelper helper) {
+        Identifier id = Identifier.parse("vintner:village/taiga/winery_tier1");
+        var templates = helper.getLevel().getServer().getStructureTemplateManager();
+        StructurePoolElement element = StructurePoolElement.single(id.toString())
+                .apply(StructureTemplatePool.Projection.RIGID);
+        for (boolean reverse : new boolean[]{false, true}) {
+            BlockPos origin = helper.absolutePos(new BlockPos(reverse ? 40 : 2, 4, 2));
+            BoundingBox full = element.getBoundingBox(templates, origin, Rotation.NONE);
+            int mid = (full.minX() + full.maxX()) / 2;
+            BoundingBox left = new BoundingBox(full.minX(), full.minY(),
+                    full.minZ(), mid, full.maxY(), full.maxZ());
+            BoundingBox right = new BoundingBox(mid + 1, full.minY(),
+                    full.minZ(), full.maxX(), full.maxY(), full.maxZ());
+            BoundingBox[] order = reverse
+                    ? new BoundingBox[]{right, left}
+                    : new BoundingBox[]{left, right};
+            for (BoundingBox slice : order) {
+                helper.assertTrue(element.place(templates, helper.getLevel(),
+                        helper.getLevel().structureManager(),
+                        helper.getLevel().getChunkSource().getGenerator(),
+                        origin, origin, Rotation.NONE, slice,
+                        RandomSource.create(1400L),
+                        net.minecraft.world.level.levelgen.structure.templatesystem
+                                .LiquidSettings.APPLY_WATERLOGGING, false),
+                        "Each split winery slice places successfully");
+            }
+            int bottles = 0;
+            for (int x = full.minX(); x <= full.maxX(); x++)
+                for (int y = full.minY(); y <= full.maxY(); y++)
+                    for (int z = full.minZ(); z <= full.maxZ(); z++) {
+                        var entity = helper.getLevel().getBlockEntity(new BlockPos(x, y, z));
+                        if (entity instanceof WineRackBlockEntity rack)
+                            bottles += rack.getBottleCount();
+                        else if (entity instanceof WineCrateBlockEntity crate)
+                            bottles += crate.getBottleCount();
+                        else if (entity instanceof CellarCollectionBlockEntity shelf)
+                            bottles += shelf.getBottleCount();
+                        else if (entity instanceof TastingServiceBlockEntity tasting
+                                && !tasting.getBottleCopy().isEmpty()) bottles++;
+                    }
+            int expected = switch (GeneratedWineryStock.profile(
+                    GeneratedWineryStock.winerySeed(helper.getLevel().getSeed(),
+                            id, origin))) {
+                case LIGHT -> 1;
+                case NORMAL -> 2;
+                case STOCKED -> 4;
+            };
+            helper.assertValueEqual(bottles, expected,
+                    "Split-piece order stocks exactly once");
+        }
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 40)
     public void vintnerStructuresJoinEveryVillageCulture(
             GameTestHelper helper
@@ -1297,7 +1460,7 @@ public final class VintnerGameTests {
             String culture = templateId.toString().split("/")[1];
             int[] expected = switch (culture) {
                 case "plains" -> new int[]{16, 11, 11, 27, 52, 6, 4};
-                case "desert" -> new int[]{13, 10, 13, 5, 9, 4, 6};
+                case "desert" -> new int[]{15, 16, 15, 5, 9, 4, 6};
                 case "savanna" -> new int[]{22, 8, 18, 45, 66, 7, 4};
                 case "snowy" -> new int[]{13, 16, 10, 7, 14, 10, 2};
                 case "taiga" -> new int[]{23, 11, 15, 36, 62, 12, 6};
@@ -1377,7 +1540,7 @@ public final class VintnerGameTests {
                 helper.assertValueEqual(
                         pathConnections.getFirst().pos(),
                         switch (culture) {
-                            case "desert" -> new BlockPos(5, 1, 0);
+                            case "desert" -> new BlockPos(6, 7, 0);
                             case "savanna" -> new BlockPos(7, 0, 0);
                             case "snowy" -> new BlockPos(2, 1, 9);
                             case "taiga" -> new BlockPos(12, 1, 0);
@@ -1388,7 +1551,7 @@ public final class VintnerGameTests {
                 helper.assertValueEqual(
                         entranceState,
                         switch (culture) {
-                            case "desert" -> "minecraft:smooth_sandstone";
+                            case "desert" -> "minecraft:air";
                             case "savanna", "taiga" -> "minecraft:dirt_path";
                             case "snowy" -> "minecraft:air";
                             default -> throw new IllegalStateException();
@@ -1687,12 +1850,57 @@ public final class VintnerGameTests {
     public void desertPlayerWineryRotates(GameTestHelper helper) {
         verifyPlayerWineryRotations(helper, new PlayerWineryCase(
                 "desert", WoodVariant.JUNGLE,
-                new BlockPos(9, 2, 3), Direction.EAST,
-                new BlockPos(11, 1, 1), Direction.WEST,
-                new BlockPos(6, 1, 0), Blocks.JUNGLE_DOOR, Direction.NORTH,
-                new BlockPos(5, 1, 7), GrapeVariety.RED,
-                new BlockPos(5, 1, 0)
+                new BlockPos(10, 8, 4), Direction.EAST,
+                new BlockPos(12, 7, 2), Direction.WEST,
+                new BlockPos(7, 7, 1), Blocks.JUNGLE_DOOR, Direction.NORTH,
+                new BlockPos(6, 7, 8), GrapeVariety.RED,
+                new BlockPos(6, 7, 0)
         ));
+    }
+
+    @GameTest(maxTicks = 80, padding = 48)
+    public void desertFoundationAirLeavesExistingTerrain(GameTestHelper helper) {
+        StructureTemplate template = helper.getLevel().getServer()
+                .getStructureTemplateManager()
+                .get(Identifier.fromNamespaceAndPath(
+                        "vintner", "village/desert/vineyard"
+                )).orElseThrow();
+        StructurePlaceSettings settings = new StructurePlaceSettings()
+                .setIgnoreEntities(true);
+        helper.assertValueEqual(template.filterBlocks(
+                BlockPos.ZERO, settings, Blocks.AIR).stream()
+                .filter(block -> block.pos().getY() < 7).count(),
+                0L, "Desert lower air must be omitted from runtime placement");
+        helper.assertValueEqual(template.filterBlocks(
+                BlockPos.ZERO, settings, Blocks.STRUCTURE_VOID).size(),
+                0, "Desert must not place structure void blocks");
+
+        BlockPos origin = helper.absolutePos(new BlockPos(12, 3, 12));
+        BlockPos naturalSand = origin.offset(3, 0, 3);
+        BlockPos naturalStone = origin.offset(0, 0, 0);
+        BlockPos authoredPillar = origin.offset(2, 0, 2);
+        BlockPos occupiedAir = origin.offset(6, 7, 2);
+        helper.getLevel().setBlock(naturalSand, Blocks.SAND.defaultBlockState(),
+                Block.UPDATE_ALL);
+        helper.getLevel().setBlock(naturalStone, Blocks.STONE.defaultBlockState(),
+                Block.UPDATE_ALL);
+        helper.getLevel().setBlock(authoredPillar, Blocks.SAND.defaultBlockState(),
+                Block.UPDATE_ALL);
+        helper.getLevel().setBlock(occupiedAir, Blocks.STONE.defaultBlockState(),
+                Block.UPDATE_ALL);
+        helper.assertTrue(template.placeInWorld(
+                helper.getLevel(), origin, origin, settings,
+                RandomSource.create(1400L), Block.UPDATE_ALL
+        ), "Desert runtime template must place");
+        helper.assertTrue(helper.getLevel().getBlockState(naturalSand)
+                .is(Blocks.SAND), "Sand between pillars must remain");
+        helper.assertTrue(helper.getLevel().getBlockState(naturalStone)
+                .is(Blocks.STONE), "Stone outside pillars must remain");
+        helper.assertTrue(helper.getLevel().getBlockState(authoredPillar)
+                .is(Blocks.CUT_SANDSTONE), "Authored pillar must replace terrain");
+        helper.assertTrue(helper.getLevel().getBlockState(occupiedAir)
+                .is(Blocks.AIR), "Occupied air must still clear obstructions");
+        helper.succeed();
     }
 
     @GameTest(maxTicks = 80, padding = 48)
@@ -1817,6 +2025,16 @@ public final class VintnerGameTests {
                     .count();
             System.out.println("VINTNER_ELIGIBILITY_500 culture=" + culture
                     + " eligible=" + eligible + " starts=500");
+            long largeEligible = java.util.stream.IntStream.range(0, 10_000)
+                    .filter(sample -> VillageWineryEligibility.eligible(
+                            1400L, 200 + sample * 71,
+                            300 + sample * 97, culture))
+                    .count();
+            helper.assertTrue(largeEligible >= 6_700
+                            && largeEligible <= 7_300,
+                    culture + " 10,000-start gate must approach 70%");
+            System.out.println("VINTNER_ELIGIBILITY_10000 culture=" + culture
+                    + " eligible=" + largeEligible + " starts=10000");
         }
         helper.succeed();
     }
@@ -1832,8 +2050,9 @@ public final class VintnerGameTests {
         var structures = level.registryAccess()
                 .lookupOrThrow(Registries.STRUCTURE);
         long sampleSeed = level.getSeed();
+        // Desert's ordinary village piece has separate placement-time gates.
         for (String culture : List.of(
-                "plains", "desert", "savanna", "snowy", "taiga")) {
+                "plains", "savanna", "snowy", "taiga")) {
             var holder = structures.getOrThrow(ResourceKey.create(
                     Registries.STRUCTURE,
                     Identifier.fromNamespaceAndPath(
@@ -1909,6 +2128,8 @@ public final class VintnerGameTests {
                     culture + " must not duplicate winery pieces");
             helper.assertValueEqual(halfPairs, 0,
                     culture + " pairs must remain atomic");
+            helper.assertTrue(successful >= 275,
+                    culture + " realized below the 55% investigation gate");
         }
         helper.succeed();
     }
@@ -1939,7 +2160,8 @@ public final class VintnerGameTests {
         var structures = level.registryAccess()
                 .lookupOrThrow(Registries.STRUCTURE);
         int undiscoverable = 0;
-        for (String culture : List.of("desert", "snowy")) {
+        // Desert uses its own candidate selection and placement-time grade gate.
+        for (String culture : List.of("snowy")) {
             var key = ResourceKey.create(
                     Registries.STRUCTURE,
                     Identifier.fromNamespaceAndPath(
@@ -2004,6 +2226,64 @@ public final class VintnerGameTests {
         helper.assertValueEqual(undiscoverable, 0,
                 "Every player winery must occur in natural jigsaw starts");
         helper.succeed();
+    }
+
+    @GameTest(maxTicks = 200, padding = 48)
+    public void desertCandidatesSurviveOrderAndSerialization(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var generator = level.getChunkSource().getGenerator();
+        var randomState = level.getChunkSource().randomState();
+        var sampler = randomState.createClimateSampler(
+                net.minecraft.world.level.levelgen.densityfunction.SamplerContext.EMPTY_UNCACHED);
+        var holder = level.registryAccess().lookupOrThrow(Registries.STRUCTURE)
+                .getOrThrow(ResourceKey.create(Registries.STRUCTURE,
+                        Identifier.fromNamespaceAndPath("minecraft", "village_desert")));
+        var templates = level.getStructureTemplateManager();
+        var context = net.minecraft.world.level.levelgen.structure.pieces
+                .StructurePieceSerializationContext.fromLevel(level);
+        int generated = 0;
+        int mismatches = 0;
+        for (int sample = 0; sample < 50; sample++) {
+            var chunk = new net.minecraft.world.level.ChunkPos(
+                    200 + sample * 71, 300 + sample * 97);
+            var start = holder.value().generate(holder, level.dimension(),
+                    level.registryAccess(), generator, generator.getBiomeSource(),
+                    sampler, randomState, templates, level.getSeed(), chunk,
+                    0, level, biome -> true);
+            if (!start.isValid()) continue;
+            generated++;
+            var normal = DesertWineryCandidate.select(level.getSeed(), start, templates);
+            var reversedPieces = new ArrayList<>(start.getPieces());
+            java.util.Collections.reverse(reversedPieces);
+            var reversedStart = new net.minecraft.world.level.levelgen.structure.StructureStart(
+                    holder.value(), chunk, 0,
+                    new net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer(
+                            reversedPieces));
+            var reversed = DesertWineryCandidate.select(level.getSeed(), reversedStart, templates);
+            var saved = start.createTag(context, chunk);
+            var loaded = net.minecraft.world.level.levelgen.structure.StructureStart
+                    .loadStaticStart(context, saved, level.getSeed());
+            var restored = DesertWineryCandidate.select(level.getSeed(), loaded, templates);
+            String identity = desertCandidateIdentity(normal);
+            if (!identity.equals(desertCandidateIdentity(reversed))
+                    || !identity.equals(desertCandidateIdentity(restored))) mismatches++;
+        }
+        System.out.println("VINTNER_DESERT_CANDIDATE_50 generated=" + generated
+                + " identity_mismatches=" + mismatches);
+        helper.assertValueEqual(generated, 50, "Desert must generate 50 fresh starts");
+        helper.assertValueEqual(mismatches, 0,
+                "Desert candidate identity must survive order and serialization");
+        helper.succeed();
+    }
+
+    private static String desertCandidateIdentity(DesertWineryCandidate.Selection selection) {
+        var candidate = selection.selected();
+        if (candidate == null)
+            return selection.eligible() + "/" + selection.candidateCount() + "/none";
+        var box = candidate.footprint();
+        return selection.eligible() + "/" + selection.candidateCount() + "/"
+                + candidate.key() + "/" + candidate.owner() + "/" + candidate.rotation()
+                + "/" + box.minX() + "," + box.minZ() + "," + box.maxX() + "," + box.maxZ();
     }
 
     @GameTest(maxTicks = 200, padding = 48)
@@ -2124,51 +2404,6 @@ public final class VintnerGameTests {
         helper.assertFalse(helper.getLevel().getBlockState(
                 corner.offset(8, 4, 8)).is(Blocks.STONE),
                 "Ordinary lake must alter its central terrain");
-        helper.succeed();
-    }
-
-    @GameTest(maxTicks = 40)
-    public void desertWinerySupportsOnlyShortFoundationGaps(
-            GameTestHelper helper
-    ) {
-        BlockPos start = helper.absolutePos(new BlockPos(2, 6, 2));
-        var level = helper.getLevel();
-        for (int dx = 0; dx < 5; dx++) {
-            BlockPos base = start.offset(dx, 0, 0);
-            level.setBlock(base, Blocks.CUT_SANDSTONE.defaultBlockState(),
-                    Block.UPDATE_ALL);
-            for (int depth = 1; depth <= 3; depth++) {
-                level.setBlock(base.below(depth),
-                        Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-            }
-        }
-        // Flat sand, a one-block dip, a two-block dip, and a cave. The last
-        // foundation cell is outside the winery's actual bounding box.
-        level.setBlock(start.below(), Blocks.SAND.defaultBlockState(),
-                Block.UPDATE_ALL);
-        level.setBlock(start.offset(1, -2, 0),
-                Blocks.SAND.defaultBlockState(), Block.UPDATE_ALL);
-        level.setBlock(start.offset(2, -3, 0),
-                Blocks.SAND.defaultBlockState(), Block.UPDATE_ALL);
-        level.setBlock(start.offset(4, -2, 0),
-                Blocks.SAND.defaultBlockState(), Block.UPDATE_ALL);
-        var piece = new net.minecraft.world.level.levelgen.structure.BoundingBox(
-                start.getX(), start.getY(), start.getZ(),
-                start.getX() + 3, start.getY() + 2, start.getZ()
-        );
-        helper.assertValueEqual(DesertWineryFoundationSupport.fill(
-                        level, piece, piece), 3,
-                "Only ordinary one- and two-block dips need support");
-        helper.assertTrue(level.getBlockState(start.below()).is(Blocks.SAND),
-                "Flat natural sand must remain unchanged");
-        helper.assertTrue(level.getBlockState(start.offset(1, -1, 0))
-                .is(Blocks.CUT_SANDSTONE), "One-block dip must be supported");
-        helper.assertTrue(level.getBlockState(start.offset(2, -2, 0))
-                .is(Blocks.CUT_SANDSTONE), "Two-block dip must be supported");
-        helper.assertTrue(level.getBlockState(start.offset(3, -1, 0)).isAir(),
-                "Cave must not acquire a long support column");
-        helper.assertTrue(level.getBlockState(start.offset(4, -1, 0)).isAir(),
-                "Support must stay within the winery footprint");
         helper.succeed();
     }
 

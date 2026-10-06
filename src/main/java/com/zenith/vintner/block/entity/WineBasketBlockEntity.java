@@ -73,9 +73,7 @@ public final class WineBasketBlockEntity extends BlockEntity {
             return;
         }
         BlockState state = getBlockState();
-        BlockState updated = state.setValue(
-                WineBasketBlock.HAS_BOTTLE, !bottle.isEmpty()
-        );
+        BlockState updated = displayState(state);
         if (!updated.equals(state)) {
             level.setBlock(worldPosition, updated, Block.UPDATE_ALL);
         }
@@ -84,6 +82,11 @@ public final class WineBasketBlockEntity extends BlockEntity {
         level.sendBlockUpdated(
                 worldPosition, state, updated, Block.UPDATE_CLIENTS
         );
+    }
+
+    /** Worldgen may stock this entity before its Level is attached. */
+    public BlockState displayState(BlockState state) {
+        return state.setValue(WineBasketBlock.HAS_BOTTLE, !bottle.isEmpty());
     }
 
     @Override

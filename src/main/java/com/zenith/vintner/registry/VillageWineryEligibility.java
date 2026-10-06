@@ -1,6 +1,6 @@
 package com.zenith.vintner.registry;
 
-/** Stateless, order-independent one-in-five decision for a village start. */
+/** Stateless, order-independent seven-in-ten decision for a village start. */
 public final class VillageWineryEligibility {
     private VillageWineryEligibility() {
     }
@@ -17,8 +17,8 @@ public final class VillageWineryEligibility {
         };
         long coordinate = ((long) startX << 32)
                 ^ Integer.toUnsignedLong(startZ);
-        return Long.remainderUnsigned(mix64(mix64(seed ^ salt) ^ coordinate), 5)
-                == 0;
+        return Long.remainderUnsigned(mix64(mix64(seed ^ salt) ^ coordinate), 10)
+                < 7;
     }
 
     private static long mix64(long value) {

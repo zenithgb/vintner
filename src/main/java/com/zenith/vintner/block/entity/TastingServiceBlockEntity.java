@@ -148,7 +148,30 @@ public final class TastingServiceBlockEntity extends BlockEntity {
         }
 
         BlockState state = getBlockState();
-        BlockState updated = state
+        BlockState updated = displayState(state);
+
+        if (!updated.equals(state)) {
+            level.setBlock(worldPosition, updated, Block.UPDATE_ALL);
+        } else {
+            level.sendBlockUpdated(
+                    worldPosition,
+                    state,
+                    state,
+                    Block.UPDATE_CLIENTS
+            );
+        }
+
+        if (!level.isClientSide()) {
+            level.updateNeighbourForOutputSignal(
+                    worldPosition,
+                    state.getBlock()
+            );
+        }
+    }
+
+    /** The bottle is authoritative even if worldgen has not attached this entity to a Level. */
+    public BlockState displayState(BlockState state) {
+        return state
                 .setValue(
                         TastingServiceBlock.HAS_BOTTLE,
                         !bottle.isEmpty()
@@ -181,24 +204,6 @@ public final class TastingServiceBlockEntity extends BlockEntity {
                         TastingServiceBlock.CUP_4,
                         isCupFilled(3)
                 );
-
-        if (!updated.equals(state)) {
-            level.setBlock(worldPosition, updated, Block.UPDATE_ALL);
-        } else {
-            level.sendBlockUpdated(
-                    worldPosition,
-                    state,
-                    state,
-                    Block.UPDATE_CLIENTS
-            );
-        }
-
-        if (!level.isClientSide()) {
-            level.updateNeighbourForOutputSignal(
-                    worldPosition,
-                    state.getBlock()
-            );
-        }
     }
 
     @Override

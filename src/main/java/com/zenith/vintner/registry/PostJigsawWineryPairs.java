@@ -1,10 +1,12 @@
 package com.zenith.vintner.registry;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
@@ -17,11 +19,14 @@ import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /** Adds one logical winery after vanilla finishes its village layout. */
 public final class PostJigsawWineryPairs {
@@ -65,8 +70,11 @@ public final class PostJigsawWineryPairs {
         StructurePoolElement wineryElement = StructurePoolElement
                 .single(config.wineryId)
                 .apply(StructureTemplatePool.Projection.RIGID);
+        StructureTemplate wineryTemplate = templates.getOrCreate(
+                Identifier.parse(config.wineryId));
         Search winerySearch = findCandidate(
-                wineryElement, config.wineryRoadEdge, true, config,
+                wineryElement, wineryTemplate, config.wineryRoadEdge,
+                true, config,
                 streets, existing,
                 startChunk, generator, randomState, templates, heightAccessor
         );
@@ -80,10 +88,13 @@ public final class PostJigsawWineryPairs {
         StructurePoolElement fieldElement = StructurePoolElement
                 .single(config.fieldId)
                 .apply(StructureTemplatePool.Projection.RIGID);
+        StructureTemplate fieldTemplate = templates.getOrCreate(
+                Identifier.parse(config.fieldId));
         List<StructurePiece> withWinery = new ArrayList<>(existing);
         withWinery.add(winerySearch.piece);
         Search fieldSearch = findCandidate(
-                fieldElement, config.fieldRoadEdge, false, config,
+                fieldElement, fieldTemplate, config.fieldRoadEdge,
+                false, config,
                 streets, withWinery,
                 startChunk, generator, randomState, templates, heightAccessor
         );
@@ -107,6 +118,7 @@ public final class PostJigsawWineryPairs {
 
     private static Search findCandidate(
             StructurePoolElement element,
+            StructureTemplate template,
             BlockPos authoredRoadEdge,
             boolean winery,
             PairConfig config,
@@ -150,10 +162,11 @@ public final class PostJigsawWineryPairs {
                         portX, portZ)) {
                     continue;
                 }
-                // Taiga's authored entrance is local Y=1. Its two-block
-                // foundation sits below that entrance; the field does not.
+                // Plains has a two-block-high authored road connector but
+                // its Y=0 foundation must meet the actual surface. Taiga's
+                // authored cellar still needs its separate terrain offset.
                 int terrainContact = portSurface - 2
-                        - (winery && config.taiga ? 1 : 0);
+                        + (winery ? config.wineryContactOffset : 0);
                 BlockPos origin = new BlockPos(
                         portX - transformedRoadEdge.getX(),
                         terrainContact - transformedRoadEdge.getY(),
@@ -170,7 +183,8 @@ public final class PostJigsawWineryPairs {
                     continue;
                 }
                 if (!terrainFits(generator, randomState, heightAccessor,
-                        box, portSurface, !winery)) {
+                        box, portSurface, !winery,
+                        template, origin, rotation)) {
                     continue;
                 }
                 result.piece = new PoolElementStructurePiece(
@@ -190,15 +204,31 @@ public final class PostJigsawWineryPairs {
             LevelHeightAccessor heightAccessor,
             BoundingBox box,
             int portSurface,
-            boolean field
+            boolean field,
+            StructureTemplate template,
+            BlockPos origin,
+            Rotation rotation
     ) {
         int low = portSurface;
         int high = portSurface;
-        // A corner-and-centre sample can miss a one-block-wide ravine. These
-        // player templates are at most 18 blocks across, so every footprint
-        // column is still a small, deterministic generator-height query.
+        List<StructureTemplate.StructureBlockInfo> authoredAir =
+                template.filterBlocks(origin,
+                        new StructurePlaceSettings().setRotation(rotation),
+                        Blocks.AIR);
+        Set<BlockPos> airAtFoundation = new HashSet<>();
+        for (var block : authoredAir) {
+            if (block.pos().getY() == box.minY()) {
+                airAtFoundation.add(block.pos());
+            }
+        }
+        // Every non-air Y=0 cell is authored contact. Only Snowy has air
+        // margin on this plane; water there must not invalidate dry property.
         for (int x = box.minX(); x <= box.maxX(); x++) {
             for (int z = box.minZ(); z <= box.maxZ(); z++) {
+                if (airAtFoundation.contains(
+                        new BlockPos(x, box.minY(), z))) {
+                    continue;
+                }
                 int surface = surface(generator, randomState,
                         heightAccessor, x, z);
                 if (!dry(generator, randomState, heightAccessor, x, z)) {
@@ -219,7 +249,42 @@ public final class PostJigsawWineryPairs {
                 }
             }
         }
+        // Open authored space can flood when a rigid piece lowers nearby
+        // terrain toward a lake. Check only lower exposed air at the boundary;
+        // water behind solid authored walls or below the entrance is valid.
+        for (var block : authoredAir) {
+            BlockPos pos = block.pos();
+            if (pos.getY() <= box.minY()
+                    || pos.getY() > box.minY() + 4
+                    || airAtFoundation.contains(new BlockPos(
+                    pos.getX(), box.minY(), pos.getZ()))) {
+                continue;
+            }
+            if (pos.getX() == box.minX()
+                    && wetAt(generator, randomState, heightAccessor,
+                    pos.west())) return false;
+            if (pos.getX() == box.maxX()
+                    && wetAt(generator, randomState, heightAccessor,
+                    pos.east())) return false;
+            if (pos.getZ() == box.minZ()
+                    && wetAt(generator, randomState, heightAccessor,
+                    pos.north())) return false;
+            if (pos.getZ() == box.maxZ()
+                    && wetAt(generator, randomState, heightAccessor,
+                    pos.south())) return false;
+        }
         return true;
+    }
+
+    private static boolean wetAt(
+            ChunkGenerator generator,
+            RandomState randomState,
+            LevelHeightAccessor heightAccessor,
+            BlockPos pos
+    ) {
+        return !generator.getBaseColumn(pos.getX(), pos.getZ(),
+                heightAccessor, randomState).getBlock(pos.getY())
+                .getFluidState().isEmpty();
     }
 
     private static int surface(
@@ -297,6 +362,7 @@ public final class PostJigsawWineryPairs {
             String fieldId,
             BlockPos wineryRoadEdge,
             BlockPos fieldRoadEdge,
+            int wineryContactOffset,
             boolean taiga,
             boolean southFacing
     ) {
@@ -305,31 +371,31 @@ public final class PostJigsawWineryPairs {
                 case "plains" -> new PairConfig(
                         "minecraft:village/plains/streets/",
                         "vintner:village/plains/vineyard", null,
-                        new BlockPos(8, 2, 0), null, false, false
+                        new BlockPos(8, 2, 0), null, 3, false, false
                 );
                 case "desert" -> new PairConfig(
                         "minecraft:village/desert/streets/",
                         "vintner:village/desert/vineyard", null,
-                        new BlockPos(5, 1, 0), null, false, false
+                        new BlockPos(6, 7, 0), null, 0, false, false
                 );
                 case "savanna" -> new PairConfig(
                         "minecraft:village/savanna/streets/",
                         "vintner:village/savanna/winery_tier1",
                         "vintner:village/savanna/vineyard_field_tier1",
                         new BlockPos(5, 0, 17), new BlockPos(3, 0, 0),
-                        false, true
+                        0, false, true
                 );
                 case "snowy" -> new PairConfig(
                         "minecraft:village/snowy/streets/",
                         "vintner:village/snowy/vineyard", null,
-                        new BlockPos(2, 1, 9), null, false, true
+                        new BlockPos(2, 1, 9), null, 0, false, true
                 );
                 case "taiga" -> new PairConfig(
                         "minecraft:village/taiga/streets/",
                         "vintner:village/taiga/winery_tier1",
                         "vintner:village/taiga/vineyard_field_tier1",
                         new BlockPos(0, 1, 6), new BlockPos(10, 0, 9),
-                        true, false
+                        -1, true, false
                 );
                 default -> null;
             };

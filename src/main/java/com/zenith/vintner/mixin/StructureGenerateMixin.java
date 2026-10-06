@@ -1,6 +1,15 @@
 package com.zenith.vintner.mixin;
 
 import com.zenith.vintner.registry.PostJigsawWineryPairs;
+import com.zenith.vintner.registry.DesertWineryCandidate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
@@ -60,6 +69,26 @@ abstract class StructureGenerateMixin {
                     default -> "";
                 })
                 .orElse("");
+        if ("desert".equals(culture)) {
+            var start = new StructureStart(structure.value(), chunkPos, references, builder.build());
+            var selection = DesertWineryCandidate.select(seed, start, templates);
+            if (selection.selected() != null) {
+                var candidate = selection.selected();
+                // Only a persisted bounding-box hint. Placement resolves the final grade
+                // from the street anchor's FEATURES-time WORLD_SURFACE_WG height.
+                int boundingBoxHintFeetY = generator.getFirstFreeHeight(
+                        candidate.pathX(), candidate.pathZ(), Heightmap.Types.WORLD_SURFACE_WG,
+                        heightAccessor, randomState);
+                var origin = new BlockPos(candidate.originX(), boundingBoxHintFeetY - 7, candidate.originZ());
+                StructurePoolElement element = StructurePoolElement
+                        .single("vintner:village/desert/vineyard")
+                        .apply(StructureTemplatePool.Projection.RIGID);
+                BoundingBox box = element.getBoundingBox(templates, origin, candidate.rotation());
+                builder.addPiece(new PoolElementStructurePiece(templates, element, origin, 0,
+                        candidate.rotation(), box, LiquidSettings.APPLY_WATERLOGGING));
+            }
+            return builder.build();
+        }
         PostJigsawWineryPairs.append(
                 culture, seed, builder, chunkPos, generator, randomState,
                 templates, heightAccessor

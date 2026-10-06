@@ -49,12 +49,13 @@ CULTURES = {
     "taiga": "spruce",
 }
 
-# The four player exports are immutable. Each connector replaces one boundary
-# block at the authored street approach; its final_state restores that block.
+# The maintained player-derived sources have fixed hashes. Each connector
+# replaces one boundary block at the authored street approach; its final_state
+# restores that block.
 PLAYER_SOURCES = {
     "desert": (
-        "7be4b217c7f987829e1b2a2eeabdc87bbf83054984daa2db56610eb1f712d805",
-        (13, 10, 13), (5, 1, 0), "north_up",
+        "3c7d3d2c78ca729d5f4dd8e859f901a42d2be3f23300efa880d95a2e1cb6698b",
+        (15, 16, 15), (6, 7, 0), "north_up",
     ),
     "savanna": (
         "60348dbd4b0a5c4443029af827e3f7806d1a22783f3b4f19bf5c29ce2bf1b80b",
@@ -69,6 +70,11 @@ PLAYER_SOURCES = {
         (23, 11, 15), (12, 1, 0), "north_up",
     ),
 }
+
+# The Desert export extends below its occupied floor so the authored
+# foundation can embed in terrain. Sparse structure templates do not place
+# missing cells; keeping exported air at these depths excavates a 15x15 box.
+DESERT_FLOOR_Y_LOCAL = 7
 
 
 def create_player_structure(culture: str) -> bytes:
@@ -93,6 +99,15 @@ def create_player_structure(culture: str) -> bytes:
     names = [str(require_tag(entry, "id", TAG_STRING)) for entry in palette]
     if "minecraft:jigsaw" in names or "minecraft:composter" in names:
         raise ValueError(f"{culture}: source contains a jigsaw or Composter")
+    if culture == "desert":
+        blocks[:] = [
+            block for block in blocks
+            if not (
+                require_list(block, "pos", TAG_INT)[1] < DESERT_FLOOR_Y_LOCAL
+                and names[int(require_tag(block, "state", TAG_INT))]
+                == "minecraft:air"
+            )
+        ]
     original = None
     for block in blocks:
         if tuple(require_list(block, "pos", TAG_INT)) == connector:
