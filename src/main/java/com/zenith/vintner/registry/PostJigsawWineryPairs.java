@@ -162,9 +162,9 @@ public final class PostJigsawWineryPairs {
                         portX, portZ)) {
                     continue;
                 }
-                // Plains has a two-block-high authored road connector but
-                // its Y=0 foundation must meet the actual surface. Taiga's
-                // authored cellar still needs its separate terrain offset.
+                // Plains uses a one-block contact offset and two-block piece
+                // ground-level delta to meet terrain without moving the
+                // shaping reference. Taiga keeps its separate cellar offset.
                 int terrainContact = portSurface - 2
                         + (winery ? config.wineryContactOffset : 0);
                 BlockPos origin = new BlockPos(
@@ -189,7 +189,7 @@ public final class PostJigsawWineryPairs {
                 }
                 result.piece = new PoolElementStructurePiece(
                         templates, element, origin,
-                        winery && config.taiga ? 2 : 0, rotation, box,
+                        winery && (config.taiga || "vintner:village/plains/vineyard".equals(config.wineryId)) ? 2 : 0, rotation, box,
                         LiquidSettings.APPLY_WATERLOGGING
                 );
                 return result;
@@ -371,7 +371,7 @@ public final class PostJigsawWineryPairs {
                 case "plains" -> new PairConfig(
                         "minecraft:village/plains/streets/",
                         "vintner:village/plains/vineyard", null,
-                        new BlockPos(8, 2, 0), null, 3, false, false
+                        new BlockPos(8, 2, 0), null, 1, false, false
                 );
                 case "desert" -> new PairConfig(
                         "minecraft:village/desert/streets/",

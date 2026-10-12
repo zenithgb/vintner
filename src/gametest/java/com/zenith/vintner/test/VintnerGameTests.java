@@ -2650,6 +2650,94 @@ public final class VintnerGameTests {
         helper.succeed();
     }
 
+    // Constructed 26.3 lake fixture: the protected lot begins at lake-local Y=4,
+    // so none of the feature's Y=0..3 lava cells intersects its saved box.
+    @GameTest(maxTicks = 80, padding = 48)
+    public void plainsLakeUpperCarveCanRemoveVineyardSupport(GameTestHelper helper) {
+        BlockPos corner = prepareLakeFixture(helper);
+        BlockPos support = corner.offset(8, 4, 8);
+        helper.getLevel().setBlock(support,
+                Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
+        helper.getLevel().setBlock(support.above(),
+                ModBlocks.VINEYARD_SOIL.defaultBlockState(), Block.UPDATE_ALL);
+        var feature = new net.minecraft.world.level.levelgen.feature.LakeFeature(
+                net.minecraft.world.level.levelgen.feature.stateproviders
+                        .BlockStateProvider.holderOf(Blocks.LAVA),
+                net.minecraft.world.level.levelgen.feature.stateproviders
+                        .BlockStateProvider.holderOf(Blocks.STONE),
+                net.minecraft.world.level.levelgen.blockpredicates
+                        .BlockPredicate.alwaysTrue(),
+                net.minecraft.world.level.levelgen.blockpredicates
+                        .BlockPredicate.not(net.minecraft.world.level.levelgen
+                                .blockpredicates.BlockPredicate.matchesTag(
+                                        net.minecraft.tags.BlockTags.FEATURES_CANNOT_REPLACE)),
+                net.minecraft.world.level.levelgen.blockpredicates
+                        .BlockPredicate.not(net.minecraft.world.level.levelgen
+                                .blockpredicates.BlockPredicate.matchesTag(
+                                        net.minecraft.tags.BlockTags.LAVA_POOL_STONE_CANNOT_REPLACE))
+        );
+        helper.assertTrue(feature.place(helper.getLevel(),
+                helper.getLevel().getChunkSource().getGenerator(),
+                RandomSource.create(1400L), corner.offset(8, 4, 8)),
+                "Constructed lava lake must place");
+        helper.assertTrue(helper.getLevel().getBlockState(support.above())
+                .is(ModBlocks.VINEYARD_SOIL), "Vintner soil guard retains soil");
+        helper.assertTrue(helper.getLevel().getBlockState(support).isAir(),
+                "Upper lake carve must remove authored dirt support");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void plainsLakeEnvelopeCoversCarveBarrierAndFluid(GameTestHelper helper) {
+        boolean[] shape = new boolean[16 * 16 * 8];
+        BlockPos corner = helper.absolutePos(new BlockPos(1, 1, 1));
+        var upper = new BoundingBox(corner.getX() + 8, corner.getY() + 4,
+                corner.getZ() + 8, corner.getX() + 8,
+                corner.getY() + 5, corner.getZ() + 8);
+        shape[(8 * 16 + 8) * 8 + 4] = true;
+        helper.assertTrue(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .intersects(shape, corner, upper),
+                "Upper carved air must intersect protected authored ground");
+        helper.assertTrue(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .rejectsLake(shape, corner,
+                        net.minecraft.resources.Identifier.parse(
+                                "vintner:village/plains/vineyard"), upper),
+                "Saved Plains piece and upper carve must reject the whole lake");
+        helper.assertFalse(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .rejectsLake(shape, corner,
+                        net.minecraft.resources.Identifier.parse(
+                                "vintner:village/taiga/vineyard"), upper),
+                "Another culture's piece must not reject the lake");
+        var shell = new BoundingBox(corner.getX() + 9, corner.getY() + 4,
+                corner.getZ() + 8, corner.getX() + 9,
+                corner.getY() + 4, corner.getZ() + 8);
+        helper.assertTrue(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .intersects(shape, corner, shell),
+                "Vanilla's one-cell barrier shell must count");
+        var nearby = new BoundingBox(corner.getX() + 10, corner.getY() + 4,
+                corner.getZ() + 8, corner.getX() + 10,
+                corner.getY() + 4, corner.getZ() + 8);
+        helper.assertFalse(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .intersects(shape, corner, nearby),
+                "A nearby lot beyond the shell must not reject the lake");
+        helper.assertFalse(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .rejectsLake(shape, corner,
+                        net.minecraft.resources.Identifier.parse(
+                                "vintner:village/plains/vineyard"), nearby),
+                "A nearby Plains piece outside the envelope must not reject");
+        var below = new BoundingBox(corner.getX() + 8, corner.getY(),
+                corner.getZ() + 8, corner.getX() + 8,
+                corner.getY() + 2, corner.getZ() + 8);
+        helper.assertFalse(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .intersects(shape, corner, below),
+                "An upper-only carve has no fluid overlap");
+        shape[(8 * 16 + 8) * 8 + 2] = true;
+        helper.assertTrue(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .intersects(shape, corner, below),
+                "Existing fluid-overlap rejection must remain");
+        helper.succeed();
+    }
+
     private static BlockPos prepareLakeFixture(GameTestHelper helper) {
         BlockPos relative = new BlockPos(10, 4, 10);
         for (int x = 0; x < 16; x++) {

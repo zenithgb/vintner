@@ -1,0 +1,68 @@
+package com.zenith.vintner.registry;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+
+/** Candidate cells a 26.3 LakeFeature may replace from its generated mask. */
+public final class PlainsLakeEnvelope {
+    private static final Identifier PLAINS_WINERY =
+            Identifier.parse("vintner:village/plains/vineyard");
+
+    private PlainsLakeEnvelope() {
+    }
+
+    public static boolean rejectsLake(
+            boolean[] shape, BlockPos corner,
+            Identifier templateId, BoundingBox pieceBox
+    ) {
+        return PLAINS_WINERY.equals(templateId)
+                && intersects(shape, corner, pieceBox);
+    }
+
+    public static boolean intersects(
+            boolean[] shape, BlockPos corner, BoundingBox protectedBox
+    ) {
+        int minX = Math.max(0, protectedBox.minX() - corner.getX());
+        int maxX = Math.min(15, protectedBox.maxX() - corner.getX());
+        int minY = Math.max(0, protectedBox.minY() - corner.getY());
+        int maxY = Math.min(7, protectedBox.maxY() - corner.getY());
+        int minZ = Math.max(0, protectedBox.minZ() - corner.getZ());
+        int maxZ = Math.min(15, protectedBox.maxZ() - corner.getZ());
+        if (minX > maxX || minY > maxY || minZ > maxZ) return false;
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                for (int y = minY; y <= maxY; y++) {
+                    if (mayWrite(shape, x, y, z)) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasCandidateInColumn(boolean[] shape, int x, int z) {
+        for (int y = 0; y < 8; y++) {
+            if (mayWrite(shape, x, y, z)) return true;
+        }
+        return false;
+    }
+
+    private static boolean mayWrite(boolean[] shape, int x, int y, int z) {
+        // A true cell receives fluid below Y=4 or cave air above it.
+        if (shape[index(x, y, z)]) return true;
+        // Vanilla considers the six direct neighbours for its barrier shell.
+        // Upper-shell stone is random, so this is a conservative candidate
+        // envelope; it never depends on the current terrain or random state.
+        return (x < 15 && shape[index(x + 1, y, z)])
+                || (x > 0 && shape[index(x - 1, y, z)])
+                || (z < 15 && shape[index(x, y, z + 1)])
+                || (z > 0 && shape[index(x, y, z - 1)])
+                || (y < 7 && shape[index(x, y + 1, z)])
+                || (y > 0 && shape[index(x, y - 1, z)]);
+    }
+
+    private static int index(int x, int y, int z) {
+        return (x * 16 + z) * 8 + y;
+    }
+}
