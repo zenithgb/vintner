@@ -319,8 +319,8 @@ def visible_signature(model: dict[str, object]) -> list[object]:
         if name == "minecraft:jigsaw":
             nbt = require_tag(block, "nbt", TAG_COMPOUND)
             final_state = string_field(nbt, "final_state")
-            if final_state != "minecraft:dirt_path":
-                raise ValueError("canonical jigsaw does not resolve to dirt path")
+            if final_state not in ("minecraft:dirt_path", "minecraft:air"):
+                raise ValueError("unexpected jigsaw final state")
             name = final_state
             properties = {}
         signature.append([position, name, sorted(properties.items())])
@@ -361,8 +361,8 @@ def audit_canonical_plains(model: dict[str, object]) -> str:
         raise ValueError("integrated Plains technical inventory changed")
     if source["counts"]["minecraft:dirt_path"] != 9:
         raise ValueError("canonical source path inventory changed")
-    if model["counts"]["minecraft:dirt_path"] != 8:
-        raise ValueError("runtime path diff exceeds the connector replacement")
+    if model["counts"]["minecraft:dirt_path"] != 9:
+        raise ValueError("runtime Plains path inventory changed")
 
     source_visible = visible_signature(source)
     runtime_visible = visible_signature(model)
@@ -394,12 +394,12 @@ def audit_canonical_plains(model: dict[str, object]) -> str:
     if runtime_authored != source_authored:
         raise ValueError(
             "runtime Plains template changes player-authored blocks outside "
-            "the trimmed terrain margin and lowered road connector"
+            "the trimmed terrain margin and technical road connector"
         )
-    if model["positioned"][PLAINS_RUNTIME_PATH_POSITION][0] != "minecraft:air":
-        raise ValueError("runtime Plains source road path was not lifted")
+    if model["positioned"][PLAINS_RUNTIME_PATH_POSITION][0] != "minecraft:dirt_path":
+        raise ValueError("runtime Plains source road path was not preserved")
     if source["positioned"][PLAINS_SOURCE_JIGSAW_POSITION][0] != "minecraft:air":
-        raise ValueError("canonical source has no air for the lifted connector")
+        raise ValueError("canonical source connector cell is not air")
 
     for position, (_name, _properties, source_block) in source[
         "positioned"
@@ -422,7 +422,7 @@ def audit_canonical_plains(model: dict[str, object]) -> str:
         model,
         PLAINS_RUNTIME_JIGSAW_POSITION,
         "north_up",
-        "minecraft:dirt_path",
+        "minecraft:air",
     )
     counts = model["counts"]
     positioned = model["positioned"]
@@ -458,7 +458,7 @@ def audit_canonical_plains(model: dict[str, object]) -> str:
         "67 source/68 runtime states, 10 source/11 runtime block entities, "
         "1 technical jigsaw, 1 Winemaker Grape Press, 0 entities, "
         "0 composters, authored-equivalent outside the terrain-only margin "
-        "and one-block-raised road connector, rotations 0/90/180/270"
+        "and ground-level road path, rotations 0/90/180/270"
     )
     print(f"PASS plains visible SHA-256: {visible_hash}")
     return visible_hash

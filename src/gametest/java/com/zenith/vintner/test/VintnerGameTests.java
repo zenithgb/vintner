@@ -1534,8 +1534,8 @@ public final class VintnerGameTests {
                 );
                 helper.assertValueEqual(
                         entranceState,
-                        "minecraft:dirt_path",
-                        "Player-authored road connector must remain a path"
+                        "minecraft:air",
+                        "Technical connector must not create a raised path"
                 );
             } else {
                 helper.assertValueEqual(
@@ -1822,15 +1822,16 @@ public final class VintnerGameTests {
                             .is(Blocks.JIGSAW),
                     "Rotated winery must retain its village connector"
             );
-            BlockPos clearedPath = origin.offset(StructureTemplate.transform(
+            BlockPos entrancePath = origin.offset(StructureTemplate.transform(
                     new BlockPos(8, 1, 0),
                     Mirror.NONE,
                     rotation,
                     BlockPos.ZERO
             ));
             helper.assertTrue(
-                    helper.getLevel().getBlockState(clearedPath).isAir(),
-                    "Rotated winery must clear its original boundary path"
+                    helper.getLevel().getBlockState(entrancePath)
+                            .is(Blocks.DIRT_PATH),
+                    "Rotated winery must retain its authored entrance path"
             );
         }
 

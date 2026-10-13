@@ -288,7 +288,6 @@ def create_canonical_plains_structure() -> bytes:
     connector_state = int(require_tag(connector_block, "state", TAG_INT))
     if state_names[connector_state] != "minecraft:air":
         raise ValueError("lowered Plains connector must replace authored air")
-    air_state = state_names.index("minecraft:air")
 
     # The player's x=0 edge is only an exported terrain/air margin. Keeping
     # it in the runtime box makes the otherwise vanilla-sized winery collide
@@ -314,15 +313,14 @@ def create_canonical_plains_structure() -> bytes:
             ),
         }
     )
-    # Raising the connector one local block makes jigsaw alignment lower the
-    # complete player-authored structure by one world block. Move the authored
-    # boundary path with the connector so the village road remains at grade.
-    source_path_block["state"] = tag_int(air_state)
+    # Keep the technical connector above the authored road path for jigsaw
+    # alignment. Its final air state clears the upper cell after placement;
+    # the original path remains at the surrounding ground level.
     connector_block["state"] = tag_int(jigsaw_state)
     connector_block["nbt"] = tag_compound(
         {
             "joint": tag_string("aligned"),
-            "final_state": tag_string("minecraft:dirt_path"),
+            "final_state": tag_string("minecraft:air"),
             "name": tag_string("minecraft:building_entrance"),
             "pool": tag_string("minecraft:village/plains/streets"),
             "id": tag_string("minecraft:jigsaw"),
