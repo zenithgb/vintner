@@ -6,7 +6,8 @@
   "environment": "*",
   "entrypoints": {
     "fabric-gametest": [
-      "com.zenith.vintner.test.VintnerGameTests"
+      "com.zenith.vintner.test.VintnerGameTests",
+      "com.zenith.vintner.registry.SavannaCarverSuitabilityGameTests"
     ]
   },
   "depends": {

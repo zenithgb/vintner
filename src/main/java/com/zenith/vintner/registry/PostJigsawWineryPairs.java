@@ -1,5 +1,6 @@
 package com.zenith.vintner.registry;
 
+import com.zenith.vintner.Vintner;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.ChunkPos;
@@ -76,7 +77,8 @@ public final class PostJigsawWineryPairs {
                 wineryElement, wineryTemplate, config.wineryRoadEdge,
                 true, config,
                 streets, existing,
-                startChunk, generator, randomState, templates, heightAccessor
+                startChunk, generator, randomState, templates, heightAccessor,
+                null
         );
         if (winerySearch.piece == null) {
             return;
@@ -92,14 +94,30 @@ public final class PostJigsawWineryPairs {
                 Identifier.parse(config.fieldId));
         List<StructurePiece> withWinery = new ArrayList<>(existing);
         withWinery.add(winerySearch.piece);
+        SavannaCarverSuitability carvers = "savanna".equals(culture)
+                ? new SavannaCarverSuitability(generator, randomState,
+                heightAccessor) : null;
         Search fieldSearch = findCandidate(
                 fieldElement, fieldTemplate, config.fieldRoadEdge,
                 false, config,
                 streets, withWinery,
-                startChunk, generator, randomState, templates, heightAccessor
+                startChunk, generator, randomState, templates, heightAccessor,
+                carvers
         );
         if (fieldSearch.piece == null) {
+            if (carvers != null) {
+                Vintner.LOGGER.debug("Savanna field search exhausted: start={} "
+                                + "candidates={} targetChunks={} carverReplays={}",
+                        startChunk, fieldSearch.considered,
+                        carvers.targetChunks(), carvers.replayedCarvers());
+            }
             return;
+        }
+        if (carvers != null) {
+            Vintner.LOGGER.debug("Savanna field selected: start={} "
+                            + "candidates={} targetChunks={} carverReplays={}",
+                    startChunk, fieldSearch.considered,
+                    carvers.targetChunks(), carvers.replayedCarvers());
         }
 
         // The only two builder mutations happen after both independent pieces
@@ -128,7 +146,8 @@ public final class PostJigsawWineryPairs {
             ChunkGenerator generator,
             RandomState randomState,
             StructureTemplateManager templates,
-            LevelHeightAccessor heightAccessor
+            LevelHeightAccessor heightAccessor,
+            SavannaCarverSuitability carvers
     ) {
         Search result = new Search();
         for (PoolElementStructurePiece street : streets) {
@@ -186,6 +205,25 @@ public final class PostJigsawWineryPairs {
                         box, portSurface, !winery,
                         template, origin, rotation)) {
                     continue;
+                }
+                if (carvers != null) {
+                    var settings = new StructurePlaceSettings()
+                            .setRotation(rotation);
+                    long cutSoil = template.filterBlocks(origin, settings,
+                            ModBlocks.VINEYARD_SOIL).stream().filter(
+                            ground -> carvers.carvesFieldSupport(
+                                    ground.pos())).count();
+                    long cutLane = template.filterBlocks(origin, settings,
+                            Blocks.GRASS_BLOCK).stream().filter(
+                            ground -> carvers.carvesFieldSupport(
+                                    ground.pos())).count();
+                    if (cutSoil != 0 || cutLane != 0) {
+                        Vintner.LOGGER.debug("Savanna carver rejected field: "
+                                        + "start={} box={} rotation={} "
+                                        + "soilCuts={} laneCuts={}",
+                                startChunk, box, rotation, cutSoil, cutLane);
+                        continue;
+                    }
                 }
                 result.piece = new PoolElementStructurePiece(
                         templates, element, origin,

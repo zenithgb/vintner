@@ -66,7 +66,6 @@ import com.zenith.vintner.registry.ModGameRules;
 import com.zenith.vintner.registry.ModTrades;
 import com.zenith.vintner.registry.ModVillageStructures;
 import com.zenith.vintner.registry.PostJigsawWineryPairs;
-import com.zenith.vintner.registry.SavannaVineyardSupport;
 import com.zenith.vintner.registry.VillageWineryEligibility;
 import com.zenith.vintner.registry.ModVillagers;
 import com.zenith.vintner.wine.CellarConditions;
@@ -2363,265 +2362,6 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 80, padding = 48)
-    public void lakeOverlappingVineyardIsProtected(GameTestHelper helper) {
-        BlockPos corner = prepareLakeFixture(helper);
-        BlockPos vineyard = corner.offset(8, 4, 8);
-        helper.getLevel().setBlock(vineyard.below(),
-                Blocks.COARSE_DIRT.defaultBlockState(), Block.UPDATE_ALL);
-        helper.getLevel().setBlock(vineyard.below(2),
-                Blocks.COARSE_DIRT.defaultBlockState(), Block.UPDATE_ALL);
-        helper.getLevel().setBlock(vineyard.below(3),
-                Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
-        helper.getLevel().setBlock(vineyard,
-                ModBlocks.VINEYARD_SOIL.defaultBlockState(), Block.UPDATE_ALL);
-        helper.assertTrue(placeFixtureLake(helper, corner),
-                "Lake must still generate around the protected vineyard");
-        helper.assertTrue(helper.getLevel().getBlockState(vineyard)
-                .is(ModBlocks.VINEYARD_SOIL),
-                "Overlapping lake must leave vineyard soil intact");
-        helper.assertTrue(helper.getLevel().getBlockState(vineyard.below())
-                .is(Blocks.COARSE_DIRT),
-                "Overlapping lake must retain the upper vineyard support");
-        helper.assertTrue(helper.getLevel().getBlockState(vineyard.below(2))
-                .is(Blocks.COARSE_DIRT),
-                "Overlapping lake must retain the bounded support column");
-        helper.assertTrue(helper.getLevel().getBlockState(vineyard.below(3))
-                        .is(Blocks.STONE),
-                "Overlapping lake must retain the support column's stable anchor");
-        helper.assertFalse(helper.getLevel().getBlockState(
-                corner.offset(7, 4, 8)).is(Blocks.STONE),
-                "Lake must alter adjacent ordinary terrain");
-        helper.succeed();
-    }
-
-    @GameTest(maxTicks = 100, padding = 64)
-    public void savannaVineyardSupportRejectsDeepAndLavaColumns(
-            GameTestHelper helper
-    ) {
-        BlockPos origin = helper.absolutePos(new BlockPos(18, 10, 18));
-        BlockPos water = savannaFieldPos(origin, new BlockPos(1, 0, 1),
-                Rotation.NONE);
-        BlockPos deep = savannaFieldPos(origin, new BlockPos(3, 0, 1),
-                Rotation.NONE);
-        BlockPos lava = savannaFieldPos(origin, new BlockPos(5, 0, 1),
-                Rotation.NONE);
-        BlockPos waterlogged = savannaFieldPos(origin, new BlockPos(1, 0, 2),
-                Rotation.NONE);
-        BlockPos falling = savannaFieldPos(origin, new BlockPos(3, 0, 2),
-                Rotation.NONE);
-        BlockPos leaves = savannaFieldPos(origin, new BlockPos(5, 0, 2),
-                Rotation.NONE);
-        for (BlockPos soil : List.of(
-                water, deep, lava, waterlogged, falling, leaves)) {
-            helper.getLevel().setBlock(soil,
-                    ModBlocks.VINEYARD_SOIL.defaultBlockState(),
-                    Block.UPDATE_ALL);
-            for (int depth = 1; depth <= 6; depth++) {
-                helper.getLevel().setBlock(soil.below(depth),
-                        Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-            }
-        }
-        helper.getLevel().setBlock(water.below(5),
-                Blocks.WATER.defaultBlockState(), Block.UPDATE_ALL);
-        helper.getLevel().setBlock(water.below(6),
-                Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
-        helper.getLevel().setBlock(deep.below(7),
-                Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
-        helper.getLevel().setBlock(lava.below(5),
-                Blocks.LAVA.defaultBlockState(), Block.UPDATE_ALL);
-        helper.getLevel().setBlock(lava.below(6),
-                Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
-        helper.getLevel().setBlock(waterlogged.below(),
-                Blocks.OAK_SLAB.defaultBlockState().setValue(
-                        BlockStateProperties.WATERLOGGED, true),
-                Block.UPDATE_ALL);
-        helper.getLevel().setBlock(waterlogged.below(2),
-                Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
-        helper.getLevel().setBlock(falling.below(5),
-                Blocks.SAND.defaultBlockState(), Block.UPDATE_CLIENTS);
-        helper.getLevel().setBlock(falling.below(7),
-                Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
-        helper.getLevel().setBlock(leaves.below(5),
-                Blocks.OAK_LEAVES.defaultBlockState(), Block.UPDATE_CLIENTS);
-        helper.getLevel().setBlock(leaves.below(7),
-                Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
-        BlockPos outside = savannaFieldPos(origin, new BlockPos(2, -1, 1),
-                Rotation.NONE);
-        helper.getLevel().setBlock(outside, Blocks.GOLD_BLOCK.defaultBlockState(),
-                Block.UPDATE_ALL);
-
-        var result = SavannaVineyardSupport.terrace(
-                helper.getLevel().getServer().getStructureTemplateManager(),
-                helper.getLevel(), SavannaVineyardSupport.TEMPLATE_ID,
-                origin, Rotation.NONE,
-                new BoundingBox(origin.getX() - 1, origin.getY() - 8,
-                        origin.getZ() - 1, origin.getX() + 8,
-                        origin.getY() + 3, origin.getZ() + 19)
-        );
-        helper.assertValueEqual(result.columnsConsidered(), 6,
-                "Only present authored soil columns are considered");
-        helper.assertValueEqual(result.columnsCompleted(), 1,
-                "Only the shallow-water column is safe to terrace");
-        helper.assertValueEqual(result.blocksPlaced(), 5,
-                "The accepted fixture requires five bounded support blocks");
-        helper.assertValueEqual(result.maximumDepth(), 5,
-                "Support must stop at the measured five-block maximum");
-        helper.assertValueEqual(result.rejectedDeep(), 3,
-                "Deep openings, falling blocks, and leaves must be rejected");
-        helper.assertValueEqual(result.rejectedLiquid(), 2,
-                "Lava and waterlogged solid columns must remain rejected");
-        for (int depth = 1; depth <= 5; depth++) {
-            helper.assertTrue(helper.getLevel().getBlockState(
-                    water.below(depth)).is(Blocks.COARSE_DIRT),
-                    "Safe water column must become a coarse-dirt bank at " + depth);
-        }
-        helper.assertTrue(helper.getLevel().getBlockState(deep.below()).isAir(),
-                "Deep opening must not be partly filled");
-        helper.assertTrue(helper.getLevel().getBlockState(lava.below()).isAir(),
-                "Lava opening must not be partly filled");
-        helper.assertTrue(helper.getLevel().getBlockState(waterlogged.below())
-                        .is(Blocks.OAK_SLAB),
-                "A waterlogged solid must not be overwritten");
-        helper.assertTrue(helper.getLevel().getBlockState(falling.below()).isAir(),
-                "A falling block without a bounded stable anchor must not be filled");
-        helper.assertTrue(helper.getLevel().getBlockState(leaves.below()).isAir(),
-                "Decaying foliage without a bounded stable anchor must not be filled");
-        helper.assertTrue(helper.getLevel().getBlockState(outside)
-                        .is(Blocks.GOLD_BLOCK),
-                "Terracing must not touch a non-soil-owned neighbor");
-        helper.succeed();
-    }
-
-    @GameTest(maxTicks = 200, padding = 96)
-    public void savannaVineyardSupportHandlesAllRotations(
-            GameTestHelper helper
-    ) {
-        int sample = 0;
-        for (Rotation rotation : Rotation.values()) {
-            BlockPos origin = helper.absolutePos(new BlockPos(
-                    12 + (sample % 2) * 32, 10,
-                    12 + (sample / 2) * 32));
-            List<BlockPos> soils = prepareSavannaSupportFixture(
-                    helper, origin, rotation, 5);
-            var result = SavannaVineyardSupport.terrace(
-                    helper.getLevel().getServer().getStructureTemplateManager(),
-                    helper.getLevel(), SavannaVineyardSupport.TEMPLATE_ID,
-                    origin, rotation,
-                    new BoundingBox(origin.getX() - 20, origin.getY() - 8,
-                            origin.getZ() - 20, origin.getX() + 20,
-                            origin.getY() + 3, origin.getZ() + 20)
-            );
-            helper.assertValueEqual(result.columnsCompleted(), 45,
-                    rotation + " must terrace every authored soil column");
-            helper.assertValueEqual(result.blocksPlaced(), 225,
-                    rotation + " must place five blocks in 45 rows");
-            for (BlockPos soil : soils) {
-                for (int depth = 1; depth <= 5; depth++) {
-                    helper.assertTrue(helper.getLevel().getBlockState(
-                                    soil.below(depth)).is(Blocks.COARSE_DIRT),
-                            rotation + " support gap at " + soil + "/" + depth);
-                }
-            }
-            sample++;
-        }
-        helper.succeed();
-    }
-
-    @GameTest(maxTicks = 200, padding = 112)
-    public void savannaVineyardSupportIsChunkOrderIndependent(
-            GameTestHelper helper
-    ) {
-        BlockPos normalOrigin = helper.absolutePos(new BlockPos(16, 10, 16));
-        BlockPos reverseOrigin = helper.absolutePos(new BlockPos(64, 10, 16));
-        List<BlockPos> normalSoils = prepareSavannaSupportFixture(
-                helper, normalOrigin, Rotation.NONE, 5);
-        List<BlockPos> reverseSoils = prepareSavannaSupportFixture(
-                helper, reverseOrigin, Rotation.NONE, 5);
-        List<BoundingBox> normalSlices = savannaSupportSlices(normalOrigin);
-        List<BoundingBox> reverseSlices = savannaSupportSlices(reverseOrigin);
-        var templates = helper.getLevel().getServer()
-                .getStructureTemplateManager();
-        for (BoundingBox slice : normalSlices) {
-            SavannaVineyardSupport.terrace(
-                    templates, helper.getLevel(),
-                    SavannaVineyardSupport.TEMPLATE_ID,
-                    normalOrigin, Rotation.NONE, slice);
-        }
-        for (int index = reverseSlices.size() - 1; index >= 0; index--) {
-            SavannaVineyardSupport.terrace(
-                    templates, helper.getLevel(),
-                    SavannaVineyardSupport.TEMPLATE_ID,
-                    reverseOrigin, Rotation.NONE, reverseSlices.get(index));
-        }
-        for (int index = 0; index < normalSoils.size(); index++) {
-            BlockPos normal = normalSoils.get(index);
-            BlockPos reverse = reverseSoils.get(index);
-            for (int depth = 0; depth <= 6; depth++) {
-                helper.assertValueEqual(
-                        BuiltInRegistries.BLOCK.getKey(helper.getLevel()
-                                .getBlockState(normal.below(depth)).getBlock()),
-                        BuiltInRegistries.BLOCK.getKey(helper.getLevel()
-                                .getBlockState(reverse.below(depth)).getBlock()),
-                        "Normal/reverse support hash cell " + index
-                                + "/" + depth
-                );
-            }
-        }
-        helper.succeed();
-    }
-
-    private static List<BlockPos> prepareSavannaSupportFixture(
-            GameTestHelper helper,
-            BlockPos origin,
-            Rotation rotation,
-            int depth
-    ) {
-        StructureTemplate template = helper.getLevel().getServer()
-                .getStructureTemplateManager()
-                .get(SavannaVineyardSupport.TEMPLATE_ID).orElseThrow();
-        StructurePlaceSettings settings = new StructurePlaceSettings()
-                .setRotation(rotation);
-        List<BlockPos> soils = template.filterBlocks(
-                        origin, settings, ModBlocks.VINEYARD_SOIL)
-                .stream().map(StructureTemplate.StructureBlockInfo::pos)
-                .sorted().toList();
-        for (BlockPos soil : soils) {
-            helper.getLevel().setBlock(soil,
-                    ModBlocks.VINEYARD_SOIL.defaultBlockState(),
-                    Block.UPDATE_ALL);
-            for (int offset = 1; offset <= depth; offset++) {
-                helper.getLevel().setBlock(soil.below(offset),
-                        Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-            }
-            helper.getLevel().setBlock(soil.below(depth + 1),
-                    Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
-        }
-        return soils;
-    }
-
-    private static BlockPos savannaFieldPos(
-            BlockPos origin, BlockPos local, Rotation rotation
-    ) {
-        return origin.offset(StructureTemplate.transform(
-                local, Mirror.NONE, rotation, BlockPos.ZERO));
-    }
-
-    private static List<BoundingBox> savannaSupportSlices(BlockPos origin) {
-        int lowY = origin.getY() - 8;
-        int highY = origin.getY() + 3;
-        return List.of(
-                new BoundingBox(origin.getX(), lowY, origin.getZ(),
-                        origin.getX() + 3, highY, origin.getZ() + 8),
-                new BoundingBox(origin.getX() + 4, lowY, origin.getZ(),
-                        origin.getX() + 6, highY, origin.getZ() + 8),
-                new BoundingBox(origin.getX(), lowY, origin.getZ() + 9,
-                        origin.getX() + 3, highY, origin.getZ() + 17),
-                new BoundingBox(origin.getX() + 4, lowY, origin.getZ() + 9,
-                        origin.getX() + 6, highY, origin.getZ() + 17)
-        );
-    }
-
-    @GameTest(maxTicks = 80, padding = 48)
     public void lakeNearButOutsideVineyardPlaces(GameTestHelper helper) {
         BlockPos corner = prepareLakeFixture(helper);
         // This cell is inside the lake's 16 x 8 x 16 bounding volume but
@@ -2704,6 +2444,42 @@ public final class VintnerGameTests {
                         net.minecraft.resources.Identifier.parse(
                                 "vintner:village/plains/vineyard"), upper),
                 "Saved Plains piece and upper carve must reject the whole lake");
+        var savanna = new BoundingBox(corner.getX() + 8,
+                corner.getY() + 5, corner.getZ() + 8,
+                corner.getX() + 8, corner.getY() + 6,
+                corner.getZ() + 8);
+        helper.assertTrue(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .rejectsLake(shape, corner,
+                        net.minecraft.resources.Identifier.parse(
+                                "vintner:village/savanna/vineyard_field_tier1"),
+                        savanna),
+                "Saved Savanna field must protect its immediate support");
+        var savannaShell = new BoundingBox(corner.getX() + 9,
+                corner.getY() + 5, corner.getZ() + 8,
+                corner.getX() + 9, corner.getY() + 6,
+                corner.getZ() + 8);
+        helper.assertTrue(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .rejectsLake(shape, corner,
+                        net.minecraft.resources.Identifier.parse(
+                                "vintner:village/savanna/vineyard_field_tier1"),
+                        savannaShell),
+                "Savanna support must include the lava-lake barrier shell");
+        var savannaNearby = new BoundingBox(corner.getX() + 10,
+                corner.getY() + 5, corner.getZ() + 8,
+                corner.getX() + 10, corner.getY() + 6,
+                corner.getZ() + 8);
+        helper.assertFalse(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .rejectsLake(shape, corner,
+                        net.minecraft.resources.Identifier.parse(
+                                "vintner:village/savanna/vineyard_field_tier1"),
+                        savannaNearby),
+                "A Savanna lot beyond the shell must not suppress a lake");
+        helper.assertFalse(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .rejectsLake(shape, corner,
+                        net.minecraft.resources.Identifier.parse(
+                                "vintner:village/taiga/vineyard_field_tier1"),
+                        savanna),
+                "Taiga field remains outside the Savanna lake policy");
         helper.assertFalse(com.zenith.vintner.registry.PlainsLakeEnvelope
                 .rejectsLake(shape, corner,
                         net.minecraft.resources.Identifier.parse(

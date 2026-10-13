@@ -6,7 +6,6 @@ import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.PlainsLakeEnvelope;
-import com.zenith.vintner.registry.SavannaVineyardSupport;
 import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -45,7 +44,7 @@ public abstract class LakeFeatureVineyardProtectionMixin {
                     + "Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;)"
                     + "Lnet/minecraft/world/level/block/state/BlockState;",
             ordinal = 0), cancellable = true)
-    private void vintner$rejectLavaLakeOverPlainsLot(
+    private void vintner$rejectLavaLakeOverProtectedLot(
             WorldGenLevel level,
             net.minecraft.world.level.chunk.ChunkGenerator generator,
             net.minecraft.util.RandomSource random,
@@ -116,9 +115,7 @@ public abstract class LakeFeatureVineyardProtectionMixin {
         Block current = level.getBlockState(pos).getBlock();
         if (current == ModBlocks.VINEYARD_SOIL
                 || current instanceof GrapevineBlock
-                || current instanceof TrellisBlock
-                || SavannaVineyardSupport.isTerraceOrAnchor(
-                        level, pos, level.getBlockState(pos))) {
+                || current instanceof TrellisBlock) {
             return false;
         }
         return level.setBlock(pos, replacement, flags);

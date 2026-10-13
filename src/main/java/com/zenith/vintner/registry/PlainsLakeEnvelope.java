@@ -8,6 +8,8 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 public final class PlainsLakeEnvelope {
     private static final Identifier PLAINS_WINERY =
             Identifier.parse("vintner:village/plains/vineyard");
+    private static final Identifier SAVANNA_FIELD =
+            Identifier.parse("vintner:village/savanna/vineyard_field_tier1");
 
     private PlainsLakeEnvelope() {
     }
@@ -16,8 +18,17 @@ public final class PlainsLakeEnvelope {
             boolean[] shape, BlockPos corner,
             Identifier templateId, BoundingBox pieceBox
     ) {
-        return PLAINS_WINERY.equals(templateId)
-                && intersects(shape, corner, pieceBox);
+        if (PLAINS_WINERY.equals(templateId)) {
+            return intersects(shape, corner, pieceBox);
+        }
+        if (SAVANNA_FIELD.equals(templateId)) {
+            // The field authors a complete 7 x 18 agricultural ground layer.
+            // The natural block immediately below it is required support.
+            return intersects(shape, corner, new BoundingBox(
+                    pieceBox.minX(), pieceBox.minY() - 1, pieceBox.minZ(),
+                    pieceBox.maxX(), pieceBox.maxY(), pieceBox.maxZ()));
+        }
+        return false;
     }
 
     public static boolean intersects(
