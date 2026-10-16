@@ -2,16 +2,45 @@ package com.zenith.vintner.registry;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 /** Candidate cells a 26.3 LakeFeature may replace from its generated mask. */
 public final class PlainsLakeEnvelope {
+    private static final Identifier PLAINS_VILLAGE =
+            Identifier.parse("minecraft:village_plains");
+    private static final Identifier SAVANNA_VILLAGE =
+            Identifier.parse("minecraft:village_savanna");
+    private static final Identifier TAIGA_VILLAGE =
+            Identifier.parse("minecraft:village_taiga");
     private static final Identifier PLAINS_WINERY =
             Identifier.parse("vintner:village/plains/vineyard");
     private static final Identifier SAVANNA_FIELD =
             Identifier.parse("vintner:village/savanna/vineyard_field_tier1");
+    private static final Identifier SAVANNA_SECTION_A =
+            Identifier.parse("vintner:village/savanna/vineyard_section_a_tier1");
+    private static final Identifier SAVANNA_SECTION_B =
+            Identifier.parse("vintner:village/savanna/vineyard_section_b_tier1");
+    private static final Identifier SAVANNA_SECTION_C =
+            Identifier.parse("vintner:village/savanna/vineyard_section_c_tier1");
+    private static final Identifier TAIGA_FIELD =
+            Identifier.parse("vintner:village/taiga/vineyard_field_tier1");
 
     private PlainsLakeEnvelope() {
+    }
+
+    public static boolean protectsVillage(Identifier structureId) {
+        return PLAINS_VILLAGE.equals(structureId)
+                || SAVANNA_VILLAGE.equals(structureId)
+                || TAIGA_VILLAGE.equals(structureId);
+    }
+
+    /** FEATURES guarantees start data only through radius eight around its centre. */
+    public static boolean unavailableVillageStart(
+            ChunkPos regionCenter, ChunkPos start, boolean inRegion
+    ) {
+        return regionCenter.getChessboardDistance(start.x(), start.z()) > 8
+                || !inRegion;
     }
 
     public static boolean rejectsLake(
@@ -21,9 +50,13 @@ public final class PlainsLakeEnvelope {
         if (PLAINS_WINERY.equals(templateId)) {
             return intersects(shape, corner, pieceBox);
         }
-        if (SAVANNA_FIELD.equals(templateId)) {
-            // The field authors a complete 7 x 18 agricultural ground layer.
-            // The natural block immediately below it is required support.
+        if (SAVANNA_FIELD.equals(templateId)
+                || SAVANNA_SECTION_A.equals(templateId)
+                || SAVANNA_SECTION_B.equals(templateId)
+                || SAVANNA_SECTION_C.equals(templateId)
+                || TAIGA_FIELD.equals(templateId)) {
+            // Saved paired fields and Savanna V2 sections require the natural
+            // block immediately below their agricultural surface.
             return intersects(shape, corner, new BoundingBox(
                     pieceBox.minX(), pieceBox.minY() - 1, pieceBox.minZ(),
                     pieceBox.maxX(), pieceBox.maxY(), pieceBox.maxZ()));

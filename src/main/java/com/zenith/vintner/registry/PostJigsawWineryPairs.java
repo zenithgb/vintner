@@ -47,6 +47,12 @@ public final class PostJigsawWineryPairs {
             StructureTemplateManager templates,
             LevelHeightAccessor heightAccessor
     ) {
+        // Release fallback: preserve saved Savanna pieces and all Savanna
+        // gameplay, but do not create another winery/field pair until the
+        // continuous-row connection lifecycle is safe on first save.
+        if ("savanna".equals(culture)) {
+            return;
+        }
         PairConfig config = PairConfig.forCulture(culture);
         if (config == null || !VillageWineryEligibility.eligible(
                 seed, startChunk.getMiddleBlockX(),

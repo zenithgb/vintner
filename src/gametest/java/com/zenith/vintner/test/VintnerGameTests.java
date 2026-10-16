@@ -2052,8 +2052,10 @@ public final class VintnerGameTests {
                 .lookupOrThrow(Registries.STRUCTURE);
         long sampleSeed = level.getSeed();
         // Desert's ordinary village piece has separate placement-time gates.
+        // Savanna's new winery pair is disabled in the proposed release
+        // fallback and has its own zero-generation check below.
         for (String culture : List.of(
-                "plains", "savanna", "snowy", "taiga")) {
+                "plains", "snowy", "taiga")) {
             var holder = structures.getOrThrow(ResourceKey.create(
                     Registries.STRUCTURE,
                     Identifier.fromNamespaceAndPath(
@@ -2288,9 +2290,18 @@ public final class VintnerGameTests {
     }
 
     @GameTest(maxTicks = 200, padding = 48)
-    public void postJigsawSavannaPairsAreAtomicInVillageStarts(
+    public void postJigsawSavannaNewGenerationIsDeferred(
             GameTestHelper helper
     ) {
+        var templates = helper.getLevel().getServer().getStructureTemplateManager();
+        for (String suffix : List.of("field", "section_a", "section_b", "section_c")) {
+            String path = suffix.equals("field")
+                    ? "vineyard_field_tier1"
+                    : "vineyard_" + suffix + "_tier1";
+            helper.assertTrue(templates.getOrCreate(Identifier.parse(
+                    "vintner:village/savanna/" + path)).getSize().getX() > 0,
+                    "Existing Savanna field templates must remain loadable");
+        }
         assertPostJigsawPairsAreAtomic(helper, "savanna");
     }
 
@@ -2454,6 +2465,14 @@ public final class VintnerGameTests {
                                 "vintner:village/savanna/vineyard_field_tier1"),
                         savanna),
                 "Saved Savanna field must protect its immediate support");
+        for (String section : List.of("a", "b", "c")) {
+            helper.assertTrue(com.zenith.vintner.registry.PlainsLakeEnvelope
+                    .rejectsLake(shape, corner,
+                            net.minecraft.resources.Identifier.parse(
+                                    "vintner:village/savanna/vineyard_section_"
+                                            + section + "_tier1"), savanna),
+                    "Saved Savanna V2 section must protect its support");
+        }
         var savannaShell = new BoundingBox(corner.getX() + 9,
                 corner.getY() + 5, corner.getZ() + 8,
                 corner.getX() + 9, corner.getY() + 6,
@@ -2474,12 +2493,45 @@ public final class VintnerGameTests {
                                 "vintner:village/savanna/vineyard_field_tier1"),
                         savannaNearby),
                 "A Savanna lot beyond the shell must not suppress a lake");
-        helper.assertFalse(com.zenith.vintner.registry.PlainsLakeEnvelope
+        helper.assertTrue(com.zenith.vintner.registry.PlainsLakeEnvelope
                 .rejectsLake(shape, corner,
                         net.minecraft.resources.Identifier.parse(
                                 "vintner:village/taiga/vineyard_field_tier1"),
                         savanna),
-                "Taiga field remains outside the Savanna lake policy");
+                "Saved Taiga field must protect its immediate support");
+        helper.assertTrue(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .rejectsLake(shape, corner,
+                        net.minecraft.resources.Identifier.parse(
+                                "vintner:village/taiga/vineyard_field_tier1"),
+                        savannaShell),
+                "Taiga support must include the lava-lake barrier shell");
+        helper.assertFalse(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .rejectsLake(shape, corner,
+                        net.minecraft.resources.Identifier.parse(
+                                "vintner:village/taiga/vineyard_field_tier1"),
+                        savannaNearby),
+                "A Taiga lot beyond the shell must not suppress a lake");
+        helper.assertTrue(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .protectsVillage(net.minecraft.resources.Identifier.parse(
+                        "minecraft:village_taiga")),
+                "Taiga village references can contain protected fields");
+        helper.assertFalse(com.zenith.vintner.registry.PlainsLakeEnvelope
+                .protectsVillage(net.minecraft.resources.Identifier.parse(
+                        "minecraft:trial_chambers")),
+                "Unrelated jigsaw references must not affect lake placement");
+        var regionCenter = new net.minecraft.world.level.ChunkPos(0, 0);
+        helper.assertFalse(com.zenith.vintner.registry.PlainsLakeEnvelope
+                        .unavailableVillageStart(regionCenter,
+                                new net.minecraft.world.level.ChunkPos(8, -8), true),
+                "A village start at FEATURES radius eight must be readable");
+        helper.assertTrue(com.zenith.vintner.registry.PlainsLakeEnvelope
+                        .unavailableVillageStart(regionCenter,
+                                new net.minecraft.world.level.ChunkPos(9, 0), true),
+                "A village start beyond the guaranteed radius must reject the lake");
+        helper.assertTrue(com.zenith.vintner.registry.PlainsLakeEnvelope
+                        .unavailableVillageStart(regionCenter,
+                                new net.minecraft.world.level.ChunkPos(1, 0), false),
+                "An unavailable nearby village start must reject the lake");
         helper.assertFalse(com.zenith.vintner.registry.PlainsLakeEnvelope
                 .rejectsLake(shape, corner,
                         net.minecraft.resources.Identifier.parse(
@@ -2680,8 +2732,13 @@ public final class VintnerGameTests {
                 + " serialized_pairs=" + serializedPairs);
         helper.assertValueEqual(generated, 100,
                 culture + " village starts must generate");
-        helper.assertTrue(paired > 0,
-                "Post-jigsaw pair search must find at least one village");
+        if (culture.equals("savanna")) {
+            helper.assertValueEqual(paired, 0,
+                    "Fallback must not create new Savanna winery pairs");
+        } else {
+            helper.assertTrue(paired > 0,
+                    "Post-jigsaw pair search must find at least one village");
+        }
         helper.assertValueEqual(wineryOnly, 0,
                 "No village may contain only the winery");
         helper.assertValueEqual(fieldOnly, 0,

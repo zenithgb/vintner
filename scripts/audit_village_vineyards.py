@@ -60,6 +60,10 @@ PAIRED_SOURCES = {
     "savanna": {
         "winery_tier1": ("7f50357028418cdd2599164fdf40d6ebbd625748832b7147f37128bcca1fa91a", (15, 8, 18)),
         "vineyard_field_tier1": ("39733138bb05eed5f9b48e0028a0a2587b7b5bdefa147c5afd0b9cb4c5d2b799", (7, 3, 18)),
+        # The three original V2 section IDs remain loadable for saved experimental starts.
+        "vineyard_section_a_tier1": ("0842b8417e6b61d3d5e3bdc3417c1c72e78ce74ec80e33f574b35645e8011e4c", (7, 4, 7)),
+        "vineyard_section_b_tier1": ("8dfbefd5a982ec1a983976089a2583ea410eab055acd5f78caea12894c6b4ea4", (7, 4, 7)),
+        "vineyard_section_c_tier1": ("bd61baba28760497fb9821da2de27630fd4ba98ffcb2aa3fcea53284e6625432", (7, 4, 7)),
     },
     "taiga": {
         "winery_tier1": ("8198a9905ceb011c55a7546087ca33ef74b6bdd19d74877d8504e8db189583fb", (11, 11, 15)),
@@ -565,7 +569,7 @@ def main() -> None:
                           if block.endswith("grape_press"))
             if presses != (1 if name == "winery_tier1" else 0):
                 raise ValueError(f"{culture}/{name}: wrong workstation count")
-            if name == "vineyard_field_tier1" and not any(
+            if name.startswith("vineyard_") and not any(
                     block.endswith("grapevine") for block in model["counts"]):
                 raise ValueError(f"{culture}/{name}: no vineyard vines")
             print(f"PASS {culture}/{name}: source/runtime byte-identical, "

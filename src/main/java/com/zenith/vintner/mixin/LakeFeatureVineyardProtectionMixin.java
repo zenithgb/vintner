@@ -6,6 +6,7 @@ import com.zenith.vintner.block.GrapevineBlock;
 import com.zenith.vintner.block.TrellisBlock;
 import com.zenith.vintner.registry.ModBlocks;
 import com.zenith.vintner.registry.PlainsLakeEnvelope;
+import net.minecraft.core.registries.Registries;
 import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.feature.LakeFeature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.SimpleStateProvider;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
@@ -65,8 +67,8 @@ public abstract class LakeFeatureVineyardProtectionMixin {
         boolean[] lakeShape = shapeRef.get();
         Set<StructureStart> examined = new HashSet<>();
         Set<ChunkPos> surveyedChunks = new HashSet<>();
-        var structures = region.getLevel().structureManager()
-                .forWorldGenRegion(region);
+        var structures = region.registryAccess()
+                .lookupOrThrow(Registries.STRUCTURE);
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
                 if (!PlainsLakeEnvelope.hasCandidateInColumn(
@@ -76,21 +78,51 @@ public abstract class LakeFeatureVineyardProtectionMixin {
                 if (!surveyedChunks.add(new ChunkPos(worldX >> 4, worldZ >> 4))) {
                     continue;
                 }
-                for (StructureStart start : structures.startsForStructure(
-                        worldX >> 4, worldZ >> 4,
-                        structure -> structure instanceof
-                                net.minecraft.world.level.levelgen.structure.structures.JigsawStructure)) {
-                    if (!examined.add(start)) continue;
-                    for (var piece : start.getPieces()) {
-                        if (!(piece instanceof PoolElementStructurePiece pool)
-                                || !(pool.getElement() instanceof SinglePoolElement single)) {
-                            continue;
-                        }
-                        if (PlainsLakeEnvelope.rejectsLake(lakeShape,
-                                corner, single.getTemplateLocation(),
-                                piece.getBoundingBox())) {
+                var candidateChunk = region.getChunk(worldX >> 4, worldZ >> 4,
+                        ChunkStatus.STRUCTURE_REFERENCES, false);
+                if (candidateChunk == null) {
+                    cir.setReturnValue(false);
+                    return;
+                }
+                for (var reference : candidateChunk.getAllReferences().entrySet()) {
+                    if (!PlainsLakeEnvelope.protectsVillage(
+                            structures.getKey(reference.getKey()))) {
+                        continue;
+                    }
+                    for (long packed : reference.getValue()) {
+                        ChunkPos startPos = ChunkPos.unpack(packed);
+                        // FEATURES guarantees STRUCTURE_STARTS only within eight
+                        // chunks of its centre. Vanilla's generic reference
+                        // lookup can follow a farther village start and crash.
+                        // Refuse this one lake when its protected lot cannot
+                        // safely be inspected; never force another chunk.
+                        if (PlainsLakeEnvelope.unavailableVillageStart(
+                                region.getCenter(), startPos,
+                                region.hasChunk(startPos.x(), startPos.z()))) {
                             cir.setReturnValue(false);
                             return;
+                        }
+                        var startChunk = region.getChunk(startPos.x(),
+                                startPos.z(), ChunkStatus.STRUCTURE_STARTS, false);
+                        if (startChunk == null) {
+                            cir.setReturnValue(false);
+                            return;
+                        }
+                        StructureStart start = startChunk.getStartForStructure(
+                                reference.getKey());
+                        if (start == null || !start.isValid()
+                                || !examined.add(start)) continue;
+                        for (var piece : start.getPieces()) {
+                            if (!(piece instanceof PoolElementStructurePiece pool)
+                                    || !(pool.getElement() instanceof SinglePoolElement single)) {
+                                continue;
+                            }
+                            if (PlainsLakeEnvelope.rejectsLake(lakeShape,
+                                    corner, single.getTemplateLocation(),
+                                    piece.getBoundingBox())) {
+                                cir.setReturnValue(false);
+                                return;
+                            }
                         }
                     }
                 }
