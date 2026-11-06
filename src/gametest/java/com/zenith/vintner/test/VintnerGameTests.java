@@ -164,6 +164,10 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -195,6 +199,157 @@ import java.util.List;
 import java.util.UUID;
 
 public final class VintnerGameTests {
+    @GameTest(maxTicks = 20)
+    public void vanillaFourStringStillCraftsWool(GameTestHelper helper) {
+        CraftingInput input = CraftingInput.of(2, 2, List.of(
+                new ItemStack(Items.STRING), new ItemStack(Items.STRING),
+                new ItemStack(Items.STRING), new ItemStack(Items.STRING)
+        ));
+        ItemStack result = helper.getLevel().getServer().getRecipeManager()
+                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel())
+                .orElseThrow().value().assemble(input);
+        helper.assertTrue(result.is(Blocks.WOOL.white().asItem()),
+                "Four string must yield vanilla white wool; got " + result);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 20)
+    public void vanillaEightPlanksStillCraftChest(GameTestHelper helper) {
+        CraftingInput input = CraftingInput.of(3, 3, List.of(
+                new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS),
+                new ItemStack(Items.OAK_PLANKS), ItemStack.EMPTY, new ItemStack(Items.OAK_PLANKS),
+                new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS)
+        ));
+        ItemStack result = helper.getLevel().getServer().getRecipeManager()
+                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel())
+                .orElseThrow().value().assemble(input);
+        helper.assertTrue(result.is(Items.CHEST),
+                "Eight oak planks in the vanilla chest pattern must yield a chest; got " + result);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 20)
+    public void vanillaCopperShovelStillCrafts(GameTestHelper helper) {
+        CraftingInput input = CraftingInput.of(2, 3, List.of(
+                ItemStack.EMPTY, new ItemStack(Items.COPPER_INGOT),
+                ItemStack.EMPTY, new ItemStack(Items.STICK),
+                ItemStack.EMPTY, new ItemStack(Items.STICK)
+        ));
+        ItemStack result = helper.getLevel().getServer().getRecipeManager()
+                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel())
+                .orElseThrow().value().assemble(input);
+        helper.assertTrue(result.is(Items.COPPER_SHOVEL),
+                "Vanilla copper shovel ingredients must yield a shovel; got " + result);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 20)
+    public void distinctVintnerRecipesCraftWithoutReplacingVanilla(GameTestHelper helper) {
+        CraftingInput netting = CraftingInput.of(3, 3, List.of(
+                new ItemStack(Items.STRING), ItemStack.EMPTY, new ItemStack(Items.STRING),
+                ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY,
+                new ItemStack(Items.STRING), ItemStack.EMPTY, new ItemStack(Items.STRING)
+        ));
+        var nettingRecipe = helper.getLevel().getServer().getRecipeManager()
+                .getRecipeFor(RecipeType.CRAFTING, netting, helper.getLevel())
+                .orElseThrow();
+        helper.assertValueEqual(nettingRecipe.id().identifier().toString(),
+                "vintner:vineyard_netting", "Four corners should select Vintner netting");
+        ItemStack nettingOutput = nettingRecipe.value().assemble(netting);
+        helper.assertTrue(nettingOutput.is(ModItems.VINEYARD_NETTING),
+                "Netting recipe should preserve the public item identity");
+        helper.assertValueEqual(nettingOutput.getCount(), 2,
+                "Four string should still yield two nets");
+
+        CraftingInput probe = CraftingInput.of(2, 3, List.of(
+                ItemStack.EMPTY, new ItemStack(Items.COPPER_INGOT),
+                ItemStack.EMPTY, new ItemStack(Items.STICK),
+                new ItemStack(Items.STICK), ItemStack.EMPTY
+        ));
+        var probeRecipe = helper.getLevel().getServer().getRecipeManager()
+                .getRecipeFor(RecipeType.CRAFTING, probe, helper.getLevel())
+                .orElseThrow();
+        helper.assertValueEqual(probeRecipe.id().identifier().toString(),
+                "vintner:soil_probe", "Angled handle should select Vintner soil probe");
+        helper.assertTrue(probeRecipe.value().assemble(probe).is(ModItems.SOIL_PROBE),
+                "Soil probe recipe should preserve the public item identity");
+
+        CraftingInput barrel = CraftingInput.of(3, 3, List.of(
+                new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS),
+                new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS),
+                new ItemStack(Items.OAK_PLANKS), ItemStack.EMPTY, new ItemStack(Items.OAK_PLANKS)
+        ));
+        var barrelRecipe = helper.getLevel().getServer().getRecipeManager()
+                .getRecipeFor(RecipeType.CRAFTING, barrel, helper.getLevel())
+                .orElseThrow();
+        helper.assertValueEqual(barrelRecipe.id().identifier().toString(),
+                "vintner:fermentation_barrel", "Offset gap should select Vintner barrel");
+        helper.assertTrue(barrelRecipe.value().assemble(barrel).is(ModBlocks.FERMENTATION_BARREL.asItem()),
+                "Barrel recipe should preserve the public block identity");
+
+        var learnable = helper.getLevel().getServer().getRecipeManager().getLearnableRecipes();
+        helper.assertTrue(learnable.stream().anyMatch(recipe ->
+                        recipe.id().identifier().toString().equals("vintner:vineyard_netting")),
+                "Netting must remain available to the recipe book");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 20)
+    public void allWoodFermentationBarrelRecipesSelectTheirOwnOutput(GameTestHelper helper) {
+        for (WoodVariant wood : WoodVariant.values()) {
+            Item planks = BuiltInRegistries.ITEM.getValue(
+                    Identifier.parse("minecraft:" + wood.id() + "_planks"));
+            helper.assertTrue(planks != null,
+                    "Missing plank item for " + wood.id());
+            CraftingInput input = CraftingInput.of(3, 3, List.of(
+                    new ItemStack(planks), new ItemStack(planks), new ItemStack(planks),
+                    new ItemStack(planks), new ItemStack(planks), new ItemStack(planks),
+                    new ItemStack(planks), ItemStack.EMPTY, new ItemStack(planks)
+            ));
+            var recipe = helper.getLevel().getServer().getRecipeManager()
+                    .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel())
+                    .orElseThrow();
+            helper.assertValueEqual(recipe.id().identifier().toString(),
+                    "vintner:" + wood.fermentationBarrelId(),
+                    "Each wood should select its own barrel recipe");
+            helper.assertTrue(recipe.value().assemble(input).is(
+                            ModBlocks.fermentationBarrel(wood).asItem()),
+                    "Each barrel recipe must preserve its public block identity");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 20)
+    public void nettingQuickMoveConsumesExactlyFourStringPerCraft(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        CraftingMenu menu = new CraftingMenu(0, player.getInventory(),
+                ContainerLevelAccess.create(helper.getLevel(), helper.absolutePos(FIRST)));
+        for (int slot : new int[]{1, 3, 7, 9}) {
+            menu.getSlot(slot).set(new ItemStack(Items.STRING, 2));
+        }
+        menu.slotsChanged(menu.getSlot(1).container);
+        helper.assertTrue(menu.getSlot(0).getItem().is(ModItems.VINEYARD_NETTING),
+                "The crafting table must expose the netting output");
+        menu.clicked(0, 0, ContainerInput.QUICK_MOVE, player);
+
+        int heldString = 0;
+        for (int slot : new int[]{1, 3, 7, 9}) {
+            heldString += menu.getSlot(slot).getItem().getCount();
+        }
+        int nettingCount = 0;
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            ItemStack stack = player.getInventory().getItem(slot);
+            if (stack.is(ModItems.VINEYARD_NETTING)) {
+                nettingCount += stack.getCount();
+            }
+        }
+        helper.assertValueEqual(heldString, 0,
+                "Quick move must consume all eight provided string");
+        helper.assertValueEqual(nettingCount, 4,
+                "Quick move must yield exactly two nets per four string");
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 40)
     public void commonsKnowledgeContributionMatchesApprovedStructure(GameTestHelper helper) {
         com.zenithgb.library.knowledge.VintnerContributionAssertions.verify(helper);

@@ -3,8 +3,8 @@
   "category": "misc",
   "pattern": [
     "PPP",
-    "P P",
-    "PPP"
+    "PPP",
+    "P P"
   ],
   "key": {
     "P": "minecraft:spruce_planks"

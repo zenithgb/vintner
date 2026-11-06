@@ -5,8 +5,9 @@
     "S": "minecraft:string"
   },
   "pattern": [
-    "SS",
-    "SS"
+    "S S",
+    "   ",
+    "S S"
   ],
   "result": {
     "id": "vintner:vineyard_netting",
