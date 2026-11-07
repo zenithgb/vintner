@@ -2,9 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
+    "P P",
     "PPP",
-    "PPP",
-    "P P"
+    "PPP"
   ],
   "key": {
     "P": "minecraft:bamboo_planks"

@@ -6,9 +6,9 @@
     "S": "minecraft:stick"
   },
   "pattern": [
-    " C",
+    "C ",
     " S",
-    "S "
+    " S"
   ],
   "result": {
     "id": "vintner:soil_probe",

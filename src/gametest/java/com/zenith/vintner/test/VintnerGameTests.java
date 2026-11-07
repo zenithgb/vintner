@@ -262,28 +262,28 @@ public final class VintnerGameTests {
                 "Four string should still yield two nets");
 
         CraftingInput probe = CraftingInput.of(2, 3, List.of(
-                ItemStack.EMPTY, new ItemStack(Items.COPPER_INGOT),
+                new ItemStack(Items.COPPER_INGOT), ItemStack.EMPTY,
                 ItemStack.EMPTY, new ItemStack(Items.STICK),
-                new ItemStack(Items.STICK), ItemStack.EMPTY
+                ItemStack.EMPTY, new ItemStack(Items.STICK)
         ));
         var probeRecipe = helper.getLevel().getServer().getRecipeManager()
                 .getRecipeFor(RecipeType.CRAFTING, probe, helper.getLevel())
                 .orElseThrow();
         helper.assertValueEqual(probeRecipe.id().identifier().toString(),
-                "vintner:soil_probe", "Angled handle should select Vintner soil probe");
+                "vintner:soil_probe", "Angled copper tip and straight shaft should select Vintner soil probe");
         helper.assertTrue(probeRecipe.value().assemble(probe).is(ModItems.SOIL_PROBE),
                 "Soil probe recipe should preserve the public item identity");
 
         CraftingInput barrel = CraftingInput.of(3, 3, List.of(
+                new ItemStack(Items.OAK_PLANKS), ItemStack.EMPTY, new ItemStack(Items.OAK_PLANKS),
                 new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS),
-                new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS),
-                new ItemStack(Items.OAK_PLANKS), ItemStack.EMPTY, new ItemStack(Items.OAK_PLANKS)
+                new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.OAK_PLANKS)
         ));
         var barrelRecipe = helper.getLevel().getServer().getRecipeManager()
                 .getRecipeFor(RecipeType.CRAFTING, barrel, helper.getLevel())
                 .orElseThrow();
         helper.assertValueEqual(barrelRecipe.id().identifier().toString(),
-                "vintner:fermentation_barrel", "Offset gap should select Vintner barrel");
+                "vintner:fermentation_barrel", "Top opening should select Vintner barrel");
         helper.assertTrue(barrelRecipe.value().assemble(barrel).is(ModBlocks.FERMENTATION_BARREL.asItem()),
                 "Barrel recipe should preserve the public block identity");
 
@@ -302,9 +302,9 @@ public final class VintnerGameTests {
             helper.assertTrue(planks != null,
                     "Missing plank item for " + wood.id());
             CraftingInput input = CraftingInput.of(3, 3, List.of(
+                    new ItemStack(planks), ItemStack.EMPTY, new ItemStack(planks),
                     new ItemStack(planks), new ItemStack(planks), new ItemStack(planks),
-                    new ItemStack(planks), new ItemStack(planks), new ItemStack(planks),
-                    new ItemStack(planks), ItemStack.EMPTY, new ItemStack(planks)
+                    new ItemStack(planks), new ItemStack(planks), new ItemStack(planks)
             ));
             var recipe = helper.getLevel().getServer().getRecipeManager()
                     .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel())
@@ -316,6 +316,42 @@ public final class VintnerGameTests {
                             ModBlocks.fermentationBarrel(wood).asItem()),
                     "Each barrel recipe must preserve its public block identity");
         }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 20)
+    public void almanacCraftsWithEitherGrapeColorAndRejectsMissingGrapes(GameTestHelper helper) {
+        var recipes = helper.getLevel().getServer().getRecipeManager();
+        for (Item first : new Item[]{ModItems.RED_GRAPES, ModItems.WHITE_GRAPES}) {
+            for (Item second : new Item[]{ModItems.RED_GRAPES, ModItems.WHITE_GRAPES}) {
+                CraftingInput input = CraftingInput.of(2, 2, List.of(
+                        new ItemStack(Items.BOOK), new ItemStack(first),
+                        new ItemStack(second), ItemStack.EMPTY
+                ));
+                var recipe = recipes.getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel())
+                        .orElseThrow();
+                helper.assertValueEqual(recipe.id().identifier().toString(),
+                        "vintner:vintner_almanac", "Either grape color must select the Almanac");
+                helper.assertTrue(recipe.value().assemble(input).is(ModItems.VINTNER_ALMANAC),
+                        "Either grape color must produce the existing Almanac item");
+            }
+        }
+        for (CraftingInput input : List.of(
+                CraftingInput.of(2, 2, List.of(
+                        new ItemStack(Items.BOOK), new ItemStack(ModItems.RED_GRAPES),
+                        ItemStack.EMPTY, ItemStack.EMPTY)),
+                CraftingInput.of(2, 2, List.of(
+                        new ItemStack(Items.BOOK), new ItemStack(Items.APPLE),
+                        new ItemStack(ModItems.WHITE_GRAPES), ItemStack.EMPTY))
+        )) {
+            helper.assertTrue(recipes.getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel())
+                            .filter(recipe -> recipe.id().identifier().toString()
+                                    .equals("vintner:vintner_almanac")).isEmpty(),
+                    "Missing or wrong ingredients must not select the Almanac");
+        }
+        helper.assertTrue(recipes.getLearnableRecipes().stream().anyMatch(recipe ->
+                        recipe.id().identifier().toString().equals("vintner:vintner_almanac")),
+                "Almanac must remain visible to the recipe book");
         helper.succeed();
     }
 
